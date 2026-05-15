@@ -138,10 +138,10 @@ function Sk({ w = '100%', h = 16, r = 6 }: { w?: string | number; h?: number; r?
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function EvaluatePage() {
-  const params    = useParams()
-  const projectId = params.id as string
-  const router    = useRouter()
-  const supabase  = createClient()
+  const params      = useParams()
+  const projectId   = params.id as string
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,   setLoading]   = useState(true)
   const [project,   setProject]   = useState<ProjectData | null>(null)
@@ -155,6 +155,8 @@ export default function EvaluatePage() {
   const [feedback, setFeedback] = useState('')
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     let cancelled = false
     async function boot() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -189,7 +191,8 @@ export default function EvaluatePage() {
   const canSubmit = allFilled && feedback.trim().length > 0
 
   async function handleSubmit() {
-    if (!canSubmit || !resultado) return
+    if (!canSubmit || !resultado || !supabaseRef.current) return
+    const supabase = supabaseRef.current
     setSubmitting(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setSubmitting(false); return }

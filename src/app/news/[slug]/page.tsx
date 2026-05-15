@@ -1,6 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+export const dynamic = 'force-dynamic'
+
+import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
@@ -32,13 +34,15 @@ function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?
 }
 
 export default function ArticlePage() {
-  const { slug }  = useParams<{ slug: string }>()
-  const supabase  = createClient()
+  const { slug }    = useParams<{ slug: string }>()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const [article,  setArticle]  = useState<Article | null>(null)
   const [loading,  setLoading]  = useState(true)
   const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     async function load() {
       const { data } = await supabase
         .from('news')
