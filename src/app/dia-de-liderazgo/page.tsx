@@ -148,14 +148,16 @@ export default function DiaLiderazgoPage() {
   const cd      = useCountdown(TARGET_DATE)
   const pref    = useReducedMotion()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
+  const [mounted, setMounted] = useState(false)
 
   // Initialise immediately; logo_url + code fill in from DB
   const [schools, setSchools] = useState<SchoolData[]>(
     SCHOOL_NAMES.map(name => ({ name, logo_url: null, code: null }))
   )
 
+  useEffect(() => { setMounted(true) }, [])
+
   useEffect(() => {
-    console.log('SUPABASE URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
     if (!supabase) return
@@ -181,6 +183,8 @@ export default function DiaLiderazgoPage() {
     hidden:  { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 140, damping: 20 } },
   }
+
+  if (!mounted) return null
 
   return (
     <>
