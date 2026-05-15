@@ -97,7 +97,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
         .in('user_id', ids)
 
       const xpMap: Record<string, number> = {}
-      xpRows?.forEach(r => { xpMap[r.user_id] = (xpMap[r.user_id] ?? 0) + r.amount })
+      xpRows?.forEach((r: { user_id: string; amount: number }) => { xpMap[r.user_id] = (xpMap[r.user_id] ?? 0) + r.amount })
 
       const { data: progRows } = await supabase
         .from('progress')
