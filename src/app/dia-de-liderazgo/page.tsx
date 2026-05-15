@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useRef, useState } from 'react'
 import { motion, useInView, useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
