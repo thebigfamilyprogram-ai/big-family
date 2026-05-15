@@ -152,9 +152,9 @@ function phaseConfettiParticles(label: string) {
 
 /* ═══════════════════════════════════════════════════════════ */
 export default function LeadershipPathPage() {
-  const router   = useRouter()
-  const supabase = createClient()
-  const srm      = useReducedMotion()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
+  const srm         = useReducedMotion()
 
   const [loading,         setLoading]         = useState(true)
   const [nodes,           setNodes]           = useState<PathNode[]>([])
@@ -168,6 +168,8 @@ export default function LeadershipPathPage() {
   const [celebPhases,     setCelebPhases]     = useState<Set<string>>(new Set())
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     async function load() {
       const { data: { user: au } } = await supabase.auth.getUser()
       if (!au) { router.replace('/login'); return }

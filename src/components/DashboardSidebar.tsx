@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
@@ -48,11 +49,12 @@ const BF_LOGO = (
 )
 
 export default function DashboardSidebar({ activePage, userName = '…', userInitial = 'L' }: Props) {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   async function handleLogout() {
-    await supabase.auth.signOut()
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    await supabaseRef.current.auth.signOut()
     router.push('/login')
   }
 

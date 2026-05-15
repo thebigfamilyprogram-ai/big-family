@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
@@ -48,8 +48,8 @@ function Progress({ step }: { step: 1 | 2 | 3 }) {
 }
 
 export default function SubmitRegisterPage() {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [step,         setStep]         = useState<Step>('code')
   const [schoolCode,   setSchoolCode]   = useState('')
@@ -69,6 +69,8 @@ export default function SubmitRegisterPage() {
     e.preventDefault()
     setCodeError('')
     setCodeLoading(true)
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     const code = schoolCode.trim().toUpperCase()
 
     const { data: school } = await supabase
@@ -94,6 +96,8 @@ export default function SubmitRegisterPage() {
     if (!track) { setFormError('Selecciona tu track (Junior o Senior).'); return }
     if (password.length < 8) { setFormError('La contraseña debe tener al menos 8 caracteres.'); return }
     setFormLoading(true)
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
 
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,

@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
@@ -41,8 +41,8 @@ const TRACKS: { id: Level; emoji: string; iconBg: string; title: string; sub: st
 ]
 
 export default function RegisterPage() {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [step,          setStep]          = useState<Step>(1)
   const [schoolCode,    setSchoolCode]    = useState('')
@@ -62,6 +62,8 @@ export default function RegisterPage() {
     e.preventDefault()
     setCodeError('')
     setCodeLoading(true)
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     const input = schoolCode.trim().toUpperCase()
 
     const { data: school } = await supabase
@@ -130,6 +132,8 @@ export default function RegisterPage() {
 
   async function handleGoogle() {
     setFormError('')
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     const { schoolId, userType, coordCodeId, expoCodeId } = resolved!
     const extra: Record<string, string> = { school_id: schoolId, role: userType }
     if (coordCodeId) extra.coord_code_id = coordCodeId
@@ -148,6 +152,8 @@ export default function RegisterPage() {
     if (password.length < 8) { setFormError('La contraseña debe tener al menos 8 caracteres.'); return }
     if (password !== confirmPass) { setFormError('Las contraseñas no coinciden.'); return }
     setFormLoading(true)
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
 
     const { schoolId, userType, coordCodeId, expoCodeId } = resolved!
 

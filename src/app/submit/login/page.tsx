@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
@@ -21,8 +21,8 @@ function Logo() {
 }
 
 export default function SubmitLoginPage() {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
@@ -33,6 +33,8 @@ export default function SubmitLoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
 
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
 

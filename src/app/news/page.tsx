@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 
 interface NewsItem {
@@ -34,11 +34,13 @@ function PlaceholderImg({ size = 40 }: { size?: number }) {
 }
 
 export default function NewsListPage() {
-  const supabase = createClient()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const [articles, setArticles] = useState<NewsItem[]>([])
   const [loading,  setLoading]  = useState(true)
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     async function load() {
       const { data: rows } = await supabase
         .from('news')

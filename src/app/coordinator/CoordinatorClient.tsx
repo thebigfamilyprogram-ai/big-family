@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -49,8 +49,8 @@ interface Props {
 }
 
 export default function CoordinatorClient({ initialFullName, initialSchoolId }: Props) {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,  setLoading]  = useState(true)
   const [coord,    setCoord]    = useState<CoordProfile | null>(null)
@@ -64,6 +64,8 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
   const pref = useReducedMotion()
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     async function load() {
       const schoolId = initialSchoolId
 
@@ -183,7 +185,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
   }
 
   async function handleLogout() {
-    await supabase.auth.signOut()
+    if (supabaseRef.current) await supabaseRef.current.auth.signOut()
     router.push('/login')
   }
 

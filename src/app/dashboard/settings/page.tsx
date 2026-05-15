@@ -37,8 +37,8 @@ const THEME_CARDS: { id: Theme; label: string; desc: string }[] = [
 ]
 
 export default function SettingsPage() {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const { theme, setTheme } = useTheme()
 
   const [loading,       setLoading]       = useState(true)
@@ -73,6 +73,8 @@ export default function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     async function boot() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
@@ -114,6 +116,8 @@ export default function SettingsPage() {
   }
 
   async function handleSaveProfile() {
+    if (!supabaseRef.current) return
+    const supabase = supabaseRef.current
     setSaving(true)
     try {
       let newUrl = avatarUrl
@@ -149,6 +153,8 @@ export default function SettingsPage() {
   }
 
   async function handlePasswordReset() {
+    if (!supabaseRef.current) return
+    const supabase = supabaseRef.current
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/callback`,
     })
@@ -161,6 +167,8 @@ export default function SettingsPage() {
   }
 
   async function handleSignOutAll() {
+    if (!supabaseRef.current) return
+    const supabase = supabaseRef.current
     await supabase.auth.signOut({ scope: 'global' })
     router.push('/login')
   }
@@ -171,7 +179,7 @@ export default function SettingsPage() {
     try {
       const res = await fetch('/api/delete-account', { method: 'POST' })
       if (!res.ok) throw new Error()
-      await supabase.auth.signOut()
+      if (supabaseRef.current) await supabaseRef.current.auth.signOut()
       router.push('/')
     } catch {
       showToast('error', 'Error al eliminar la cuenta. Contacta soporte.')

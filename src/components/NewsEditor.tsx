@@ -96,8 +96,8 @@ function DiagramCarousel() {
 }
 
 export default function NewsEditor({ newsId, initialData, userId }: Props) {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [title,          setTitle]         = useState(initialData.title ?? '')
   const [slug,           setSlug]          = useState(initialData.slug ?? '')
@@ -132,6 +132,8 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
 
   const doSave = useCallback(async () => {
     if (!newsId) return
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     const v = valuesRef.current
     const content = editorRef.current?.innerHTML ?? ''
     setSaveStatus('saving')
@@ -174,6 +176,8 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
 
   async function uploadCover(file: File) {
     if (!file.type.startsWith('image/')) return
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     setUploading(true)
     const path = `${userId}/${newsId}/cover-${Date.now()}.${file.name.split('.').pop()}`
     const { data, error } = await supabase.storage.from('news-images').upload(path, file, { upsert: true })
@@ -184,6 +188,8 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
 
   async function removeCover() {
     if (!coverUrl) return
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     const marker = '/news-images/'
     const idx = coverUrl.indexOf(marker)
     if (idx >= 0) await supabase.storage.from('news-images').remove([coverUrl.slice(idx + marker.length)])
@@ -191,6 +197,8 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
   }
 
   async function uploadGalleryFile(file: File) {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     const path = `${userId}/${newsId}/gallery-${Date.now()}-${file.name}`
     const { data, error } = await supabase.storage.from('news-images').upload(path, file, { upsert: false })
     if (error || !data) return null
@@ -207,6 +215,8 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
   }
 
   async function removeGalleryImage(url: string) {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     const marker = '/news-images/'
     const idx = url.indexOf(marker)
     if (idx >= 0) await supabase.storage.from('news-images').remove([url.slice(idx + marker.length)])
@@ -214,6 +224,8 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
   }
 
   async function handlePublish() {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     setPublishing(true)
     await doSave()
     const { error } = await supabase.from('news').update({ published: true, published_at: new Date().toISOString() }).eq('id', newsId)
@@ -222,6 +234,8 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
   }
 
   async function handleUnpublish() {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     setPublishing(true)
     const { error } = await supabase.from('news').update({ published: false }).eq('id', newsId)
     setPublishing(false)

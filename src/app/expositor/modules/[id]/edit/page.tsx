@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import ExpositorSidebar from '@/components/ExpositorSidebar'
@@ -15,10 +15,10 @@ function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?
 }
 
 export default function EditModulePage() {
-  const router   = useRouter()
-  const params   = useParams()
-  const moduleId = params.id as string
-  const supabase = createClient()
+  const router      = useRouter()
+  const params      = useParams()
+  const moduleId    = params.id as string
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,     setLoading]     = useState(true)
   const [notFound,    setNotFound]    = useState(false)
@@ -28,6 +28,8 @@ export default function EditModulePage() {
   const [questions,   setQuestions]   = useState<QuestionData[]>([])
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     let cancelled = false
 
     async function boot() {

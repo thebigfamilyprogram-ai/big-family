@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
@@ -30,8 +30,8 @@ function StarIcon({ filled }: { filled: boolean }) {
 }
 
 export default function CoordinatorNewsPage() {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,      setLoading]      = useState(true)
   const [userId,       setUserId]       = useState('')
@@ -41,6 +41,8 @@ export default function CoordinatorNewsPage() {
   const [featuringId,  setFeaturingId]  = useState<string | null>(null)
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     let cancelled = false
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -74,12 +76,13 @@ export default function CoordinatorNewsPage() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleLogout() {
-    await supabase.auth.signOut()
+    if (supabaseRef.current) await supabaseRef.current.auth.signOut()
     router.push('/login')
   }
 
   async function handleToggleFeatured(item: NewsRow) {
-    if (featuringId) return
+    if (featuringId || !supabaseRef.current) return
+    const supabase = supabaseRef.current
     setFeaturingId(item.id)
 
     if (item.featured) {

@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { motion, useReducedMotion } from 'framer-motion'
@@ -35,8 +35,8 @@ function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CoordinatorProjectsPage() {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,  setLoading]  = useState(true)
   const [coord,    setCoord]    = useState<CoordInfo | null>(null)
@@ -48,6 +48,8 @@ export default function CoordinatorProjectsPage() {
   const pref = useReducedMotion()
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
@@ -124,6 +126,8 @@ export default function CoordinatorProjectsPage() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleApprove(projectId: string) {
+    if (!supabaseRef.current) return
+    const supabase = supabaseRef.current
     if (projectId.startsWith('revoke-')) {
       const id = projectId.replace('revoke-', '')
       await supabase.from('projects').update({ status: 'pending', approved_at: null, approved_by: null }).eq('id', id)
@@ -142,6 +146,8 @@ export default function CoordinatorProjectsPage() {
   }
 
   async function handleReject(projectId: string, reason: string) {
+    if (!supabaseRef.current) return
+    const supabase = supabaseRef.current
     await supabase
       .from('projects')
       .update({ status: 'rejected', rejection_reason: reason || null })
@@ -171,7 +177,7 @@ export default function CoordinatorProjectsPage() {
   }), [projects])
 
   async function handleLogout() {
-    await supabase.auth.signOut()
+    if (supabaseRef.current) await supabaseRef.current.auth.signOut()
     router.push('/login')
   }
 

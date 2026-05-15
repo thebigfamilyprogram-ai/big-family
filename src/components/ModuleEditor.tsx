@@ -84,11 +84,12 @@ function QuestionCard({
   onDrop: (i: number) => void
   isDragOver: boolean
 }) {
-  const supabase = createClient()
+  const qSupabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   async function save(changes: Partial<QuestionData>) {
     onUpdate(q.id, changes)
-    await supabase.from('questions').update(changes).eq('id', q.id)
+    if (!qSupabaseRef.current) qSupabaseRef.current = createClient()
+    await qSupabaseRef.current.from('questions').update(changes).eq('id', q.id)
   }
 
   const typeLabel = q.type === 'multiple_choice' ? 'Opción múltiple' : q.type === 'true_false' ? 'Verdadero / Falso' : 'Reflexión'
@@ -214,8 +215,8 @@ function QuestionCard({
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function ModuleEditor({ moduleId, initialModule, initialQuestions, onSubmit }: Props) {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   // Module field state — all initialized directly from prop (avoids autosave bug)
   const [title,           setTitle]           = useState(initialModule.title ?? '')
@@ -259,6 +260,8 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
   // ── Autosave ───────────────────────────────────────────────────────────────
   const doSave = useCallback(async () => {
     if (!moduleId) return
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     const v = valuesRef.current
     setSaveStatus('saving')
     const { data: updated, error } = await supabase
@@ -294,6 +297,8 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
   // ── Questions ──────────────────────────────────────────────────────────────
   async function addQuestion() {
     if (addingQ) return
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     setAddingQ(true)
     const newQ: Omit<QuestionData, 'id'> = {
       module_id:      moduleId,
@@ -313,6 +318,8 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
   }
 
   async function deleteQuestion(id: string) {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     await supabase.from('questions').delete().eq('id', id)
     setQuestions(prev => {
       const next = prev.filter(q => q.id !== id)
@@ -329,11 +336,14 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
     setQuestions(withIdx)
     setDragIndex(null)
     setDragOverIndex(null)
-    await Promise.all(withIdx.map(q => supabase.from('questions').update({ order_index: q.order_index }).eq('id', q.id)))
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    await Promise.all(withIdx.map(q => supabaseRef.current!.from('questions').update({ order_index: q.order_index }).eq('id', q.id)))
   }
 
   // ── Submit ─────────────────────────────────────────────────────────────────
   async function handleSubmit() {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     setSubmitting(true)
     await doSave()
     const { error } = await supabase.from('modules').update({ status: 'pending' }).eq('id', moduleId)

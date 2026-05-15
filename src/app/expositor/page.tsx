@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
@@ -46,8 +46,8 @@ function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?
 }
 
 export default function ExpositorPage() {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,      setLoading]      = useState(true)
   const [userName,     setUserName]     = useState('…')
@@ -58,6 +58,8 @@ export default function ExpositorPage() {
   const pref = useReducedMotion()
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     let cancelled = false
     async function boot() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -96,7 +98,8 @@ export default function ExpositorPage() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function confirmDelete() {
-    if (!deleteTarget) return
+    if (!deleteTarget || !supabaseRef.current) return
+    const supabase = supabaseRef.current
     setDeleting(true)
     await supabase.from('questions').delete().eq('module_id', deleteTarget.id)
     await supabase.from('modules').delete().eq('id', deleteTarget.id)

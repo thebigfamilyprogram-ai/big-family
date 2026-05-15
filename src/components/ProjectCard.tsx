@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 
@@ -162,7 +162,7 @@ export default function ProjectCard({
   onEvaluate,
   resultado,
 }: Props) {
-  const supabase = createClient()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [localStatus, setLocalStatus]               = useState(project.status)
   const [localRejection, setLocalRejection]         = useState(project.rejection_reason ?? '')
@@ -179,6 +179,8 @@ export default function ProjectCard({
 
   async function submitComment() {
     if (!commentText.trim() || !coordinatorId) return
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     setSubmittingComment(true)
     const { data } = await supabase
       .from('project_comments')

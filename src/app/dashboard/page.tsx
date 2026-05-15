@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import DashboardSidebar from '@/components/DashboardSidebar'
@@ -162,9 +162,9 @@ function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?
 }
 
 export default function DashboardPage() {
-  const router   = useRouter()
-  const supabase = createClient()
-  const pref     = useReducedMotion()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
+  const pref        = useReducedMotion()
 
   const [loading,      setLoading]      = useState(true)
   const [user,         setUser]         = useState<UserData | null>(null)
@@ -172,6 +172,8 @@ export default function DashboardPage() {
   const [progressRows, setProgressRows] = useState<ProgressRow[]>([])
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     async function load() {
       const { data: { user: authUser } } = await supabase.auth.getUser()
       if (!authUser) { router.replace('/login'); return }

@@ -34,8 +34,8 @@ function extractVideoId(url: string): string | null {
 }
 
 export default function VideoPlayer({ videoUrl, moduleId, userId }: Props) {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const playerRef    = useRef<YTPlayer | null>(null)
   const intervalRef  = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -49,7 +49,8 @@ export default function VideoPlayer({ videoUrl, moduleId, userId }: Props) {
 
   // Load saved progress
   useEffect(() => {
-    supabase
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    supabaseRef.current
       .from('video_progress')
       .select('watched_percentage')
       .eq('user_id', userId)
@@ -106,7 +107,8 @@ export default function VideoPlayer({ videoUrl, moduleId, userId }: Props) {
       if (!dur) return
       const pct = Math.min(100, Math.floor((cur / dur) * 100))
       setWatchedPct(prev => Math.max(prev, pct))
-      await supabase.from('video_progress').upsert(
+      if (!supabaseRef.current) supabaseRef.current = createClient()
+      await supabaseRef.current.from('video_progress').upsert(
         { user_id: userId, module_id: moduleId,
           watched_percentage: pct,
           last_position_seconds: Math.floor(cur),

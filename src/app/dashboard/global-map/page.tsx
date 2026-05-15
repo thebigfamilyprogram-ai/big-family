@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -94,8 +94,8 @@ function geoToPath(geometry: any): string {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function GlobalMapPage() {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [authLoading, setAuthLoading] = useState(true)
   const [userName, setUserName]       = useState('…')
@@ -107,6 +107,8 @@ export default function GlobalMapPage() {
 
   // Auth
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     async function boot() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }

@@ -2,13 +2,13 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
 export default function LoginPage() {
-  const router = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
@@ -17,6 +17,8 @@ export default function LoginPage() {
 
   async function handleGoogle() {
     setError('')
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin + '/auth/callback' },
@@ -27,6 +29,8 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) { setLoading(false); setError(error.message); return }
 

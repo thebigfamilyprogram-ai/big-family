@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import DashboardSidebar from '@/components/DashboardSidebar'
@@ -50,8 +50,8 @@ function Sk({ w = '100%', h = 16 }: { w?: string | number; h?: number }) {
 
 export default function ModulePage() {
   const { id: moduleId } = useParams<{ id: string }>()
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,   setLoading]   = useState(true)
   const [mod,       setMod]       = useState<ModuleData | null>(null)
@@ -62,6 +62,8 @@ export default function ModulePage() {
   const [attempts,  setAttempts]  = useState<AttemptSummary>({ count: 0, bestScore: null })
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     async function boot() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }

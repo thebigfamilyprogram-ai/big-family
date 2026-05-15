@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import ProjectEditor, { type ProjectEditorData } from '@/components/ProjectEditor'
@@ -45,8 +45,8 @@ function Spinner() {
 }
 
 export default function SubmitProjectPage() {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,       setLoading]       = useState(true)
   const [userId,        setUserId]        = useState('')
@@ -58,6 +58,8 @@ export default function SubmitProjectPage() {
   const [isSubmitted,   setIsSubmitted]   = useState(false)
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     let cancelled = false
     async function boot() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -150,14 +152,15 @@ export default function SubmitProjectPage() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleLogout() {
-    await supabase.auth.signOut()
+    if (supabaseRef.current) await supabaseRef.current.auth.signOut()
     router.replace('/submit')
   }
 
   // TEMP LAUNCH: External submit button saves status directly; relies on
   // ProjectEditor autosave having fired for latest content changes.
   async function handleExternalSubmit() {
-    if (!projectId || submitting || isSubmitted) return
+    if (!projectId || submitting || isSubmitted || !supabaseRef.current) return
+    const supabase = supabaseRef.current
     setSubmitting(true)
     const { error } = await supabase.from('projects').update({
       status:       'pending',

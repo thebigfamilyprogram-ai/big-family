@@ -145,7 +145,7 @@ function Logo({ light = false }: { light?: boolean }) {
 export default function DiaLiderazgoPage() {
   const cd      = useCountdown(TARGET_DATE)
   const pref    = useReducedMotion()
-  const supabase = createClient()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   // Initialise immediately; logo_url + code fill in from DB
   const [schools, setSchools] = useState<SchoolData[]>(
@@ -153,6 +153,8 @@ export default function DiaLiderazgoPage() {
   )
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     async function fetchSchools() {
       const { data } = await supabase
         .from('schools')

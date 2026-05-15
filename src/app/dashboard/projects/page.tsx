@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -11,8 +11,8 @@ import ProjectCard, { type Project } from '@/components/ProjectCard'
 import { showToast } from '@/components/Toast'
 
 export default function ProjectsPage() {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,      setLoading]      = useState(true)
   const [userName,     setUserName]     = useState('…')
@@ -22,6 +22,8 @@ export default function ProjectsPage() {
   const [deleting,     setDeleting]     = useState(false)
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     async function boot() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
@@ -71,6 +73,8 @@ export default function ProjectsPage() {
   }
 
   async function handleDelete(project: Project) {
+    if (!supabaseRef.current) return
+    const supabase = supabaseRef.current
     setDeleting(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setDeleting(false); return }

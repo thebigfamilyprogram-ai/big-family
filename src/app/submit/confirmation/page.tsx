@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
@@ -39,12 +39,14 @@ interface Summary {
 }
 
 export default function SubmitConfirmationPage() {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const [summary, setSummary] = useState<Summary | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     let cancelled = false
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -180,7 +182,7 @@ export default function SubmitConfirmationPage() {
 
             <div style={{ display:'flex', gap:12, justifyContent:'center', flexWrap:'wrap' }}>
               <a href="/submit/project" className="sc-btn-primary">Ver mi proyecto →</a>
-              <button className="sc-btn-ghost" onClick={() => supabase.auth.signOut().then(() => router.replace('/submit'))}>
+              <button className="sc-btn-ghost" onClick={() => { if (supabaseRef.current) supabaseRef.current.auth.signOut().then(() => router.replace('/submit')) }}>
                 Cerrar sesión
               </button>
             </div>

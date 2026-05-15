@@ -75,8 +75,8 @@ function fmtTime(iso: string) {
 }
 
 export default function TeamHubPage() {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router       = useRouter()
+  const supabaseRef  = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,     setLoading]     = useState(true)
   const [activeTab,   setActiveTab]   = useState<Tab>('team')
@@ -99,6 +99,8 @@ export default function TeamHubPage() {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     async function boot() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
@@ -132,7 +134,8 @@ export default function TeamHubPage() {
 
   // Realtime chat subscription
   useEffect(() => {
-    if (!schoolId) return
+    if (!schoolId || !supabaseRef.current) return
+    const supabase = supabaseRef.current
     const channel = supabase
       .channel('team-chat-' + schoolId)
       .on('postgres_changes', {
@@ -158,6 +161,8 @@ export default function TeamHubPage() {
   }, [messages])
 
   async function loadTeam(uid: string, sid: string) {
+    if (!supabaseRef.current) return
+    const supabase = supabaseRef.current
     const { data } = await supabase
       .from('profiles')
       .select('id, full_name, avatar_url, school_level')
@@ -181,6 +186,8 @@ export default function TeamHubPage() {
   }
 
   async function loadMessages(sid: string) {
+    if (!supabaseRef.current) return
+    const supabase = supabaseRef.current
     const { data } = await supabase
       .from('team_messages')
       .select('*, profiles(full_name, avatar_url, school_level)')
@@ -191,6 +198,8 @@ export default function TeamHubPage() {
   }
 
   async function loadProjects(uid: string, sid: string) {
+    if (!supabaseRef.current) return
+    const supabase = supabaseRef.current
     const { data: projData } = await supabase
       .from('team_projects')
       .select('*')
@@ -215,7 +224,8 @@ export default function TeamHubPage() {
   }
 
   async function sendMessage() {
-    if (!msgText.trim() || !schoolId || sending) return
+    if (!msgText.trim() || !schoolId || sending || !supabaseRef.current) return
+    const supabase = supabaseRef.current
     setSending(true)
     const { error } = await supabase.from('team_messages').insert({
       school_id: schoolId,
@@ -228,6 +238,8 @@ export default function TeamHubPage() {
   }
 
   async function joinProject(projectId: string) {
+    if (!supabaseRef.current) return
+    const supabase = supabaseRef.current
     const { error } = await supabase.from('team_project_members').insert({ project_id: projectId, user_id: userId })
     if (error) { showToast('error', 'Error al unirse al proyecto'); return }
     showToast('success', '¡Te uniste al proyecto!')
@@ -236,7 +248,8 @@ export default function TeamHubPage() {
   }
 
   async function createProject() {
-    if (!newTitle.trim() || !schoolId || creating) return
+    if (!newTitle.trim() || !schoolId || creating || !supabaseRef.current) return
+    const supabase = supabaseRef.current
     setCreating(true)
     const { data: proj, error } = await supabase.from('team_projects').insert({
       title: newTitle.trim(),

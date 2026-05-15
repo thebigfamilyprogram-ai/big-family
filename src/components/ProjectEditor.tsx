@@ -217,8 +217,8 @@ function SaveIndicator({ saveStatus, savedAt }: { saveStatus: 'idle'|'saving'|'s
 export default function ProjectEditor({
   projectId, userId, userFullName, schoolName, initialData, onSave, onSubmit,
 }: Props) {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   // ── State — initialized directly from initialData ─────────────────────────
   const [title,    setTitle]    = useState(initialData.title ?? '')
@@ -287,6 +287,8 @@ export default function ProjectEditor({
   // ── Autosave ───────────────────────────────────────────────────────────────
   const doSave = useCallback(async () => {
     if (!projectId) return
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     const v = valuesRef.current
     const comp = computeCompletion(v)
     setSaveStatus('saving')
@@ -329,6 +331,8 @@ export default function ProjectEditor({
 
   // ── Submit ─────────────────────────────────────────────────────────────────
   async function handleSubmit() {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     setSubmitting(true)
     await doSave()
     const { error } = await supabase.from('projects').update({
@@ -346,6 +350,8 @@ export default function ProjectEditor({
 
   // ── Photo upload ───────────────────────────────────────────────────────────
   async function uploadPhoto(file: File) {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     setUploadingImg(true)
     const path = `${userId}/${projectId}/${Date.now()}-${file.name}`
     const { data: up, error } = await supabase.storage
@@ -358,6 +364,8 @@ export default function ProjectEditor({
   }
 
   async function removePhoto(url: string) {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     const marker = '/project-images/'
     const idx = url.indexOf(marker)
     if (idx >= 0) await supabase.storage.from('project-images').remove([url.slice(idx + marker.length)])
@@ -373,6 +381,8 @@ export default function ProjectEditor({
 
   // ── PDF upload ─────────────────────────────────────────────────────────────
   async function uploadPdf(file: File) {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     setUploadingPdf(true)
     const path = `${userId}/${projectId}/${Date.now()}-${file.name}`
     const { data: up, error } = await supabase.storage
@@ -386,6 +396,8 @@ export default function ProjectEditor({
 
   async function removePdf() {
     if (!pdfUrl) return
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     const marker = '/project-pdfs/'
     const idx = pdfUrl.indexOf(marker)
     if (idx >= 0) await supabase.storage.from('project-pdfs').remove([pdfUrl.slice(idx + marker.length)])

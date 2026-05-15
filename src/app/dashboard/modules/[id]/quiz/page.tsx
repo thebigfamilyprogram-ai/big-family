@@ -27,8 +27,8 @@ const CONFETTI_COLORS = ['#C0392B', '#F39C12', '#27AE60', '#2980B9', '#8E44AD', 
 
 export default function QuizPage() {
   const { id: moduleId } = useParams<{ id: string }>()
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [phase,        setPhase]       = useState<Phase>('loading')
   const [blockMsg,     setBlockMsg]    = useState('')
@@ -50,6 +50,8 @@ export default function QuizPage() {
 
   // Load and check prerequisites
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     async function boot() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
@@ -153,6 +155,8 @@ export default function QuizPage() {
   }
 
   async function submitQuiz(finalAnswers: Record<string, string>) {
+    if (!supabaseRef.current) return
+    const supabase = supabaseRef.current
     setSubmitting(true)
     if (timerRef.current) clearInterval(timerRef.current)
 

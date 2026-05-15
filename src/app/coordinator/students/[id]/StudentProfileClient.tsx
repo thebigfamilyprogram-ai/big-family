@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
@@ -111,8 +111,8 @@ interface Props {
 export default function StudentProfileClient({
   studentId, coordinatorId, coordinatorName, lastSignIn,
 }: Props) {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,         setLoading]         = useState(true)
   const [profile,         setProfile]         = useState<StudentProfile | null>(null)
@@ -126,6 +126,8 @@ export default function StudentProfileClient({
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     async function load() {
       const [
         profileRes,
@@ -227,7 +229,8 @@ export default function StudentProfileClient({
 
   async function handleSaveNote() {
     const content = newNote.trim()
-    if (!content) return
+    if (!content || !supabaseRef.current) return
+    const supabase = supabaseRef.current
     setSavingNote(true)
     const { data, error } = await supabase
       .from('coordinator_notes')
@@ -242,6 +245,8 @@ export default function StudentProfileClient({
   }
 
   async function handleDeleteNote(noteId: string) {
+    if (!supabaseRef.current) return
+    const supabase = supabaseRef.current
     const { error } = await supabase
       .from('coordinator_notes')
       .delete()
@@ -253,7 +258,7 @@ export default function StudentProfileClient({
   }
 
   async function handleLogout() {
-    await supabase.auth.signOut()
+    if (supabaseRef.current) await supabaseRef.current.auth.signOut()
     router.push('/login')
   }
 
