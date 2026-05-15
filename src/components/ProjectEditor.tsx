@@ -289,6 +289,7 @@ export default function ProjectEditor({
     if (!projectId) return
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
+    if (!supabase) { setSaveStatus('error'); return }
     const v = valuesRef.current
     const comp = computeCompletion(v)
     setSaveStatus('saving')
@@ -333,6 +334,7 @@ export default function ProjectEditor({
   async function handleSubmit() {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
+    if (!supabase) { showToast('error', 'Error de conexión'); return }
     setSubmitting(true)
     await doSave()
     const { error } = await supabase.from('projects').update({
@@ -352,8 +354,10 @@ export default function ProjectEditor({
   async function uploadPhoto(file: File) {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
+    if (!supabase) { showToast('error', 'Error de conexión'); return }
     setUploadingImg(true)
-    const path = `${userId}/${projectId}/${Date.now()}-${file.name}`
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_') || 'photo'
+    const path = `${userId}/${projectId}/${Date.now()}-${safeName}`
     const { data: up, error } = await supabase.storage
       .from('project-images').upload(path, file, { cacheControl: '3600', upsert: false })
     if (error || !up) { showToast('error', 'Error al subir la foto'); setUploadingImg(false); return }
@@ -366,6 +370,7 @@ export default function ProjectEditor({
   async function removePhoto(url: string) {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
+    if (!supabase) return
     const marker = '/project-images/'
     const idx = url.indexOf(marker)
     if (idx >= 0) await supabase.storage.from('project-images').remove([url.slice(idx + marker.length)])
@@ -383,8 +388,10 @@ export default function ProjectEditor({
   async function uploadPdf(file: File) {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
+    if (!supabase) { showToast('error', 'Error de conexión'); return }
     setUploadingPdf(true)
-    const path = `${userId}/${projectId}/${Date.now()}-${file.name}`
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_') || 'document'
+    const path = `${userId}/${projectId}/${Date.now()}-${safeName}`
     const { data: up, error } = await supabase.storage
       .from('project-pdfs').upload(path, file, { cacheControl: '3600', upsert: false })
     if (error || !up) { showToast('error', 'Error al subir el PDF'); setUploadingPdf(false); return }
@@ -398,6 +405,7 @@ export default function ProjectEditor({
     if (!pdfUrl) return
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
+    if (!supabase) return
     const marker = '/project-pdfs/'
     const idx = pdfUrl.indexOf(marker)
     if (idx >= 0) await supabase.storage.from('project-pdfs').remove([pdfUrl.slice(idx + marker.length)])
