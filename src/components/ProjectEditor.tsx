@@ -246,8 +246,10 @@ export default function ProjectEditor({
   const [openSections, setOpenSections] = useState<Set<number>>(new Set([2]))
   const [saveStatus,   setSaveStatus]   = useState<'idle'|'saving'|'saved'|'error'>('idle')
   const [savedAt,      setSavedAt]      = useState<Date | null>(null)
-  const [uploadingImg, setUploadingImg] = useState(false)
-  const [uploadingPdf, setUploadingPdf] = useState(false)
+  const [uploadingImg,    setUploadingImg]    = useState(false)
+  const [uploadingPdf,    setUploadingPdf]    = useState(false)
+  const [uploadingVideo,  setUploadingVideo]  = useState(false)
+  const [videoSizeWarning, setVideoSizeWarning] = useState(false)
   const [imgDrag,      setImgDrag]      = useState(false)
   const [pdfDrag,      setPdfDrag]      = useState(false)
   const [submitModal,  setSubmitModal]  = useState(false)
@@ -255,8 +257,9 @@ export default function ProjectEditor({
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const mountedRef   = useRef(false)
-  const imgInputRef  = useRef<HTMLInputElement>(null)
-  const pdfInputRef  = useRef<HTMLInputElement>(null)
+  const imgInputRef   = useRef<HTMLInputElement>(null)
+  const pdfInputRef   = useRef<HTMLInputElement>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
 
   const valuesRef = useRef<ValuesSnapshot>({
     title, subtitle, category, track,
@@ -410,6 +413,20 @@ export default function ProjectEditor({
     const idx = pdfUrl.indexOf(marker)
     if (idx >= 0) await supabase.storage.from('project-pdfs').remove([pdfUrl.slice(idx + marker.length)])
     setPdfUrl(null)
+  }
+
+  // ── Video upload ───────────────────────────────────────────────────────────
+  function handleVideoSelect(file: File | undefined) {
+    if (!file) return
+    // File size warning: show message and stop if > 200 MB
+    if (file.size > 200 * 1024 * 1024) {
+      setVideoSizeWarning(true)
+      return
+    }
+    setVideoSizeWarning(false)
+    setUploadingVideo(true)
+    // Actual upload logic to be wired here — states are ready
+    setUploadingVideo(false)
   }
 
   // ── Section helpers ────────────────────────────────────────────────────────
@@ -733,6 +750,48 @@ export default function ProjectEditor({
                 ) : null}
                 <input ref={pdfInputRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadPdf(f) }} />
               </div>
+
+              {/* ── Video opcional ── */}
+              {!isLocked && (
+                <div style={{ marginTop: 20 }}>
+                  <label className="pe-label" style={{ marginBottom: 8, fontSize: 13 }}>Video opcional</label>
+
+                  {/* Size warning — shown when selected file exceeds 200 MB */}
+                  {videoSizeWarning && (
+                    <div style={{ marginBottom: 10, padding: '10px 14px', background: '#FEF3C7', border: '1px solid #FCD34D', borderRadius: 10, fontSize: 13, color: '#92400E' }}>
+                      ⚠ El video supera los 200 MB. Por favor comprime el archivo o usa un enlace de YouTube.
+                    </div>
+                  )}
+
+                  <div
+                    className="pe-drop"
+                    style={{ padding: '20px 24px' }}
+                    onClick={() => { setVideoSizeWarning(false); videoInputRef.current?.click() }}
+                  >
+                    {uploadingVideo
+                      ? (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 13, color: '#C0392B' }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ animation: 'spin 1s linear infinite', flexShrink: 0 }}>
+                            <circle cx="12" cy="12" r="10" stroke="rgba(192,57,43,.2)" strokeWidth="3"/>
+                            <path d="M12 2a10 10 0 0 1 10 10" stroke="#C0392B" strokeWidth="3" strokeLinecap="round"/>
+                          </svg>
+                          <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+                          Subiendo video… esto puede tardar unos minutos
+                        </div>
+                      ) : (
+                        <p className="pe-drop-text" style={{ marginTop: 0 }}>Haz clic para seleccionar un video · máx. 200 MB</p>
+                      )
+                    }
+                  </div>
+                  <input
+                    ref={videoInputRef}
+                    type="file"
+                    accept="video/*"
+                    style={{ display: 'none' }}
+                    onChange={e => handleVideoSelect(e.target.files?.[0])}
+                  />
+                </div>
+              )}
             </Section>
           </div>
         </div>
