@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
@@ -210,8 +210,8 @@ function ModuleCard({
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function CoordinatorModulesPage() {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router      = useRouter()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,   setLoading]   = useState(true)
   const [coordName, setCoordName] = useState('…')
@@ -225,6 +225,8 @@ export default function CoordinatorModulesPage() {
   const [actionLoading, setActionLoading] = useState(false)
 
   useEffect(() => {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
     let cancelled = false
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -282,7 +284,8 @@ export default function CoordinatorModulesPage() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleApprove() {
-    if (!approving) return
+    if (!approving || !supabaseRef.current) return
+    const supabase = supabaseRef.current
     setActionLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
     const { error } = await supabase.from('modules').update({
@@ -300,7 +303,8 @@ export default function CoordinatorModulesPage() {
   }
 
   async function handleReject(reason: string) {
-    if (!rejecting) return
+    if (!rejecting || !supabaseRef.current) return
+    const supabase = supabaseRef.current
     setActionLoading(true)
     const { error } = await supabase.from('modules').update({
       status:           'rejected',
@@ -315,7 +319,8 @@ export default function CoordinatorModulesPage() {
 
   async function handleUnpublish(id: string) {
     const mod = published.find(m => m.id === id)
-    if (!mod) return
+    if (!mod || !supabaseRef.current) return
+    const supabase = supabaseRef.current
     const { error } = await supabase.from('modules').update({ status: 'draft', approved_at: null, approved_by: null }).eq('id', id)
     if (error) { showToast('error', 'Error al despublicar'); return }
     setPublished(prev => prev.filter(m => m.id !== id))
@@ -323,7 +328,7 @@ export default function CoordinatorModulesPage() {
   }
 
   async function handleLogout() {
-    await supabase.auth.signOut()
+    if (supabaseRef.current) await supabaseRef.current.auth.signOut()
     router.push('/login')
   }
 
