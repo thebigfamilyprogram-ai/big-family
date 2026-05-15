@@ -155,6 +155,7 @@ export default function DiaLiderazgoPage() {
   )
 
   useEffect(() => {
+    console.log('SUPABASE URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
     if (!supabase) return
