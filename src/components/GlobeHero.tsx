@@ -1005,7 +1005,7 @@ export default function GlobeHero() {
       {!bannerDismissed && (
         <div className="dl-banner">
           <span>🎯 Día de Liderazgo · La Guajira 2026 — ¿Eres estudiante participante?</span>
-          <a href="/submit">Sube tu proyecto aquí →</a>
+          <a href="/dia-de-liderazgo">Sube tu proyecto aquí →</a>
           <button
             className="dl-banner-x"
             aria-label="Cerrar"
