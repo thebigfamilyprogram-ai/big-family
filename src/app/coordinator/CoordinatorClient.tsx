@@ -66,6 +66,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
+    if (!supabase) return
     async function load() {
       const schoolId = initialSchoolId
 

@@ -43,6 +43,7 @@ export default function CoordinatorNewsPage() {
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
+    if (!supabase) return
     let cancelled = false
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()

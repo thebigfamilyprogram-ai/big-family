@@ -157,6 +157,7 @@ export default function DiaLiderazgoPage() {
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
+    if (!supabase) return
     async function fetchSchools() {
       const { data } = await supabase
         .from('schools')

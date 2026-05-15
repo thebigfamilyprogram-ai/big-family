@@ -43,6 +43,7 @@ export default function NewsListPage() {
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
+    if (!supabase) return
     async function load() {
       const { data: rows } = await supabase
         .from('news')

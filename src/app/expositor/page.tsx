@@ -60,6 +60,7 @@ export default function ExpositorPage() {
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
+    if (!supabase) return
     let cancelled = false
     async function boot() {
       const { data: { user } } = await supabase.auth.getUser()
