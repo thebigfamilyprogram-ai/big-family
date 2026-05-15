@@ -89,7 +89,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
 
       if (!studs || studs.length === 0) { setLoading(false); return }
 
-      const ids = studs.map(s => s.id)
+      const ids = studs.map((s: { id: string }) => s.id)
 
       const { data: xpRows } = await supabase
         .from('xp_log')
