@@ -143,7 +143,7 @@ export default function TeamHubPage() {
         schema: 'public',
         table: 'team_messages',
         filter: 'school_id=eq.' + schoolId,
-      }, async (payload) => {
+      }, async (payload: { new: Record<string, unknown> }) => {
         const { data } = await supabase
           .from('team_messages')
           .select('*, profiles(full_name, avatar_url, school_level)')
@@ -170,17 +170,17 @@ export default function TeamHubPage() {
       .eq('role', 'student')
     if (!data) return
 
-    const ids = data.map(p => p.id)
+    const ids = data.map((p: { id: string; full_name: string; avatar_url: string | null; school_level: string }) => p.id)
     const [{ data: xpRows }, { data: progressRows }] = await Promise.all([
       supabase.from('xp_log').select('user_id, amount').in('user_id', ids),
       supabase.from('progress').select('user_id, id').eq('completed', true).in('user_id', ids),
     ])
 
-    const members: TeamMember[] = data.map(p => ({
+    const members: TeamMember[] = data.map((p: { id: string; full_name: string; avatar_url: string | null; school_level: string }) => ({
       ...p,
-      total_xp: xpRows?.filter(x => x.user_id === p.id).reduce((s, x) => s + (x.amount ?? 0), 0) ?? 0,
-      modules_completed: progressRows?.filter(pr => pr.user_id === p.id).length ?? 0,
-    })).sort((a, b) => b.total_xp - a.total_xp)
+      total_xp: xpRows?.filter((x: { user_id: string; amount: number | null }) => x.user_id === p.id).reduce((s: number, x: { user_id: string; amount: number | null }) => s + (x.amount ?? 0), 0) ?? 0,
+      modules_completed: progressRows?.filter((pr: { user_id: string; id: string }) => pr.user_id === p.id).length ?? 0,
+    })).sort((a: TeamMember, b: TeamMember) => b.total_xp - a.total_xp)
 
     setTeamMembers(members)
   }
@@ -207,19 +207,19 @@ export default function TeamHubPage() {
       .order('created_at', { ascending: false })
     if (!projData) return
 
-    const ids = projData.map(p => p.id)
+    const ids = projData.map((p: { id: string; created_by: string }) => p.id)
     const [{ data: membersData }, { data: creatorProfiles }] = await Promise.all([
       supabase.from('team_project_members').select('project_id, user_id, profiles(full_name)').in('project_id', ids),
-      supabase.from('profiles').select('id, full_name').in('id', projData.map(p => p.created_by)),
+      supabase.from('profiles').select('id, full_name').in('id', projData.map((p: { id: string; created_by: string }) => p.created_by)),
     ])
 
-    setMemberIds(membersData?.filter(m => m.user_id === uid).map(m => m.project_id) ?? [])
-    setProjects(projData.map(p => ({
+    setMemberIds(membersData?.filter((m: { project_id: string; user_id: string }) => m.user_id === uid).map((m: { project_id: string; user_id: string }) => m.project_id) ?? [])
+    setProjects(projData.map((p: { id: string; title: string; description: string; category: string; status: string; created_by: string; school_id: string; created_at: string }) => ({
       ...p,
-      creator_name: creatorProfiles?.find(c => c.id === p.created_by)?.full_name ?? '—',
-      member_count: membersData?.filter(m => m.project_id === p.id).length ?? 0,
-      member_names: membersData?.filter(m => m.project_id === p.id)
-        .map(m => (m.profiles as unknown as { full_name: string } | null)?.full_name ?? '?') ?? [],
+      creator_name: creatorProfiles?.find((c: { id: string; full_name: string | null }) => c.id === p.created_by)?.full_name ?? '—',
+      member_count: membersData?.filter((m: { project_id: string; user_id: string }) => m.project_id === p.id).length ?? 0,
+      member_names: membersData?.filter((m: { project_id: string; user_id: string }) => m.project_id === p.id)
+        .map((m: { project_id: string; user_id: string; profiles: unknown }) => (m.profiles as { full_name: string } | null)?.full_name ?? '?') ?? [],
     })))
   }
 

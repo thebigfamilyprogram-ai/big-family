@@ -56,7 +56,7 @@ export default function VideoPlayer({ videoUrl, moduleId, userId }: Props) {
       .eq('user_id', userId)
       .eq('module_id', moduleId)
       .maybeSingle()
-      .then(({ data }) => { if (data) setWatchedPct(data.watched_percentage ?? 0) })
+      .then(({ data }: { data: { watched_percentage: number | null } | null }) => { if (data) setWatchedPct(data.watched_percentage ?? 0) })
   }, [userId, moduleId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Init YouTube IFrame API

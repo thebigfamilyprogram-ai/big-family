@@ -77,9 +77,9 @@ export default function CoordinatorProjectsPage() {
 
       if (!rows || rows.length === 0) { setLoading(false); return }
 
-      const ids      = rows.map(r => r.id)
-      const userIds  = [...new Set(rows.map(r => r.user_id))]
-      const schoolIds = [...new Set(rows.map(r => r.school_id).filter(Boolean))]
+      const ids      = rows.map((r: { id: string; user_id: string; school_id: string | null }) => r.id)
+      const userIds  = [...new Set(rows.map((r: { id: string; user_id: string; school_id: string | null }) => r.user_id))]
+      const schoolIds = [...new Set(rows.map((r: { id: string; user_id: string; school_id: string | null }) => r.school_id).filter(Boolean))]
 
       const [{ data: imgs }, { data: likes }, { data: cmts }, { data: profiles }, { data: evals }, { data: schools }] = await Promise.all([
         supabase.from('project_images').select('project_id, url').in('project_id', ids),
@@ -91,27 +91,27 @@ export default function CoordinatorProjectsPage() {
       ])
 
       const profileMap: Record<string, string> = {}
-      profiles?.forEach(p => { profileMap[p.id] = p.full_name ?? '—' })
+      profiles?.forEach((p: { id: string; full_name: string | null }) => { profileMap[p.id] = p.full_name ?? '—' })
 
       const evalMap: Record<string, string | null> = {}
-      evals?.forEach(e => { evalMap[e.project_id] = e.resultado })
+      evals?.forEach((e: { project_id: string; resultado: string | null }) => { evalMap[e.project_id] = e.resultado })
 
       const schoolMap: Record<string, string> = {}
       schools?.forEach((s: { id: string; name: string }) => { schoolMap[s.id] = s.name })
 
       const enriched: EnrichedProject[] = rows
-        .map(p => ({
+        .map((p: { id: string; title: string; description: string; category: string; status: 'draft' | 'pending' | 'approved' | 'rejected'; created_at: string; user_id: string; school_id: string | null; video_url: string | null; pdf_url: string | null; rejection_reason: string | null; approved_at: string | null; completion_percentage: number }) => ({
           ...p,
-          images:         imgs?.filter(i => i.project_id === p.id).map(i => i.url) ?? [],
-          likes_count:    likes?.filter(l => l.project_id === p.id).length ?? 0,
-          comments_count: cmts?.filter(c => c.project_id === p.id).length ?? 0,
+          images:         imgs?.filter((i: { project_id: string; url: string }) => i.project_id === p.id).map((i: { project_id: string; url: string }) => i.url) ?? [],
+          likes_count:    likes?.filter((l: { project_id: string }) => l.project_id === p.id).length ?? 0,
+          comments_count: cmts?.filter((c: { project_id: string; id: string; body: string; created_at: string }) => c.project_id === p.id).length ?? 0,
           full_name:      profileMap[p.user_id] ?? '—',
-          school_name:    schoolMap[p.school_id] ?? '—',
-          comments:       (cmts?.filter(c => c.project_id === p.id) ?? []) as ProjectComment[],
+          school_name:    schoolMap[p.school_id ?? ''] ?? '—',
+          comments:       (cmts?.filter((c: { project_id: string; id: string; body: string; created_at: string }) => c.project_id === p.id) ?? []) as ProjectComment[],
           resultado:      evalMap[p.id] ?? null,
         }))
         // pending → draft → approved/rejected, then newest within group
-        .sort((a, b) => {
+        .sort((a: EnrichedProject, b: EnrichedProject) => {
           const ord = { pending: 0, draft: 1, approved: 2, rejected: 2 } as Record<string, number>
           const ao = ord[a.status] ?? 2
           const bo = ord[b.status] ?? 2

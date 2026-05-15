@@ -185,7 +185,7 @@ export default function DashboardPage() {
         supabase.from('progress').select('module_id, completed').eq('user_id', authUser.id),
       ])
 
-      const total_xp = xpRows?.reduce((s, r) => s + r.amount, 0) ?? 0
+      const total_xp = xpRows?.reduce((s: number, r: { amount: number }) => s + r.amount, 0) ?? 0
 
       setUser({
         full_name:    profile?.full_name ?? 'Líder Big Family',

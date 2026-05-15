@@ -106,7 +106,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
         .eq('completed', true)
 
       const modMap: Record<string, number> = {}
-      progRows?.forEach(r => { modMap[r.user_id] = (modMap[r.user_id] ?? 0) + 1 })
+      progRows?.forEach((r: { user_id: string }) => { modMap[r.user_id] = (modMap[r.user_id] ?? 0) + 1 })
 
       const since = new Date(Date.now() - ONE_WEEK).toISOString()
       const [{ data: activeRows }, { data: switchRows }] = await Promise.all([
@@ -114,12 +114,12 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
         supabase.from('quiz_attempts').select('user_id, tab_switches').in('user_id', ids),
       ])
 
-      const activeSet = new Set(activeRows?.map(r => r.user_id))
+      const activeSet = new Set(activeRows?.map((r: { user_id: string }) => r.user_id))
 
       const switchMap: Record<string, number> = {}
-      switchRows?.forEach(r => { switchMap[r.user_id] = (switchMap[r.user_id] ?? 0) + (r.tab_switches ?? 0) })
+      switchRows?.forEach((r: { user_id: string; tab_switches: number | null }) => { switchMap[r.user_id] = (switchMap[r.user_id] ?? 0) + (r.tab_switches ?? 0) })
 
-      setStudents(studs.map(s => ({
+      setStudents(studs.map((s: { id: string; full_name: string | null; email: string | null; created_at: string }) => ({
         id:                s.id,
         full_name:         s.full_name ?? '—',
         email:             s.email ?? '—',

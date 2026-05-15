@@ -52,12 +52,12 @@ export default function NewsListPage() {
 
       if (!rows || rows.length === 0) { setLoading(false); return }
 
-      const authorIds = [...new Set(rows.map(r => r.author_id))]
+      const authorIds = [...new Set(rows.map((r: { author_id: string }) => r.author_id))]
       const { data: profiles } = await supabase.from('profiles').select('id, full_name').in('id', authorIds)
       const pMap: Record<string, string> = {}
-      profiles?.forEach(p => { pMap[p.id] = p.full_name ?? '—' })
+      profiles?.forEach((p: { id: string; full_name: string | null }) => { pMap[p.id] = p.full_name ?? '—' })
 
-      setArticles(rows.map(r => ({ ...r, author_name: pMap[r.author_id] ?? '—', featured: r.featured ?? false })))
+      setArticles(rows.map((r: { id: string; title: string; slug: string; content: string; cover_url: string | null; published_at: string | null; author_id: string; featured: boolean | null }) => ({ ...r, author_name: pMap[r.author_id] ?? '—', featured: r.featured ?? false })))
       setLoading(false)
     }
     load()

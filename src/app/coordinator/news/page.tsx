@@ -68,7 +68,7 @@ export default function CoordinatorNewsPage() {
         .order('updated_at', { ascending: false })
       if (cancelled) return
 
-      setNews((rows ?? []).map(r => ({ ...r, featured: r.featured ?? false })))
+      setNews((rows ?? []).map((r: { id: string; title: string; published: boolean | null; published_at: string | null; created_at: string; updated_at: string | null; featured: boolean | null }) => ({ ...r, featured: r.featured ?? false })))
       setLoading(false)
     }
     load()

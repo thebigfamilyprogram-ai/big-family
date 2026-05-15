@@ -189,7 +189,7 @@ export default function StudentProfileClient({
         })
       }
 
-      const xpTotal = xpRes.data?.reduce((s, r) => s + (r.amount ?? 0), 0) ?? 0
+      const xpTotal = xpRes.data?.reduce((s: number, r: { amount: number | null }) => s + (r.amount ?? 0), 0) ?? 0
       setTotalXp(xpTotal)
 
       const progressMap: Record<string, { completed: boolean; completed_at: string | null }> = {}

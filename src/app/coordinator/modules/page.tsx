@@ -254,8 +254,8 @@ export default function CoordinatorModulesPage() {
       if (cancelled || !mods || mods.length === 0) { setLoading(false); return }
 
       // Fetch question counts
-      const modIds = mods.map(m => m.id)
-      const creatorIds = [...new Set(mods.map(m => m.created_by))]
+      const modIds = mods.map((m: { id: string; created_by: string }) => m.id)
+      const creatorIds = [...new Set(mods.map((m: { id: string; created_by: string }) => m.created_by))]
 
       const [{ data: qs }, { data: expositors }] = await Promise.all([
         supabase.from('questions').select('module_id').in('module_id', modIds),
@@ -264,12 +264,12 @@ export default function CoordinatorModulesPage() {
       if (cancelled) return
 
       const qMap: Record<string, number> = {}
-      qs?.forEach(q => { qMap[q.module_id] = (qMap[q.module_id] ?? 0) + 1 })
+      qs?.forEach((q: { module_id: string }) => { qMap[q.module_id] = (qMap[q.module_id] ?? 0) + 1 })
 
       const expMap: Record<string, string> = {}
-      expositors?.forEach(e => { expMap[e.id] = e.full_name ?? '—' })
+      expositors?.forEach((e: { id: string; full_name: string | null }) => { expMap[e.id] = e.full_name ?? '—' })
 
-      const enriched: ModuleRow[] = mods.map(m => ({
+      const enriched: ModuleRow[] = mods.map((m: { id: string; title: string; description: string | null; video_url: string | null; level: string; duration_minutes: number | null; status: string; created_by: string; rejection_reason: string | null; submitted_at: string | null; approved_at: string | null; pilar: string | null }) => ({
         ...m,
         question_count: qMap[m.id] ?? 0,
         expositor_name: expMap[m.created_by] ?? '—',

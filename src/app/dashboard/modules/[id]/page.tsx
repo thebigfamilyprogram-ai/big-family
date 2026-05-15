@@ -107,7 +107,7 @@ export default function ModulePage() {
       setMod(modRow as ModuleData)
       setQCount(qs?.length ?? 0)
 
-      const scores = att?.map(a => a.score) ?? []
+      const scores = att?.map((a: { score: number }) => a.score) ?? []
       setAttempts({
         count: scores.length,
         bestScore: scores.length > 0 ? Math.max(...scores) : null,

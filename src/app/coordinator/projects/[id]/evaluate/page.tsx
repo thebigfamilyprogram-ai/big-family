@@ -179,7 +179,7 @@ export default function EvaluatePage() {
 
       setProject(proj as ProjectData)
       setStudent({ full_name: studentProfile?.full_name ?? '—', school_name: (schoolRow as any)?.name ?? '—' })
-      setImages(imgs?.map(i => i.url) ?? [])
+      setImages(imgs?.map((i: { url: string }) => i.url) ?? [])
       setLoading(false)
     }
     boot()

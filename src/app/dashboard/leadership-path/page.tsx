@@ -181,7 +181,7 @@ export default function LeadershipPathPage() {
       const { data: mods } = await supabase
         .from('modules').select('*').eq('level', level).order('order_index')
 
-      const moduleIds = (mods ?? []).map(m => m.id)
+      const moduleIds = (mods ?? []).map((m: { id: string }) => m.id)
 
       const base = [
         supabase.from('xp_log').select('amount').eq('user_id', au.id),
@@ -207,9 +207,9 @@ export default function LeadershipPathPage() {
         { data: qRows },
       ] = await Promise.all([...base, ...extra])
 
-      const completedIds = new Set((prog ?? []).filter(p => p.completed).map(p => p.module_id))
-      const total_xp     = (xpRows ?? []).reduce((s, r) => s + (r.amount ?? 0), 0)
-      const streakDays   = calcStreak((progDates ?? []).map(r => r.completed_at).filter(Boolean) as string[])
+      const completedIds = new Set((prog ?? []).filter((p: { completed: boolean | null; module_id: string }) => p.completed).map((p: { completed: boolean | null; module_id: string }) => p.module_id))
+      const total_xp     = (xpRows ?? []).reduce((s: number, r: { amount: number | null }) => s + (r.amount ?? 0), 0)
+      const streakDays   = calcStreak((progDates ?? []).map((r: { completed_at: string | null }) => r.completed_at).filter(Boolean) as string[])
 
       // Aggregate attempts
       const aMap: Record<string, AttemptData> = {}
@@ -229,7 +229,7 @@ export default function LeadershipPathPage() {
 
       // Build nodes
       let foundActive = false
-      const built: PathNode[] = (mods ?? []).map(mod => {
+      const built: PathNode[] = (mods ?? []).map((mod: Module) => {
         if (completedIds.has(mod.id)) return { module: mod as Module, state: 'completed' }
         if (!foundActive) { foundActive = true; return { module: mod as Module, state: 'active' } }
         return { module: mod as Module, state: 'locked' }

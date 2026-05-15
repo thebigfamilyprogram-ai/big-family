@@ -84,11 +84,11 @@ export default function ExpositorPage() {
 
       if (mods && mods.length > 0) {
         const { data: qs } = await supabase
-          .from('questions').select('module_id').in('module_id', mods.map(m => m.id))
+          .from('questions').select('module_id').in('module_id', mods.map((m: { id: string }) => m.id))
         if (cancelled) return
         const qMap: Record<string, number> = {}
-        qs?.forEach(q => { qMap[q.module_id] = (qMap[q.module_id] ?? 0) + 1 })
-        setModules(mods.map(m => ({ ...m, question_count: qMap[m.id] ?? 0 })))
+        qs?.forEach((q: { module_id: string }) => { qMap[q.module_id] = (qMap[q.module_id] ?? 0) + 1 })
+        setModules(mods.map((m: { id: string; title: string; level: string; status: string; duration_minutes: number | null; rejection_reason: string | null }) => ({ ...m, question_count: qMap[m.id] ?? 0 })))
       }
 
       setLoading(false)
