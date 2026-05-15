@@ -1,4 +1,6 @@
-﻿import { redirect } from 'next/navigation'
+﻿export const dynamic = 'force-dynamic'
+
+import { redirect } from 'next/navigation'
 import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase-server'
 import CoordinatorClient from './CoordinatorClient'
 
