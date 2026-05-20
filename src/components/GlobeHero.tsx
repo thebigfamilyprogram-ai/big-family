@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { motion, useInView, useMotionValue, useTransform, useSpring, useReducedMotion } from 'framer-motion'
 import CoordinatorButton from '@/components/CoordinatorButton'
+import TimelineSection from '@/components/TimelineSection'
 import * as topojson from 'topojson-client'
 
 const countries = [
@@ -118,13 +119,6 @@ const founders = [
   { initials: 'LB', name: 'Luis Barrios',       role: 'Fundador y Mentor Estratégico',          bio: 'Fundador del programa y mentor del equipo. Su visión y liderazgo son la base institucional de Big Family.',                                                  tags: ['Fundador', 'Mentoría', 'Visión'] },
 ]
 
-/* EDITAR AQUÍ — hitos del bento (Nuestra Historia) */
-const bentoHitos = [
-  { year: '2022', title: '[PLACEHOLDER — TÍTULO HITO 2022]', desc: '[PLACEHOLDER — DESCRIPCIÓN HITO 2022]', tag: '[PLACEHOLDER TAG]' },
-  { year: '2023', title: '[PLACEHOLDER — TÍTULO HITO 2023]', desc: '[PLACEHOLDER — DESCRIPCIÓN HITO 2023]', tag: '[PLACEHOLDER TAG]' },
-  { year: '2024', title: '[PLACEHOLDER — TÍTULO HITO 2024]', desc: '[PLACEHOLDER — DESCRIPCIÓN HITO 2024]', tag: '[PLACEHOLDER TAG]' },
-  { year: '2025', title: '[PLACEHOLDER — TÍTULO HITO 2025]', desc: '[PLACEHOLDER — DESCRIPCIÓN HITO 2025]', tag: '[PLACEHOLDER TAG]' },
-]
 
 /* EDITAR AQUÍ — estadísticas del About */
 const aboutStats = [
@@ -1409,29 +1403,8 @@ export default function GlobeHero() {
             >[PLACEHOLDER — descripción breve de la historia]</motion.p>
           </div>
 
-          {/* Bento grid */}
-          <div className="bento">
-            {bentoHitos.map((h, i) => (
-              <motion.div
-                key={h.year}
-                className={`bento__cell${i === 0 ? ' bento__cell--tall' : ''}${i === 3 ? ' bento__cell--wide' : ''}`}
-                initial={{ opacity: 0, y: 32, scale: 0.96 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                whileHover={{ y: -4 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ type: 'spring', stiffness: 140, damping: 20, delay: i * 0.1 }}
-              >
-                {/* EDITAR: año del hito */}
-                <div className="bento__year">{h.year}</div>
-                {/* EDITAR: título del hito */}
-                <div className="bento__title">{h.title}</div>
-                {/* EDITAR: descripción del hito */}
-                <p className="bento__desc">{h.desc}</p>
-                {/* EDITAR: tag */}
-                <span className="bento__tag">{h.tag}</span>
-              </motion.div>
-            ))}
-          </div>
+          {/* Timeline — live data from timeline_events table */}
+          <TimelineSection theme="dark" />
         </div>
       </section>
 
