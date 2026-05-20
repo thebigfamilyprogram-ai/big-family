@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { motion, useInView, useMotionValue, useTransform, useSpring, useReducedMotion } from 'framer-motion'
-// TEMP LAUNCH: import restored when nav buttons are re-enabled
-// import CoordinatorButton from '@/components/CoordinatorButton'
+import CoordinatorButton from '@/components/CoordinatorButton'
 import * as topojson from 'topojson-client'
 
 const countries = [
@@ -1028,9 +1027,6 @@ export default function GlobeHero() {
           <a href="/news">Noticias</a>
           <a href="/dia-de-liderazgo">Día de Liderazgo</a>
         </div>
-        {/* TEMP LAUNCH: spacer replaces CTA — remove when CTA is restored and give nav__cta flex:1 instead */}
-        <div className="nav__spacer" />
-        {/* TEMP LAUNCH: hidden for Friday event — restore by removing this comment block
         <div className="nav__cta">
           <CoordinatorButton />
           <motion.div
@@ -1042,7 +1038,6 @@ export default function GlobeHero() {
             <Link href="/login" className="btn btn--solid">Ingresar</Link>
           </motion.div>
         </div>
-        */}
       </nav>
 
       <section className="hero" id="hero">
@@ -1341,8 +1336,6 @@ export default function GlobeHero() {
         </div>
       </section>
 
-      {/* TEMP HIDDEN: historia — change false to true to restore */}
-      {(false as boolean) && (<>
       {/* ══════════════════════════════════════════════════════════════════
           SECCIÓN 2 — NUESTRA HISTORIA (Bento)
       ══════════════════════════════════════════════════════════════════ */}
@@ -1441,21 +1434,7 @@ export default function GlobeHero() {
           </div>
         </div>
       </section>
-      </>)}
 
-      {/* TEMP: replace with real content when ready */}
-      <section style={{ background: '#080808', padding: '80px 40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ textAlign: 'center' }}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ display: 'block', margin: '0 auto 16px' }}>
-            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="#C0392B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <p style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 18, color: 'rgba(255,255,255,.5)', marginBottom: 6 }}>En construcción</p>
-          <p style={{ fontFamily: '"Inter",sans-serif', fontWeight: 400, fontSize: 13, color: 'rgba(255,255,255,.3)' }}>Próximamente</p>
-        </div>
-      </section>
-
-      {/* TEMP HIDDEN: about — change false to true to restore */}
-      {(false as boolean) && (<>
       {/* ══════════════════════════════════════════════════════════════════
           SECCIÓN 3 — ABOUT (Parallax 3D)
       ══════════════════════════════════════════════════════════════════ */}
@@ -1554,22 +1533,7 @@ export default function GlobeHero() {
 
         </div>
       </section>
-      </>)}
 
-      {/* TEMP: replace with real content when ready */}
-      <section style={{ background: '#080808', padding: '80px 40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ textAlign: 'center' }}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ display: 'block', margin: '0 auto 16px' }}>
-            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="#C0392B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <p style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 18, color: 'rgba(255,255,255,.5)', marginBottom: 6 }}>En construcción</p>
-          <p style={{ fontFamily: '"Inter",sans-serif', fontWeight: 400, fontSize: 13, color: 'rgba(255,255,255,.3)' }}>Próximamente</p>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          TEMP LAUNCH — DÍA DE LIDERAZGO SECTION
-      ══════════════════════════════════════════════════════════════════ */}
       <section className="dl-landing">
         <div className="dl-landing__inner">
 

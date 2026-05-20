@@ -75,15 +75,15 @@ const TRACKS = [
   { value: 'senior', label: 'Senior', sub: '8° – 11° Bach.' },
 ]
 
-// TEMP: sections 7 (plan_continuidad) and 8 (big_leader_model) hidden for launch
-// Pilar references removed — students don't know the Big Leader Model yet
 const SIDEBAR_SECTIONS = [
-  { num: 2, label: 'Identificar'  },
-  { num: 3, label: 'Diseñar'      },
-  { num: 4, label: 'Ejecutar'     },
-  { num: 5, label: 'Medir'        },
-  { num: 6, label: 'Reflexionar'  },
-  { num: 9, label: 'Evidencias'   },
+  { num: 2, label: 'Identificar'       },
+  { num: 3, label: 'Diseñar'           },
+  { num: 4, label: 'Ejecutar'          },
+  { num: 5, label: 'Medir'             },
+  { num: 6, label: 'Reflexionar'       },
+  { num: 7, label: 'Plan continuidad'  },
+  { num: 8, label: 'Big Leader Model'  },
+  { num: 9, label: 'Evidencias'        },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -282,10 +282,12 @@ export default function ProjectEditor({
     4: allComplete(ejecutar),
     5: allComplete(medir),
     6: allComplete(reflexionar),
+    7: wc(planContinuidad) >= 10,
+    8: wc(bigLeaderModelReflection) >= 10,
     9: evidenceUrls.length > 0,
   }
 
-  const doneSectionCount = [sectionDone[1], sectionDone[2], sectionDone[3], sectionDone[4], sectionDone[5], sectionDone[6], sectionDone[9]].filter(Boolean).length
+  const doneSectionCount = [sectionDone[1], sectionDone[2], sectionDone[3], sectionDone[4], sectionDone[5], sectionDone[6], sectionDone[7], sectionDone[8], sectionDone[9]].filter(Boolean).length
 
   // ── Autosave ───────────────────────────────────────────────────────────────
   const doSave = useCallback(async () => {
@@ -657,23 +659,23 @@ export default function ProjectEditor({
                 onChange={v => setReflexionar(p => ({ ...p, dificil: v }))} />
             </Section>
 
-            {/* TEMP: Plan de Continuidad hidden for launch — students don't need this yet */}
-            <div style={{ display: 'none' }} aria-hidden="true">
-              <Section num={7} label="Plan de Continuidad"
-                open={false} done={false} onToggle={() => {}}>
-                <textarea className="pe-input pe-textarea"
-                  value={planContinuidad} onChange={e => setPlanContinuidad(e.target.value)} disabled />
-              </Section>
-            </div>
+            {/* ── SECCIÓN 7 — PLAN DE CONTINUIDAD ── */}
+            <Section num={7} label="Plan de Continuidad"
+              open={openSections.has(7)} done={sectionDone[7]} onToggle={() => toggleSection(7)}>
+              <textarea className="pe-input pe-textarea"
+                style={{ minHeight: 140, resize: 'vertical' as const, lineHeight: 1.7, fontSize: 15 }}
+                value={planContinuidad} onChange={e => setPlanContinuidad(e.target.value)} disabled={isLocked} />
+              <p className="pe-wc">{wc(planContinuidad)} palabras</p>
+            </Section>
 
-            {/* TEMP: Big Leader Model reflection hidden for launch */}
-            <div style={{ display: 'none' }} aria-hidden="true">
-              <Section num={8} label="Mi Mapa al Big Leader Model"
-                open={false} done={false} onToggle={() => {}}>
-                <textarea className="pe-input pe-textarea"
-                  value={bigLeaderModelReflection} onChange={e => setBigLeaderModelReflection(e.target.value)} disabled />
-              </Section>
-            </div>
+            {/* ── SECCIÓN 8 — BIG LEADER MODEL ── */}
+            <Section num={8} label="Mi Mapa al Big Leader Model"
+              open={openSections.has(8)} done={sectionDone[8]} onToggle={() => toggleSection(8)}>
+              <textarea className="pe-input pe-textarea"
+                style={{ minHeight: 140, resize: 'vertical' as const, lineHeight: 1.7, fontSize: 15 }}
+                value={bigLeaderModelReflection} onChange={e => setBigLeaderModelReflection(e.target.value)} disabled={isLocked} />
+              <p className="pe-wc">{wc(bigLeaderModelReflection)} palabras</p>
+            </Section>
 
             {/* ── SECCIÓN 9 — EVIDENCIA FOTOGRÁFICA ── */}
             <Section num={9} label="Evidencia fotográfica"
@@ -802,7 +804,7 @@ export default function ProjectEditor({
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
               <CircleProgress pct={completion} />
               <p style={{ marginTop: 10, fontSize: 13, color: 'var(--mute)' }}>
-                {doneSectionCount} de 7 secciones completadas
+                {doneSectionCount} de 9 secciones completadas
               </p>
             </div>
 

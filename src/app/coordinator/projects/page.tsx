@@ -62,17 +62,21 @@ export default function CoordinatorProjectsPage() {
 
       if (profile?.role !== 'coordinator' && profile?.role !== 'admin') { router.push('/dashboard'); return }
 
+      const { data: schoolRow } = profile?.school_id
+        ? await supabase.from('schools').select('name').eq('id', profile.school_id).maybeSingle()
+        : { data: null }
+
       setCoord({
         full_name:   profile?.full_name ?? '—',
         school_id:   profile?.school_id ?? '',
-        school_name: 'Todos los colegios',
+        school_name: (schoolRow as any)?.name ?? 'Mi colegio',
         user_id:     user.id,
       })
 
-      // All coordinators and admins see every project from every school
       const { data: rows } = await supabase
         .from('projects')
         .select('*')
+        .eq('school_id', profile?.school_id)
         .order('created_at', { ascending: false })
 
       if (!rows || rows.length === 0) { setLoading(false); return }
