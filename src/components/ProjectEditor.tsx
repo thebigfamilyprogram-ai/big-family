@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
@@ -118,6 +119,163 @@ function computeCompletion(v: ValuesSnapshot): number {
   return Math.round(p)
 }
 
+// ── Rich Textarea ─────────────────────────────────────────────────────────────
+function RichTextarea({
+  value, onChange, disabled, minHeight = 100, rows = 4,
+}: {
+  value: string; onChange: (v: string) => void
+  disabled: boolean; minHeight?: number; rows?: number
+}) {
+  const elRef = useRef<HTMLTextAreaElement>(null)
+  const hist  = useRef<{ s: string[]; i: number }>({ s: [value], i: 0 })
+
+  function commit(next: string) {
+    const h = hist.current
+    const stack = h.s.slice(0, h.i + 1)
+    if (stack[stack.length - 1] === next) return
+    stack.push(next)
+    if (stack.length > 80) stack.shift(); else h.i++
+    h.s = stack
+    onChange(next)
+  }
+
+  function undo() { const h = hist.current; if (h.i > 0) { h.i--; onChange(h.s[h.i]) } }
+  function redo() { const h = hist.current; if (h.i < h.s.length - 1) { h.i++; onChange(h.s[h.i]) } }
+
+  function wrap(pre: string, suf: string, placeholder: string) {
+    const el = elRef.current; if (!el) return
+    const { selectionStart: s, selectionEnd: e } = el
+    const sel = value.slice(s, e) || placeholder
+    commit(value.slice(0, s) + pre + sel + suf + value.slice(e))
+    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(s + pre.length, s + pre.length + sel.length) })
+  }
+
+  function linePrefix(prefix: string, placeholder: string) {
+    const el = elRef.current; if (!el) return
+    const s = el.selectionStart, e = el.selectionEnd
+    const ls = value.lastIndexOf('\n', s - 1) + 1
+    const lines = value.slice(ls, e).split('\n')
+    const allOn = lines.every(l => l.startsWith(prefix))
+    const newBlock = allOn ? lines.map(l => l.slice(prefix.length)).join('\n')
+      : lines.map(l => l ? prefix + l : prefix + placeholder).join('\n')
+    commit(value.slice(0, ls) + newBlock + value.slice(e))
+    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(s + (allOn ? -prefix.length : prefix.length), s + (allOn ? -prefix.length : prefix.length)) })
+  }
+
+  function insertBlock(text: string) {
+    const el = elRef.current; if (!el) return
+    const s = el.selectionStart
+    const pre = s > 0 && value[s - 1] !== '\n' ? '\n' : ''
+    const suf = s < value.length && value[s] !== '\n' ? '\n' : ''
+    commit(value.slice(0, s) + pre + text + suf + value.slice(s))
+    const pos = s + pre.length + text.length + suf.length
+    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(pos, pos) })
+  }
+
+  function insertLink() {
+    const el = elRef.current; if (!el) return
+    const s = el.selectionStart, e = el.selectionEnd
+    const url = window.prompt('URL del enlace:', 'https://')
+    if (url === null) return
+    const md = `[${value.slice(s, e) || 'texto'}](${url})`
+    commit(value.slice(0, s) + md + value.slice(e))
+    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(s + md.length, s + md.length) })
+  }
+
+  function clearFmt() {
+    const el = elRef.current; if (!el) return
+    const s = el.selectionStart, e = el.selectionEnd
+    if (s === e) return
+    const clean = value.slice(s, e)
+      .replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')
+      .replace(/<u>(.*?)<\/u>/g, '$1').replace(/~~(.+?)~~/g, '$1').replace(/==(.+?)==/g, '$1')
+      .replace(/^>\s/gm, '').replace(/^#{1,6}\s/gm, '').replace(/^[-*]\s/gm, '').replace(/^\d+\.\s/gm, '')
+      .replace(/---\n?/g, '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    commit(value.slice(0, s) + clean + value.slice(e))
+    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(s, s + clean.length) })
+  }
+
+  function tb(title: string, action: () => void, icon: ReactNode) {
+    return (
+      <button type="button" title={title} disabled={disabled} onClick={action} className="pe-tb-btn">
+        {icon}
+      </button>
+    )
+  }
+
+  return (
+    <div className="pe-rtw" style={{ marginBottom: 4 }}>
+      {!disabled && (
+        <div className="pe-toolbar" role="toolbar" aria-label="Formato">
+          {/* Formatting */}
+          {tb('Negrita (**texto**)',    () => wrap('**', '**', 'texto'),     <strong style={{ fontSize: 13, fontFamily: 'Satoshi,sans-serif' }}>B</strong>)}
+          {tb('Cursiva (*texto*)',      () => wrap('*',  '*',  'texto'),     <em style={{ fontSize: 13, fontStyle: 'italic', fontFamily: 'Georgia,serif' }}>I</em>)}
+          {tb('Subrayado (<u>texto</u>)', () => wrap('<u>', '</u>', 'texto'), <span style={{ fontSize: 12, fontWeight: 700, textDecoration: 'underline' }}>U</span>)}
+          {tb('Tachado (~~texto~~)',    () => wrap('~~', '~~', 'texto'),     <span style={{ fontSize: 12, fontWeight: 700, textDecoration: 'line-through' }}>S</span>)}
+          {tb('Resaltado (==texto==)',  () => wrap('==', '==', 'texto'),     <span style={{ fontSize: 10, fontWeight: 800, background: '#FDE68A', color: '#92400E', padding: '1px 3px', borderRadius: 2, lineHeight: 1 }}>HL</span>)}
+          {tb('Cita (> texto)',         () => linePrefix('> ', 'cita'),
+            <svg width="13" height="11" viewBox="0 0 14 12" fill="none">
+              <path d="M1.5 1.5h4v4L3.5 11M8.5 1.5h4v4l-2 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>)}
+          <div className="pe-tb-sep" />
+
+          {/* Structure */}
+          {tb('Encabezado (## Título)', () => linePrefix('## ', 'Título'),  <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '-.02em' }}>H₂</span>)}
+          {tb('Lista de puntos (- ítem)', () => linePrefix('- ', 'ítem'),
+            <svg width="13" height="11" viewBox="0 0 14 12" fill="none">
+              <circle cx="2" cy="3" r="1.4" fill="currentColor"/>
+              <line x1="5" y1="3" x2="13" y2="3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <circle cx="2" cy="9" r="1.4" fill="currentColor"/>
+              <line x1="5" y1="9" x2="11" y2="9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>)}
+          {tb('Lista numerada (1. ítem)', () => linePrefix('1. ', 'ítem'),  <span style={{ fontSize: 11, fontWeight: 700 }}>1.</span>)}
+          {tb('Separador (---)',          () => insertBlock('---'),
+            <svg width="14" height="9" viewBox="0 0 14 9" fill="none">
+              <line x1="1" y1="4.5" x2="13" y2="4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+              <line x1="3" y1="1.5" x2="11" y2="1.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity=".4"/>
+              <line x1="3" y1="7.5" x2="11" y2="7.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity=".4"/>
+            </svg>)}
+          {tb('Enlace ([texto](url))',    insertLink,
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M6.5 9.5a3.5 3.5 0 0 0 5 0l2-2a3.5 3.5 0 0 0-5-5L7 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M9.5 6.5a3.5 3.5 0 0 0-5 0l-2 2a3.5 3.5 0 0 0 5 5L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>)}
+          <div className="pe-tb-sep" />
+
+          {/* Utilities */}
+          {tb('Deshacer', undo,
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+              <path d="M3 6.5h7a4.5 4.5 0 0 1 0 9H4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M3 6.5 6 3M3 6.5 6 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>)}
+          {tb('Rehacer', redo,
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+              <path d="M13 6.5H6a4.5 4.5 0 0 0 0 9h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M13 6.5 10 3M13 6.5 10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>)}
+          {tb('Limpiar formato (selecciona texto primero)', clearFmt,
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+              <path d="M2 14h5M11 2.5 3.5 10l2 2 7.5-7.5-2-2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M12.5 1.5 14 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>)}
+        </div>
+      )}
+      <div style={{ position: 'relative' }}>
+        <textarea
+          ref={elRef}
+          className="pe-input pe-textarea pe-rtw-ta"
+          style={{ minHeight, lineHeight: 1.7, fontSize: 15, resize: 'vertical', paddingBottom: 22, display: 'block', width: '100%' }}
+          value={value}
+          onChange={e => commit(e.target.value)}
+          disabled={disabled}
+          rows={rows}
+        />
+        <span className="pe-rtw-wc">{wc(value)} palabras</span>
+      </div>
+    </div>
+  )
+}
+
 // ── Sub-components ────────────────────────────────────────────────────────────
 function CircleProgress({ pct }: { pct: number }) {
   const r = 44, sw = 7
@@ -186,15 +344,7 @@ function SubField({ label, value, onChange, disabled }: {
       <div style={{ fontFamily: '"Inter",sans-serif', fontWeight: 500, fontSize: 13, color: 'var(--ink-2)', marginBottom: 8, lineHeight: 1.5 }}>
         {label}
       </div>
-      <textarea
-        className="pe-input pe-textarea"
-        style={{ minHeight: 100, resize: 'vertical' as const, lineHeight: 1.7, fontSize: 15 }}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        disabled={disabled}
-        rows={4}
-      />
-      <p className="pe-wc">{wc(value)} palabras</p>
+      <RichTextarea value={value} onChange={onChange} disabled={disabled} minHeight={100} rows={4} />
     </div>
   )
 }
@@ -511,6 +661,18 @@ export default function ProjectEditor({
         .btn-save-draft{width:100%;padding:12px;border-radius:999px;background:#0D0D0D;color:#fff;border:none;font-family:"Satoshi",sans-serif;font-weight:600;font-size:13.5px;cursor:pointer;transition:background .2s;margin-top:8px;}
         .btn-save-draft:hover{background:#333;}
         .pe-locked-banner{display:flex;align-items:center;gap:10px;padding:14px 16px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:12px;margin-bottom:24px;font-size:13.5px;color:#92400E;}
+        /* ── Rich textarea toolbar ── */
+        .pe-rtw{border-radius:10px;border:1.5px solid rgba(13,13,13,.12);overflow:hidden;transition:border-color .18s;}
+        .pe-rtw:focus-within{border-color:#C0392B;}
+        .pe-toolbar{display:flex;align-items:center;gap:2px;padding:5px 8px;background:var(--bg-2,#EFECE6);flex-wrap:wrap;min-height:34px;border-bottom:1px solid rgba(13,13,13,.07);}
+        .pe-tb-sep{width:1px;height:16px;background:rgba(13,13,13,.13);margin:0 3px;flex-shrink:0;}
+        .pe-tb-btn{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;border-radius:5px;cursor:pointer;color:var(--mute,#6B6B6B);transition:background .13s,color .13s;flex-shrink:0;padding:0;line-height:1;}
+        .pe-tb-btn:hover:not(:disabled){background:rgba(13,13,13,.09);color:var(--ink,#0D0D0D);}
+        .pe-tb-btn:active:not(:disabled){background:rgba(13,13,13,.13);}
+        .pe-tb-btn:disabled{opacity:.28;cursor:default;}
+        .pe-rtw-ta{border:none !important;border-radius:0 !important;outline:none !important;box-shadow:none !important;}
+        .pe-rtw-ta:focus{border-color:transparent !important;outline:none !important;}
+        .pe-rtw-wc{position:absolute;bottom:5px;right:8px;font-size:10.5px;color:var(--mute,#9a9690);pointer-events:none;font-family:"Inter",sans-serif;}
         @media(max-width:900px){
           .pe-wrap{flex-direction:column;padding:24px 16px 80px;}
           .pe-sidebar{position:static;flex:none;width:100%;}
@@ -662,19 +824,13 @@ export default function ProjectEditor({
             {/* ── SECCIÓN 7 — PLAN DE CONTINUIDAD ── */}
             <Section num={7} label="Plan de Continuidad"
               open={openSections.has(7)} done={sectionDone[7]} onToggle={() => toggleSection(7)}>
-              <textarea className="pe-input pe-textarea"
-                style={{ minHeight: 140, resize: 'vertical' as const, lineHeight: 1.7, fontSize: 15 }}
-                value={planContinuidad} onChange={e => setPlanContinuidad(e.target.value)} disabled={isLocked} />
-              <p className="pe-wc">{wc(planContinuidad)} palabras</p>
+              <RichTextarea value={planContinuidad} onChange={v => setPlanContinuidad(v)} disabled={isLocked} minHeight={140} />
             </Section>
 
             {/* ── SECCIÓN 8 — BIG LEADER MODEL ── */}
             <Section num={8} label="Mi Mapa al Big Leader Model"
               open={openSections.has(8)} done={sectionDone[8]} onToggle={() => toggleSection(8)}>
-              <textarea className="pe-input pe-textarea"
-                style={{ minHeight: 140, resize: 'vertical' as const, lineHeight: 1.7, fontSize: 15 }}
-                value={bigLeaderModelReflection} onChange={e => setBigLeaderModelReflection(e.target.value)} disabled={isLocked} />
-              <p className="pe-wc">{wc(bigLeaderModelReflection)} palabras</p>
+              <RichTextarea value={bigLeaderModelReflection} onChange={v => setBigLeaderModelReflection(v)} disabled={isLocked} minHeight={140} />
             </Section>
 
             {/* ── SECCIÓN 9 — EVIDENCIA FOTOGRÁFICA ── */}
