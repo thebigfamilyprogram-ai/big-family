@@ -26,7 +26,7 @@ export default function NewProjectPage() {
         .maybeSingle()
 
       if (cancelled) return
-      if (!profile || profile.role !== 'student') { router.replace('/dashboard'); return }
+      if (!profile || !['student', 'coordinator'].includes(profile.role)) { router.replace('/dashboard'); return }
 
       // Resume existing draft — never create a second one
       const { data: existing } = await supabase

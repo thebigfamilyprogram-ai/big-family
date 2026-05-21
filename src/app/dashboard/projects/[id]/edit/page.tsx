@@ -48,7 +48,7 @@ export default function EditProjectPage() {
         .from('profiles').select('full_name, school_id, role').eq('id', user.id).maybeSingle()
 
       if (cancelled) return
-      if (!profile || profile.role !== 'student') { router.push('/dashboard'); return }
+      if (!profile || !['student', 'coordinator'].includes(profile.role)) { router.push('/dashboard'); return }
 
       const fullName = profile.full_name ?? user.email ?? 'Leader'
       setUserFullName(fullName)
