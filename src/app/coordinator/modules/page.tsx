@@ -9,6 +9,16 @@ import { createClient } from '@/lib/supabase'
 import { showToast, ToastContainer } from '@/components/Toast'
 
 // ── Types ────────────────────────────────────────────────────────────────────
+interface RetryRequest {
+  id:            string
+  user_id:       string
+  module_id:     string
+  status:        string
+  requested_at:  string
+  student_name:  string
+  module_title:  string
+}
+
 interface ModuleRow {
   id:               string
   title:            string
@@ -213,16 +223,18 @@ export default function CoordinatorModulesPage() {
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
-  const [loading,   setLoading]   = useState(true)
-  const [coordName, setCoordName] = useState('…')
-  const [schoolName,setSchoolName]= useState('…')
-  const [pending,   setPending]   = useState<ModuleRow[]>([])
-  const [published, setPublished] = useState<ModuleRow[]>([])
-  const [tab,       setTab]       = useState<'pending' | 'published'>('pending')
+  const [loading,        setLoading]        = useState(true)
+  const [coordName,      setCoordName]      = useState('…')
+  const [schoolName,     setSchoolName]     = useState('…')
+  const [pending,        setPending]        = useState<ModuleRow[]>([])
+  const [published,      setPublished]      = useState<ModuleRow[]>([])
+  const [retryRequests,  setRetryRequests]  = useState<RetryRequest[]>([])
+  const [tab,            setTab]            = useState<'pending' | 'published' | 'retries'>('pending')
 
-  const [approving, setApproving] = useState<ModuleRow | null>(null)
-  const [rejecting, setRejecting] = useState<ModuleRow | null>(null)
-  const [actionLoading, setActionLoading] = useState(false)
+  const [approving,      setApproving]      = useState<ModuleRow | null>(null)
+  const [rejecting,      setRejecting]      = useState<ModuleRow | null>(null)
+  const [actionLoading,  setActionLoading]  = useState(false)
+  const [approvingRetry, setApprovingRetry] = useState<string | null>(null)
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -277,6 +289,37 @@ export default function CoordinatorModulesPage() {
 
       setPending(enriched.filter(m => m.status === 'pending'))
       setPublished(enriched.filter(m => m.status === 'published'))
+
+      // Fetch pending retry requests for modules in this coordinator's scope
+      const { data: retries } = await supabase
+        .from('quiz_retry_requests')
+        .select('id, user_id, module_id, status, requested_at')
+        .eq('status', 'pending')
+        .in('module_id', modIds)
+        .order('requested_at', { ascending: false })
+
+      if (!cancelled && retries && retries.length > 0) {
+        const retryUserIds   = [...new Set(retries.map((r: { user_id: string }) => r.user_id))]
+        const retryModuleIds = [...new Set(retries.map((r: { module_id: string }) => r.module_id))]
+
+        const [{ data: studentProfiles }, { data: retryModules }] = await Promise.all([
+          supabase.from('profiles').select('id, full_name').in('id', retryUserIds),
+          supabase.from('modules').select('id, title').in('id', retryModuleIds),
+        ])
+        if (!cancelled) {
+          const sMap: Record<string, string> = {}
+          studentProfiles?.forEach((p: { id: string; full_name: string | null }) => { sMap[p.id] = p.full_name ?? '—' })
+          const mMap: Record<string, string> = {}
+          retryModules?.forEach((m: { id: string; title: string }) => { mMap[m.id] = m.title })
+
+          setRetryRequests(retries.map((r: { id: string; user_id: string; module_id: string; status: string; requested_at: string }) => ({
+            ...r,
+            student_name: sMap[r.user_id] ?? '—',
+            module_title: mMap[r.module_id] ?? '—',
+          })))
+        }
+      }
+
       setLoading(false)
     }
     load()
@@ -327,12 +370,33 @@ export default function CoordinatorModulesPage() {
     showToast('info', `"${mod.title}" movido a borrador`)
   }
 
+  async function handleApproveRetry(req: RetryRequest) {
+    if (!supabaseRef.current) return
+    const supabase = supabaseRef.current
+    setApprovingRetry(req.id)
+    // Delete all quiz attempts for this user+module
+    const { error: delErr } = await supabase
+      .from('quiz_attempts')
+      .delete()
+      .eq('user_id', req.user_id)
+      .eq('module_id', req.module_id)
+    if (delErr) { showToast('error', 'Error al aprobar el reintento'); setApprovingRetry(null); return }
+    // Mark request as approved
+    await supabase
+      .from('quiz_retry_requests')
+      .update({ status: 'approved' })
+      .eq('id', req.id)
+    setRetryRequests(prev => prev.filter(r => r.id !== req.id))
+    setApprovingRetry(null)
+    showToast('success', `Reintento aprobado para ${req.student_name} ✓`)
+  }
+
   async function handleLogout() {
     if (supabaseRef.current) await supabaseRef.current.auth.signOut()
     router.push('/login')
   }
 
-  const currentList = tab === 'pending' ? pending : published
+  const currentList = tab === 'pending' ? pending : tab === 'published' ? published : []
 
   return (
     <>
@@ -418,10 +482,79 @@ export default function CoordinatorModulesPage() {
               <span style={{ marginLeft: 8, padding: '1px 7px', borderRadius: 999, background: tab === 'published' ? 'rgba(255,255,255,.2)' : 'rgba(13,13,13,.08)', fontSize: 11 }}>{published.length}</span>
             )}
           </button>
+          <button
+            className={`cm-tab${tab === 'retries' ? ' active' : ''}`}
+            onClick={() => setTab('retries')}
+            style={retryRequests.length > 0 && tab !== 'retries' ? { borderColor: '#C0392B', color: '#C0392B', background: 'rgba(192,57,43,.06)' } : undefined}
+          >
+            Reintentos solicitados
+            {!loading && retryRequests.length > 0 && (
+              <span style={{ marginLeft: 8, padding: '1px 7px', borderRadius: 999, background: tab === 'retries' ? 'rgba(255,255,255,.2)' : 'rgba(192,57,43,.12)', color: tab === 'retries' ? undefined : '#C0392B', fontSize: 11 }}>{retryRequests.length}</span>
+            )}
+          </button>
         </div>
 
-        {/* Feed */}
-        {loading ? (
+        {/* ── Retry requests feed ── */}
+        {tab === 'retries' && (
+          loading ? (
+            <div className="cm-feed">
+              {[0, 1].map(i => (
+                <div key={i} style={{ background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 2px 8px -4px rgba(13,13,13,.07)', display: 'flex', gap: 14 }}>
+                  <Sk w="100%" h={60} r={10} />
+                </div>
+              ))}
+            </div>
+          ) : retryRequests.length === 0 ? (
+            <div className="cm-empty">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ display: 'block', margin: '0 auto 12px', opacity: .3 }}>
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M9 9a3 3 0 1 1 4.5 2.6c-.4.2-.5.4-.5.9v1M12 17h.01" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+              </svg>
+              <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 16, marginBottom: 6 }}>No hay reintentos pendientes</div>
+              <div style={{ fontSize: 13.5 }}>Cuando un estudiante solicite un reintento, aparecerá aquí.</div>
+            </div>
+          ) : (
+            <div className="cm-feed">
+              {retryRequests.map((req, i) => (
+                <motion.div
+                  key={req.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: 'spring', stiffness: 140, damping: 20, delay: i * 0.05 }}
+                >
+                  <div style={{ background: '#fff', border: '1px solid rgba(13,13,13,.07)', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 8px -4px rgba(13,13,13,.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 16, color: '#0D0D0D', marginBottom: 4 }}>{req.student_name}</div>
+                      <div style={{ fontSize: 13.5, color: '#6B6B6B', marginBottom: 6 }}>
+                        Módulo: <strong style={{ color: '#0D0D0D' }}>{req.module_title}</strong>
+                      </div>
+                      <div style={{ fontSize: 12, color: '#9a9690' }}>
+                        Solicitado el {new Date(req.requested_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleApproveRetry(req)}
+                      disabled={approvingRetry === req.id}
+                      style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 22px', borderRadius: 999, background: '#065F46', color: '#fff', border: 'none', fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 13.5, cursor: approvingRetry === req.id ? 'not-allowed' : 'pointer', opacity: approvingRetry === req.id ? 0.7 : 1, transition: 'background .2s', flexShrink: 0 }}
+                      onMouseEnter={e => { if (approvingRetry !== req.id) e.currentTarget.style.background = '#064E3B' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = '#065F46' }}
+                    >
+                      {approvingRetry === req.id ? 'Aprobando…' : (
+                        <>
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          Aprobar reintento
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )
+        )}
+
+        {/* Module feed (pending/published tabs) */}
+        {tab !== 'retries' && (loading ? (
           <div className="cm-feed">
             {[0, 1, 2].map(i => (
               <div key={i} style={{ background: '#fff', borderRadius: 20, padding: 24, boxShadow: '0 2px 8px -4px rgba(13,13,13,.07)' }}>
@@ -466,7 +599,7 @@ export default function CoordinatorModulesPage() {
               >
                 <ModuleCard
                   mod={mod}
-                  showActions={tab}
+                  showActions={tab === 'published' ? 'published' : 'pending'}
                   onApprove={tab === 'pending' ? setApproving : undefined}
                   onReject={tab === 'pending' ? setRejecting : undefined}
                   onUnpublish={tab === 'published' ? handleUnpublish : undefined}
@@ -474,7 +607,7 @@ export default function CoordinatorModulesPage() {
               </motion.div>
             ))}
           </div>
-        )}
+        ))}
       </main>
 
       {/* Modals */}

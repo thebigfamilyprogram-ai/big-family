@@ -546,7 +546,7 @@ export default function TeamHubPage() {
                               <div className="th-xp-bar">
                                 <div className="th-xp-fill" style={{ width: `${Math.round((m.total_xp / maxXp) * 100)}%` }} />
                               </div>
-                              <button className="th-profile-btn" onClick={() => showToast('info', 'Próximamente')}>Ver perfil</button>
+                              <button className="th-profile-btn" onClick={() => router.push(`/dashboard/students/${m.id}`)}>Ver perfil</button>
                             </motion.div>
                           )
                         })}

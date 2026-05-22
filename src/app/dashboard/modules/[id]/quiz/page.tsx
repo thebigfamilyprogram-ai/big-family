@@ -30,18 +30,20 @@ export default function QuizPage() {
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
-  const [phase,        setPhase]       = useState<Phase>('loading')
-  const [blockMsg,     setBlockMsg]    = useState('')
-  const [mod,          setMod]         = useState<ModMeta>({ title: '', xp_reward: 0 })
-  const [questions,    setQuestions]   = useState<Question[]>([])
-  const [currentIdx,   setCurrentIdx]  = useState(0)
-  const [answers,      setAnswers]     = useState<Record<string, string>>({})
-  const [curAnswer,    setCurAnswer]   = useState<string | null>(null)
-  const [result,       setResult]      = useState<Result | null>(null)
-  const [submitting,   setSubmitting]  = useState(false)
-  const [elapsed,      setElapsed]     = useState(0)
-  const [xpDisplay,    setXpDisplay]   = useState(0)
-  const [existingAtt,  setExistingAtt] = useState(0)
+  const [phase,           setPhase]          = useState<Phase>('loading')
+  const [blockMsg,        setBlockMsg]       = useState('')
+  const [mod,             setMod]            = useState<ModMeta>({ title: '', xp_reward: 0 })
+  const [questions,       setQuestions]      = useState<Question[]>([])
+  const [currentIdx,      setCurrentIdx]     = useState(0)
+  const [answers,         setAnswers]        = useState<Record<string, string>>({})
+  const [curAnswer,       setCurAnswer]      = useState<string | null>(null)
+  const [result,          setResult]         = useState<Result | null>(null)
+  const [submitting,      setSubmitting]     = useState(false)
+  const [elapsed,         setElapsed]        = useState(0)
+  const [xpDisplay,       setXpDisplay]      = useState(0)
+  const [existingAtt,     setExistingAtt]    = useState(0)
+  const [retryStatus,     setRetryStatus]    = useState<'none' | 'pending' | 'sending'>('none')
+  const [attemptsExhausted, setAttemptsExhausted] = useState(false)
 
   const startTime   = useRef(Date.now())
   const tabSwitches = useRef(0)
@@ -76,7 +78,16 @@ export default function QuizPage() {
         return
       }
       if (attCount >= 2) {
+        setAttemptsExhausted(true)
         setBlockMsg('Has agotado tus intentos para este módulo.')
+        // Check for existing retry request
+        const { data: existingRequest } = await supabase
+          .from('quiz_retry_requests')
+          .select('status')
+          .eq('user_id', user.id)
+          .eq('module_id', moduleId)
+          .maybeSingle()
+        if (existingRequest?.status === 'pending') setRetryStatus('pending')
         setPhase('blocked')
         return
       }
@@ -231,30 +242,85 @@ export default function QuizPage() {
     setSubmitting(false)
   }
 
+  async function handleRetryRequest() {
+    if (!supabaseRef.current || !userIdRef.current) return
+    const supabase = supabaseRef.current
+    setRetryStatus('sending')
+    const { error } = await supabase.from('quiz_retry_requests').upsert(
+      { user_id: userIdRef.current, module_id: moduleId, status: 'pending', requested_at: new Date().toISOString() },
+      { onConflict: 'user_id,module_id' }
+    )
+    if (error) {
+      showToast('error', 'Error al enviar la solicitud. Intenta de nuevo.')
+      setRetryStatus('none')
+    } else {
+      setRetryStatus('pending')
+      showToast('success', 'Solicitud enviada a tu coordinador ✓')
+    }
+  }
+
   const q = questions[currentIdx]
   const attemptsLeft = Math.max(0, 2 - (existingAtt + (phase === 'results' ? 1 : 0)))
 
   // ── Blocked ──────────────────────────────────────────────────────────────
   if (phase === 'blocked') {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', padding: 24 }}>
-        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 20, padding: '40px 36px', maxWidth: 440, width: '100%', textAlign: 'center', boxShadow: '0 8px 32px -8px rgba(13,13,13,.12)' }}>
-          <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(192,57,43,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="#C0392B" strokeWidth="1.8"/>
-              <path d="M12 7v5M12 16h.01" stroke="#C0392B" strokeWidth="1.8" strokeLinecap="round"/>
-            </svg>
+      <>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', padding: 24 }}>
+          <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 20, padding: '40px 36px', maxWidth: 460, width: '100%', textAlign: 'center', boxShadow: '0 8px 32px -8px rgba(13,13,13,.12)' }}>
+            <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(192,57,43,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="#C0392B" strokeWidth="1.8"/>
+                <path d="M12 7v5M12 16h.01" stroke="#C0392B" strokeWidth="1.8" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 10 }}>
+              {attemptsExhausted ? 'Intentos agotados' : 'Acceso restringido'}
+            </div>
+            <p style={{ fontSize: 14, color: 'var(--mute)', lineHeight: 1.6, marginBottom: 24 }}>{blockMsg}</p>
+
+            {attemptsExhausted && (
+              <div style={{ marginBottom: 20 }}>
+                {retryStatus === 'pending' ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 20px', background: 'rgba(34,197,94,.08)', border: '1px solid rgba(34,197,94,.25)', borderRadius: 12, fontSize: 14, color: '#16a34a', fontWeight: 600 }}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="#16a34a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    Solicitud enviada — tu coordinador la revisará pronto
+                  </div>
+                ) : (
+                  <div>
+                    <p style={{ fontSize: 13, color: 'var(--mute)', lineHeight: 1.5, marginBottom: 12 }}>
+                      Puedes solicitar un reintento a tu coordinador. Si es aprobado, tus intentos se resetearán.
+                    </p>
+                    <button
+                      onClick={handleRetryRequest}
+                      disabled={retryStatus === 'sending'}
+                      style={{ width: '100%', padding: '12px 20px', background: '#0D0D0D', color: '#fff', border: 'none', borderRadius: 999, fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, cursor: retryStatus === 'sending' ? 'not-allowed' : 'pointer', opacity: retryStatus === 'sending' ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                    >
+                      {retryStatus === 'sending' ? (
+                        <>
+                          <span style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />
+                          Enviando solicitud…
+                        </>
+                      ) : (
+                        '↻ Solicitar reintento al coordinador'
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <button
+              onClick={() => router.push(`/dashboard/modules/${moduleId}`)}
+              style={{ padding: '11px 24px', background: 'transparent', color: 'var(--mute)', border: '1px solid var(--line)', borderRadius: 999, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+            >
+              Volver al módulo
+            </button>
           </div>
-          <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 10 }}>Acceso restringido</div>
-          <p style={{ fontSize: 14, color: 'var(--mute)', lineHeight: 1.6, marginBottom: 28 }}>{blockMsg}</p>
-          <button
-            onClick={() => router.push(`/dashboard/modules/${moduleId}`)}
-            style={{ padding: '12px 28px', background: '#C0392B', color: '#fff', border: 'none', borderRadius: 999, fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
-          >
-            Volver al módulo
-          </button>
         </div>
-      </div>
+        <ToastContainer />
+      </>
     )
   }
 
@@ -375,9 +441,25 @@ export default function QuizPage() {
               </p>
             )}
             {!result.passed && attemptsLeft === 0 && (
-              <p style={{ fontSize: 13.5, color: 'var(--mute)', lineHeight: 1.6, marginBottom: 24 }}>
-                Has usado todos tus intentos para este módulo. Contacta a tu coordinador para más información.
-              </p>
+              <div style={{ marginBottom: 24 }}>
+                <p style={{ fontSize: 13.5, color: 'var(--mute)', lineHeight: 1.6, marginBottom: 12 }}>
+                  Has usado todos tus intentos. Puedes solicitar un reintento a tu coordinador.
+                </p>
+                {retryStatus === 'pending' ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '10px 16px', background: 'rgba(34,197,94,.08)', border: '1px solid rgba(34,197,94,.25)', borderRadius: 10, fontSize: 13, color: '#16a34a', fontWeight: 600 }}>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7l3 3 6-6" stroke="#16a34a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    Solicitud enviada — tu coordinador la revisará
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleRetryRequest}
+                    disabled={retryStatus === 'sending'}
+                    style={{ width: '100%', padding: '11px 20px', background: '#0D0D0D', color: '#fff', border: 'none', borderRadius: 999, fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, cursor: retryStatus === 'sending' ? 'not-allowed' : 'pointer', opacity: retryStatus === 'sending' ? 0.7 : 1 }}
+                  >
+                    {retryStatus === 'sending' ? 'Enviando…' : '↻ Solicitar reintento al coordinador'}
+                  </button>
+                )}
+              </div>
             )}
 
             {/* Actions */}
