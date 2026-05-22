@@ -141,8 +141,9 @@ export default function SubmitProjectPage() {
         evidence_urls:               images?.map((i: { url: string }) => i.url) ?? [],
         pdf_url:                     project.pdf_url ?? null,
         video_url:                   project.video_url ?? null,
-        status:                      project.status ?? 'draft',
-        completion_percentage:       project.completion_percentage ?? 0,
+        status:           project.status ?? 'draft',
+        rejection_reason: project.rejection_reason ?? null,
+        completion_percentage: project.completion_percentage ?? 0,
       })
       setLoading(false)
     }

@@ -59,10 +59,11 @@ export default function SettingsPage() {
   const [avatarFile,    setAvatarFile]    = useState<File | null>(null)
   const [saving,        setSaving]        = useState(false)
 
-  // Notifications (placeholder state)
+  // Notifications (persisted in profiles.notification_preferences JSONB)
   const [notifEmail,    setNotifEmail]    = useState(true)
   const [notifPush,     setNotifPush]     = useState(false)
   const [notifWeekly,   setNotifWeekly]   = useState(true)
+  const [notifSaving,   setNotifSaving]   = useState(false)
 
   // Account
   const [resetSent,     setResetSent]     = useState(false)
@@ -84,7 +85,7 @@ export default function SettingsPage() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, display_name, bio, avatar_url, school_id, role, user_badges')
+        .select('full_name, display_name, bio, avatar_url, school_id, role, user_badges, notification_preferences')
         .eq('id', user.id)
         .maybeSingle()
 
@@ -96,6 +97,13 @@ export default function SettingsPage() {
       setAvatarUrl(profile?.avatar_url ?? '')
       setRole(profile?.role ?? 'student')
       setBadges(Array.isArray(profile?.user_badges) ? profile.user_badges : [])
+
+      const prefs = profile?.notification_preferences as Record<string, boolean> | null
+      if (prefs) {
+        if (typeof prefs.email   === 'boolean') setNotifEmail(prefs.email)
+        if (typeof prefs.push    === 'boolean') setNotifPush(prefs.push)
+        if (typeof prefs.weekly  === 'boolean') setNotifWeekly(prefs.weekly)
+      }
 
       if (profile?.school_id) {
         const { data: sc } = await supabase
@@ -164,6 +172,27 @@ export default function SettingsPage() {
       setResetSent(true)
       showToast('success', 'Correo de restablecimiento enviado')
     }
+  }
+
+  async function saveNotifPreferences(next: { email: boolean; push: boolean; weekly: boolean }) {
+    if (!supabaseRef.current || !userId) return
+    const supabase = supabaseRef.current
+    setNotifSaving(true)
+    const { error } = await supabase
+      .from('profiles')
+      .update({ notification_preferences: next })
+      .eq('id', userId)
+    setNotifSaving(false)
+    if (error) showToast('error', 'Error al guardar preferencias')
+    else showToast('success', 'Preferencias guardadas')
+  }
+
+  function handleNotifToggle(key: 'email' | 'push' | 'weekly', value: boolean) {
+    const next = { email: notifEmail, push: notifPush, weekly: notifWeekly, [key]: value }
+    if (key === 'email')  setNotifEmail(value)
+    if (key === 'push')   setNotifPush(value)
+    if (key === 'weekly') setNotifWeekly(value)
+    saveNotifPreferences(next)
   }
 
   async function handleSignOutAll() {
@@ -521,20 +550,21 @@ export default function SettingsPage() {
                   <div className="st-card-sub">Elige cómo quieres recibir actualizaciones del programa.</div>
 
                   {[
-                    { label: 'Notificaciones por correo', sub: 'Actualizaciones sobre proyectos y módulos', val: notifEmail, set: setNotifEmail },
-                    { label: 'Notificaciones push', sub: 'Alertas en tiempo real en el navegador', val: notifPush, set: setNotifPush },
-                    { label: 'Resumen semanal', sub: 'Un correo cada lunes con tu progreso', val: notifWeekly, set: setNotifWeekly },
-                  ].map((row, i) => (
-                    <div key={i} className="notif-row">
+                    { key: 'email'  as const, label: 'Notificaciones por correo', sub: 'Actualizaciones sobre proyectos y módulos', val: notifEmail },
+                    { key: 'push'   as const, label: 'Notificaciones push', sub: 'Alertas en tiempo real en el navegador', val: notifPush },
+                    { key: 'weekly' as const, label: 'Resumen semanal', sub: 'Un correo cada lunes con tu progreso', val: notifWeekly },
+                  ].map((row) => (
+                    <div key={row.key} className="notif-row">
                       <div>
                         <div className="notif-label">{row.label}</div>
                         <div className="notif-sub">{row.sub}</div>
                       </div>
-                      <label className="toggle">
+                      <label className="toggle" style={{ opacity: notifSaving ? 0.6 : 1 }}>
                         <input
                           type="checkbox"
                           checked={row.val}
-                          onChange={e => row.set(e.target.checked)}
+                          disabled={notifSaving}
+                          onChange={e => handleNotifToggle(row.key, e.target.checked)}
                         />
                         <div className="toggle-track" />
                         <div className="toggle-thumb" />
@@ -542,11 +572,11 @@ export default function SettingsPage() {
                     </div>
                   ))}
 
-                  <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end' }}>
-                    <button className="btn-save" onClick={() => showToast('success', 'Preferencias guardadas')}>
-                      Guardar preferencias
-                    </button>
-                  </div>
+                  {notifSaving && (
+                    <div style={{ marginTop: 12, fontSize: 12, color: 'var(--mute)', textAlign: 'right' }}>
+                      Guardando…
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -133,7 +133,7 @@ export default function LoginPage() {
           </form>
 
           <div className="footer-links">
-            <span>¿Olvidaste tu contraseña? <a href="#">Recupérala</a></span>
+            <span>¿Olvidaste tu contraseña? <a href="/forgot-password">Recupérala</a></span>
             <span>¿No tienes cuenta? <a href="/register">Regístrate</a></span>
           </div>
         </div>

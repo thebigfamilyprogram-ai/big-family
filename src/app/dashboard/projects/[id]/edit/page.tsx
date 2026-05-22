@@ -57,7 +57,7 @@ export default function EditProjectPage() {
 
       // Load project by URL id; if not found redirect to the real draft URL
       const { data: byId } = await supabase
-        .from('projects').select('*').eq('id', projectId).eq('user_id', user.id).maybeSingle()
+        .from('projects').select('*, rejection_reason').eq('id', projectId).eq('user_id', user.id).maybeSingle()
 
       if (cancelled) return
 
@@ -103,7 +103,8 @@ export default function EditProjectPage() {
         evidence_urls:               images?.map((i: { url: string }) => i.url) ?? [],
         pdf_url:                     project.pdf_url ?? null,
         video_url:      project.video_url ?? null,
-        status:         project.status ?? 'draft',
+        status:           project.status ?? 'draft',
+        rejection_reason: project.rejection_reason ?? null,
         completion_percentage: project.completion_percentage ?? 0,
       })
 

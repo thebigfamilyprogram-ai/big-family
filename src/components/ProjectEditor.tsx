@@ -24,6 +24,7 @@ export interface ProjectEditorData {
   pdf_url:                     string | null
   video_url:                   string | null
   status:                      string
+  rejection_reason:            string | null
   completion_percentage:       number
 }
 
@@ -388,9 +389,10 @@ export default function ProjectEditor({
   const [planContinuidad,          setPlanContinuidad]          = useState(initialData.plan_continuidad ?? '')
   const [bigLeaderModelReflection, setBigLeaderModelReflection] = useState(initialData.big_leader_model_reflection ?? '')
 
-  const [evidenceUrls, setEvidenceUrls] = useState<string[]>(initialData.evidence_urls ?? [])
-  const [pdfUrl,       setPdfUrl]       = useState<string | null>(initialData.pdf_url ?? null)
-  const [status,       setStatus]       = useState(initialData.status ?? 'draft')
+  const [evidenceUrls,   setEvidenceUrls]   = useState<string[]>(initialData.evidence_urls ?? [])
+  const [pdfUrl,         setPdfUrl]         = useState<string | null>(initialData.pdf_url ?? null)
+  const [status,         setStatus]         = useState(initialData.status ?? 'draft')
+  const [rejectionReason] = useState<string | null>(initialData.rejection_reason ?? null)
 
   // UI state
   const [openSections, setOpenSections] = useState<Set<number>>(new Set([2]))
@@ -595,7 +597,8 @@ export default function ProjectEditor({
     setTimeout(() => document.getElementById(`section-${num}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80)
   }
 
-  const isLocked = status === 'pending'
+  const isLocked   = status === 'pending'
+  const isRejected = status === 'rejected'
   const today    = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
   const trackLabel = TRACKS.find(t => t.value === track)?.label ?? ''
 
@@ -702,6 +705,29 @@ export default function ProjectEditor({
                 <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 8v4M12 16h.01" stroke="#92400E" strokeWidth="1.8" strokeLinecap="round"/>
               </svg>
               Este proyecto está en revisión. No puedes editarlo hasta recibir respuesta del coordinador.
+            </div>
+          )}
+
+          {isRejected && (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '18px 20px', background: 'rgba(192,57,43,0.07)', border: '1.5px solid rgba(192,57,43,0.3)', borderRadius: 14, marginBottom: 24 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
+                <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 8v4M12 16h.01" stroke="#C0392B" strokeWidth="1.8" strokeLinecap="round"/>
+              </svg>
+              <div>
+                <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, color: '#C0392B', marginBottom: 4 }}>
+                  Tu proyecto fue devuelto — edítalo y reenvíalo
+                </div>
+                {rejectionReason && (
+                  <div style={{ fontSize: 13.5, color: '#7a1f13', lineHeight: 1.55 }}>
+                    <strong>Motivo:</strong> {rejectionReason}
+                  </div>
+                )}
+                {!rejectionReason && (
+                  <div style={{ fontSize: 13.5, color: '#9a3a2e', lineHeight: 1.55 }}>
+                    Revisa los comentarios de tu coordinador y realiza las correcciones necesarias.
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -991,8 +1017,9 @@ export default function ProjectEditor({
                     Completa al menos el 70% para enviar al coordinador
                   </p>
                 )}
-                <button className="btn-submit-proj" onClick={() => setSubmitModal(true)} disabled={completion < 70}>
-                  Enviar al coordinador →
+                <button className="btn-submit-proj" onClick={() => setSubmitModal(true)} disabled={completion < 70}
+                  style={isRejected ? { background: '#C0392B' } : undefined}>
+                  {isRejected ? 'Volver a enviar al coordinador →' : 'Enviar al coordinador →'}
                 </button>
                 <button className="btn-save-draft" onClick={doSave}>Guardar borrador</button>
               </>

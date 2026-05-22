@@ -29,6 +29,11 @@ interface UserData {
   school_level: string | null
 }
 
+interface DiplomaInfo {
+  projectId: string
+  resultado: string
+}
+
 const QUOTES = [
   { quote: "El líder es aquel que conoce el camino, recorre el camino y muestra el camino.", author: "John C. Maxwell", category: "Liderazgo" },
   { quote: "No se nace líder, uno se hace líder.", author: "Vince Lombardi", category: "Liderazgo" },
@@ -170,6 +175,7 @@ export default function DashboardPage() {
   const [user,         setUser]         = useState<UserData | null>(null)
   const [modules,      setModules]      = useState<Module[]>([])
   const [progressRows, setProgressRows] = useState<ProgressRow[]>([])
+  const [diploma,      setDiploma]      = useState<DiplomaInfo | null>(null)
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -179,12 +185,26 @@ export default function DashboardPage() {
       const { data: { user: authUser } } = await supabase.auth.getUser()
       if (!authUser) { router.replace('/login'); return }
 
-      const [{ data: profile }, { data: xpRows }, { data: mods }, { data: prog }] = await Promise.all([
+      const [{ data: profile }, { data: xpRows }, { data: mods }, { data: prog }, { data: userProjects }] = await Promise.all([
         supabase.from('profiles').select('full_name, role, school_level').eq('id', authUser.id).maybeSingle(),
         supabase.from('xp_log').select('amount').eq('user_id', authUser.id),
         supabase.from('modules').select('*').eq('status', 'published').order('order_index'),
         supabase.from('progress').select('module_id, completed').eq('user_id', authUser.id),
+        supabase.from('projects').select('id, status').eq('user_id', authUser.id).in('status', ['approved']),
       ])
+
+      // Check for a diploma (approved project with certificado/mencion_honor evaluation)
+      if (userProjects && userProjects.length > 0) {
+        const projectIds = userProjects.map((p: { id: string }) => p.id)
+        const { data: evals } = await supabase
+          .from('capstone_evaluations')
+          .select('project_id, resultado')
+          .in('project_id', projectIds)
+          .in('resultado', ['certificado', 'mencion_honor'])
+          .limit(1)
+          .maybeSingle()
+        if (evals) setDiploma({ projectId: evals.project_id, resultado: evals.resultado })
+      }
 
       const total_xp = xpRows?.reduce((s: number, r: { amount: number }) => s + r.amount, 0) ?? 0
 
@@ -584,15 +604,28 @@ export default function DashboardPage() {
                   <div className="cert-text">
                     0 de 3 proyectos aprobados para obtener la certificación.
                   </div>
-                  <motion.button
-                    className="btn-upload"
-                    onClick={() => router.push('/dashboard/projects/new')}
-                    whileHover={pref ? undefined : { scale: 1.02 }}
-                    whileTap={pref ? undefined : { scale: 0.97 }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                  >
-                    Subir proyecto
-                  </motion.button>
+                  {diploma ? (
+                    <motion.button
+                      className="btn-upload"
+                      onClick={() => router.push(`/certificacion/${diploma.projectId}`)}
+                      whileHover={pref ? undefined : { scale: 1.02 }}
+                      whileTap={pref ? undefined : { scale: 0.97 }}
+                      transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                      style={{ background: '#16a34a' }}
+                    >
+                      🎓 Ver mi diploma →
+                    </motion.button>
+                  ) : (
+                    <motion.button
+                      className="btn-upload"
+                      onClick={() => router.push('/dashboard/projects/new')}
+                      whileHover={pref ? undefined : { scale: 1.02 }}
+                      whileTap={pref ? undefined : { scale: 0.97 }}
+                      transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                    >
+                      Subir proyecto
+                    </motion.button>
+                  )}
                 </>
               )}
             </div>

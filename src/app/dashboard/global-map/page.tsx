@@ -255,9 +255,9 @@ export default function GlobalMapPage() {
           {/* ── Header ── */}
           <div className="gm-header">
             <div>
-              <div className="gm-eyebrow">Big Family Network</div>
+              <div className="gm-eyebrow">Big Family Network · Visión 2036</div>
               <h1 className="gm-title">Mapa Global</h1>
-              <p className="gm-sub">Comunidad activa en {COUNTRIES.length} países</p>
+              <p className="gm-sub">Estas son las metas globales del programa Big Family — no datos actuales.</p>
             </div>
             <div className="gm-pills">
               <div className="gm-pill">
@@ -273,6 +273,16 @@ export default function GlobalMapPage() {
                 <span>Meta <b>2036</b></span>
               </div>
             </div>
+          </div>
+
+          {/* ── Vision disclaimer ── */}
+          <div style={{ margin: '0 40px 0', padding: '10px 16px', background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.18)', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+              <path d="M8 1.5A6.5 6.5 0 1 0 8 14.5 6.5 6.5 0 0 0 8 1.5ZM8 5v3M8 10h.01" stroke="#C0392B" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            <span style={{ fontSize: 12.5, color: '#C0392B', fontFamily: 'Inter,sans-serif' }}>
+              <strong>Visión 2036:</strong> Los datos mostrados representan metas proyectadas del programa, no cifras reales actuales.
+            </span>
           </div>
 
           {/* ── Map ── */}
