@@ -211,7 +211,6 @@ export default function GlobeHero() {
   const prefersReduced      = useReducedMotion()
   const [bannerDismissed,   setBannerDismissed]   = useState(false)
   const [scrollHintVisible, setScrollHintVisible] = useState(true)
-  const [isDragging,        setIsDragging]        = useState(false)
   const [globeReady,        setGlobeReady]        = useState(false)
   const dlCd = useCountdown(DL_TARGET)
 
@@ -753,9 +752,16 @@ export default function GlobeHero() {
       })
 
       // ── DRAG TO ROTATE ─────────────────────────────────────────────
+      const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
       let isDown = false, lastX = 0, lastY = 0
-      wrap.addEventListener('pointerdown', e => { isDown = true; lastX = e.clientX; lastY = e.clientY })
-      window.addEventListener('pointerup',   () => { isDown = false })
+      wrap.addEventListener('pointerdown', e => {
+        isDown = true; lastX = e.clientX; lastY = e.clientY
+        if (!reducedMotion()) wrap.classList.add('globe-dragging')
+      })
+      window.addEventListener('pointerup', () => {
+        isDown = false
+        wrap.classList.remove('globe-dragging')
+      })
       window.addEventListener('pointermove', e => {
         if (!isDown) return
         const dx = e.clientX - lastX, dy = e.clientY - lastY
@@ -1142,13 +1148,7 @@ export default function GlobeHero() {
           {!globeReady && !prefersReduced && (
             <div style={{ position: 'absolute', top: '50%', left: '50%', width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle,rgba(192,57,43,.08) 0%,transparent 70%)', animation: 'globePulse 2s ease-in-out infinite', pointerEvents: 'none', zIndex: 1 }} />
           )}
-          <div
-            className={`globe-wrap${isDragging ? ' globe-dragging' : ''}`}
-            ref={wrapRef}
-            onPointerDown={() => { if (!prefersReduced) setIsDragging(true) }}
-            onPointerUp={() => setIsDragging(false)}
-            onPointerLeave={() => setIsDragging(false)}
-          />
+          <div className="globe-wrap" ref={wrapRef} />
           <div className="flags-layer" ref={flagsRef}></div>
           <div className="tip" ref={tipRef}>
             <div className="tip__country"><span ref={tipCountryRef}>—</span></div>
