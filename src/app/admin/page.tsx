@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { showToast, ToastContainer } from '@/components/Toast'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type Tab = 'stats' | 'users' | 'projects' | 'evaluations'
@@ -96,6 +97,7 @@ function StatCard({ num, label, accent = false }: { num: number; label: string; 
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function AdminPage() {
   const router      = useRouter()
+  const pref        = useReducedMotion()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [tab,       setTab]       = useState<Tab>('stats')
@@ -443,15 +445,27 @@ export default function AdminPage() {
 
         {/* ── ESTADÍSTICAS ── */}
         {tab === 'stats' && (
-          <div className="adm-stats-grid">
+          <motion.div
+            className="adm-stats-grid"
+            initial={pref ? false : 'hidden'}
+            animate="visible"
+            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
+          >
             {stats ? (
-              <>
-                <StatCard num={stats.students}       label="Estudiantes"        accent />
-                <StatCard num={stats.total_projects} label="Proyectos totales"  />
-                <StatCard num={stats.submitted}      label="Enviados"           />
-                <StatCard num={stats.approved}       label="Aprobados"          />
-                <StatCard num={stats.rejected}       label="Rechazados"         />
-              </>
+              ([
+                { num: stats.students,       label: 'Estudiantes',       accent: true  },
+                { num: stats.total_projects, label: 'Proyectos totales', accent: false },
+                { num: stats.submitted,      label: 'Enviados',          accent: false },
+                { num: stats.approved,       label: 'Aprobados',         accent: false },
+                { num: stats.rejected,       label: 'Rechazados',        accent: false },
+              ] as const).map(s => (
+                <motion.div
+                  key={s.label}
+                  variants={{ hidden: { opacity: 0, scale: 0.96 }, visible: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 200, damping: 22 } } }}
+                >
+                  <StatCard num={s.num} label={s.label} accent={s.accent} />
+                </motion.div>
+              ))
             ) : (
               [...Array(5)].map((_, i) => (
                 <div key={i} style={{ background: 'var(--card-bg,#fff)', border: '1px solid var(--card-border,rgba(13,13,13,.07))', borderRadius: 16, padding: '24px 28px' }}>
@@ -460,7 +474,7 @@ export default function AdminPage() {
                 </div>
               ))
             )}
-          </div>
+          </motion.div>
         )}
 
         {/* ── USUARIOS ── */}
@@ -517,8 +531,8 @@ export default function AdminPage() {
                   {filteredUsers.length} usuario{filteredUsers.length !== 1 ? 's' : ''} · Página {userPage + 1} de {totalUserPages}
                 </span>
                 <div className="adm-page-btns">
-                  <button className="adm-page-btn" disabled={userPage === 0} onClick={() => setUserPage(p => p - 1)}>← Anterior</button>
-                  <button className="adm-page-btn" disabled={userPage >= totalUserPages - 1} onClick={() => setUserPage(p => p + 1)}>Siguiente →</button>
+                  <motion.button className="adm-page-btn" disabled={userPage === 0} onClick={() => setUserPage(p => p - 1)} whileHover={pref ? undefined : { scale: 1.02 }} whileTap={pref ? undefined : { scale: 0.96 }} transition={{ type: 'spring', stiffness: 200, damping: 22 }}>← Anterior</motion.button>
+                  <motion.button className="adm-page-btn" disabled={userPage >= totalUserPages - 1} onClick={() => setUserPage(p => p + 1)} whileHover={pref ? undefined : { scale: 1.02 }} whileTap={pref ? undefined : { scale: 0.96 }} transition={{ type: 'spring', stiffness: 200, damping: 22 }}>Siguiente →</motion.button>
                 </div>
               </div>
             )}
@@ -586,8 +600,8 @@ export default function AdminPage() {
                   {filteredProjects.length} proyecto{filteredProjects.length !== 1 ? 's' : ''} · Página {projectPage + 1} de {totalProjectPages}
                 </span>
                 <div className="adm-page-btns">
-                  <button className="adm-page-btn" disabled={projectPage === 0} onClick={() => setProjectPage(p => p - 1)}>← Anterior</button>
-                  <button className="adm-page-btn" disabled={projectPage >= totalProjectPages - 1} onClick={() => setProjectPage(p => p + 1)}>Siguiente →</button>
+                  <motion.button className="adm-page-btn" disabled={projectPage === 0} onClick={() => setProjectPage(p => p - 1)} whileHover={pref ? undefined : { scale: 1.02 }} whileTap={pref ? undefined : { scale: 0.96 }} transition={{ type: 'spring', stiffness: 200, damping: 22 }}>← Anterior</motion.button>
+                  <motion.button className="adm-page-btn" disabled={projectPage >= totalProjectPages - 1} onClick={() => setProjectPage(p => p + 1)} whileHover={pref ? undefined : { scale: 1.02 }} whileTap={pref ? undefined : { scale: 0.96 }} transition={{ type: 'spring', stiffness: 200, damping: 22 }}>Siguiente →</motion.button>
                 </div>
               </div>
             )}
@@ -625,19 +639,32 @@ export default function AdminPage() {
                       </div>
 
                       <div style={{ flexShrink: 0 }}>
-                        {ev.admin_confirmed ? (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 999, background: '#D1FAE5', color: '#065F46', fontSize: 12.5, fontWeight: 700, fontFamily: 'Satoshi,sans-serif' }}>
-                            ✓ Confirmado
-                          </span>
-                        ) : (
-                          <button
-                            disabled={confirmingId === ev.id}
-                            onClick={() => handleConfirm(ev.id)}
-                            style={{ padding: '8px 18px', borderRadius: 999, border: 'none', background: '#0D0D0D', color: '#fff', fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 12.5, cursor: confirmingId === ev.id ? 'not-allowed' : 'pointer', opacity: confirmingId === ev.id ? 0.6 : 1, whiteSpace: 'nowrap' }}
-                          >
-                            {confirmingId === ev.id ? 'Confirmando…' : 'Confirmar evaluación'}
-                          </button>
-                        )}
+                        <AnimatePresence mode="wait" initial={false}>
+                          {ev.admin_confirmed ? (
+                            <motion.span
+                              key="confirmed"
+                              layoutId={`confirm-${ev.id}`}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 999, background: '#D1FAE5', color: '#065F46', fontSize: 12.5, fontWeight: 700, fontFamily: 'Satoshi,sans-serif' }}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                            >
+                              ✓ Confirmado
+                            </motion.span>
+                          ) : (
+                            <motion.button
+                              key="btn"
+                              layoutId={`confirm-${ev.id}`}
+                              disabled={confirmingId === ev.id}
+                              onClick={() => handleConfirm(ev.id)}
+                              style={{ padding: '8px 18px', borderRadius: 999, border: 'none', background: '#0D0D0D', color: '#fff', fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 12.5, cursor: confirmingId === ev.id ? 'not-allowed' : 'pointer', opacity: confirmingId === ev.id ? 0.6 : 1, whiteSpace: 'nowrap' }}
+                              exit={{ opacity: 0, scale: 0.8 }}
+                              transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                            >
+                              {confirmingId === ev.id ? 'Confirmando…' : 'Confirmar evaluación'}
+                            </motion.button>
+                          )}
+                        </AnimatePresence>
                       </div>
                     </div>
 

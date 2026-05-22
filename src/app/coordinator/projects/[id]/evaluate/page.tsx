@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { marked } from 'marked'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface ProjectData {
@@ -162,6 +163,9 @@ export default function EvaluatePage() {
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
+  const pref        = useReducedMotion()
+  const prevCanSubmitRef = useRef(false)
+  const [pulseSub,  setPulseSub]  = useState(false)
   const [loading,   setLoading]   = useState(true)
   const [project,   setProject]   = useState<ProjectData | null>(null)
   const [student,   setStudent]   = useState<StudentInfo | null>(null)
@@ -238,6 +242,15 @@ export default function EvaluatePage() {
     setSubmitted(true)
     setTimeout(() => router.replace('/coordinator/projects'), 2000)
   }
+
+  useEffect(() => {
+    if (!prevCanSubmitRef.current && canSubmit && !pref) {
+      setPulseSub(true)
+      const t = setTimeout(() => setPulseSub(false), 400)
+      return () => clearTimeout(t)
+    }
+    prevCanSubmitRef.current = canSubmit
+  }, [canSubmit]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const setScore = (id: CriterionId, val: number) => setScores(prev => ({ ...prev, [id]: val }))
 
@@ -321,7 +334,12 @@ export default function EvaluatePage() {
 
       <div className="ev-layout">
         {/* ── LEFT: Project viewer ── */}
-        <div className="ev-left">
+        <motion.div
+          className="ev-left"
+          initial={pref ? false : { opacity: 0, x: -16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ type: 'spring', stiffness: 140, damping: 20 }}
+        >
           {/* Breadcrumb */}
           <nav className="ev-breadcrumb" aria-label="Migas de pan">
             <a onClick={() => router.push('/coordinator')}>Coordinador</a>
@@ -363,8 +381,15 @@ export default function EvaluatePage() {
                 )}
 
                 {/* IDEMR sections — markdown rendered */}
-                {IDEMR_FIELDS.map(field => (
-                  <div key={field.key} className="ev-section">
+                {IDEMR_FIELDS.map((field, idx) => (
+                  <motion.div
+                    key={field.key}
+                    className="ev-section"
+                    initial={pref ? false : { opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ type: 'spring', stiffness: 140, damping: 20, delay: idx * 0.08 }}
+                  >
                     <div className="ev-section-eyebrow">{field.label}</div>
                     {field.pilar && <div className="ev-section-pilar">{field.pilar}</div>}
                     {project[field.key]
@@ -374,7 +399,7 @@ export default function EvaluatePage() {
                         />
                       : <p className="ev-section-empty">Sin contenido</p>
                     }
-                  </div>
+                  </motion.div>
                 ))}
 
                 {/* Photo gallery */}
@@ -414,10 +439,15 @@ export default function EvaluatePage() {
               </>
             ) : null}
           </div>
-        </div>
+        </motion.div>
 
         {/* ── RIGHT: Rubric evaluation form ── */}
-        <div className="ev-right">
+        <motion.div
+          className="ev-right"
+          initial={pref ? false : { opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ type: 'spring', stiffness: 140, damping: 20 }}
+        >
           <div className="ev-card">
             {submitted ? (
               <div className="ev-submitted">
@@ -431,19 +461,29 @@ export default function EvaluatePage() {
                 <div className="rub-subtitle">Big Leader Model · 7 criterios · Escala 1–4</div>
 
                 {/* Live resultado */}
-                {resultado && (
-                  <div className="resultado-box" style={{ background: RESULTADO_META[resultado].bg }}>
-                    <span style={{ fontSize: 20 }}>{RESULTADO_META[resultado].emoji}</span>
-                    <div>
-                      <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 13.5, color: RESULTADO_META[resultado].color }}>
-                        {RESULTADO_META[resultado].label}
+                <AnimatePresence>
+                  {resultado && (
+                    <motion.div
+                      className="resultado-box"
+                      key={resultado}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      style={{ background: RESULTADO_META[resultado].bg, overflow: 'hidden' }}
+                      transition={{ type: 'spring', stiffness: 140, damping: 20 }}
+                    >
+                      <span style={{ fontSize: 20 }}>{RESULTADO_META[resultado].emoji}</span>
+                      <div>
+                        <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 13.5, color: RESULTADO_META[resultado].color }}>
+                          {RESULTADO_META[resultado].label}
+                        </div>
+                        <div style={{ fontSize: 11.5, color: RESULTADO_META[resultado].color, opacity: .75, marginTop: 1 }}>
+                          Resultado provisional — se confirma al enviar
+                        </div>
                       </div>
-                      <div style={{ fontSize: 11.5, color: RESULTADO_META[resultado].color, opacity: .75, marginTop: 1 }}>
-                        Resultado provisional — se confirma al enviar
-                      </div>
-                    </div>
-                  </div>
-                )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {!allFilled && !resultado && (
                   <div style={{ fontSize: 12.5, color: '#9a9690', marginBottom: 16, padding: '10px 12px', background: 'rgba(13,13,13,.04)', borderRadius: 8 }}>
@@ -457,14 +497,16 @@ export default function EvaluatePage() {
                     <div className="rub-crit-label">{criterion.label}</div>
                     <div className="rub-scores">
                       {([4, 3, 2, 1] as const).map(score => (
-                        <div
+                        <motion.div
                           key={score}
                           className={`rub-score-row${scores[criterion.id] === score ? ' selected' : ''}`}
                           onClick={() => setScore(criterion.id, score)}
+                          animate={!pref ? { scale: scores[criterion.id] === score ? 1.01 : 1 } : {}}
+                          transition={{ type: 'spring', stiffness: 200, damping: 22 }}
                         >
                           <div className="rub-score-num">{score}</div>
                           <div className="rub-score-text">{criterion.levels[score]}</div>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   </div>
@@ -492,13 +534,15 @@ export default function EvaluatePage() {
                   </div>
                 )}
 
-                <button
+                <motion.button
                   className="btn-submit"
                   disabled={!canSubmit || submitting}
                   onClick={handleSubmit}
+                  animate={pulseSub ? { scale: [1, 1.03, 1] } : {}}
+                  transition={{ type: 'spring', stiffness: 200, damping: 22 }}
                 >
                   {submitting ? 'Enviando evaluación…' : 'Enviar evaluación →'}
-                </button>
+                </motion.button>
 
                 {!canSubmit && (
                   <p style={{ fontSize: 11.5, color: '#9a9690', marginTop: 8, textAlign: 'center', lineHeight: 1.4 }}>
@@ -508,7 +552,7 @@ export default function EvaluatePage() {
               </>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
     </>
   )

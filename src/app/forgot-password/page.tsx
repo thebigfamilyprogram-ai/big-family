@@ -4,8 +4,12 @@ export const dynamic = 'force-dynamic'
 
 import { useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+
+const expoOut = [0.22, 1, 0.36, 1] as const
 
 export default function ForgotPasswordPage() {
+  const pref        = useReducedMotion()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [email,   setEmail]   = useState('')
@@ -43,12 +47,14 @@ export default function ForgotPasswordPage() {
         .card-sub{font-size:14px;color:#6B6B6B;text-align:center;margin-top:6px;margin-bottom:28px;line-height:1.5;}
         .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
         .field label{font-size:12.5px;font-weight:500;color:#2D2D2D;letter-spacing:.02em;}
-        .field input{padding:12px 16px;border:1px solid #e0ddd8;border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:#0D0D0D;outline:none;transition:border-color .2s;}
-        .field input:focus{border-color:#0D0D0D;}
+        .field input{padding:12px 16px;border:1px solid #e0ddd8;border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:#0D0D0D;outline:none;transition:border-color .2s,box-shadow .2s;}
+        .field input:focus{border-color:#0D0D0D;box-shadow:0 0 0 3px rgba(192,57,43,.12);}
         .field input::placeholder{color:#b0ada8;}
-        .btn-main{width:100%;padding:13px;background:#0D0D0D;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:"Satoshi",sans-serif;cursor:pointer;transition:all .25s ease;margin-top:4px;}
+        .btn-main{width:100%;padding:13px;background:#0D0D0D;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:"Satoshi",sans-serif;cursor:pointer;transition:background .25s ease;margin-top:4px;overflow:hidden;}
         .btn-main:hover:not(:disabled){background:#C0392B;}
         .btn-main:disabled{opacity:0.6;cursor:not-allowed;}
+        @keyframes btnShimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+        .btn-main.shimmer{background:linear-gradient(90deg,#1a1a1a 0%,#3a3a3a 40%,#1a1a1a 100%);background-size:200% 100%;animation:btnShimmer 1.2s ease infinite;}
         .err{background:rgba(192,57,43,0.08);border:1px solid rgba(192,57,43,0.2);border-radius:8px;padding:10px 14px;font-size:13px;color:#C0392B;margin-bottom:14px;}
         .success{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:20px;text-align:center;}
         .success-icon{font-size:32px;margin-bottom:10px;}
@@ -60,7 +66,12 @@ export default function ForgotPasswordPage() {
       `}</style>
 
       <div className="page">
-        <div className="logo-wrap">
+        <motion.div
+          className="logo-wrap"
+          initial={pref ? false : { opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.24, ease: expoOut }}
+        >
           <svg className="logo-mark" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="26" cy="10" r="6" fill="#0D0D0D"/>
             <path d="M26 16 L44 48 H8 Z" fill="#0D0D0D"/>
@@ -68,9 +79,14 @@ export default function ForgotPasswordPage() {
             <circle cx="43" cy="18" r="4" fill="#6B6B6B"/>
           </svg>
           <span className="logo-name">BIG FAMILY</span>
-        </div>
+        </motion.div>
 
-        <div className="card">
+        <motion.div
+          className="card"
+          initial={pref ? false : { opacity: 0, y: 16, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.08 }}
+        >
           <h1 className="card-title">Recuperar contraseña</h1>
           <p className="card-sub">Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.</p>
 
@@ -84,19 +100,42 @@ export default function ForgotPasswordPage() {
             </div>
           ) : (
             <>
-              {error && <div className="err">{error}</div>}
+              <AnimatePresence>
+                {error && (
+                  <motion.div
+                    className="err"
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.18, ease: expoOut }}
+                  >
+                    {error}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <form onSubmit={handleSubmit}>
-                <div className="field">
+                <motion.div
+                  className="field"
+                  initial={pref ? false : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, ease: expoOut, delay: 0.22 }}
+                >
                   <label htmlFor="email">Correo electrónico</label>
                   <input
                     id="email" type="email" placeholder="tu@correo.com"
                     value={email} onChange={e => setEmail(e.target.value)} required
                   />
-                </div>
-                <button className="btn-main" type="submit" disabled={loading}>
-                  {loading ? 'Enviando…' : 'Enviar enlace de recuperación'}
-                </button>
+                </motion.div>
+                <motion.div
+                  initial={pref ? false : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, ease: expoOut, delay: 0.26 }}
+                >
+                  <button className={`btn-main${loading ? ' shimmer' : ''}`} type="submit" disabled={loading}>
+                    {loading ? 'Enviando…' : 'Enviar enlace de recuperación'}
+                  </button>
+                </motion.div>
               </form>
             </>
           )}
@@ -104,7 +143,7 @@ export default function ForgotPasswordPage() {
           <div className="footer-links">
             <a href="/login">← Volver al inicio de sesión</a>
           </div>
-        </div>
+        </motion.div>
       </div>
     </>
   )

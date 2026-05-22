@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { showToast, ToastContainer } from '@/components/Toast'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface LayoutOptions {
   coverStyle:   'full' | 'lateral'
@@ -37,18 +38,25 @@ function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?
 export default function ArticlePage() {
   const { slug }    = useParams<{ slug: string }>()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
-  const [article,  setArticle]  = useState<Article | null>(null)
-  const [loading,  setLoading]  = useState(true)
-  const [notFound, setNotFound] = useState(false)
+  const [article,      setArticle]      = useState<Article | null>(null)
+  const [loading,      setLoading]      = useState(true)
+  const [notFound,     setNotFound]     = useState(false)
+  const [shareSuccess, setShareSuccess] = useState(false)
 
   async function handleShare() {
     const url   = window.location.href
     const title = article?.title ?? 'Big Family'
     if (navigator.share) {
-      try { await navigator.share({ title, url }) } catch { /* user cancelled */ }
+      try {
+        await navigator.share({ title, url })
+        setShareSuccess(true)
+        setTimeout(() => setShareSuccess(false), 1500)
+      } catch { /* user cancelled */ }
     } else {
       try {
         await navigator.clipboard.writeText(url)
+        setShareSuccess(true)
+        setTimeout(() => setShareSuccess(false), 1500)
         showToast('success', 'Enlace copiado al portapapeles')
       } catch {
         showToast('error', 'No se pudo copiar el enlace')
@@ -107,7 +115,7 @@ export default function ArticlePage() {
         .art-brand{display:flex;align-items:center;gap:8px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;text-decoration:none;color:#0D0D0D;}
         .art-back{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#6B6B6B;text-decoration:none;transition:color .15s;}
         .art-back:hover{color:#0D0D0D;}
-        .art-share{margin-left:auto;display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:999px;background:rgba(13,13,13,.06);border:none;font-size:13px;font-family:inherit;color:#0D0D0D;cursor:pointer;transition:background .2s;}
+        .art-share{margin-left:auto;display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:999px;background:rgba(13,13,13,.06);border:none;font-size:13px;font-family:inherit;color:#0D0D0D;cursor:pointer;transition:background .3s,color .3s;}
         .art-share:hover{background:rgba(13,13,13,.1);}
 
         /* ── Cover — full style ── */
@@ -192,12 +200,42 @@ export default function ArticlePage() {
           Noticias
         </a>
         {!loading && article && (
-          <button className="art-share" onClick={handleShare}>
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M12 5.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM4 9.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM12 15.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" strokeWidth="1.4"/>
-              <path d="M6.3 8.3l3.4 1.9M9.7 5.8L6.3 7.7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-            </svg>
-            Compartir
+          <button
+            className="art-share"
+            onClick={handleShare}
+            style={shareSuccess ? { background: 'rgba(34,197,94,.12)', color: '#16a34a' } : undefined}
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              {shareSuccess ? (
+                <motion.span
+                  key="check"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M2 7l4 4 6-6" stroke="#16a34a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Copiado
+                </motion.span>
+              ) : (
+                <motion.span
+                  key="share"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}
+                  initial={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                    <path d="M12 5.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM4 9.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM12 15.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" strokeWidth="1.4"/>
+                    <path d="M6.3 8.3l3.4 1.9M9.7 5.8L6.3 7.7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                  </svg>
+                  Compartir
+                </motion.span>
+              )}
+            </AnimatePresence>
           </button>
         )}
       </nav>

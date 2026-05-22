@@ -317,6 +317,10 @@ export default function DashboardPage() {
         .mod-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:20px;box-shadow:0 2px 12px -6px rgba(13,13,13,.07);display:flex;flex-direction:column;gap:10px;transition:box-shadow .2s;}
         .mod-card:hover{box-shadow:0 6px 24px -8px rgba(13,13,13,.14);}
         .mod-card.done{background:var(--bg-2);}
+        @media(prefers-reduced-motion:no-preference){
+          @keyframes modDonePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.005)}}
+          .mod-card.done{animation:modDonePulse 3s ease-in-out infinite;}
+        }
         .mod-num{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#C0392B;}
         .mod-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;color:var(--ink);line-height:1.35;}
         .mod-desc{font-size:12px;color:var(--mute);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
@@ -381,7 +385,7 @@ export default function DashboardPage() {
         {/* ── CENTER CONTENT ── */}
         <motion.main
           className="content"
-          initial={pref ? false : { opacity: 0, y: 8 }}
+          initial={pref ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         >
@@ -476,7 +480,13 @@ export default function DashboardPage() {
                 <span>{loading ? '…' : `${visionPct}%`}</span>
               </div>
               <div className="prog-track">
-                <div className="prog-bar" style={{ width: loading ? '0%' : `${visionPct}%` }} />
+                <motion.div
+                  className="prog-bar"
+                  initial={{ width: '0%' }}
+                  whileInView={{ width: loading ? '0%' : `${visionPct}%` }}
+                  viewport={{ once: true }}
+                  transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.3 }}
+                />
               </div>
               {!loading && visionPct === 0 && (
                 <div className="prog-hint">Completa tu primer módulo para comenzar</div>
@@ -490,7 +500,13 @@ export default function DashboardPage() {
                 <span>{loading ? '…' : '0%'}</span>
               </div>
               <div className="prog-track">
-                <div className="prog-bar" style={{ width: '0%' }} />
+                <motion.div
+                  className="prog-bar"
+                  initial={{ width: '0%' }}
+                  whileInView={{ width: '0%' }}
+                  viewport={{ once: true }}
+                  transition={{ type: 'spring', stiffness: 140, damping: 20 }}
+                />
               </div>
               {!loading && (
                 <div className="prog-hint">Completa tu primer módulo para comenzar</div>
@@ -522,7 +538,13 @@ export default function DashboardPage() {
                       <span>{completedCount} / {totalModules}</span>
                     </div>
                     <div className="prog-track">
-                      <div className="prog-bar" style={{ width: `${visionPct}%` }} />
+                      <motion.div
+                        className="prog-bar"
+                        initial={{ width: '0%' }}
+                        whileInView={{ width: `${visionPct}%` }}
+                        viewport={{ once: true }}
+                        transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.3 }}
+                      />
                     </div>
                   </div>
                 )
@@ -729,7 +751,8 @@ export default function DashboardPage() {
                   <motion.div
                     className="mods-grid"
                     initial={pref ? false : 'hidden'}
-                    animate="visible"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: '-80px' }}
                     variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.07 } } }}
                   >
                     {sortedModules.map((mod) => {

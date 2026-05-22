@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import QuizQuestion, { type Question } from '@/components/QuizQuestion'
 import { ToastContainer, showToast } from '@/components/Toast'
 
@@ -44,6 +44,8 @@ export default function QuizPage() {
   const [existingAtt,     setExistingAtt]    = useState(0)
   const [retryStatus,     setRetryStatus]    = useState<'none' | 'pending' | 'sending'>('none')
   const [attemptsExhausted, setAttemptsExhausted] = useState(false)
+
+  const pref        = useReducedMotion()
 
   const startTime   = useRef(Date.now())
   const tabSwitches = useRef(0)
@@ -359,7 +361,12 @@ export default function QuizPage() {
         `}</style>
 
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', padding: 24 }}>
-          <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 24, padding: '48px 40px', maxWidth: 480, width: '100%', textAlign: 'center', position: 'relative', overflow: 'hidden', boxShadow: '0 16px 48px -12px rgba(13,13,13,.15)' }}>
+          <motion.div
+            style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 24, padding: '48px 40px', maxWidth: 480, width: '100%', textAlign: 'center', position: 'relative', overflow: 'hidden', boxShadow: result.passed ? '0 16px 48px -12px rgba(13,13,13,.15)' : '0 16px 48px -12px rgba(13,13,13,.15), 0 0 0 2px rgba(192,57,43,0.3)' }}
+            initial={pref ? false : { opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 140, damping: 20 }}
+          >
             {/* Confetti (success only) */}
             {result.passed && CONFETTI_COLORS.map((color, i) => {
               const angle = (i / CONFETTI_COLORS.length) * 360
@@ -487,7 +494,7 @@ export default function QuizPage() {
                 Volver al dashboard
               </button>
             </div>
-          </div>
+          </motion.div>
         </div>
         <ToastContainer />
       </>
@@ -520,7 +527,13 @@ export default function QuizPage() {
             <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 16, color: 'var(--ink)' }}>{mod.title}</div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <span style={{ fontSize: 13, color: 'var(--mute)' }}>⏱ {formatTime(elapsed)}</span>
+            <motion.span
+              style={{ fontSize: 13, color: elapsed >= 600 ? '#C0392B' : 'var(--mute)', fontVariantNumeric: 'tabular-nums' } as React.CSSProperties}
+              animate={!pref && elapsed >= 600 ? { scale: [1, 1.02, 1] } : {}}
+              transition={{ repeat: Infinity, duration: 1, type: 'tween' }}
+            >
+              ⏱ {formatTime(elapsed)}
+            </motion.span>
             {attemptsLeft <= 1 && (
               <span style={{ padding: '3px 10px', borderRadius: 999, background: '#FFFBEB', color: '#92400E', fontSize: 12, fontWeight: 600 }}>
                 {attemptsLeft === 1 ? '1 intento restante' : 'Ãšltimo intento'}
@@ -531,7 +544,11 @@ export default function QuizPage() {
 
         {/* Progress bar */}
         <div style={{ height: 3, background: 'var(--line)', position: 'relative' }}>
-          <div style={{ height: '100%', width: `${((currentIdx + 1) / questions.length) * 100}%`, background: '#C0392B', transition: 'width .4s ease' }} />
+          <motion.div
+            style={{ height: '100%', background: '#C0392B', borderRadius: 999 }}
+            animate={{ width: `${((currentIdx + 1) / questions.length) * 100}%` }}
+            transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+          />
         </div>
         <div style={{ textAlign: 'center', padding: '10px 0', fontSize: 12, color: 'var(--mute)', background: 'var(--card-bg)', borderBottom: '1px solid var(--line-soft)' }}>
           Pregunta {currentIdx + 1} de {questions.length}

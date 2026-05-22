@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase'
+import { motion, useReducedMotion } from 'framer-motion'
 
 interface NewsItem {
   id:           string
@@ -36,6 +37,7 @@ function PlaceholderImg({ size = 40 }: { size?: number }) {
 }
 
 export default function NewsListPage() {
+  const pref        = useReducedMotion()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const [articles,  setArticles]  = useState<NewsItem[]>([])
   const [loading,   setLoading]   = useState(true)
@@ -182,9 +184,24 @@ export default function NewsListPage() {
       <main className="nl-main">
         {/* Hero */}
         <div className="nl-hero">
-          <div className="nl-hero-eyebrow">Blog</div>
-          <h1 className="nl-hero-title">Noticias</h1>
-          <p className="nl-hero-sub">Lo que está pasando en Big Family</p>
+          <motion.div
+            className="nl-hero-eyebrow"
+            initial={pref ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          >Blog</motion.div>
+          <motion.h1
+            className="nl-hero-title"
+            initial={pref ? false : { opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.06 }}
+          >Noticias</motion.h1>
+          <motion.p
+            className="nl-hero-sub"
+            initial={pref ? false : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.12 }}
+          >Lo que está pasando en Big Family</motion.p>
         </div>
 
         {loading ? (
@@ -225,7 +242,13 @@ export default function NewsListPage() {
           <>
             {/* Featured hero card */}
             {featured && (
-              <a href={`/news/${featured.slug}`} className="nl-featured">
+              <motion.a
+                href={`/news/${featured.slug}`}
+                className="nl-featured"
+                initial={pref ? false : { opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.2 }}
+              >
                 <div className="nl-featured-body">
                   <div className="nl-featured-eyebrow">
                     <span />
@@ -247,16 +270,27 @@ export default function NewsListPage() {
                     : <div className="nl-featured-img-placeholder"><PlaceholderImg size={56} /></div>
                   }
                 </div>
-              </a>
+              </motion.a>
             )}
 
             {/* Rest of articles */}
             {rest.length > 0 && (
               <>
                 {featured && <div className="nl-section-label">Más noticias</div>}
-                <div className="nl-grid">
+                <motion.div
+                  className="nl-grid"
+                  initial={pref ? false : 'hidden'}
+                  whileInView="visible"
+                  viewport={{ once: true, margin: '-60px' }}
+                  variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
+                >
                   {rest.map(art => (
-                    <a key={art.id} href={`/news/${art.slug}`} className="nl-card">
+                    <motion.a
+                      key={art.id}
+                      href={`/news/${art.slug}`}
+                      className="nl-card"
+                      variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 140, damping: 20 } } }}
+                    >
                       <div className="nl-card-cover">
                         {art.cover_url
                           ? <img src={art.cover_url} alt={art.title} /> // eslint-disable-line @next/next/no-img-element
@@ -271,14 +305,21 @@ export default function NewsListPage() {
                         )}
                         <div className="nl-card-title" style={{ display: 'flex', alignItems: 'baseline', gap: 0, flexWrap: 'wrap' }}>
                           {art.title}
-                          {readSlugs.has(art.slug) && <span className="nl-read-badge">✓ Leído</span>}
+                          {readSlugs.has(art.slug) && (
+                            <motion.span
+                              className="nl-read-badge"
+                              initial={pref ? false : { scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                            >✓ Leído</motion.span>
+                          )}
                         </div>
                         <div className="nl-card-excerpt">{excerpt(art.content)}</div>
                         <div className="nl-card-meta">Por {art.author_name}</div>
                       </div>
-                    </a>
+                    </motion.a>
                   ))}
-                </div>
+                </motion.div>
               </>
             )}
           </>

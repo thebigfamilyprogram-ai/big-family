@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { motion, useInView, useMotionValue, useTransform, useSpring, useReducedMotion } from 'framer-motion'
+import { motion, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
 import CoordinatorButton from '@/components/CoordinatorButton'
 import TimelineSection from '@/components/TimelineSection'
 import * as topojson from 'topojson-client'
@@ -208,12 +208,24 @@ export default function GlobeHero() {
   const rotateX = useTransform(springY, [-300, 300], [8, -8])
   const rotateY = useTransform(springX, [-300, 300], [-8, 8])
 
-  const prefersReduced    = useReducedMotion()
-  const [bannerDismissed, setBannerDismissed] = useState(false)
+  const prefersReduced      = useReducedMotion()
+  const [bannerDismissed,   setBannerDismissed]   = useState(false)
+  const [scrollHintVisible, setScrollHintVisible] = useState(true)
+  const [isDragging,        setIsDragging]        = useState(false)
+  const [globeReady,        setGlobeReady]        = useState(false)
   const dlCd = useCountdown(DL_TARGET)
+
+  const { scrollY } = useScroll()
+  const globeY = useTransform(scrollY, [0, 600], [0, 80])
 
   useEffect(() => {
     setBannerDismissed(localStorage.getItem('dlg-banner-dismissed') === '1')
+  }, [])
+
+  useEffect(() => {
+    const onScrollHint = () => setScrollHintVisible(window.scrollY < 100)
+    window.addEventListener('scroll', onScrollHint, { passive: true })
+    return () => window.removeEventListener('scroll', onScrollHint)
   }, [])
 
   function handleAboutMouseMove(e: React.MouseEvent<HTMLElement>) {
@@ -231,11 +243,6 @@ export default function GlobeHero() {
   useEffect(() => {
     if (initialized.current) return
     initialized.current = true
-
-    document.querySelectorAll<HTMLElement>('.reveal').forEach(el => {
-      const d = +(el.dataset.delay || 0)
-      setTimeout(() => el.classList.add('in'), 180 + d)
-    })
 
     function countUp(el: HTMLElement, to: number, dur = 1400) {
       const start = performance.now()
@@ -563,7 +570,7 @@ export default function GlobeHero() {
 
       if (flagsLayer) { flagsLayer.innerHTML = '' }
       const pinData: any[] = []
-      countries.forEach(c => {
+      countries.forEach((c, idx) => {
         const pos = latLonToVec3(c.lat, c.lon, R * 1.005)
         const anchor = new THREE.Object3D()
         anchor.position.copy(pos)
@@ -586,6 +593,8 @@ export default function GlobeHero() {
           tip.classList.add('show')
         })
         flagEl.addEventListener('mouseleave', () => tip.classList.remove('show'))
+        const dotEl = flagEl.querySelector('.flag-pin__dot') as HTMLElement | null
+        if (dotEl) dotEl.style.setProperty('--pin-delay', `${idx * 0.4}s`)
         flagsLayer.appendChild(flagEl)
         pinData.push({ ...c, anchor, flagEl, worldPos: new THREE.Vector3() })
       })
@@ -729,7 +738,10 @@ export default function GlobeHero() {
         rafId = requestAnimationFrame(animate)
       }
       let rafId = requestAnimationFrame(animate)
-      setTimeout(() => wrap.classList.add('in'), 200)
+      setTimeout(() => {
+        wrap.classList.add('in')
+        setGlobeReady(true)
+      }, 200)
 
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
@@ -742,8 +754,8 @@ export default function GlobeHero() {
 
       // ── DRAG TO ROTATE ─────────────────────────────────────────────
       let isDown = false, lastX = 0, lastY = 0
-      wrap.addEventListener('pointerdown', e => { isDown = true; lastX = e.clientX; lastY = e.clientY; wrap.style.cursor = 'grabbing' })
-      window.addEventListener('pointerup',   () => { isDown = false; wrap.style.cursor = 'grab' })
+      wrap.addEventListener('pointerdown', e => { isDown = true; lastX = e.clientX; lastY = e.clientY })
+      window.addEventListener('pointerup',   () => { isDown = false })
       window.addEventListener('pointermove', e => {
         if (!isDown) return
         const dx = e.clientX - lastX, dy = e.clientY - lastY
@@ -798,8 +810,6 @@ export default function GlobeHero() {
         @keyframes blink{0%,100%{opacity:1}50%{opacity:.55}}
         @keyframes pp{0%{transform:scale(.6);opacity:.8}100%{transform:scale(2.2);opacity:0}}
         .left{position:relative;z-index:3;padding-top:20px;}
-        .reveal{opacity:0;transform:translateY(22px);transition:opacity .9s ease,transform .9s ease;}
-        .reveal.in{opacity:1;transform:translateY(0);}
         .brand{display:flex;flex-direction:column;align-items:flex-start;gap:14px;margin-bottom:44px;}
         .brand__logo{width:88px;height:88px;display:flex;align-items:center;justify-content:center;}
         .brand__word{font-size:10.5px;letter-spacing:.56em;text-transform:uppercase;color:var(--mute);border-top:1px solid var(--line);padding-top:12px;width:240px;display:flex;justify-content:space-between;align-items:center;}
@@ -818,6 +828,9 @@ export default function GlobeHero() {
         .right{position:relative;height:clamp(560px,80vh,820px);z-index:2;}
         .globe-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.92);width:120%;height:120%;max-width:900px;max-height:900px;opacity:0;transition:opacity 1.6s ease,transform 1.6s cubic-bezier(.2,.7,.2,1);cursor:grab;}
         .globe-wrap.in{opacity:1;transform:translate(-50%,-50%) scale(1);}
+        @media(prefers-reduced-motion:no-preference){
+          .globe-wrap.globe-dragging{transform:translate(-50%,-50%) scale(0.98) !important;transition:transform 0.3s cubic-bezier(0.16,1,0.3,1) !important;cursor:grabbing;}
+        }
         .globe-wrap canvas{display:block;width:100% !important;height:100% !important;}
         .tip{position:absolute;pointer-events:none;z-index:20;padding:10px 14px 12px;background:rgba(255,255,255,.62);backdrop-filter:blur(14px) saturate(160%);border:1px solid rgba(255,255,255,.9);box-shadow:0 20px 50px -20px rgba(13,13,13,.25);border-radius:10px;font-family:"Inter",sans-serif;opacity:0;transform:translate(-50%,-110%) translateY(6px);transition:opacity .18s ease,transform .18s ease;min-width:170px;}
         .tip.show{opacity:1;transform:translate(-50%,-110%) translateY(0);}
@@ -825,9 +838,9 @@ export default function GlobeHero() {
         .tip__meta{font-size:11px;color:var(--mute);margin-top:4px;display:flex;align-items:center;gap:8px;}
         .tip__meta .sep{width:3px;height:3px;background:var(--mute);border-radius:50%;}
         .tip__dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:6px;box-shadow:0 0 10px var(--accent);vertical-align:middle;}
-        .orbit{position:absolute;inset:6%;border-radius:50%;border:1px dashed rgba(13,13,13,.08);pointer-events:none;animation:spin 80s linear infinite;}
+        .orbit{position:absolute;inset:6%;border-radius:50%;border:1px dashed rgba(13,13,13,.08);pointer-events:none;}
         .orbit::before{content:"";position:absolute;width:6px;height:6px;border-radius:50%;background:var(--accent);top:6%;left:50%;transform:translateX(-50%);box-shadow:0 0 14px var(--accent);}
-        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes globePulse{0%,100%{transform:translate(-50%,-50%) scale(0.97)}50%{transform:translate(-50%,-50%) scale(1.03)}}
         .annot{position:absolute;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);z-index:4;}
         .annot::before{content:"";display:inline-block;width:30px;height:1px;background:var(--line);vertical-align:middle;margin-right:10px;}
         .flags-layer{position:absolute;inset:0;pointer-events:none;z-index:15;overflow:visible;}
@@ -836,7 +849,7 @@ export default function GlobeHero() {
         .flag-pin:hover .flag-pin__img{transform:scale(1.15);}
         .flag-pin__line{width:1.2px;height:12px;background:linear-gradient(to bottom,rgba(192,57,43,.85),rgba(192,57,43,.55));pointer-events:none;}
         .flag-pin__dot{width:8px;height:8px;border-radius:50%;background:#C0392B;border:1.5px solid #fff;box-shadow:0 0 10px rgba(192,57,43,.7);position:relative;}
-        .flag-pin__dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid rgba(192,57,43,.6);animation:pinPulse 2s ease-out infinite;}
+        .flag-pin__dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid rgba(192,57,43,.6);animation:pinPulse 3.5s ease-out infinite;animation-delay:var(--pin-delay,0s);}
         @keyframes pinPulse{0%{transform:scale(.6);opacity:.8}100%{transform:scale(2.4);opacity:0}}
         .conferencista{position:absolute;left:40px;right:40px;bottom:-60px;z-index:5;display:flex;align-items:center;background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.9);border-radius:18px;box-shadow:var(--shadow-lg);overflow:hidden;}
         .conf__person{display:flex;align-items:center;gap:14px;flex:1;padding:16px 20px;}
@@ -855,6 +868,9 @@ export default function GlobeHero() {
         .scroll-ind .bar::after{content:"";position:absolute;top:0;left:0;right:0;height:10px;background:var(--ink);animation:drop 2.2s ease-in-out infinite;}
         @keyframes drop{0%{transform:translateY(-10px);opacity:0}40%{opacity:1}100%{transform:translateY(40px);opacity:0}}
         .hero-bottom-spacer{height:0;}
+        @media(prefers-reduced-motion:reduce){
+          .meta .dot,.meta .dot::after,.flag-pin__dot::after,.conf__badge .pulse,.conf__badge .pulse::after,.scroll-ind .bar::after{animation:none !important;}
+        }
         @media(max-width:960px){.hero{grid-template-columns:1fr;padding:110px 24px 120px;}.nav{padding:14px 20px;}.nav__links{display:none;}.right{height:460px;}.conferencista{left:20px;right:20px;flex-direction:column;align-items:stretch;}.conf__person{flex:none;}.conf__sep{width:auto;height:1px;align-self:auto;}.conf__badge{border-left:none;border-top:1px solid rgba(13,13,13,.09);justify-content:center;}.meta{left:20px;right:20px;}}
         /* ── MISIÓN ──────────────────────────────────────────────────────────── */
         .mision{background:#080808;padding:160px 40px;}
@@ -995,16 +1011,23 @@ export default function GlobeHero() {
       <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@700,900,500,400&display=swap" />
 
       {/* Post-event banner */}
-      {!bannerDismissed && (
-        <div className="dl-banner">
-          <span>🎉 ¡Gracias a todos los participantes del Día de Liderazgo 2026!</span>
-          <button
-            className="dl-banner-x"
-            aria-label="Cerrar"
-            onClick={() => { setBannerDismissed(true); localStorage.setItem('dlg-banner-dismissed', '1') }}
-          >×</button>
-        </div>
-      )}
+      <AnimatePresence>
+        {!bannerDismissed && (
+          <motion.div
+            className="dl-banner"
+            initial={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0, overflow: 'hidden' }}
+            transition={{ duration: 0.2 }}
+          >
+            <span>🎉 ¡Gracias a todos los participantes del Día de Liderazgo 2026!</span>
+            <button
+              className="dl-banner-x"
+              aria-label="Cerrar"
+              onClick={() => { setBannerDismissed(true); localStorage.setItem('dlg-banner-dismissed', '1') }}
+            >×</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <nav className="nav" id="nav">
         <div className="nav__brand">
@@ -1040,7 +1063,12 @@ export default function GlobeHero() {
         </div>
 
         <div className="left">
-          <div className="brand reveal" data-delay="0">
+          <motion.div
+            className="brand"
+            initial={prefersReduced ? false : { opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+          >
             <div className="brand__logo">
               <svg viewBox="0 0 24 24" width="88" height="88" aria-label="Big Family" role="img">
                 <circle cx="12" cy="5" r="2.4" fill="#0D0D0D"/>
@@ -1054,18 +1082,38 @@ export default function GlobeHero() {
               <span className="word">THE BIG FAMILY</span>
               <span>MMXX</span>
             </div>
-          </div>
-          <h1 className="headline reveal" data-delay="120">
+          </motion.div>
+          <motion.h1
+            className="headline"
+            initial={prefersReduced ? false : { opacity: 0, y: 32 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
+          >
             Liderazgo juvenil<br/>que <em>transforma</em><br/>comunidades<span className="dot-end">.</span>
-          </h1>
-          <p className="lede reveal" data-delay="260">
+          </motion.h1>
+          <motion.p
+            className="lede"
+            initial={prefersReduced ? false : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1], delay: 0.18 }}
+          >
             Un programa global que conecta a una generación decidida a cambiar el rumbo de sus ciudades — con módulos, mentorías y una comunidad que trasciende fronteras.
-          </p>
-          <div className="cta-row reveal" data-delay="380">
+          </motion.p>
+          <motion.div
+            className="cta-row"
+            initial={prefersReduced ? false : { opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.28 }}
+          >
             <Link href="/submit" className="btn btn--solid">Soy estudiante →</Link>
             <button className="btn btn--ghost" onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}>Conocer el programa</button>
-          </div>
-          <div className="stats reveal" data-delay="500">
+          </motion.div>
+          <motion.div
+            className="stats"
+            initial={prefersReduced ? false : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.36 }}
+          >
             <div className="stat">
               <div className="stat__num"><span className="count" data-to="100">0</span><span className="plus">+</span></div>
               <div className="stat__label">Estudiantes</div>
@@ -1078,14 +1126,29 @@ export default function GlobeHero() {
               <div className="stat__num"><span className="count" data-to="10">0</span></div>
               <div className="stat__label">Países</div>
             </div>
-          </div>
+          </motion.div>
         </div>
 
-        <div className="right">
+        <motion.div
+          className="right"
+          initial={prefersReduced ? false : { opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          style={{ y: prefersReduced ? undefined : globeY }}
+          transition={{ type: 'spring', stiffness: 80, damping: 18, delay: 0.4 }}
+        >
           <div className="annot" style={{ top: '14%', left: '-2%' }}>45°N · ATLÁNTICO</div>
           <div className="annot" style={{ bottom: '18%', right: '-2%' }}>10°S · CARIBE</div>
           <div className="orbit"></div>
-          <div className="globe-wrap" ref={wrapRef}></div>
+          {!globeReady && !prefersReduced && (
+            <div style={{ position: 'absolute', top: '50%', left: '50%', width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle,rgba(192,57,43,.08) 0%,transparent 70%)', animation: 'globePulse 2s ease-in-out infinite', pointerEvents: 'none', zIndex: 1 }} />
+          )}
+          <div
+            className={`globe-wrap${isDragging ? ' globe-dragging' : ''}`}
+            ref={wrapRef}
+            onPointerDown={() => { if (!prefersReduced) setIsDragging(true) }}
+            onPointerUp={() => setIsDragging(false)}
+            onPointerLeave={() => setIsDragging(false)}
+          />
           <div className="flags-layer" ref={flagsRef}></div>
           <div className="tip" ref={tipRef}>
             <div className="tip__country"><span ref={tipCountryRef}>—</span></div>
@@ -1096,12 +1159,12 @@ export default function GlobeHero() {
               <span>Cohorte activa</span>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        
-
-
-        <div className="scroll-ind">
+        <div
+          className="scroll-ind"
+          style={{ opacity: scrollHintVisible ? 1 : 0, transition: 'opacity 300ms ease' }}
+        >
           <span>Scroll</span>
           <div className="bar"></div>
         </div>

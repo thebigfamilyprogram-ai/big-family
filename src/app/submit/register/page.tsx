@@ -5,40 +5,61 @@ export const dynamic = 'force-dynamic'
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+
+const expoOut = [0.22, 1, 0.36, 1] as const
+const springSnappy  = { type: 'spring' as const, stiffness: 200, damping: 22 }
+const springNatural = { type: 'spring' as const, stiffness: 140, damping: 20 }
 
 type Step  = 'code' | 'info'
 type Track = 'junior' | 'senior'
 
-function Logo() {
+function Logo({ pref }: { pref: boolean | null }) {
   return (
-    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:8, marginBottom:28 }}>
+    <motion.div
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginBottom: 28 }}
+      initial={pref ? false : { opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.24, ease: expoOut }}
+    >
       <svg width="34" height="34" viewBox="0 0 52 52" fill="none">
         <circle cx="26" cy="10" r="6" fill="#0D0D0D"/>
         <path d="M26 16 L44 48 H8 Z" fill="#0D0D0D"/>
         <circle cx="9" cy="18" r="4" fill="#6B6B6B"/>
         <circle cx="43" cy="18" r="4" fill="#6B6B6B"/>
       </svg>
-      <span style={{ fontFamily:'Satoshi,sans-serif', fontWeight:700, fontSize:15, color:'#0D0D0D' }}>Big Family</span>
-    </div>
+      <span style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, color: '#0D0D0D' }}>Big Family</span>
+    </motion.div>
   )
 }
 
-function Progress({ step }: { step: 1 | 2 | 3 }) {
+function Progress({ step, pref }: { step: 1 | 2 | 3; pref: boolean | null }) {
   const labels = ['Registro', 'Proyecto', 'Enviado']
   return (
-    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', marginBottom:28 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28 }}>
       {labels.map((label, i) => {
-        const n = i + 1
+        const n      = i + 1
         const done   = n < step
         const active = n === step
         return (
-          <div key={label} style={{ display:'flex', alignItems:'center' }}>
-            {i > 0 && <div style={{ width:36, height:1, background: done ? '#C0392B' : '#E0DDD8' }} />}
-            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:5 }}>
-              <div style={{ width:26, height:26, borderRadius:'50%', background: done ? '#C0392B' : active ? '#0D0D0D' : '#E8E4DF', color: done||active ? '#fff' : '#9a9690', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>
+          <div key={label} style={{ display: 'flex', alignItems: 'center' }}>
+            {i > 0 && (
+              <motion.div
+                style={{ width: 36, height: 1 }}
+                animate={{ background: done ? '#C0392B' : '#E0DDD8' }}
+                transition={{ duration: 0.4 }}
+              />
+            )}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+              <motion.div
+                style={{ width: 26, height: 26, borderRadius: '50%', background: done ? '#C0392B' : active ? '#0D0D0D' : '#E8E4DF', color: done || active ? '#fff' : '#9a9690', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}
+                initial={pref ? false : { scale: 0.6 }}
+                animate={{ scale: 1 }}
+                transition={springSnappy}
+              >
                 {done ? '✓' : n}
-              </div>
-              <span style={{ fontSize:10.5, fontWeight: active ? 700 : 400, color: active ? '#0D0D0D' : '#9a9690', whiteSpace:'nowrap' }}>{label}</span>
+              </motion.div>
+              <span style={{ fontSize: 10.5, fontWeight: active ? 700 : 400, color: active ? '#0D0D0D' : '#9a9690', whiteSpace: 'nowrap' }}>{label}</span>
             </div>
           </div>
         )
@@ -49,6 +70,7 @@ function Progress({ step }: { step: 1 | 2 | 3 }) {
 
 export default function SubmitRegisterPage() {
   const router      = useRouter()
+  const pref        = useReducedMotion()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [step,         setStep]         = useState<Step>('code')
@@ -143,13 +165,15 @@ export default function SubmitRegisterPage() {
         .sr-school-badge{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#EBF3FC;border:1px solid #B3D1F0;border-radius:10px;margin-bottom:20px;font-size:13.5px;font-weight:600;color:#1A4E7A;}
         .sr-field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
         .sr-label{font-size:12.5px;font-weight:600;color:#2D2D2D;}
-        .sr-input{padding:14px 16px;border:1.5px solid #E0DDD8;border-radius:10px;font-size:15px;font-family:inherit;background:#fff;color:#0D0D0D;outline:none;transition:border-color .2s;width:100%;}
-        .sr-input:focus{border-color:#0D0D0D;}
+        .sr-input{padding:14px 16px;border:1.5px solid #E0DDD8;border-radius:10px;font-size:15px;font-family:inherit;background:#fff;color:#0D0D0D;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;}
+        .sr-input:focus{border-color:#0D0D0D;box-shadow:0 0 0 3px rgba(192,57,43,.12);}
         .sr-input::placeholder{color:#b0ada8;}
         .sr-error{font-size:13px;color:#C0392B;background:#FFF5F5;border:1px solid #FCA5A5;border-radius:8px;padding:10px 14px;margin-bottom:16px;}
-        .sr-btn{width:100%;min-height:52px;background:#C0392B;color:#fff;border:none;border-radius:12px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;cursor:pointer;transition:background .2s;margin-top:4px;}
+        .sr-btn{width:100%;min-height:52px;background:#C0392B;color:#fff;border:none;border-radius:12px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;cursor:pointer;transition:background .2s;margin-top:4px;overflow:hidden;}
         .sr-btn:hover:not(:disabled){background:#a93226;}
         .sr-btn:disabled{opacity:.5;cursor:not-allowed;}
+        @keyframes btnShimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+        .sr-btn.shimmer{background:linear-gradient(90deg,#a93226 0%,#e84040 40%,#a93226 100%);background-size:200% 100%;animation:btnShimmer 1.2s ease infinite;}
         .sr-link{text-align:center;font-size:13px;color:#6B6B6B;margin-top:20px;}
         .sr-link a{color:#C0392B;text-decoration:none;font-weight:600;}
         .sr-tracks{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;}
@@ -168,9 +192,14 @@ export default function SubmitRegisterPage() {
       `}</style>
 
       <div className="sr-page">
-        <Logo />
-        <div className="sr-card">
-          <Progress step={1} />
+        <Logo pref={pref} />
+        <motion.div
+          className="sr-card"
+          initial={pref ? false : { opacity: 0, y: 16, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ ...springNatural, delay: 0.08 }}
+        >
+          <Progress step={1} pref={pref} />
 
           {step === 'code' ? (
             <>
@@ -178,7 +207,12 @@ export default function SubmitRegisterPage() {
               <div className="sr-sub">Ingresa el código de tu colegio para comenzar</div>
 
               <form onSubmit={handleCodeSubmit}>
-                <div className="sr-field">
+                <motion.div
+                  className="sr-field"
+                  initial={pref ? false : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, ease: expoOut, delay: 0.22 }}
+                >
                   <label className="sr-label">Código del colegio</label>
                   <input
                     className="sr-input"
@@ -189,9 +223,23 @@ export default function SubmitRegisterPage() {
                     autoFocus
                     required
                   />
-                </div>
-                {codeError && <div className="sr-error">{codeError}</div>}
-                <button className="sr-btn" type="submit" disabled={codeLoading || !schoolCode.trim()}>
+                </motion.div>
+
+                <AnimatePresence>
+                  {codeError && (
+                    <motion.div
+                      className="sr-error"
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.18, ease: expoOut }}
+                    >
+                      {codeError}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <button className={`sr-btn${codeLoading ? ' shimmer' : ''}`} type="submit" disabled={codeLoading || !schoolCode.trim()}>
                   {codeLoading ? 'Verificando…' : 'Verificar código'}
                 </button>
               </form>
@@ -212,19 +260,38 @@ export default function SubmitRegisterPage() {
               <div className="sr-sub">Un paso más para subir tu proyecto</div>
 
               <form onSubmit={handleInfoSubmit}>
-                <div className="sr-field">
-                  <label className="sr-label">Nombre completo</label>
-                  <input className="sr-input" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Tu nombre y apellido" required autoFocus />
-                </div>
-                <div className="sr-field">
-                  <label className="sr-label">Email</label>
-                  <input className="sr-input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="tu@email.com" required />
-                </div>
-                <div className="sr-field">
-                  <label className="sr-label">Contraseña</label>
-                  <input className="sr-input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 8 caracteres" minLength={8} required />
-                </div>
-                <div className="sr-field">
+                {[
+                  { label: 'Nombre completo', type: 'text', value: fullName, onChange: setFullName, placeholder: 'Tu nombre y apellido', autoFocus: true },
+                  { label: 'Email', type: 'email', value: email, onChange: setEmail, placeholder: 'tu@email.com' },
+                  { label: 'Contraseña', type: 'password', value: password, onChange: setPassword, placeholder: 'Mínimo 8 caracteres', minLength: 8 },
+                ].map((f, i) => (
+                  <motion.div
+                    key={f.label}
+                    className="sr-field"
+                    initial={pref ? false : { opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.18, ease: expoOut, delay: 0.1 + i * 0.04 }}
+                  >
+                    <label className="sr-label">{f.label}</label>
+                    <input
+                      className="sr-input"
+                      type={f.type}
+                      value={f.value}
+                      onChange={e => f.onChange(e.target.value)}
+                      placeholder={f.placeholder}
+                      required
+                      autoFocus={f.autoFocus}
+                      minLength={(f as { minLength?: number }).minLength}
+                    />
+                  </motion.div>
+                ))}
+
+                <motion.div
+                  className="sr-field"
+                  initial={pref ? false : { opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.18, ease: expoOut, delay: 0.22 }}
+                >
                   <label className="sr-label">Tu track</label>
                   <div className="sr-tracks">
                     <div className={`sr-track${track === 'junior' ? ' selected' : ''}`} onClick={() => setTrack('junior')}>
@@ -236,23 +303,40 @@ export default function SubmitRegisterPage() {
                       <div className="sr-track-sub">14 a 18 años</div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
-                {track === 'junior' && (
-                  <div className="sr-field">
-                    <label className="sr-label">Correo del acudiente (requerido para menores de edad)</label>
-                    <input
-                      className="sr-input"
-                      type="email"
-                      value={guardianEmail}
-                      onChange={e => setGuardianEmail(e.target.value)}
-                      placeholder="correo@acudiente.com"
-                      required={track === 'junior'}
-                    />
-                  </div>
-                )}
+                {/* Guardian email — animated reveal for junior track */}
+                <AnimatePresence>
+                  {track === 'junior' && (
+                    <motion.div
+                      key="guardian"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      style={{ overflow: 'hidden' }}
+                      transition={springNatural}
+                    >
+                      <div className="sr-field" style={{ marginTop: 4 }}>
+                        <label className="sr-label">Correo del acudiente (requerido para menores de edad)</label>
+                        <input
+                          className="sr-input"
+                          type="email"
+                          value={guardianEmail}
+                          onChange={e => setGuardianEmail(e.target.value)}
+                          placeholder="correo@acudiente.com"
+                          required={track === 'junior'}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                <label className="sr-terms">
+                {/* Terms checkbox with pop animation on check */}
+                <motion.label
+                  className="sr-terms"
+                  animate={termsAccepted && !pref ? { scale: [1, 1.01, 1] } : {}}
+                  transition={{ duration: 0.15, ...springSnappy }}
+                >
                   <input
                     type="checkbox"
                     checked={termsAccepted}
@@ -261,10 +345,27 @@ export default function SubmitRegisterPage() {
                   <span className="sr-terms-text">
                     Acepto los <a href="/terminos" target="_blank" rel="noopener noreferrer">términos y condiciones</a> y la <a href="/privacidad" target="_blank" rel="noopener noreferrer">política de privacidad</a> del programa Big Family.
                   </span>
-                </label>
+                </motion.label>
 
-                {formError && <div className="sr-error">{formError}</div>}
-                <button className="sr-btn" type="submit" disabled={formLoading || !fullName || !email || !password || !track || !termsAccepted}>
+                <AnimatePresence>
+                  {formError && (
+                    <motion.div
+                      className="sr-error"
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.18, ease: expoOut }}
+                    >
+                      {formError}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <button
+                  className={`sr-btn${formLoading ? ' shimmer' : ''}`}
+                  type="submit"
+                  disabled={formLoading || !fullName || !email || !password || !track || !termsAccepted}
+                >
                   {formLoading ? 'Creando cuenta…' : 'Crear cuenta y continuar →'}
                 </button>
               </form>
@@ -274,7 +375,7 @@ export default function SubmitRegisterPage() {
           <div className="sr-link">
             ¿Ya tienes cuenta? <a href="/submit/login">Ingresar</a>
           </div>
-        </div>
+        </motion.div>
       </div>
     </>
   )

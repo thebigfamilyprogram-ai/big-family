@@ -4,7 +4,12 @@ export const easings = {
   expoOut: [0.22, 1, 0.36, 1] as [number, number, number, number],
   spring: { type: 'spring' as const, stiffness: 140, damping: 20 },
   snappy: { type: 'spring' as const, stiffness: 200, damping: 22 },
+  heavy:  { type: 'spring' as const, stiffness: 80,  damping: 18 },
 }
+
+export const springSnappy  = { type: 'spring' as const, stiffness: 200, damping: 22 }
+export const springNatural = { type: 'spring' as const, stiffness: 140, damping: 20 }
+export const springHeavy   = { type: 'spring' as const, stiffness: 80,  damping: 18 }
 
 export const fadeUp: Variants = {
   hidden: { opacity: 0, y: 20 },
