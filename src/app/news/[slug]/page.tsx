@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { showToast, ToastContainer } from '@/components/Toast'
 
 interface LayoutOptions {
   coverStyle:   'full' | 'lateral'
@@ -40,6 +41,21 @@ export default function ArticlePage() {
   const [loading,  setLoading]  = useState(true)
   const [notFound, setNotFound] = useState(false)
 
+  async function handleShare() {
+    const url   = window.location.href
+    const title = article?.title ?? 'Big Family'
+    if (navigator.share) {
+      try { await navigator.share({ title, url }) } catch { /* user cancelled */ }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url)
+        showToast('success', 'Enlace copiado al portapapeles')
+      } catch {
+        showToast('error', 'No se pudo copiar el enlace')
+      }
+    }
+  }
+
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
@@ -65,6 +81,15 @@ export default function ArticlePage() {
         highlight_stat: data.highlight_stat ?? null,
       })
       setLoading(false)
+
+      // Record read — best-effort, ignore errors if table doesn't exist
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        await supabase.from('news_reads').upsert(
+          { user_id: user.id, news_slug: slug, read_at: new Date().toISOString() },
+          { onConflict: 'user_id,news_slug' }
+        )
+      }
     }
     load()
   }, [slug]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -80,8 +105,10 @@ export default function ArticlePage() {
         /* ── Nav ── */
         .art-nav{position:sticky;top:0;z-index:30;background:rgba(245,243,239,.88);backdrop-filter:saturate(150%) blur(16px);border-bottom:1px solid rgba(13,13,13,.08);height:60px;display:flex;align-items:center;padding:0 40px;gap:24px;}
         .art-brand{display:flex;align-items:center;gap:8px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;text-decoration:none;color:#0D0D0D;}
-        .art-back{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#6B6B6B;text-decoration:none;margin-left:auto;transition:color .15s;}
+        .art-back{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#6B6B6B;text-decoration:none;transition:color .15s;}
         .art-back:hover{color:#0D0D0D;}
+        .art-share{margin-left:auto;display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:999px;background:rgba(13,13,13,.06);border:none;font-size:13px;font-family:inherit;color:#0D0D0D;cursor:pointer;transition:background .2s;}
+        .art-share:hover{background:rgba(13,13,13,.1);}
 
         /* ── Cover — full style ── */
         .art-cover-full{width:100%;max-height:500px;overflow:hidden;background:linear-gradient(135deg,#ece9e4,#e2ddd8);}
@@ -164,7 +191,17 @@ export default function ArticlePage() {
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M9 12L4 7l5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
           Noticias
         </a>
+        {!loading && article && (
+          <button className="art-share" onClick={handleShare}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M12 5.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM4 9.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM12 15.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" strokeWidth="1.4"/>
+              <path d="M6.3 8.3l3.4 1.9M9.7 5.8L6.3 7.7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+            Compartir
+          </button>
+        )}
       </nav>
+      <ToastContainer />
 
       {loading ? (
         <>

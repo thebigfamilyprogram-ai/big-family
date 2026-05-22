@@ -336,7 +336,9 @@ export default function TeamHubPage() {
     const schoolAgg: Record<string, { name: string; score: number; students: number; projects: number }> = {}
     ranked.forEach(s => {
       if (!s.school_id) return
-      if (!schoolAgg[s.school_id]) schoolAgg[s.school_id] = { name: s.school_name ?? '—', score: 0, students: 0, projects: 0 }
+      const resolvedName = schoolNameMap[s.school_id]
+      if (!resolvedName) return  // skip if school not found in schools table
+      if (!schoolAgg[s.school_id]) schoolAgg[s.school_id] = { name: resolvedName, score: 0, students: 0, projects: 0 }
       schoolAgg[s.school_id].score    += s.score
       schoolAgg[s.school_id].students += 1
       schoolAgg[s.school_id].projects += s.projects

@@ -263,6 +263,10 @@ export default function EvaluatePage() {
         .ev-section{margin-bottom:24px;}
         .ev-section-eyebrow{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#C0392B;margin-bottom:4px;}
         .ev-section-pilar{font-size:11px;color:#9a9690;margin-bottom:8px;}
+        .ev-breadcrumb{display:flex;align-items:center;gap:6px;font-size:12.5px;color:rgba(13,13,13,.42);margin-bottom:20px;flex-wrap:wrap;}
+        .ev-breadcrumb a{color:rgba(13,13,13,.42);text-decoration:none;transition:color .15s;cursor:pointer;}
+        .ev-breadcrumb a:hover{color:#C0392B;}
+        .ev-breadcrumb-sep{color:rgba(13,13,13,.22);}
         .ev-section-body{font-size:14.5px;color:#2D2D2D;line-height:1.75;white-space:pre-wrap;}
         .ev-md{white-space:normal;}
         .ev-md p{margin-bottom:10px;}
@@ -318,6 +322,17 @@ export default function EvaluatePage() {
       <div className="ev-layout">
         {/* ── LEFT: Project viewer ── */}
         <div className="ev-left">
+          {/* Breadcrumb */}
+          <nav className="ev-breadcrumb" aria-label="Migas de pan">
+            <a onClick={() => router.push('/coordinator')}>Coordinador</a>
+            <span className="ev-breadcrumb-sep">›</span>
+            <a onClick={() => router.push('/coordinator/projects')}>Proyectos</a>
+            <span className="ev-breadcrumb-sep">›</span>
+            <span style={{ color: 'rgba(13,13,13,.7)', fontWeight: 500 }}>
+              {loading ? '…' : `Evaluar: ${project?.title ?? ''}`}
+            </span>
+          </nav>
+
           <div className="ev-card">
             {loading ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>

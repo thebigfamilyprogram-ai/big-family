@@ -37,8 +37,9 @@ function PlaceholderImg({ size = 40 }: { size?: number }) {
 
 export default function NewsListPage() {
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
-  const [articles, setArticles] = useState<NewsItem[]>([])
-  const [loading,  setLoading]  = useState(true)
+  const [articles,  setArticles]  = useState<NewsItem[]>([])
+  const [loading,   setLoading]   = useState(true)
+  const [readSlugs, setReadSlugs] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -59,6 +60,17 @@ export default function NewsListPage() {
       profiles?.forEach((p: { id: string; full_name: string | null }) => { pMap[p.id] = p.full_name ?? '—' })
 
       setArticles(rows.map((r: { id: string; title: string; slug: string; content: string; cover_url: string | null; published_at: string | null; author_id: string; featured: boolean | null }) => ({ ...r, author_name: pMap[r.author_id] ?? '—', featured: r.featured ?? false })))
+
+      // Fetch reads — best-effort
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: reads } = await supabase
+          .from('news_reads')
+          .select('news_slug')
+          .eq('user_id', user.id)
+        if (reads) setReadSlugs(new Set(reads.map((r: { news_slug: string }) => r.news_slug)))
+      }
+
       setLoading(false)
     }
     load()
@@ -124,6 +136,9 @@ export default function NewsListPage() {
         .nl-card-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:17px;color:#0D0D0D;margin-bottom:10px;line-height:1.35;}
         .nl-card-excerpt{font-size:13.5px;color:#6B6B6B;line-height:1.6;}
         .nl-card-meta{margin-top:14px;font-size:12px;color:#9a9690;}
+
+        /* ── Read badge ── */
+        .nl-read-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;background:rgba(34,197,94,.1);color:#16a34a;font-size:10.5px;font-weight:600;letter-spacing:.04em;vertical-align:middle;margin-left:6px;flex-shrink:0;}
 
         /* ── Empty ── */
         .nl-empty{text-align:center;padding:80px 20px;color:#9a9690;}
@@ -254,7 +269,10 @@ export default function NewsListPage() {
                             {new Date(art.published_at).toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' })}
                           </div>
                         )}
-                        <div className="nl-card-title">{art.title}</div>
+                        <div className="nl-card-title" style={{ display: 'flex', alignItems: 'baseline', gap: 0, flexWrap: 'wrap' }}>
+                          {art.title}
+                          {readSlugs.has(art.slug) && <span className="nl-read-badge">✓ Leído</span>}
+                        </div>
                         <div className="nl-card-excerpt">{excerpt(art.content)}</div>
                         <div className="nl-card-meta">Por {art.author_name}</div>
                       </div>

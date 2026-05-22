@@ -692,6 +692,9 @@ export default function ProjectEditor({
           .pe-cover{padding:32px 24px;}
           .pe-doc{padding:24px;}
         }
+        @media(max-width:768px){
+          .pe-tb-btn{min-width:36px;min-height:36px;width:36px;height:36px;}
+        }
         @media(max-width:600px){
           .pe-photo-grid{grid-template-columns:repeat(2,1fr);}
         }

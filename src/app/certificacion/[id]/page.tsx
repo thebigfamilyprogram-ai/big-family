@@ -303,6 +303,21 @@ export default function CertificacionPage() {
         @media print {
           html,body{background:#fff !important;}
           .no-print{display:none !important;}
+          /* Hide all interactive and animated elements */
+          .cert-actions{display:none !important;}
+          button{display:none !important;}
+          /* Hide confetti (fixed-position overlay added by JS) */
+          body > div[style*="position:fixed"],
+          body > div[style*="position: fixed"]{display:none !important;}
+          /* Hide shimmer / motion overlays that aren't diploma content */
+          .diploma > div:first-child:not([class]){display:none !important;}
+          /* SVG decorations outside diploma */
+          svg:not(.diploma svg){display:none !important;}
+          /* Loading spinners */
+          *[style*="border-top-color"]{display:none !important;}
+          /* Freeze all animations */
+          *{animation:none !important;transition:none !important;}
+
           .cert-page{padding:0;background:#fff !important;min-height:unset;justify-content:flex-start;}
           .diploma{
             max-width:100%;width:100%;

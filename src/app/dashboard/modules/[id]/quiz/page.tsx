@@ -424,10 +424,18 @@ export default function QuizPage() {
 
       <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
-        <div style={{ background: 'var(--card-bg)', borderBottom: '1px solid var(--line)', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <div style={{ background: 'var(--card-bg)', borderBottom: '1px solid var(--line)', padding: '12px 24px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
           <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--mute)', marginBottom: 4 }}>
+              <a href="/dashboard" style={{ color: 'var(--mute)', textDecoration: 'none' }} onMouseOver={e => (e.currentTarget.style.color='#C0392B')} onMouseOut={e => (e.currentTarget.style.color='var(--mute)')}>Dashboard</a>
+              <span style={{ color: 'var(--line)' }}>›</span>
+              <a href="/dashboard/leadership-path" style={{ color: 'var(--mute)', textDecoration: 'none' }} onMouseOver={e => (e.currentTarget.style.color='#C0392B')} onMouseOut={e => (e.currentTarget.style.color='var(--mute)')}>Módulos</a>
+              <span style={{ color: 'var(--line)' }}>›</span>
+              <a href={`/dashboard/modules/${moduleId}`} style={{ color: 'var(--mute)', textDecoration: 'none' }} onMouseOver={e => (e.currentTarget.style.color='#C0392B')} onMouseOut={e => (e.currentTarget.style.color='var(--mute)')}>{mod.title}</a>
+              <span style={{ color: 'var(--line)' }}>›</span>
+              <span style={{ color: 'var(--ink)', fontWeight: 500 }}>Cuestionario</span>
+            </div>
             <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 16, color: 'var(--ink)' }}>{mod.title}</div>
-            <div style={{ fontSize: 12, color: 'var(--mute)', marginTop: 2 }}>Cuestionario</div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <span style={{ fontSize: 13, color: 'var(--mute)' }}>⏱ {formatTime(elapsed)}</span>
