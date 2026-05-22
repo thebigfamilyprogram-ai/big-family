@@ -18,8 +18,14 @@ export default function ProjectsPage() {
   const [userName,     setUserName]     = useState('…')
   const [initial,      setInitial]      = useState('L')
   const [projects,     setProjects]     = useState<Project[]>([])
-  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null)
-  const [deleting,     setDeleting]     = useState(false)
+  const [deleteTarget,  setDeleteTarget]  = useState<Project | null>(null)
+  const [deleting,      setDeleting]      = useState(false)
+  const [nominateTarget, setNominateTarget] = useState<Project | null>(null)
+  const [nominateForm,   setNominateForm]   = useState({ title: '', story: '' })
+  const [nominating,     setNominating]     = useState(false)
+  const [nominatedIds,   setNominatedIds]   = useState<Set<string>>(new Set())
+  const [userId,         setUserId]         = useState('')
+  const [schoolId,       setSchoolId]       = useState<string | null>(null)
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -29,8 +35,10 @@ export default function ProjectsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
 
+      setUserId(user.id)
       const { data: profile } = await supabase
-        .from('profiles').select('full_name').eq('id', user.id).maybeSingle()
+        .from('profiles').select('full_name, school_id').eq('id', user.id).maybeSingle()
+      setSchoolId(profile?.school_id ?? null)
       const name = profile?.full_name ?? user.email ?? 'Leader'
       setUserName(name)
       setInitial(name.charAt(0).toUpperCase())
@@ -59,10 +67,27 @@ export default function ProjectsPage() {
         })))
       }
 
+      // Check which approved projects are already nominated
+      const { data: nominations } = await supabase.from('success_stories').select('project_id').eq('student_id', user.id)
+      if (nominations) setNominatedIds(new Set(nominations.map((n: { project_id: string | null }) => n.project_id).filter(Boolean) as string[]))
+
       setLoading(false)
     }
     boot()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function handleNominate() {
+    if (!nominateTarget || !nominateForm.title.trim() || !nominateForm.story.trim() || !supabaseRef.current) return
+    const supabase = supabaseRef.current
+    setNominating(true)
+    await supabase.from('success_stories').insert({
+      project_id: nominateTarget.id, student_id: userId,
+      title: nominateForm.title.trim(), story: nominateForm.story.trim(),
+      school_id: schoolId,
+    })
+    setNominatedIds(prev => new Set([...prev, nominateTarget.id]))
+    setNominateTarget(null); setNominateForm({ title: '', story: '' }); setNominating(false)
+  }
 
   function handleNewProject() {
     const existingDraft = projects.find(p => p.status === 'draft')
@@ -221,7 +246,9 @@ export default function ProjectsPage() {
                             <button className="btn-action pending" disabled>En revisión</button>
                           )}
                           {project.status === 'approved' && (
-                            <button className="btn-action approved">Ver proyecto ✓</button>
+                            nominatedIds.has(project.id)
+                              ? <span style={{ fontSize: 11, color: '#065F46', fontWeight: 600, padding: '5px 10px', background: '#D1FAE5', borderRadius: 999 }}>En revisión ✓</span>
+                              : <button className="btn-action approved" onClick={() => { setNominateTarget(project); setNominateForm({ title: project.title || '', story: '' }) }} style={{ fontSize: 11, whiteSpace: 'nowrap' }}>⭐ Nominar historia</button>
                           )}
                           {project.status === 'rejected' && (
                             <button className="btn-action rejected" onClick={() => router.push(`/dashboard/projects/${project.id}/edit`)}>
@@ -238,6 +265,34 @@ export default function ProjectsPage() {
           </div>
         </main>
       </div>
+
+      {/* Nominate modal */}
+      <AnimatePresence>
+        {nominateTarget && (
+          <motion.div key="nom-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => !nominating && setNominateTarget(null)}>
+            <motion.div initial={{ opacity: 0, scale: 0.92, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }} onClick={e => e.stopPropagation()} style={{ background: 'var(--card-bg)', borderRadius: 20, padding: '32px 28px', maxWidth: 500, width: '100%', boxShadow: '0 24px 64px -12px rgba(0,0,0,.25)', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div>
+                <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 4 }}>⭐ Nominar Historia de Éxito</div>
+                <div style={{ fontSize: 13, color: 'var(--mute)', lineHeight: 1.5 }}>Comparte tu historia de liderazgo. Si es seleccionada, aparecerá en la sección pública de Big Family.</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.06em' }}>Título de la historia</label>
+                <input value={nominateForm.title} onChange={e => setNominateForm(f => ({ ...f, title: e.target.value }))} style={{ padding: '10px 14px', border: '1px solid var(--line)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--bg-2)', color: 'var(--ink)' }} placeholder="Ej: Cómo organicé el primer taller de emprendimiento en mi colegio" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.06em' }}>Tu historia</label>
+                <textarea value={nominateForm.story} onChange={e => setNominateForm(f => ({ ...f, story: e.target.value }))} rows={5} style={{ resize: 'vertical', padding: '10px 14px', border: '1px solid var(--line)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--bg-2)', color: 'var(--ink)' }} placeholder="¿Qué lograste? ¿Cuál fue el impacto en tu comunidad?" />
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={handleNominate} disabled={!nominateForm.title.trim() || !nominateForm.story.trim() || nominating} style={{ flex: 1, padding: '12px', background: nominateForm.title.trim() && nominateForm.story.trim() ? '#C0392B' : 'rgba(13,13,13,.1)', border: 'none', borderRadius: 10, fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 13, color: nominateForm.title.trim() && nominateForm.story.trim() ? '#fff' : '#9a9690', cursor: nominateForm.title.trim() && nominateForm.story.trim() ? 'pointer' : 'default' }}>
+                  {nominating ? 'Enviando…' : 'Enviar nominación'}
+                </button>
+                <button onClick={() => { setNominateTarget(null); setNominateForm({ title: '', story: '' }) }} style={{ padding: '12px 20px', border: '1px solid var(--line)', borderRadius: 10, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--mute)' }}>Cancelar</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {deleteTarget && (

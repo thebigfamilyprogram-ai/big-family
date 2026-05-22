@@ -278,6 +278,11 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
           <button className="btn-dashboard" onClick={() => router.push('/coordinator/projects')}>Proyectos</button>
           <button className="btn-dashboard" onClick={() => router.push('/coordinator/modules')}>Módulos</button>
           <button className="btn-dashboard" onClick={() => router.push('/coordinator/news')}>Noticias</button>
+          <button className="btn-dashboard" onClick={() => router.push('/coordinator/goals')}>Metas</button>
+          <button className="btn-dashboard" onClick={() => router.push('/coordinator/calendar')}>Calendario</button>
+          <button className="btn-dashboard" onClick={() => router.push('/coordinator/announcements')}>Anuncios</button>
+          <button className="btn-dashboard" onClick={() => router.push('/coordinator/success-stories')}>Historias</button>
+          <button className="btn-dashboard" onClick={() => router.push('/coordinator/report')}>Reporte PDF</button>
           <button className="btn-dashboard" onClick={() => router.push('/dashboard')}>Ver Dashboard</button>
           <button className="btn-logout" onClick={handleLogout}>Cerrar sesión</button>
         </div>

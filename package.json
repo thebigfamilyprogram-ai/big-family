@@ -12,6 +12,8 @@
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.103.3",
     "framer-motion": "^12.38.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "marked": "^18.0.4",
     "next": "^16.2.4",
     "react": "^18",

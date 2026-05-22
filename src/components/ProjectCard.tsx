@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
+import ProjectReactions from '@/components/ProjectReactions'
 
 // ─── Shared types (exported for page use) ─────────────────────────────────────
 
@@ -257,13 +258,16 @@ export default function ProjectCard({
           <div style={{ fontSize: 12, color: '#bbb', marginBottom: 14 }}>
             {new Date(project.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
           </div>
-          <div style={{ display: 'flex', gap: 16, borderTop: '1px solid rgba(13,13,13,.06)', paddingTop: 12 }}>
+          <div style={{ display: 'flex', gap: 16, borderTop: '1px solid rgba(13,13,13,.06)', paddingTop: 12, flexWrap: 'wrap', alignItems: 'center' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#6B6B6B' }}>
               <HeartIcon />{project.likes_count}
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#6B6B6B' }}>
               <CommentIcon />{project.comments_count}
             </span>
+            <div style={{ marginLeft: 'auto' }}>
+              <ProjectReactions projectId={project.id} compact />
+            </div>
           </div>
         </div>
       </motion.div>
@@ -350,13 +354,16 @@ export default function ProjectCard({
           </a>
         )}
 
-        <div style={{ display: 'flex', gap: 18, marginTop: 16 }}>
+        <div style={{ display: 'flex', gap: 18, marginTop: 16, flexWrap: 'wrap', alignItems: 'center' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#6B6B6B' }}>
             <HeartIcon />{project.likes_count}
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#6B6B6B' }}>
             <CommentIcon />{project.comments_count}
           </span>
+          <div style={{ marginLeft: 'auto' }}>
+            <ProjectReactions projectId={project.id} />
+          </div>
         </div>
       </div>
 

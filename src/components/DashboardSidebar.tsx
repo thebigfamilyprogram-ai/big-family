@@ -4,12 +4,24 @@ import { useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
-type ActivePage = 'dashboard' | 'leadership-path' | 'global-map' | 'projects' | 'team-hub' | 'settings'
+type ActivePage =
+  | 'dashboard'
+  | 'leadership-path'
+  | 'global-map'
+  | 'projects'
+  | 'team-hub'
+  | 'settings'
+  | 'goals'
+  | 'calendar'
+  | 'announcements'
+  | 'feed'
+  | 'stories'
 
 interface Props {
   activePage: ActivePage
   userName?: string
   userInitial?: string
+  unreadAnnouncements?: number
 }
 
 const NAV_ITEMS: { label: string; page: ActivePage; href: string; icon: React.ReactNode }[] = [
@@ -34,6 +46,26 @@ const NAV_ITEMS: { label: string; page: ActivePage; href: string; icon: React.Re
     icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3" stroke="currentColor" strokeWidth="1.5"/><path d="M3 15c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
   },
   {
+    label: 'Mis Metas', page: 'goals', href: '/dashboard/goals',
+    icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="currentColor" strokeWidth="1.5"/><circle cx="9" cy="9" r="4.5" stroke="currentColor" strokeWidth="1.5" opacity=".5"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/></svg>,
+  },
+  {
+    label: 'Calendario', page: 'calendar', href: '/dashboard/calendar',
+    icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="3" width="14" height="13" rx="2" stroke="currentColor" strokeWidth="1.5"/><path d="M2 7h14M6 1v4M12 1v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+  },
+  {
+    label: 'Anuncios', page: 'announcements', href: '/dashboard/announcements',
+    icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1.5L16 5v8l-7 3.5L2 13V5L9 1.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>,
+  },
+  {
+    label: 'Feed', page: 'feed', href: '/dashboard/feed',
+    icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 4h14M2 9h10M2 14h7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+  },
+  {
+    label: 'Historias', page: 'stories', href: '/success-stories',
+    icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2l1.8 4.9H16l-4.1 3 1.5 4.9L9 12l-4.4 2.8 1.5-4.9L2 6.9h5.2L9 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>,
+  },
+  {
     label: 'Settings', page: 'settings', href: '/dashboard/settings',
     icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.5"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.2 3.2l1.4 1.4M13.4 13.4l1.4 1.4M3.2 14.8l1.4-1.4M13.4 4.6l1.4-1.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
   },
@@ -48,7 +80,7 @@ const BF_LOGO = (
   </svg>
 )
 
-export default function DashboardSidebar({ activePage, userName = '…', userInitial = 'L' }: Props) {
+export default function DashboardSidebar({ activePage, userName = '…', userInitial = 'L', unreadAnnouncements = 0 }: Props) {
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
@@ -64,7 +96,7 @@ export default function DashboardSidebar({ activePage, userName = '…', userIni
         .sidebar{background:var(--card-bg);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:28px 16px 24px;position:sticky;top:0;height:100vh;overflow-y:auto;transition:background .2s,border-color .2s;}
         .sb-logo{font-family:"Satoshi",sans-serif;font-weight:900;font-size:15px;letter-spacing:.12em;color:var(--ink);padding:0 8px;margin-bottom:32px;display:flex;align-items:center;gap:9px;transition:color .2s;}
         .sb-nav{display:flex;flex-direction:column;gap:3px;flex:1;}
-        .sb-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;font-size:13.5px;font-weight:500;color:var(--mute);cursor:pointer;transition:all .18s;text-decoration:none;border:none;background:none;width:100%;text-align:left;}
+        .sb-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;font-size:13.5px;font-weight:500;color:var(--mute);cursor:pointer;transition:all .18s;text-decoration:none;border:none;background:none;width:100%;text-align:left;position:relative;}
         .sb-item:hover{background:var(--line);color:var(--ink);}
         .sb-item.sb-active{background:#C0392B;color:#fff;}
         .sb-divider{height:1px;background:var(--line-soft);margin:16px 8px;transition:background .2s;}
@@ -78,6 +110,8 @@ export default function DashboardSidebar({ activePage, userName = '…', userIni
         .sb-links{display:flex;gap:12px;padding:12px 8px 0;font-size:11.5px;}
         .sb-links a,.sb-links button{color:var(--mute);text-decoration:none;background:none;border:none;cursor:pointer;font-size:11.5px;padding:0;transition:color .15s;}
         .sb-links a:hover,.sb-links button:hover{color:#C0392B;}
+        .sb-badge{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:#C0392B;color:#fff;border-radius:999px;font-size:9.5px;font-weight:700;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1;}
+        .sb-item.sb-active .sb-badge{background:#fff;color:#C0392B;}
       `}</style>
 
       <aside className="sidebar" style={{ width: 260, minWidth: 260, flexShrink: 0 }}>
@@ -95,6 +129,9 @@ export default function DashboardSidebar({ activePage, userName = '…', userIni
             >
               {item.icon}
               {item.label}
+              {item.page === 'announcements' && unreadAnnouncements > 0 && (
+                <span className="sb-badge">{unreadAnnouncements > 9 ? '9+' : unreadAnnouncements}</span>
+              )}
             </button>
           ))}
         </nav>

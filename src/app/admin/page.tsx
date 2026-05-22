@@ -9,7 +9,7 @@ import { showToast, ToastContainer } from '@/components/Toast'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 
 // ── Types ────────────────────────────────────────────────────────────────────
-type Tab = 'stats' | 'users' | 'projects' | 'evaluations'
+type Tab = 'stats' | 'users' | 'projects' | 'evaluations' | 'goals'
 
 interface UserRow {
   id:          string
@@ -113,6 +113,14 @@ export default function AdminPage() {
   const [loadingProjects, setLoadingProjects] = useState(false)
   const [loadingEvals,    setLoadingEvals]    = useState(false)
 
+  const [goalTemplates,       setGoalTemplates]       = useState<{ id: string; title: string; description: string | null; xp_reward: number }[]>([])
+  const [loadingGoals,        setLoadingGoals]        = useState(false)
+  const [tmplFormTitle,       setTmplFormTitle]       = useState('')
+  const [tmplFormDesc,        setTmplFormDesc]        = useState('')
+  const [tmplFormXp,          setTmplFormXp]          = useState(50)
+  const [savingTmpl,          setSavingTmpl]          = useState(false)
+  const [deletingTmpl,        setDeletingTmpl]        = useState<string | null>(null)
+
   const [userSearch,     setUserSearch]     = useState('')
   const [projectStatus,  setProjectStatus]  = useState('all')
   const [confirmingId,   setConfirmingId]   = useState<string | null>(null)
@@ -143,9 +151,10 @@ export default function AdminPage() {
   // ── Lazy tab loading ───────────────────────────────────────────────────────
   useEffect(() => {
     if (booting) return
-    if (tab === 'users'       && users.length    === 0) fetchUsers()
-    if (tab === 'projects'    && projects.length === 0) fetchProjects()
-    if (tab === 'evaluations' && evals.length    === 0) fetchEvals()
+    if (tab === 'users'       && users.length         === 0) fetchUsers()
+    if (tab === 'projects'    && projects.length      === 0) fetchProjects()
+    if (tab === 'evaluations' && evals.length         === 0) fetchEvals()
+    if (tab === 'goals'       && goalTemplates.length === 0) fetchGoalTemplates()
   }, [tab, booting]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Data fetchers ──────────────────────────────────────────────────────────
@@ -284,6 +293,35 @@ export default function AdminPage() {
     if (error) { showToast('error', 'Error al confirmar evaluación'); return }
     setEvals(prev => prev.map(e => e.id === evalId ? { ...e, admin_confirmed: true } : e))
     showToast('success', 'Evaluación confirmada ✓')
+  }
+
+  async function fetchGoalTemplates() {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
+    if (!supabase) return
+    setLoadingGoals(true)
+    const { data } = await supabase.from('goal_templates').select('*').order('created_at', { ascending: false })
+    setGoalTemplates(data ?? [])
+    setLoadingGoals(false)
+  }
+
+  async function handleCreateTemplate() {
+    if (!tmplFormTitle.trim() || !supabaseRef.current) return
+    const supabase = supabaseRef.current
+    setSavingTmpl(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    const { data } = await supabase.from('goal_templates').insert({ title: tmplFormTitle.trim(), description: tmplFormDesc.trim() || null, xp_reward: tmplFormXp, created_by: user?.id }).select().maybeSingle()
+    if (data) setGoalTemplates(prev => [data, ...prev])
+    setTmplFormTitle(''); setTmplFormDesc(''); setTmplFormXp(50)
+    setSavingTmpl(false)
+  }
+
+  async function handleDeleteTemplate(id: string) {
+    if (!supabaseRef.current) return
+    setDeletingTmpl(id)
+    await supabaseRef.current.from('goal_templates').delete().eq('id', id)
+    setGoalTemplates(prev => prev.filter(t => t.id !== id))
+    setDeletingTmpl(null)
   }
 
   async function handleLogout() {
@@ -436,6 +474,7 @@ export default function AdminPage() {
             { key: 'users',       label: 'Usuarios'     },
             { key: 'projects',    label: 'Proyectos'    },
             { key: 'evaluations', label: 'Evaluaciones' },
+            { key: 'goals',       label: 'Metas'        },
           ] as const).map(t => (
             <button key={t.key} className={`adm-tab${tab === t.key ? ' active' : ''}`} onClick={() => setTab(t.key)}>
               {t.label}
@@ -683,6 +722,62 @@ export default function AdminPage() {
             </div>
           )
         )}
+        {/* ── METAS / GOAL TEMPLATES ── */}
+        {tab === 'goals' && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 20 }}>
+            <div className="adm-card" style={{ padding: 24 }}>
+              <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Plantillas de metas del programa</div>
+              {loadingGoals ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {[1,2,3].map(i => <Sk key={i} h={52} r={10} />)}
+                </div>
+              ) : goalTemplates.length === 0 ? (
+                <div className="adm-empty">Sin plantillas todavía. Crea la primera →</div>
+              ) : goalTemplates.map(t => (
+                <div key={t.id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, padding: '14px 0', borderBottom: '1px solid var(--line-soft,rgba(13,13,13,.05))' }}>
+                  <div>
+                    <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 600, fontSize: 14 }}>{t.title}</div>
+                    {t.description && <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 3 }}>{t.description}</div>}
+                    <div style={{ fontSize: 11.5, color: '#b25a00', fontWeight: 600, marginTop: 4 }}>+{t.xp_reward} XP</div>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteTemplate(t.id)}
+                    disabled={deletingTmpl === t.id}
+                    style={{ padding: '5px 12px', borderRadius: 999, border: '1px solid #FCA5A5', background: 'none', color: '#991B1B', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', opacity: deletingTmpl === t.id ? 0.5 : 1 }}
+                  >
+                    {deletingTmpl === t.id ? '…' : 'Eliminar'}
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="adm-card" style={{ padding: 24, alignSelf: 'start' }}>
+              <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Nueva plantilla</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: '#6B6B6B', textTransform: 'uppercase', letterSpacing: '.06em' }}>Título</label>
+                  <input value={tmplFormTitle} onChange={e => setTmplFormTitle(e.target.value)} placeholder="Ej: Organizar un taller comunitario" style={{ padding: '10px 14px', border: '1.5px solid rgba(13,13,13,.12)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--card-bg,#fff)', color: 'var(--ink,#0D0D0D)' }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: '#6B6B6B', textTransform: 'uppercase', letterSpacing: '.06em' }}>Descripción</label>
+                  <textarea value={tmplFormDesc} onChange={e => setTmplFormDesc(e.target.value)} placeholder="Descripción opcional..." rows={3} style={{ padding: '10px 14px', border: '1.5px solid rgba(13,13,13,.12)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--card-bg,#fff)', resize: 'vertical', color: 'var(--ink,#0D0D0D)' }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: '#6B6B6B', textTransform: 'uppercase', letterSpacing: '.06em' }}>XP al completar</label>
+                  <input type="number" value={tmplFormXp} onChange={e => setTmplFormXp(Number(e.target.value))} min={10} max={500} step={10} style={{ padding: '10px 14px', border: '1.5px solid rgba(13,13,13,.12)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--card-bg,#fff)', color: 'var(--ink,#0D0D0D)' }} />
+                </div>
+                <button
+                  onClick={handleCreateTemplate}
+                  disabled={!tmplFormTitle.trim() || savingTmpl}
+                  style={{ padding: '10px', background: tmplFormTitle.trim() ? '#0D0D0D' : 'rgba(13,13,13,.1)', border: 'none', borderRadius: 10, fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 13, color: tmplFormTitle.trim() ? '#fff' : '#6B6B6B', cursor: tmplFormTitle.trim() ? 'pointer' : 'default', transition: 'all .2s' }}
+                >
+                  {savingTmpl ? 'Guardando…' : 'Crear plantilla'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </main>
 
       <ToastContainer />
