@@ -71,6 +71,14 @@ export default function SettingsPage() {
   const [deleteInput,   setDeleteInput]   = useState('')
   const [deleting,      setDeleting]      = useState(false)
 
+  // Change password
+  const [pwCurrent,     setPwCurrent]     = useState('')
+  const [pwNew,         setPwNew]         = useState('')
+  const [pwConfirm,     setPwConfirm]     = useState('')
+  const [pwError,       setPwError]       = useState('')
+  const [pwSuccess,     setPwSuccess]     = useState(false)
+  const [pwSaving,      setPwSaving]      = useState(false)
+
   const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -172,6 +180,25 @@ export default function SettingsPage() {
       setResetSent(true)
       showToast('success', 'Correo de restablecimiento enviado')
     }
+  }
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault()
+    setPwError('')
+    setPwSuccess(false)
+    if (pwNew.length < 8) { setPwError('La nueva contraseña debe tener al menos 8 caracteres.'); return }
+    if (pwNew !== pwConfirm) { setPwError('Las contraseñas no coinciden.'); return }
+    if (!supabaseRef.current) return
+    const supabase = supabaseRef.current
+    setPwSaving(true)
+    // Re-authenticate with current password first
+    const { error: authErr } = await supabase.auth.signInWithPassword({ email, password: pwCurrent })
+    if (authErr) { setPwSaving(false); setPwError('La contraseña actual es incorrecta.'); return }
+    const { error } = await supabase.auth.updateUser({ password: pwNew })
+    setPwSaving(false)
+    if (error) { setPwError('Error al cambiar la contraseña. Intenta de nuevo.'); return }
+    setPwSuccess(true)
+    setPwCurrent(''); setPwNew(''); setPwConfirm('')
   }
 
   async function saveNotifPreferences(next: { email: boolean; push: boolean; weekly: boolean }) {
@@ -507,7 +534,42 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="st-card">
-                    <div className="st-card-title">Contraseña</div>
+                    <div className="st-card-title">Cambiar contraseña</div>
+                    <div className="st-card-sub">Actualiza tu contraseña de acceso.</div>
+                    {pwSuccess ? (
+                      <div style={{ padding: '12px 16px', borderRadius: 10, background: '#D1FAE5', color: '#065F46', fontSize: 13.5, fontWeight: 500 }}>
+                        ✓ Contraseña actualizada correctamente.
+                      </div>
+                    ) : (
+                      <form onSubmit={handleChangePassword}>
+                        <div className="st-field">
+                          <label className="st-label">Contraseña actual</label>
+                          <input className="st-input" type="password" value={pwCurrent} onChange={e => setPwCurrent(e.target.value)} placeholder="••••••••" required />
+                        </div>
+                        <div className="st-field">
+                          <label className="st-label">Nueva contraseña</label>
+                          <input className="st-input" type="password" value={pwNew} onChange={e => setPwNew(e.target.value)} placeholder="Mínimo 8 caracteres" minLength={8} required />
+                        </div>
+                        <div className="st-field">
+                          <label className="st-label">Confirmar nueva contraseña</label>
+                          <input className="st-input" type="password" value={pwConfirm} onChange={e => setPwConfirm(e.target.value)} placeholder="Repite la nueva contraseña" required />
+                        </div>
+                        {pwError && (
+                          <div style={{ padding: '10px 14px', background: 'rgba(192,57,43,.08)', border: '1px solid rgba(192,57,43,.2)', borderRadius: 8, fontSize: 13, color: '#C0392B', marginBottom: 12 }}>
+                            {pwError}
+                          </div>
+                        )}
+                        <div className="st-save-row">
+                          <button type="submit" className="btn-save" disabled={pwSaving || !pwCurrent || !pwNew || !pwConfirm}>
+                            {pwSaving ? 'Cambiando…' : 'Cambiar contraseña'}
+                          </button>
+                        </div>
+                      </form>
+                    )}
+                  </div>
+
+                  <div className="st-card">
+                    <div className="st-card-title">Contraseña olvidada</div>
                     <div className="st-card-sub">Recibirás un correo con instrucciones para restablecer tu contraseña.</div>
                     {resetSent ? (
                       <div style={{ padding: '12px 16px', borderRadius: 10, background: '#D1FAE5', color: '#065F46', fontSize: 13.5, fontWeight: 500 }}>

@@ -58,12 +58,14 @@ export default function SubmitRegisterPage() {
   const [codeError,    setCodeError]    = useState('')
   const [codeLoading,  setCodeLoading]  = useState(false)
 
-  const [fullName,     setFullName]     = useState('')
-  const [email,        setEmail]        = useState('')
-  const [password,     setPassword]     = useState('')
-  const [track,        setTrack]        = useState<Track | null>(null)
-  const [formError,    setFormError]    = useState('')
-  const [formLoading,  setFormLoading]  = useState(false)
+  const [fullName,       setFullName]       = useState('')
+  const [email,          setEmail]          = useState('')
+  const [password,       setPassword]       = useState('')
+  const [track,          setTrack]          = useState<Track | null>(null)
+  const [guardianEmail,  setGuardianEmail]  = useState('')
+  const [termsAccepted,  setTermsAccepted]  = useState(false)
+  const [formError,      setFormError]      = useState('')
+  const [formLoading,    setFormLoading]    = useState(false)
 
   async function handleCodeSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -94,6 +96,8 @@ export default function SubmitRegisterPage() {
     e.preventDefault()
     setFormError('')
     if (!track) { setFormError('Selecciona tu track (Junior o Senior).'); return }
+    if (track === 'junior' && !guardianEmail.trim()) { setFormError('El correo del acudiente es requerido para estudiantes Junior.'); return }
+    if (!termsAccepted) { setFormError('Debes aceptar los términos y condiciones para continuar.'); return }
     if (password.length < 8) { setFormError('La contraseña debe tener al menos 8 caracteres.'); return }
     setFormLoading(true)
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -102,7 +106,7 @@ export default function SubmitRegisterPage() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: { data: { full_name: fullName, guardian_email: guardianEmail || null } },
     })
 
     if (signUpError || !data.user) {
@@ -156,6 +160,11 @@ export default function SubmitRegisterPage() {
         .sr-track-sub{font-size:11.5px;color:#6B6B6B;line-height:1.4;}
         .sr-back{background:none;border:none;cursor:pointer;color:#6B6B6B;font-size:13px;font-family:inherit;padding:0;margin-bottom:20px;display:flex;align-items:center;gap:5px;transition:color .15s;}
         .sr-back:hover{color:#0D0D0D;}
+        .sr-terms{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:#F5F3EF;border-radius:10px;margin-bottom:16px;cursor:pointer;}
+        .sr-terms input[type=checkbox]{width:16px;height:16px;flex-shrink:0;margin-top:2px;accent-color:#C0392B;cursor:pointer;}
+        .sr-terms-text{font-size:12.5px;color:#444;line-height:1.5;}
+        .sr-terms-text a{color:#C0392B;font-weight:600;text-decoration:none;}
+        .sr-terms-text a:hover{text-decoration:underline;}
       `}</style>
 
       <div className="sr-page">
@@ -228,8 +237,34 @@ export default function SubmitRegisterPage() {
                     </div>
                   </div>
                 </div>
+
+                {track === 'junior' && (
+                  <div className="sr-field">
+                    <label className="sr-label">Correo del acudiente (requerido para menores de edad)</label>
+                    <input
+                      className="sr-input"
+                      type="email"
+                      value={guardianEmail}
+                      onChange={e => setGuardianEmail(e.target.value)}
+                      placeholder="correo@acudiente.com"
+                      required={track === 'junior'}
+                    />
+                  </div>
+                )}
+
+                <label className="sr-terms">
+                  <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={e => setTermsAccepted(e.target.checked)}
+                  />
+                  <span className="sr-terms-text">
+                    Acepto los <a href="/terminos" target="_blank" rel="noopener noreferrer">términos y condiciones</a> y la <a href="/privacidad" target="_blank" rel="noopener noreferrer">política de privacidad</a> del programa Big Family.
+                  </span>
+                </label>
+
                 {formError && <div className="sr-error">{formError}</div>}
-                <button className="sr-btn" type="submit" disabled={formLoading || !fullName || !email || !password || !track}>
+                <button className="sr-btn" type="submit" disabled={formLoading || !fullName || !email || !password || !track || !termsAccepted}>
                   {formLoading ? 'Creando cuenta…' : 'Crear cuenta y continuar →'}
                 </button>
               </form>

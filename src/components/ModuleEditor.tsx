@@ -37,6 +37,10 @@ interface Props {
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+function isValidVideoUrl(url: string): boolean {
+  return /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/|vimeo\.com\/(?:video\/)?\d)/.test(url)
+}
+
 function extractYouTubeId(url: string): string | null {
   const patterns = [/[?&]v=([^&#]+)/, /youtu\.be\/([^?#]+)/, /embed\/([^?#]+)/]
   for (const p of patterns) {
@@ -255,7 +259,8 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
   const videoId      = extractYouTubeId(videoUrl)
   const thumbUrl     = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null
   const isLocked     = status === 'pending'
-  const canSubmit    = title.trim().length > 0 && (description ?? '').trim().length > 0 && videoUrl.trim().length > 0 && level.length > 0 && questions.length > 0
+  const videoUrlValid = videoUrl.trim().length === 0 || isValidVideoUrl(videoUrl)
+  const canSubmit     = title.trim().length > 0 && (description ?? '').trim().length > 0 && videoUrl.trim().length > 0 && isValidVideoUrl(videoUrl) && level.length > 0 && questions.length > 0
 
   // ── Autosave ───────────────────────────────────────────────────────────────
   const doSave = useCallback(async () => {
@@ -462,13 +467,13 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
             </div>
 
             <div className="me-field">
-              <label className="me-label">URL del video (YouTube)</label>
+              <label className="me-label">URL del video (YouTube o Vimeo)</label>
               <input className="me-input" value={videoUrl} onChange={e => setVideoUrl(e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=…" disabled={isLocked} />
+                placeholder="https://www.youtube.com/watch?v=… o https://vimeo.com/…" disabled={isLocked} />
               {thumbUrl
                 ? <img className="me-thumb" src={thumbUrl} alt="Vista previa del video" />
-                : videoUrl.trim().length > 0
-                  ? <div className="me-thumb-ph">URL de YouTube no válida</div>
+                : videoUrl.trim().length > 0 && !videoUrlValid
+                  ? <div className="me-thumb-ph" style={{ color: '#C0392B' }}>URL no válida. Usa un enlace de YouTube o Vimeo.</div>
                   : null
               }
             </div>

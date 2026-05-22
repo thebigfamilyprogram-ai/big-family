@@ -22,6 +22,10 @@ export default function SubmitLanding() {
         .sl-btn-ghost{display:flex;align-items:center;justify-content:center;min-height:54px;background:#fff;color:#0D0D0D;border:1.5px solid rgba(13,13,13,.15);border-radius:12px;font-family:"Satoshi",sans-serif;font-weight:600;font-size:15px;text-decoration:none;transition:border-color .2s,transform .15s;}
         .sl-btn-ghost:hover{border-color:#0D0D0D;transform:translateY(-1px);}
         .sl-footer{margin-top:48px;font-size:12px;color:#9a9690;}
+        .sl-event-banner{display:flex;align-items:flex-start;gap:14px;padding:16px 20px;background:rgba(192,57,43,.06);border:1.5px solid rgba(192,57,43,.2);border-radius:14px;max-width:480px;width:100%;margin-bottom:32px;text-align:left;}
+        .sl-event-banner-icon{font-size:24px;flex-shrink:0;margin-top:2px;}
+        .sl-event-banner-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;color:#C0392B;margin-bottom:4px;}
+        .sl-event-banner-sub{font-size:13px;color:#7a3020;line-height:1.5;}
       `}</style>
 
       <div className="sl-page">
@@ -33,6 +37,16 @@ export default function SubmitLanding() {
             <circle cx="43" cy="18" r="4" fill="#6B6B6B"/>
           </svg>
           <span className="sl-logo-name">Big Family</span>
+        </div>
+
+        <div className="sl-event-banner">
+          <span className="sl-event-banner-icon">🎯</span>
+          <div>
+            <div className="sl-event-banner-title">Día de Liderazgo · Big Family</div>
+            <div className="sl-event-banner-sub">
+              Este es el flujo oficial de registro y envío de proyectos para el Día de Liderazgo. Regístrate, completa tu proyecto y envíalo a tu coordinador desde aquí.
+            </div>
+          </div>
         </div>
 
         <h1 className="sl-title">Sube tu Proyecto de Liderazgo</h1>

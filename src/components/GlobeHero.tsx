@@ -994,11 +994,10 @@ export default function GlobeHero() {
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" />
       <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@700,900,500,400&display=swap" />
 
-      {/* TEMP LAUNCH: Día de Liderazgo event banner — dismissible */}
+      {/* Post-event banner */}
       {!bannerDismissed && (
         <div className="dl-banner">
-          <span>🎯 Día de Liderazgo · La Guajira 2026 — ¿Eres estudiante participante?</span>
-          <a href="/dia-de-liderazgo">Sube tu proyecto aquí →</a>
+          <span>🎉 ¡Gracias a todos los participantes del Día de Liderazgo 2026!</span>
           <button
             className="dl-banner-x"
             aria-label="Cerrar"

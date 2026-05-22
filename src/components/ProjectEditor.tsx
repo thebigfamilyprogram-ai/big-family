@@ -93,6 +93,14 @@ function wc(text: string) {
   return text.trim().split(/\s+/).filter(Boolean).length
 }
 
+function getVideoEmbedUrl(url: string): string | null {
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`
+  const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)/)
+  if (vm) return `https://player.vimeo.com/video/${vm[1]}`
+  return null
+}
+
 function allComplete(fields: object, minWords = 10): boolean {
   return Object.values(fields).every(v => typeof v === 'string' && wc(v) >= minWords)
 }
@@ -106,7 +114,7 @@ type ValuesSnapshot = {
   reflexionar:  ReflexionarFields
   // TEMP: kept in snapshot so existing data isn't overwritten on save
   planContinuidad: string; bigLeaderModelReflection: string
-  evidenceUrls: string[]; pdfUrl: string | null
+  evidenceUrls: string[]; pdfUrl: string | null; videoUrl: string | null
 }
 
 // 5 IDEMR sections × 20% = 100%
@@ -391,6 +399,7 @@ export default function ProjectEditor({
 
   const [evidenceUrls,   setEvidenceUrls]   = useState<string[]>(initialData.evidence_urls ?? [])
   const [pdfUrl,         setPdfUrl]         = useState<string | null>(initialData.pdf_url ?? null)
+  const [videoUrl,       setVideoUrl]       = useState<string>(initialData.video_url ?? '')
   const [status,         setStatus]         = useState(initialData.status ?? 'draft')
   const [rejectionReason] = useState<string | null>(initialData.rejection_reason ?? null)
 
@@ -416,12 +425,12 @@ export default function ProjectEditor({
   const valuesRef = useRef<ValuesSnapshot>({
     title, subtitle, category, track,
     identificar, diseniar, ejecutar, medir, reflexionar,
-    planContinuidad, bigLeaderModelReflection, evidenceUrls, pdfUrl,
+    planContinuidad, bigLeaderModelReflection, evidenceUrls, pdfUrl, videoUrl,
   })
   valuesRef.current = {
     title, subtitle, category, track,
     identificar, diseniar, ejecutar, medir, reflexionar,
-    planContinuidad, bigLeaderModelReflection, evidenceUrls, pdfUrl,
+    planContinuidad, bigLeaderModelReflection, evidenceUrls, pdfUrl, videoUrl,
   }
 
   // ── Completion ─────────────────────────────────────────────────────────────
@@ -465,6 +474,7 @@ export default function ProjectEditor({
         plan_continuidad:            v.planContinuidad,
         big_leader_model_reflection: v.bigLeaderModelReflection,
         pdf_url:                     v.pdfUrl,
+        video_url:                   v.videoUrl || null,
         completion_percentage:       comp,
       })
       .eq('id', projectId)
@@ -935,47 +945,39 @@ export default function ProjectEditor({
                 <input ref={pdfInputRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadPdf(f) }} />
               </div>
 
-              {/* ── Video opcional ── */}
-              {!isLocked && (
-                <div style={{ marginTop: 20 }}>
-                  <label className="pe-label" style={{ marginBottom: 8, fontSize: 13 }}>Video opcional</label>
-
-                  {/* Size warning — shown when selected file exceeds 200 MB */}
-                  {videoSizeWarning && (
-                    <div style={{ marginBottom: 10, padding: '10px 14px', background: '#FEF3C7', border: '1px solid #FCD34D', borderRadius: 10, fontSize: 13, color: '#92400E' }}>
-                      ⚠ El video supera los 200 MB. Por favor comprime el archivo o usa un enlace de YouTube.
+              {/* ── Video opcional (YouTube / Vimeo URL) ── */}
+              <div style={{ marginTop: 20 }}>
+                <label className="pe-label" style={{ marginBottom: 6, fontSize: 13 }}>Video del proyecto (YouTube o Vimeo)</label>
+                <p style={{ fontSize: 12, color: 'var(--mute)', marginBottom: 8 }}>Pega el enlace de tu video de YouTube o Vimeo.</p>
+                <input
+                  className="pe-input"
+                  type="url"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  value={videoUrl}
+                  disabled={isLocked}
+                  onChange={e => setVideoUrl(e.target.value)}
+                  onBlur={() => triggerAutosave()}
+                />
+                {videoUrl && (() => {
+                  const embedUrl = getVideoEmbedUrl(videoUrl)
+                  if (!embedUrl) return (
+                    <p style={{ fontSize: 12, color: '#C0392B', marginTop: 6 }}>
+                      URL no válida. Usa un enlace de YouTube o Vimeo.
+                    </p>
+                  )
+                  return (
+                    <div style={{ marginTop: 12, borderRadius: 10, overflow: 'hidden', aspectRatio: '16/9' }}>
+                      <iframe
+                        src={embedUrl}
+                        style={{ width: '100%', height: '100%', border: 'none' }}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        title="Vista previa del video"
+                      />
                     </div>
-                  )}
-
-                  <div
-                    className="pe-drop"
-                    style={{ padding: '20px 24px' }}
-                    onClick={() => { setVideoSizeWarning(false); videoInputRef.current?.click() }}
-                  >
-                    {uploadingVideo
-                      ? (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 13, color: '#C0392B' }}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ animation: 'spin 1s linear infinite', flexShrink: 0 }}>
-                            <circle cx="12" cy="12" r="10" stroke="rgba(192,57,43,.2)" strokeWidth="3"/>
-                            <path d="M12 2a10 10 0 0 1 10 10" stroke="#C0392B" strokeWidth="3" strokeLinecap="round"/>
-                          </svg>
-                          <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-                          Subiendo video… esto puede tardar unos minutos
-                        </div>
-                      ) : (
-                        <p className="pe-drop-text" style={{ marginTop: 0 }}>Haz clic para seleccionar un video · máx. 200 MB</p>
-                      )
-                    }
-                  </div>
-                  <input
-                    ref={videoInputRef}
-                    type="file"
-                    accept="video/*"
-                    style={{ display: 'none' }}
-                    onChange={e => handleVideoSelect(e.target.files?.[0])}
-                  />
-                </div>
-              )}
+                  )
+                })()}
+              </div>
             </Section>
           </div>
         </div>

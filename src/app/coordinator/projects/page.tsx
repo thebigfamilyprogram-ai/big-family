@@ -45,6 +45,8 @@ export default function CoordinatorProjectsPage() {
   const [filterStatus,   setFilterStatus]   = useState<StatusFilter>('all')
   const [filterCategory, setFilterCategory] = useState('')
   const [search,         setSearch]         = useState('')
+  const [projPage,       setProjPage]       = useState(0)
+  const PROJ_PAGE_SIZE = 20
   const pref = useReducedMotion()
 
   useEffect(() => {
@@ -163,6 +165,7 @@ export default function CoordinatorProjectsPage() {
   }
 
   const filtered = useMemo(() => {
+    setProjPage(0)
     const q = search.toLowerCase()
     return projects.filter(p => {
       if (filterStatus !== 'all' && p.status !== filterStatus) return false
@@ -171,6 +174,9 @@ export default function CoordinatorProjectsPage() {
       return true
     })
   }, [projects, filterStatus, filterCategory, search])
+
+  const totalProjPages = Math.ceil(filtered.length / PROJ_PAGE_SIZE)
+  const pagedFiltered  = filtered.slice(projPage * PROJ_PAGE_SIZE, (projPage + 1) * PROJ_PAGE_SIZE)
 
   const counts = useMemo(() => ({
     total:    projects.length,
@@ -243,7 +249,18 @@ export default function CoordinatorProjectsPage() {
 
         /* Feed */
         .cpj-feed{display:flex;flex-direction:column;gap:20px;}
-        .cpj-empty{background:#fff;border:1px solid rgba(13,13,13,.07);border-radius:20px;padding:48px;text-align:center;color:#9a9690;font-size:15px;}
+        .cpj-empty{background:#fff;border:1px solid rgba(13,13,13,.07);border-radius:20px;padding:60px 48px;text-align:center;}
+        .cpj-empty-icon{font-size:40px;margin-bottom:16px;}
+        .cpj-empty-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:18px;color:#0D0D0D;margin-bottom:8px;}
+        .cpj-empty-sub{font-size:14px;color:#9a9690;line-height:1.55;max-width:340px;margin:0 auto;}
+
+        /* Pagination */
+        .cpj-pagination{display:flex;align-items:center;justify-content:space-between;margin-top:24px;gap:12px;}
+        .cpj-page-info{font-size:12.5px;color:#9a9690;}
+        .cpj-page-btns{display:flex;gap:8px;}
+        .cpj-page-btn{padding:8px 20px;border-radius:999px;border:1.5px solid rgba(13,13,13,.12);font-family:"Satoshi",sans-serif;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#6B6B6B;transition:all .15s;}
+        .cpj-page-btn:hover:not(:disabled){border-color:#0D0D0D;color:#0D0D0D;}
+        .cpj-page-btn:disabled{opacity:.35;cursor:not-allowed;}
 
         @media(max-width:860px){
           .cpj-main{padding:28px 20px 60px;}
@@ -369,35 +386,61 @@ export default function CoordinatorProjectsPage() {
             {[1,2].map(i => <div key={i} style={{ height: 400, borderRadius: 20, background: 'rgba(13,13,13,.04)' }} />)}
           </div>
         ) : (
-          <div className="cpj-feed">
-            {filtered.length === 0 ? (
-              <div className="cpj-empty">
-                {projects.length === 0
-                  ? 'Los estudiantes de tu colegio aún no han subido proyectos.'
-                  : 'No hay proyectos con esos filtros.'}
+          <>
+            <div className="cpj-feed">
+              {filtered.length === 0 ? (
+                <div className="cpj-empty">
+                  {projects.length === 0 ? (
+                    <>
+                      <div className="cpj-empty-icon">📋</div>
+                      <div className="cpj-empty-title">Aún no hay proyectos de tu colegio</div>
+                      <div className="cpj-empty-sub">
+                        Cuando tus estudiantes suban sus proyectos de liderazgo, aparecerán aquí para que puedas revisarlos y aprobarlos.
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="cpj-empty-icon">🔍</div>
+                      <div className="cpj-empty-title">Sin resultados</div>
+                      <div className="cpj-empty-sub">No hay proyectos que coincidan con los filtros seleccionados.</div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                pagedFiltered.map((project, i) => (
+                  <motion.div
+                    key={project.id}
+                    initial={pref ? false : { opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 140, damping: 20, delay: pref ? 0 : i * 0.06 }}
+                  >
+                    <ProjectCard
+                      project={project}
+                      mode="coordinator"
+                      coordinatorId={coord?.user_id}
+                      initialComments={project.comments}
+                      onApprove={handleApprove}
+                      onReject={handleReject}
+                      onEvaluate={id => router.push(`/coordinator/projects/${id}/evaluate`)}
+                      resultado={project.resultado}
+                    />
+                  </motion.div>
+                ))
+              )}
+            </div>
+
+            {filtered.length > PROJ_PAGE_SIZE && (
+              <div className="cpj-pagination">
+                <span className="cpj-page-info">
+                  Página {projPage + 1} de {totalProjPages} · {filtered.length} proyectos
+                </span>
+                <div className="cpj-page-btns">
+                  <button className="cpj-page-btn" disabled={projPage === 0} onClick={() => { setProjPage(p => p - 1); window.scrollTo(0, 0) }}>← Anterior</button>
+                  <button className="cpj-page-btn" disabled={projPage >= totalProjPages - 1} onClick={() => { setProjPage(p => p + 1); window.scrollTo(0, 0) }}>Siguiente →</button>
+                </div>
               </div>
-            ) : (
-              filtered.map((project, i) => (
-                <motion.div
-                  key={project.id}
-                  initial={pref ? false : { opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ type: 'spring', stiffness: 140, damping: 20, delay: pref ? 0 : i * 0.06 }}
-                >
-                  <ProjectCard
-                    project={project}
-                    mode="coordinator"
-                    coordinatorId={coord?.user_id}
-                    initialComments={project.comments}
-                    onApprove={handleApprove}
-                    onReject={handleReject}
-                    onEvaluate={id => router.push(`/coordinator/projects/${id}/evaluate`)}
-                    resultado={project.resultado}
-                  />
-                </motion.div>
-              ))
             )}
-          </div>
+          </>
         )}
       </motion.main>
     </>

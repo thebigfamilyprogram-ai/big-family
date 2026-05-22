@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { marked } from 'marked'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface ProjectData {
@@ -22,6 +23,24 @@ interface ProjectData {
   big_leader_model_reflection: string | null
   user_id:                     string
   submitted_at:                string | null
+  video_url:                   string | null
+}
+
+function getVideoEmbedUrl(url: string): string | null {
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`
+  const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)/)
+  if (vm) return `https://player.vimeo.com/video/${vm[1]}`
+  return null
+}
+
+function renderMarkdown(text: string): string {
+  try {
+    const result = marked.parse(text, { async: false })
+    return typeof result === 'string' ? result : ''
+  } catch {
+    return text
+  }
 }
 
 interface StudentInfo {
@@ -245,6 +264,15 @@ export default function EvaluatePage() {
         .ev-section-eyebrow{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#C0392B;margin-bottom:4px;}
         .ev-section-pilar{font-size:11px;color:#9a9690;margin-bottom:8px;}
         .ev-section-body{font-size:14.5px;color:#2D2D2D;line-height:1.75;white-space:pre-wrap;}
+        .ev-md{white-space:normal;}
+        .ev-md p{margin-bottom:10px;}
+        .ev-md strong{font-weight:700;}
+        .ev-md em{font-style:italic;}
+        .ev-md h2,.ev-md h3{font-family:"Satoshi",sans-serif;font-weight:700;margin-bottom:6px;}
+        .ev-md ul,.ev-md ol{padding-left:20px;margin-bottom:10px;}
+        .ev-md li{margin-bottom:4px;}
+        .ev-md blockquote{border-left:3px solid #C0392B;padding-left:12px;color:#6B6B6B;font-style:italic;margin:8px 0;}
+        .ev-md a{color:#C0392B;}
         .ev-section-empty{font-size:13px;color:#bbb;font-style:italic;}
         .ev-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;}
         .ev-photo{aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:rgba(13,13,13,.05);}
@@ -319,13 +347,16 @@ export default function EvaluatePage() {
                   <p style={{ fontSize: 15, color: '#6B6B6B', marginBottom: 24, lineHeight: 1.6 }}>{project.subtitle}</p>
                 )}
 
-                {/* IDEMR sections */}
+                {/* IDEMR sections — markdown rendered */}
                 {IDEMR_FIELDS.map(field => (
                   <div key={field.key} className="ev-section">
                     <div className="ev-section-eyebrow">{field.label}</div>
                     {field.pilar && <div className="ev-section-pilar">{field.pilar}</div>}
                     {project[field.key]
-                      ? <p className="ev-section-body">{project[field.key] as string}</p>
+                      ? <div
+                          className="ev-section-body ev-md"
+                          dangerouslySetInnerHTML={{ __html: renderMarkdown(project[field.key] as string) }}
+                        />
                       : <p className="ev-section-empty">Sin contenido</p>
                     }
                   </div>
@@ -345,6 +376,26 @@ export default function EvaluatePage() {
                     </div>
                   </div>
                 )}
+
+                {/* Video embed */}
+                {project.video_url && (() => {
+                  const embedUrl = getVideoEmbedUrl(project.video_url)
+                  if (!embedUrl) return null
+                  return (
+                    <div className="ev-section">
+                      <div className="ev-section-eyebrow">Video del proyecto</div>
+                      <div style={{ borderRadius: 10, overflow: 'hidden', aspectRatio: '16/9', marginTop: 8 }}>
+                        <iframe
+                          src={embedUrl}
+                          style={{ width: '100%', height: '100%', border: 'none' }}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          title="Video del proyecto"
+                        />
+                      </div>
+                    </div>
+                  )
+                })()}
               </>
             ) : null}
           </div>

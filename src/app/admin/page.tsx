@@ -114,6 +114,8 @@ export default function AdminPage() {
   const [userSearch,     setUserSearch]     = useState('')
   const [projectStatus,  setProjectStatus]  = useState('all')
   const [confirmingId,   setConfirmingId]   = useState<string | null>(null)
+  const [userPage,       setUserPage]       = useState(0)
+  const [projectPage,    setProjectPage]    = useState(0)
 
   // ── Boot: auth check + stats ───────────────────────────────────────────────
   useEffect(() => {
@@ -288,7 +290,10 @@ export default function AdminPage() {
   }
 
   // ── Derived ────────────────────────────────────────────────────────────────
+  const PAGE_SIZE = 20
+
   const filteredUsers = useMemo(() => {
+    setUserPage(0)
     if (!userSearch.trim()) return users
     const q = userSearch.toLowerCase()
     return users.filter(u =>
@@ -298,9 +303,15 @@ export default function AdminPage() {
     )
   }, [users, userSearch])
 
-  const filteredProjects = useMemo(() =>
-    projectStatus === 'all' ? projects : projects.filter(p => p.status === projectStatus),
-  [projects, projectStatus])
+  const filteredProjects = useMemo(() => {
+    setProjectPage(0)
+    return projectStatus === 'all' ? projects : projects.filter(p => p.status === projectStatus)
+  }, [projects, projectStatus])
+
+  const pagedUsers    = filteredUsers.slice(userPage * PAGE_SIZE, (userPage + 1) * PAGE_SIZE)
+  const pagedProjects = filteredProjects.slice(projectPage * PAGE_SIZE, (projectPage + 1) * PAGE_SIZE)
+  const totalUserPages    = Math.ceil(filteredUsers.length / PAGE_SIZE)
+  const totalProjectPages = Math.ceil(filteredProjects.length / PAGE_SIZE)
 
   // ── Render ─────────────────────────────────────────────────────────────────
   if (booting) {
@@ -372,6 +383,14 @@ export default function AdminPage() {
 
         /* Empty */
         .adm-empty{text-align:center;padding:60px 40px;color:#9a9690;font-size:13.5px;}
+
+        /* Pagination */
+        .adm-pagination{display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:12px;}
+        .adm-page-info{font-size:12.5px;color:#9a9690;}
+        .adm-page-btns{display:flex;gap:6px;}
+        .adm-page-btn{padding:6px 16px;border-radius:999px;border:1.5px solid rgba(13,13,13,.12);font-family:"Satoshi",sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;background:none;color:#6B6B6B;transition:all .15s;}
+        .adm-page-btn:hover:not(:disabled){border-color:var(--ink,#0D0D0D);color:var(--ink,#0D0D0D);}
+        .adm-page-btn:disabled{opacity:.35;cursor:not-allowed;}
 
         @media(max-width:1000px){
           .adm-stats-grid{grid-template-columns:repeat(3,1fr);}
@@ -473,7 +492,7 @@ export default function AdminPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredUsers.map(u => {
+                      {pagedUsers.map(u => {
                         const rm = ROLE_META[u.role ?? ''] ?? { label: u.role ?? '—', color: '#6B6B6B', bg: 'rgba(13,13,13,.06)' }
                         return (
                           <tr key={u.id}>
@@ -493,7 +512,15 @@ export default function AdminPage() {
               </div>
             </div>
             {filteredUsers.length > 0 && (
-              <p style={{ marginTop: 12, fontSize: 12.5, color: '#9a9690' }}>{filteredUsers.length} usuario{filteredUsers.length !== 1 ? 's' : ''}</p>
+              <div className="adm-pagination">
+                <span className="adm-page-info">
+                  {filteredUsers.length} usuario{filteredUsers.length !== 1 ? 's' : ''} · Página {userPage + 1} de {totalUserPages}
+                </span>
+                <div className="adm-page-btns">
+                  <button className="adm-page-btn" disabled={userPage === 0} onClick={() => setUserPage(p => p - 1)}>← Anterior</button>
+                  <button className="adm-page-btn" disabled={userPage >= totalUserPages - 1} onClick={() => setUserPage(p => p + 1)}>Siguiente →</button>
+                </div>
+              </div>
             )}
           </>
         )}
@@ -532,7 +559,7 @@ export default function AdminPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredProjects.map(p => {
+                      {pagedProjects.map(p => {
                         const sm = STATUS_META[p.status] ?? { label: p.status, color: '#6B6B6B', bg: 'rgba(13,13,13,.06)' }
                         return (
                           <tr key={p.id}>
@@ -554,7 +581,15 @@ export default function AdminPage() {
               </div>
             </div>
             {filteredProjects.length > 0 && (
-              <p style={{ marginTop: 12, fontSize: 12.5, color: '#9a9690' }}>{filteredProjects.length} proyecto{filteredProjects.length !== 1 ? 's' : ''}</p>
+              <div className="adm-pagination">
+                <span className="adm-page-info">
+                  {filteredProjects.length} proyecto{filteredProjects.length !== 1 ? 's' : ''} · Página {projectPage + 1} de {totalProjectPages}
+                </span>
+                <div className="adm-page-btns">
+                  <button className="adm-page-btn" disabled={projectPage === 0} onClick={() => setProjectPage(p => p - 1)}>← Anterior</button>
+                  <button className="adm-page-btn" disabled={projectPage >= totalProjectPages - 1} onClick={() => setProjectPage(p => p + 1)}>Siguiente →</button>
+                </div>
+              </div>
             )}
           </>
         )}

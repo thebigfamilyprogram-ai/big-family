@@ -28,6 +28,10 @@ interface Props {
   userId: string
 }
 
+function isValidVideoUrl(url: string): boolean {
+  return /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/|vimeo\.com\/(?:video\/)?\d)/.test(url)
+}
+
 function extractVideoId(url: string): string | null {
   const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)
   return m?.[1] ?? null
@@ -45,7 +49,8 @@ export default function VideoPlayer({ videoUrl, moduleId, userId }: Props) {
   const [watchedPct,  setWatchedPct]  = useState(0)
   const [playerReady, setPlayerReady] = useState(false)
 
-  const videoId = extractVideoId(videoUrl)
+  const isValid = isValidVideoUrl(videoUrl)
+  const videoId = isValid ? extractVideoId(videoUrl) : null
 
   // Load saved progress
   useEffect(() => {
@@ -145,8 +150,13 @@ export default function VideoPlayer({ videoUrl, moduleId, userId }: Props) {
           />
         </div>
       ) : (
-        <div style={{ aspectRatio: '16/9', background: '#f0ede8', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9a9690', fontSize: 14 }}>
-          Video no disponible
+        <div style={{ aspectRatio: '16/9', background: '#f0ede8', borderRadius: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#9a9690', fontSize: 14, padding: 24, textAlign: 'center' }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="#C0392B" strokeWidth="1.5"/>
+            <path d="M12 8v4M12 16h.01" stroke="#C0392B" strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
+          <span style={{ color: '#C0392B', fontWeight: 600, fontSize: 14 }}>El video no está disponible.</span>
+          <span style={{ fontSize: 12 }}>Verifica el enlace. Solo se admiten URLs de YouTube o Vimeo.</span>
         </div>
       )}
 
