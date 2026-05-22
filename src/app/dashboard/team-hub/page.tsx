@@ -47,16 +47,26 @@ const LEVEL_COLORS: Record<string, { bg: string; text: string; label: string }> 
   senior: { bg: 'rgba(192,57,43,0.1)', text: '#C0392B', label: 'Senior' },
 }
 
-const RANKING_DATA = [
-  { name: 'María García',     xp: 2400, modules: 7, level: 'senior', position: 1 },
-  { name: 'Carlos Rodríguez', xp: 2100, modules: 6, level: 'senior', position: 2 },
-  { name: 'Ana Martínez',     xp: 1850, modules: 5, level: 'senior', position: 3 },
-  { name: 'Luis Pérez',       xp: 1600, modules: 5, level: 'senior', position: 4 },
-  { name: 'Sofia Torres',     xp: 1400, modules: 4, level: 'junior', position: 5 },
-  { name: 'Diego López',      xp: 1200, modules: 4, level: 'junior', position: 6 },
-  { name: 'Valentina Cruz',   xp:  980, modules: 3, level: 'junior', position: 7 },
-  { name: 'Sebastián Mora',   xp:  750, modules: 2, level: 'junior', position: 8 },
-]
+// ── Ranking types ─────────────────────────────────────────────────────────────
+interface StudentRankRow {
+  id:          string
+  full_name:   string
+  avatar_url:  string | null
+  school_name: string | null
+  school_id:   string | null
+  xp:          number
+  modules:     number
+  projects:    number
+  score:       number
+}
+
+interface SchoolRankRow {
+  id:            string
+  name:          string
+  total_score:   number
+  student_count: number
+  project_count: number
+}
 
 const PROJECT_CATEGORIES = [
   'Liderazgo', 'Medioambiente', 'Educación', 'Arte y Cultura',
@@ -95,7 +105,11 @@ export default function TeamHubPage() {
   const [newTitle,    setNewTitle]    = useState('')
   const [newDesc,     setNewDesc]     = useState('')
   const [newCat,      setNewCat]      = useState(PROJECT_CATEGORIES[0])
-  const [creating,    setCreating]    = useState(false)
+  const [creating,       setCreating]       = useState(false)
+  const [studentRanking, setStudentRanking] = useState<StudentRankRow[]>([])
+  const [schoolRanking,  setSchoolRanking]  = useState<SchoolRankRow[]>([])
+  const [rankingTab,     setRankingTab]     = useState<'students' | 'schools'>('students')
+  const [loadingRanking, setLoadingRanking] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -159,6 +173,13 @@ export default function TeamHubPage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  // Load ranking on first switch to ranking tab
+  useEffect(() => {
+    if (activeTab === 'ranking' && studentRanking.length === 0 && !loadingRanking) {
+      loadRanking()
+    }
+  }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function loadTeam(uid: string, sid: string) {
     if (!supabaseRef.current) return
@@ -270,8 +291,66 @@ export default function TeamHubPage() {
     setCreating(false)
   }
 
+  async function loadRanking() {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const supabase = supabaseRef.current
+    if (!supabase) return
+    setLoadingRanking(true)
+
+    const { data: students } = await supabase
+      .from('profiles').select('id, full_name, avatar_url, school_id').eq('role', 'student')
+
+    if (!students || students.length === 0) { setLoadingRanking(false); return }
+
+    const userIds   = students.map((s: { id: string }) => s.id)
+    const schoolIds = [...new Set(students.map((s: { school_id: string | null }) => s.school_id).filter(Boolean))] as string[]
+
+    const [{ data: xpData }, { data: progData }, { data: projData }, { data: schoolData }] = await Promise.all([
+      supabase.from('xp_log').select('user_id, amount').in('user_id', userIds),
+      supabase.from('progress').select('user_id').eq('completed', true).in('user_id', userIds),
+      supabase.from('projects').select('user_id').eq('status', 'approved').in('user_id', userIds),
+      schoolIds.length ? supabase.from('schools').select('id, name').in('id', schoolIds) : Promise.resolve({ data: [] as { id: string; name: string }[] }),
+    ])
+
+    const xpMap: Record<string, number> = {}
+    xpData?.forEach((r: { user_id: string; amount: number | null }) => { xpMap[r.user_id] = (xpMap[r.user_id] ?? 0) + (r.amount ?? 0) })
+
+    const modMap: Record<string, number> = {}
+    progData?.forEach((r: { user_id: string }) => { modMap[r.user_id] = (modMap[r.user_id] ?? 0) + 1 })
+
+    const projMap: Record<string, number> = {}
+    projData?.forEach((r: { user_id: string }) => { projMap[r.user_id] = (projMap[r.user_id] ?? 0) + 1 })
+
+    const schoolNameMap: Record<string, string> = {}
+    schoolData?.forEach((s: { id: string; name: string }) => { schoolNameMap[s.id] = s.name })
+
+    const ranked: StudentRankRow[] = students.map((s: { id: string; full_name: string | null; avatar_url: string | null; school_id: string | null }) => {
+      const xp = xpMap[s.id] ?? 0
+      const modules = modMap[s.id] ?? 0
+      const projects = projMap[s.id] ?? 0
+      return { id: s.id, full_name: s.full_name ?? '—', avatar_url: s.avatar_url, school_name: s.school_id ? (schoolNameMap[s.school_id] ?? null) : null, school_id: s.school_id, xp, modules, projects, score: xp + modules * 100 + projects * 500 }
+    }).sort((a: StudentRankRow, b: StudentRankRow) => b.score - a.score)
+
+    setStudentRanking(ranked)
+
+    const schoolAgg: Record<string, { name: string; score: number; students: number; projects: number }> = {}
+    ranked.forEach(s => {
+      if (!s.school_id) return
+      if (!schoolAgg[s.school_id]) schoolAgg[s.school_id] = { name: s.school_name ?? '—', score: 0, students: 0, projects: 0 }
+      schoolAgg[s.school_id].score    += s.score
+      schoolAgg[s.school_id].students += 1
+      schoolAgg[s.school_id].projects += s.projects
+    })
+
+    setSchoolRanking(
+      Object.entries(schoolAgg)
+        .map(([id, d]) => ({ id, name: d.name, total_score: d.score, student_count: d.students, project_count: d.projects }))
+        .sort((a, b) => b.total_score - a.total_score)
+    )
+    setLoadingRanking(false)
+  }
+
   const maxXp = Math.max(...teamMembers.map(m => m.total_xp), 1)
-  const maxRankXp = RANKING_DATA[0].xp
 
   if (loading) {
     return (
@@ -372,10 +451,36 @@ export default function TeamHubPage() {
 
         .th-empty{text-align:center;padding:60px 0;color:var(--mute);font-family:Inter,sans-serif;font-size:14px;}
 
+        /* ── Real ranking ── */
+        .th-rank-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+        .th-rank-subtabs{display:flex;gap:6px;}
+        .th-rank-stab{padding:8px 18px;border-radius:999px;border:1.5px solid rgba(13,13,13,.12);font-family:"Satoshi",sans-serif;font-size:13px;font-weight:600;cursor:pointer;background:none;color:var(--mute);transition:all .15s;}
+        .th-rank-stab:hover{border-color:var(--ink);color:var(--ink);}
+        .th-rank-stab.active{background:var(--ink,#0D0D0D);border-color:var(--ink,#0D0D0D);color:#fff;}
+        .th-rank-refresh{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:999px;border:1px solid rgba(13,13,13,.12);background:none;font-family:"Satoshi",sans-serif;font-size:12.5px;font-weight:600;color:var(--mute);cursor:pointer;transition:all .15s;flex-shrink:0;}
+        .th-rank-refresh:hover:not(:disabled){border-color:var(--ink);color:var(--ink);}
+        .th-rank-refresh:disabled{opacity:.5;cursor:default;}
+        .th-rank-table{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;overflow:hidden;}
+        .th-rank-row{display:grid;grid-template-columns:44px 1fr 140px 80px 60px 60px 90px;align-items:center;padding:13px 20px;border-bottom:1px solid var(--line-soft);gap:8px;position:relative;overflow:hidden;transition:background .15s;}
+        .th-rank-row:last-child{border-bottom:none;}
+        .th-rank-row:hover:not(.th-rank-head){background:var(--bg-2,#EFECE6);}
+        .th-rank-school-row{grid-template-columns:44px 1fr 140px 130px 160px;}
+        .th-rank-head{background:var(--bg-2,#EFECE6);font-family:"Satoshi",sans-serif;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);padding-top:11px;padding-bottom:11px;}
+        .th-rank-pos{font-size:18px;display:flex;align-items:center;justify-content:center;}
+        .th-rank-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#C0392B,#8B1A1A);color:#fff;font-family:"Satoshi",sans-serif;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+        .th-rank-me{background:rgba(192,57,43,.04) !important;border-left:3px solid #C0392B;}
+        .th-rank-top{background:linear-gradient(90deg,rgba(245,163,22,.04),rgba(245,163,22,.02),rgba(245,163,22,.04)) !important;}
+        .th-rank-top::after{content:"";position:absolute;top:0;bottom:0;left:-100%;width:50%;background:linear-gradient(90deg,transparent,rgba(245,163,22,.12),transparent);animation:rank-shimmer 2.8s ease-in-out infinite;pointer-events:none;}
+        @keyframes rank-shimmer{0%{transform:translateX(0)}60%{transform:translateX(500%)}100%{transform:translateX(500%)}}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .th-rank-hide-sm{}
+
         @media(max-width:1000px){
           .th-team-grid{grid-template-columns:repeat(2,1fr);}
           .th-proj-grid{grid-template-columns:1fr;}
-          .th-rank-row{grid-template-columns:40px 1fr 70px 60px 60px 80px;}
+          .th-rank-row{grid-template-columns:44px 1fr 90px;}
+          .th-rank-school-row{grid-template-columns:44px 1fr 90px;}
+          .th-rank-hide-sm{display:none;}
         }
         @media(max-width:700px){
           .th-content{padding:24px 20px 40px;}
@@ -452,41 +557,106 @@ export default function TeamHubPage() {
               {/* ── TAB 2: RANKING ── */}
               {activeTab === 'ranking' && (
                 <motion.div key="ranking" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
-                  {/* Podium */}
-                  <div className="th-podium">
-                    <PodiumCard r={RANKING_DATA[1]} cls="th-p2" icon="🥈" avatarBg="linear-gradient(135deg,#94A3B8,#64748B)" />
-                    <PodiumCard r={RANKING_DATA[0]} cls="th-p1" icon="👑" avatarBg="linear-gradient(135deg,#F59E0B,#D97706)" large />
-                    <PodiumCard r={RANKING_DATA[2]} cls="th-p3" icon="🥉" avatarBg="linear-gradient(135deg,#F97316,#C2410C)" />
+
+                  {/* Sub-tab bar + Refresh */}
+                  <div className="th-rank-header">
+                    <div className="th-rank-subtabs">
+                      <button className={`th-rank-stab${rankingTab === 'students' ? ' active' : ''}`} onClick={() => setRankingTab('students')}>
+                        Ranking de Estudiantes
+                      </button>
+                      <button className={`th-rank-stab${rankingTab === 'schools' ? ' active' : ''}`} onClick={() => setRankingTab('schools')}>
+                        Ranking de Colegios
+                      </button>
+                    </div>
+                    <button className="th-rank-refresh" onClick={loadRanking} disabled={loadingRanking}>
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style={{ animation: loadingRanking ? 'spin 0.8s linear infinite' : 'none' }}>
+                        <path d="M13 6.5H6a4.5 4.5 0 0 0 0 9h5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+                        <path d="M13 6.5 10 3M13 6.5 10 10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      {loadingRanking ? 'Cargando…' : 'Actualizar'}
+                    </button>
                   </div>
 
-                  {/* Table */}
-                  <div className="th-rank-table">
-                    <div className="th-rank-row th-rank-head">
-                      <span>#</span><span>Nombre</span><span>Nivel</span><span>Módulos</span><span>XP</span><span>Progreso</span>
-                    </div>
-                    {RANKING_DATA.map((r, i) => {
-                      const lvl = LEVEL_COLORS[r.level] ?? LEVEL_COLORS.junior
-                      const posColor = r.position === 1 ? '#F59E0B' : r.position === 2 ? '#94A3B8' : r.position === 3 ? '#F97316' : '#6B6B6B'
-                      return (
-                        <div key={i} className="th-rank-row">
-                          <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15, color: posColor }}>{r.position}</span>
-                          <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, color: 'var(--ink)' }}>{r.name}</span>
-                          <span><span style={{ background: lvl.bg, color: lvl.text, borderRadius: 999, padding: '3px 9px', fontSize: 11, fontFamily: '"Satoshi",sans-serif', fontWeight: 700 }}>{lvl.label}</span></span>
-                          <span style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{r.modules}</span>
-                          <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 13, color: 'var(--ink)' }}>{r.xp}</span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <div style={{ flex: 1, height: 4, borderRadius: 999, background: '#f0ede8', overflow: 'hidden' }}>
-                              <div style={{ height: '100%', borderRadius: 999, background: '#C0392B', width: `${Math.round((r.xp / maxRankXp) * 100)}%` }} />
-                            </div>
-                            <span style={{ fontSize: 11, color: 'var(--mute)', fontFamily: 'Inter,sans-serif', minWidth: 30, textAlign: 'right' }}>{Math.round((r.xp / maxRankXp) * 100)}%</span>
-                          </div>
+                  {loadingRanking ? (
+                    <div className="th-empty">Calculando ranking…</div>
+                  ) : rankingTab === 'students' ? (
+                    /* ── Estudiantes ── */
+                    studentRanking.length === 0 ? (
+                      <div className="th-empty">No hay datos de ranking aún</div>
+                    ) : (
+                      <div className="th-rank-table">
+                        <div className="th-rank-row th-rank-head">
+                          <span>#</span><span>Estudiante</span><span className="th-rank-hide-sm">Colegio</span>
+                          <span className="th-rank-hide-sm">XP</span><span className="th-rank-hide-sm">Módulos</span><span className="th-rank-hide-sm">Proyectos</span>
+                          <span>Puntos</span>
                         </div>
-                      )
-                    })}
-                  </div>
-                  <p style={{ textAlign: 'center', marginTop: 16, fontFamily: 'Inter,sans-serif', fontSize: 12, color: '#aaa', fontStyle: 'italic' }}>
-                    * Datos de ejemplo — se actualizarán pronto
-                  </p>
+                        {studentRanking.map((s, i) => {
+                          const pos  = i + 1
+                          const isMe = s.id === userId
+                          const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : null
+                          return (
+                            <motion.div
+                              key={s.id}
+                              className={`th-rank-row${isMe ? ' th-rank-me' : ''}${pos === 1 ? ' th-rank-top' : ''}`}
+                              initial={{ opacity: 0, x: -24 }}
+                              whileInView={{ opacity: 1, x: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ type: 'spring', stiffness: 120, damping: 20, delay: i * 0.05 }}
+                            >
+                              <span className="th-rank-pos">
+                                {medal ?? <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--mute)' }}>{pos}</span>}
+                              </span>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                                <div className="th-rank-av">{getInitials(s.full_name)}</div>
+                                <div style={{ minWidth: 0 }}>
+                                  <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, color: isMe ? '#C0392B' : 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.full_name}</div>
+                                  {isMe && <div style={{ fontSize: 10, fontWeight: 700, color: '#C0392B', fontFamily: '"Satoshi",sans-serif', letterSpacing: '.06em', textTransform: 'uppercase' }}>Tú</div>}
+                                </div>
+                              </span>
+                              <span className="th-rank-hide-sm" style={{ fontSize: 12.5, color: 'var(--mute)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.school_name ?? '—'}</span>
+                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{s.xp.toLocaleString('es-CO')}</span>
+                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{s.modules}</span>
+                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{s.projects}</span>
+                              <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 800, fontSize: 15, color: isMe ? '#C0392B' : 'var(--ink)' }}>{s.score.toLocaleString('es-CO')}</span>
+                            </motion.div>
+                          )
+                        })}
+                      </div>
+                    )
+                  ) : (
+                    /* ── Colegios ── */
+                    schoolRanking.length === 0 ? (
+                      <div className="th-empty">No hay datos de colegios aún</div>
+                    ) : (
+                      <div className="th-rank-table">
+                        <div className="th-rank-row th-rank-head th-rank-school-row">
+                          <span>#</span><span>Colegio</span><span>Puntos totales</span><span className="th-rank-hide-sm">Estudiantes</span><span className="th-rank-hide-sm">Proyectos aprobados</span>
+                        </div>
+                        {schoolRanking.map((sc, i) => {
+                          const pos   = i + 1
+                          const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : null
+                          return (
+                            <motion.div
+                              key={sc.id}
+                              className={`th-rank-row th-rank-school-row${pos === 1 ? ' th-rank-top' : ''}`}
+                              initial={{ opacity: 0, x: -24 }}
+                              whileInView={{ opacity: 1, x: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ type: 'spring', stiffness: 120, damping: 20, delay: i * 0.05 }}
+                            >
+                              <span className="th-rank-pos">
+                                {medal ?? <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--mute)' }}>{pos}</span>}
+                              </span>
+                              <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 15, color: 'var(--ink)' }}>{sc.name}</span>
+                              <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 800, fontSize: 15, color: 'var(--ink)' }}>{sc.total_score.toLocaleString('es-CO')}</span>
+                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{sc.student_count} estudiantes</span>
+                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{sc.project_count} proyectos</span>
+                            </motion.div>
+                          )
+                        })}
+                      </div>
+                    )
+                  )}
                 </motion.div>
               )}
 
@@ -630,27 +800,3 @@ export default function TeamHubPage() {
   )
 }
 
-function PodiumCard({ r, cls, icon, avatarBg, large }: {
-  r: typeof RANKING_DATA[0]
-  cls: string
-  icon: string
-  avatarBg: string
-  large?: boolean
-}) {
-  const size = large ? 52 : 44
-  const fontSize = large ? 18 : 16
-  const lvl = LEVEL_COLORS[r.level] ?? LEVEL_COLORS.junior
-  return (
-    <div className={`th-podium-card ${cls}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div style={{ fontSize: large ? 28 : 24, marginBottom: 8 }}>{icon}</div>
-      <div style={{ width: size, height: size, borderRadius: '50%', background: avatarBg, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize, fontWeight: 700, fontFamily: '"Satoshi",sans-serif', marginBottom: 10 }}>
-        {getInitials(r.name)}
-      </div>
-      <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: large ? 900 : 700, fontSize: large ? 16 : 14, color: '#0D0D0D', marginBottom: 4 }}>{r.name}</div>
-      <div style={{ fontFamily: 'Inter,sans-serif', fontSize: large ? 14 : 13, color: '#6B6B6B', fontWeight: large ? 600 : 400 }}>{r.xp} XP</div>
-      <div style={{ marginTop: 8 }}>
-        <span style={{ background: lvl.bg, color: lvl.text, borderRadius: 999, padding: '3px 9px', fontSize: 11, fontFamily: '"Satoshi",sans-serif', fontWeight: 700 }}>{lvl.label}</span>
-      </div>
-    </div>
-  )
-}
