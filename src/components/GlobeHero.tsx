@@ -34,6 +34,19 @@ const arcPairs = [
   [7, 6], [7, 1],
 ]
 
+// 8 La Guajira schools participating in Día de Liderazgo
+const SCHOOLS_GUAJIRA = [
+  { lat: 11.544, lon: -72.907 }, // Riohacha
+  { lat: 11.373, lon: -72.244 }, // Maicao
+  { lat: 11.713, lon: -72.268 }, // Uribia
+  { lat: 11.773, lon: -72.441 }, // Manaure
+  { lat: 10.770, lon: -73.000 }, // San Juan del Cesar
+  { lat: 10.613, lon: -72.982 }, // Villanueva
+  { lat: 11.142, lon: -72.613 }, // Albania
+  { lat: 10.963, lon: -72.790 }, // Barrancas
+]
+const SCHOOL_ARC_PAIRS = [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0],[0,4],[2,6]]
+
 // Fallback continent polygons used if world-atlas CDN is unavailable
 const FALLBACK_CONTINENTS: number[][][] = [
   [[-168,66],[-160,70],[-140,71],[-125,72],[-110,74],[-95,75],[-82,73],[-75,70],[-62,60],[-55,52],[-60,48],[-67,45],[-70,42],[-76,38],[-80,32],[-85,30],[-93,29],[-97,26],[-100,24],[-107,23],[-115,28],[-118,32],[-122,37],[-125,42],[-128,50],[-135,55],[-145,58],[-155,60],[-162,62],[-168,66]],
@@ -300,6 +313,7 @@ export default function GlobeHero() {
     document.head.appendChild(script)
 
     let renderer: any
+    let sceneObserver: IntersectionObserver | undefined
     async function initGlobe() {
       const THREE = (window as any).THREE
       const wrap       = wrapRef.current   as HTMLDivElement
@@ -565,9 +579,10 @@ export default function GlobeHero() {
       // ── ATMOSPHERE ─────────────────────────────────────────────────
       const atmMat = new THREE.ShaderMaterial({
         transparent: true, side: THREE.BackSide, depthWrite: false,
-        uniforms: { uC: { value: new THREE.Color('#3a7abf') } },
+        blending: THREE.AdditiveBlending,
+        uniforms: { uC: { value: new THREE.Color('#4a92e8') } },
         vertexShader: `varying vec3 vN; void main(){ vN=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-        fragmentShader: `varying vec3 vN; uniform vec3 uC; void main(){ float i=pow(0.70-dot(vN,vec3(0.,0.,1.)),2.0); gl_FragColor=vec4(uC,i*0.65);}`,
+        fragmentShader: `varying vec3 vN; uniform vec3 uC; void main(){ float fresnel=pow(1.0-abs(dot(vN,vec3(0.,0.,1.))),3.0); gl_FragColor=vec4(uC,fresnel*0.55);}`,
       })
       scene.add(new THREE.Mesh(new THREE.SphereGeometry(R * 1.030, 32, 32), atmMat))
 
@@ -686,6 +701,72 @@ export default function GlobeHero() {
 
       arcPairs.forEach(([a, b], i) => buildArc(a, b, i / arcPairs.length))
 
+      // ── LA GUAJIRA SCHOOL DOTS ─────────────────────────────────
+      const schoolGroup = new THREE.Group()
+      globe.add(schoolGroup)
+      interface SchoolEntry { mesh: any; timeOffset: number }
+      const schoolEntries: SchoolEntry[] = []
+
+      SCHOOLS_GUAJIRA.forEach((s, i) => {
+        const pos = latLonToVec3(s.lat, s.lon, R * 1.010)
+        const geo = new THREE.SphereGeometry(0.014, 8, 8)
+        const mat = new THREE.MeshBasicMaterial({ color: 0xC0392B })
+        const mesh = new THREE.Mesh(geo, mat)
+        mesh.position.copy(pos)
+        schoolGroup.add(mesh)
+        schoolEntries.push({ mesh, timeOffset: i * 0.45 })
+      })
+
+      // ── LA GUAJIRA SCHOOL ARCS ─────────────────────────────────
+      const schoolArcGroup = new THREE.Group()
+      globe.add(schoolArcGroup)
+      interface SchoolArcEntry { pulseMat: any; midVec: any; speed: number; phase: number }
+      const schoolArcEntries: SchoolArcEntry[] = []
+
+      SCHOOL_ARC_PAIRS.forEach(([ai, bi], idx) => {
+        const sA = SCHOOLS_GUAJIRA[ai], sB = SCHOOLS_GUAJIRA[bi]
+        const vA = latLonToVec3(sA.lat, sA.lon, R)
+        const vB = latLonToVec3(sB.lat, sB.lon, R)
+        const mid = vA.clone().add(vB).normalize().multiplyScalar(R * 1.45)
+        const initPhase = idx / SCHOOL_ARC_PAIRS.length
+
+        const SEG = 32
+        const positions = new Float32Array((SEG + 1) * 3)
+        const tValues   = new Float32Array(SEG + 1)
+        for (let i = 0; i <= SEG; i++) {
+          const t = i / SEG
+          const p = new THREE.Vector3()
+            .addScaledVector(vA, (1 - t) * (1 - t))
+            .addScaledVector(mid, 2 * (1 - t) * t)
+            .addScaledVector(vB, t * t)
+          positions[i * 3] = p.x; positions[i * 3 + 1] = p.y; positions[i * 3 + 2] = p.z
+          tValues[i] = t
+        }
+
+        const sGeo = new THREE.BufferGeometry()
+        sGeo.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3))
+        schoolArcGroup.add(new THREE.Line(sGeo,
+          new THREE.LineBasicMaterial({ color: 0xC0392B, transparent: true, opacity: 0.07, depthWrite: false })
+        ))
+
+        const pGeo = new THREE.BufferGeometry()
+        pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+        pGeo.setAttribute('aT',       new THREE.BufferAttribute(tValues, 1))
+        const pulseMat = new THREE.ShaderMaterial({
+          transparent: true, depthWrite: false,
+          uniforms: {
+            uH1:  { value: initPhase },
+            uH2:  { value: (initPhase + 0.5) % 1 },
+            uLen: { value: 0.28 },
+            uVis: { value: 1.0 },
+          },
+          vertexShader:   PULSE_VERT,
+          fragmentShader: PULSE_FRAG,
+        })
+        schoolArcGroup.add(new THREE.Line(pGeo, pulseMat))
+        schoolArcEntries.push({ pulseMat, midVec: mid, speed: 0.35, phase: initPhase })
+      })
+
       // ── ANIMATION LOOP ─────────────────────────────────────────────
       globe.rotation.x = 0.3
       // lon=-90 faces camera at rest; −0.2 rad shifts center to lon≈−78° (Colombia / Central America)
@@ -695,9 +776,28 @@ export default function GlobeHero() {
       const clock    = new THREE.Clock()
       const camFwd   = new THREE.Vector3(0, 0, 1)
 
+      // Inertia state (shared with drag handlers below)
+      let isDown = false, lastX = 0, lastY = 0
+      let velY = 0, velX = 0
+      let isVisible = true
+      let elapsed   = 0
+
+      sceneObserver = new IntersectionObserver(([entry]) => {
+        isVisible = entry.isIntersecting
+      })
+      sceneObserver.observe(wrap)
+
       function animate() {
+        rafId = requestAnimationFrame(animate)
+        if (!isVisible) return
         const dt = clock.getDelta()
-        globe.rotation.y += 0.084 * dt  // delta-time: consistent on all monitors
+        elapsed += dt
+
+        // Inertia: decay when released, direct-set when dragging
+        if (!isDown) { velY *= 0.95; velX *= 0.95 }
+        globe.rotation.y += 0.084 * dt + velY
+        globe.rotation.x = Math.max(-0.9, Math.min(0.9, globe.rotation.x + velX))
+        if (isDown) { velY = 0; velX = 0 }
 
         // Arc pulses — only uniform updates (no geometry rebuild)
         arcEntries.forEach(arc => {
@@ -708,6 +808,20 @@ export default function GlobeHero() {
           const vis = Math.max(0, mw.normalize().dot(camFwd))
           arc.pulseMat.uniforms.uVis.value   = vis * 0.90
           arc.staticLine.material.opacity    = vis * 0.055
+        })
+
+        // School dot pulses — sinusoidal scale
+        schoolEntries.forEach(d => {
+          d.mesh.scale.setScalar(1.0 + Math.sin((elapsed + d.timeOffset) * 3.0) * 0.4)
+        })
+
+        // School arc pulses
+        schoolArcEntries.forEach(arc => {
+          arc.phase = (arc.phase + dt * arc.speed) % 1.0
+          arc.pulseMat.uniforms.uH1.value = arc.phase
+          arc.pulseMat.uniforms.uH2.value = (arc.phase + 0.5) % 1.0
+          const mw = arc.midVec.clone().applyEuler(globe.rotation)
+          arc.pulseMat.uniforms.uVis.value = Math.max(0, mw.normalize().dot(camFwd))
         })
 
         // Pin screen projections — pass 1: compute positions & find best center
@@ -760,7 +874,6 @@ export default function GlobeHero() {
         }
 
         renderer.render(scene, camera)
-        rafId = requestAnimationFrame(animate)
       }
       let rafId = requestAnimationFrame(animate)
       setTimeout(() => {
@@ -777,11 +890,10 @@ export default function GlobeHero() {
         }
       })
 
-      // ── DRAG TO ROTATE ─────────────────────────────────────────────
+      // ── DRAG TO ROTATE (inertia) ────────────────────────────────
       const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      let isDown = false, lastX = 0, lastY = 0
       wrap.addEventListener('pointerdown', e => {
-        isDown = true; lastX = e.clientX; lastY = e.clientY
+        isDown = true; lastX = e.clientX; lastY = e.clientY; velY = 0; velX = 0
         if (!reducedMotion()) wrap.classList.add('globe-dragging')
       })
       window.addEventListener('pointerup', () => {
@@ -792,13 +904,14 @@ export default function GlobeHero() {
         if (!isDown) return
         const dx = e.clientX - lastX, dy = e.clientY - lastY
         lastX = e.clientX; lastY = e.clientY
-        globe.rotation.y += dx * 0.005
-        globe.rotation.x  = Math.max(-0.9, Math.min(0.9, globe.rotation.x + dy * 0.005))
+        velY = dx * 0.005
+        velX = dy * 0.005
       })
     }
 
     return () => {
       window.removeEventListener('scroll', onScroll)
+      sceneObserver?.disconnect()
       if (rendererRef.current) {
         const canvas = rendererRef.current.domElement
         if (wrapRef.current?.contains(canvas)) {

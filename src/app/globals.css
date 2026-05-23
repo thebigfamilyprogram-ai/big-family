@@ -28,3 +28,29 @@ html, body {
     transition-duration: 0.01ms !important;
   }
 }
+
+.globe-skeleton {
+  min-height: 100vh;
+  background: #F5F3EF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.globe-skeleton::after {
+  content: '';
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(192,57,43,0.08) 0%, transparent 70%);
+  animation: globe-skeleton-pulse 2s ease-in-out infinite;
+}
+
+@keyframes globe-skeleton-pulse {
+  0%, 100% { transform: scale(0.97); opacity: 0.6; }
+  50%       { transform: scale(1.03); opacity: 1;   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .globe-skeleton::after { animation: none; }
+}

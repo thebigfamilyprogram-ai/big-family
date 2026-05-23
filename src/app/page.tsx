@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic'
 
 const GlobeHero = dynamic(() => import('@/components/GlobeHero'), {
   ssr: false,
-  loading: () => <div style={{ minHeight: '100vh', background: '#F5F3EF' }} />,
+  loading: () => <div className="globe-skeleton" />,
 })
 
 export default function Home() {
