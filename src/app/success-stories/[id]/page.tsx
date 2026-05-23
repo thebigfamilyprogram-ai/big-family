@@ -54,29 +54,36 @@ export default function StoryDetailPage() {
     <>
       <style>{`
         *{box-sizing:border-box;margin:0;padding:0;}
-        .nav{height:62px;border-bottom:1px solid rgba(13,13,13,.07);display:flex;align-items:center;padding:0 40px;background:#fff;position:sticky;top:0;z-index:20;}
-        .nav__brand{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:#0D0D0D;text-decoration:none;}
+        html,body{background:var(--bg);color:var(--ink);}
+        .nav{height:62px;border-bottom:1px solid var(--card-border);display:flex;align-items:center;padding:0 40px;background:var(--card-bg);position:sticky;top:0;z-index:20;}
+        .nav__back{font-family:"Satoshi",sans-serif;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .15s;}
+        .nav__back:hover{color:#C0392B;}
         .page{max-width:720px;margin:0 auto;padding:48px 24px 80px;}
         .cover{width:100%;height:360px;object-fit:cover;border-radius:16px;display:block;margin-bottom:32px;}
         .eyebrow{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#C0392B;margin-bottom:14px;}
-        .title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:36px;letter-spacing:-0.025em;color:#0D0D0D;margin-bottom:18px;line-height:1.15;}
-        .meta{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid rgba(13,13,13,.08);}
-        .meta-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;color:#0D0D0D;}
-        .meta-school{font-size:13px;color:#6B6B6B;}
-        .body{font-size:16px;color:#2D2D2D;line-height:1.8;white-space:pre-wrap;}
-        @media(max-width:600px){.title{font-size:28px;}.page{padding:32px 16px 60px;}}
+        .title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:36px;letter-spacing:-0.025em;color:var(--ink);margin-bottom:18px;line-height:1.15;}
+        .meta{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid var(--line);}
+        .meta-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;color:var(--ink);}
+        .meta-school{font-size:13px;color:var(--mute);}
+        .body{font-size:16px;color:var(--ink-2);line-height:1.8;white-space:pre-wrap;}
+        @media(max-width:600px){.title{font-size:28px;}.page{padding:32px 16px 60px;}.cover{height:220px;}}
       `}</style>
 
       <nav className="nav">
-        <a className="nav__brand" href="/success-stories">← Historias de Éxito</a>
+        <a className="nav__back" href="/success-stories">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Historias de Éxito
+        </a>
       </nav>
 
       <div className="page">
         {loading ? (
-          <div style={{ fontSize: 14, color: '#9a9690', textAlign: 'center', paddingTop: 60 }}>Cargando…</div>
+          <div style={{ fontSize: 14, color: 'var(--mute)', textAlign: 'center', paddingTop: 60 }}>Cargando…</div>
         ) : !story ? (
           <div style={{ textAlign: 'center', paddingTop: 60 }}>
-            <p style={{ fontSize: 14, color: '#9a9690', marginBottom: 20 }}>Historia no encontrada.</p>
+            <p style={{ fontSize: 14, color: 'var(--mute)', marginBottom: 20 }}>Historia no encontrada.</p>
             <a href="/success-stories" style={{ color: '#C0392B', fontSize: 13 }}>← Volver a historias</a>
           </div>
         ) : (
@@ -93,7 +100,7 @@ export default function StoryDetailPage() {
                 {story.school_name && <div className="meta-school">{story.school_name}</div>}
               </div>
               {story.project_title && (
-                <div style={{ marginLeft: 'auto', fontSize: 12.5, color: '#6B6B6B', fontStyle: 'italic' }}>
+                <div style={{ marginLeft: 'auto', fontSize: 12.5, color: 'var(--mute)', fontStyle: 'italic' }}>
                   Proyecto: {story.project_title}
                 </div>
               )}

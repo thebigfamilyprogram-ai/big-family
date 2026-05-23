@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import { motion, useInView, useScroll, useSpring } from 'framer-motion'
@@ -154,7 +154,7 @@ export default function TimelineSection({
       <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}>
           {[...Array(3)].map((_, i) => (
-            <div key={i} style={{ height: 96, borderRadius: 14, animation: 'shimmer 1.4s ease infinite', backgroundImage: isDark ? 'linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%)' : 'linear-gradient(90deg,#ece9e4 25%,#f5f3ef 50%,#ece9e4 75%)', backgroundSize: '400% 100%' }} />
+            <div key={i} style={{ height: 96, borderRadius: 14, animation: 'shimmer 1.4s ease infinite', backgroundImage: isDark ? 'linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%)' : 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%' }} />
           ))}
         </div>
       </div>

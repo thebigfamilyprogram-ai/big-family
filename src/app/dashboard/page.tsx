@@ -160,7 +160,7 @@ function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?
   return (
     <div style={{
       width: w, height: h, borderRadius: r,
-      background: 'linear-gradient(90deg,#ece9e4 25%,#f5f3ef 50%,#ece9e4 75%)',
+      background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)',
       backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite', flexShrink: 0,
     }} />
   )
@@ -176,6 +176,10 @@ export default function DashboardPage() {
   const [modules,      setModules]      = useState<Module[]>([])
   const [progressRows, setProgressRows] = useState<ProgressRow[]>([])
   const [diploma,      setDiploma]      = useState<DiplomaInfo | null>(null)
+  const [annBanner,    setAnnBanner]    = useState<{ id: string; title: string; content: string; category: string } | null>(null)
+  const [annBannerDismissed, setAnnBannerDismissed] = useState(false)
+  const [unreadAnnCount, setUnreadAnnCount] = useState(0)
+  const [userId,       setUserId]       = useState('')
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -184,14 +188,37 @@ export default function DashboardPage() {
     async function load() {
       const { data: { user: authUser } } = await supabase.auth.getUser()
       if (!authUser) { router.replace('/login'); return }
+      setUserId(authUser.id)
 
       const [{ data: profile }, { data: xpRows }, { data: mods }, { data: prog }, { data: userProjects }] = await Promise.all([
-        supabase.from('profiles').select('full_name, role, school_level').eq('id', authUser.id).maybeSingle(),
+        supabase.from('profiles').select('full_name, role, school_level, school_id').eq('id', authUser.id).maybeSingle(),
         supabase.from('xp_log').select('amount').eq('user_id', authUser.id),
         supabase.from('modules').select('*').eq('status', 'published').order('order_index'),
         supabase.from('progress').select('module_id, completed').eq('user_id', authUser.id),
         supabase.from('projects').select('id, status').eq('user_id', authUser.id).in('status', ['approved']),
       ])
+
+      // Fetch announcements for this user's school (or all)
+      try {
+        const schoolId = profile?.school_id ?? null
+        const { data: allAnn } = await supabase
+          .from('announcements')
+          .select('id, title, content, category, expires_at, target')
+          .or(`target.eq.all${schoolId ? `,target.eq.${schoolId}` : ''}`)
+          .order('created_at', { ascending: false })
+        const { data: reads } = await supabase
+          .from('announcement_reads')
+          .select('announcement_id')
+          .eq('user_id', authUser.id)
+        const readSet = new Set(reads?.map((r: { announcement_id: string }) => r.announcement_id) ?? [])
+        const now = new Date()
+        const visible = (allAnn ?? []).filter((a: { expires_at: string | null }) =>
+          !a.expires_at || new Date(a.expires_at) > now
+        )
+        const unread = visible.filter((a: { id: string }) => !readSet.has(a.id))
+        setUnreadAnnCount(unread.length)
+        if (unread.length > 0) setAnnBanner(unread[0])
+      } catch { /* best-effort */ }
 
       // Check for a diploma (approved project with certificado/mencion_honor evaluation)
       if (userProjects && userProjects.length > 0) {
@@ -245,6 +272,14 @@ export default function DashboardPage() {
   const capstoneLocked = false
   const nextModule = sortedModules.find(m => !completedIds.has(m.id) && !lockedIds.has(m.id)) ?? null
 
+  async function dismissBanner() {
+    if (!annBanner || !supabaseRef.current) return
+    const sb = supabaseRef.current
+    setAnnBannerDismissed(true)
+    await sb.from('announcement_reads').upsert({ user_id: userId, announcement_id: annBanner.id }, { onConflict: 'user_id,announcement_id' }).select()
+    setUnreadAnnCount(c => Math.max(0, c - 1))
+  }
+
   return (
     <>
       <style>{`
@@ -255,6 +290,17 @@ export default function DashboardPage() {
 
         /* ── Center content ── */
         .content{padding:32px 28px;display:flex;flex-direction:column;gap:20px;min-width:0;}
+
+        /* ── Announcement banner ── */
+        .ann-banner{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;background:rgba(192,57,43,.07);border:1px solid rgba(192,57,43,.2);border-radius:14px;}
+        .ann-banner__cat{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C0392B;margin-bottom:4px;}
+        .ann-banner__title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;color:var(--ink);}
+        .ann-banner__body{font-size:13px;color:var(--mute);margin-top:2px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+        .ann-banner__dismiss{background:none;border:none;cursor:pointer;color:var(--mute);font-size:18px;line-height:1;padding:2px;flex-shrink:0;transition:color .15s;}
+        .ann-banner__dismiss:hover{color:var(--ink);}
+        .bell-btn{position:relative;background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;color:var(--mute);transition:color .15s,background .15s;flex-shrink:0;}
+        .bell-btn:hover{color:var(--ink);background:var(--line);}
+        .bell-badge{position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:#C0392B;border:2px solid var(--card-bg);}
 
         /* ── Onboarding banner ── */
         .onboard{background:linear-gradient(135deg,var(--bg),var(--card-bg));border:1px solid rgba(192,57,43,.15);border-radius:16px;padding:20px 24px;}
@@ -380,6 +426,7 @@ export default function DashboardPage() {
           activePage="dashboard"
           userName={loading ? '…' : displayName}
           userInitial={loading ? 'L' : avatarLetter}
+          unreadAnnouncements={unreadAnnCount}
         />
 
         {/* ── CENTER CONTENT ── */}
@@ -389,6 +436,18 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         >
+
+          {/* Announcement banner — most recent unread */}
+          {annBanner && !annBannerDismissed && (
+            <div className="ann-banner">
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="ann-banner__cat">{annBanner.category}</div>
+                <div className="ann-banner__title">{annBanner.title}</div>
+                <div className="ann-banner__body">{annBanner.content}</div>
+              </div>
+              <button className="ann-banner__dismiss" onClick={dismissBanner} aria-label="Cerrar anuncio">×</button>
+            </div>
+          )}
 
           {/* Onboarding banner — only for new users */}
           {isNewUser && (
@@ -455,15 +514,26 @@ export default function DashboardPage() {
 
             <div className="user-stats">
               <div className="ustat">
-                <div className="ustat__num">42</div>
-                <div className="ustat__label">Streak</div>
+                <div className="ustat__num">{loading ? '…' : (user?.total_xp ?? 0).toLocaleString()}</div>
+                <div className="ustat__label">XP Total</div>
               </div>
               <div style={{ width: 1, background: 'var(--line)', margin: '4px 0' }} />
               <div className="ustat">
-                <div className="ustat__num">2.4k</div>
-                <div className="ustat__label">Network</div>
+                <div className="ustat__num">{loading ? '…' : completedCount}</div>
+                <div className="ustat__label">Módulos</div>
               </div>
             </div>
+            <button
+              className="bell-btn"
+              onClick={() => router.push('/dashboard/announcements')}
+              title={`${unreadAnnCount} anuncios sin leer`}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 2A5 5 0 0 0 5 7v3l-1.5 2.5h13L15 10V7A5 5 0 0 0 10 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                <path d="M8 15a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              {unreadAnnCount > 0 && <span className="bell-badge" />}
+            </button>
           </div>
 
           {/* Leadership Progress */}
@@ -526,7 +596,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="motiv-title">¡Bienvenido a Big Family!</div>
                   <div className="motiv-sub">Completa tu primer módulo y comienza a ganar Impact Credits</div>
-                  <button className="motiv-btn">Comenzar ahora →</button>
+                  <button className="motiv-btn" onClick={() => router.push('/dashboard/leadership-path')}>Comenzar ahora →</button>
                 </div>
               )
               : loading
@@ -553,16 +623,20 @@ export default function DashboardPage() {
             <div className="prog-actions">
               <motion.button
                 className="btn-ghost"
+                onClick={() => router.push('/dashboard/leadership-path')}
                 whileHover={pref ? undefined : { scale: 1.02 }}
                 whileTap={pref ? undefined : { scale: 0.97 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-              >View Syllabus</motion.button>
-              <motion.button
-                className="btn-solid"
-                whileHover={pref ? undefined : { scale: 1.02 }}
-                whileTap={pref ? undefined : { scale: 0.97 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-              >Next Lesson →</motion.button>
+              >Ver programa completo</motion.button>
+              {nextModule && (
+                <motion.button
+                  className="btn-solid"
+                  onClick={() => router.push('/dashboard/leadership-path')}
+                  whileHover={pref ? undefined : { scale: 1.02 }}
+                  whileTap={pref ? undefined : { scale: 0.97 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                >Siguiente módulo →</motion.button>
+              )}
             </div>
           </div>
 

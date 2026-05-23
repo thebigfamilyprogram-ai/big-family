@@ -1,6 +1,6 @@
-'use client'
+﻿'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -36,7 +36,7 @@ function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?
   return (
     <div style={{
       width: w, height: h, borderRadius: r,
-      background: 'linear-gradient(90deg,#ece9e4 25%,#f5f3ef 50%,#ece9e4 75%)',
+      background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)',
       backgroundSize: '400% 100%',
       animation: 'shimmer 1.4s ease infinite',
     }} />
@@ -60,8 +60,18 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
   const [sortKey, setSortKey] = useState<SortKey>('total_xp')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [page,    setPage]    = useState(1)
-  const [hovBar,  setHovBar]  = useState<number | null>(null)
+  const [hovBar,   setHovBar]   = useState<number | null>(null)
+  const [moreOpen, setMoreOpen] = useState(false)
+  const moreRef = useRef<HTMLDivElement>(null)
   const pref = useReducedMotion()
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false)
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [])
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -193,8 +203,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
   return (
     <>
       <style>{`
-        @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900,500,400&display=swap');
-        @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+                @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
         @keyframes spin{to{transform:rotate(360deg)}}
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;min-height:100vh;color:var(--ink);}
@@ -208,6 +217,12 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
         .btn-dashboard:hover{border-color:var(--ink);background:var(--line);}
         .btn-logout{background:none;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:12px;color:var(--mute);cursor:pointer;transition:all .2s;white-space:nowrap;}
         .btn-logout:hover{border-color:var(--ink);color:var(--ink);}
+        .nav-more{position:relative;}
+        .nav-more__btn{background:transparent;border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:13px;color:var(--ink);cursor:pointer;transition:border-color .2s,background .2s;white-space:nowrap;font-family:inherit;display:flex;align-items:center;gap:5px;}
+        .nav-more__btn:hover{border-color:var(--ink);background:var(--line);}
+        .nav-more__dropdown{position:absolute;top:calc(100% + 8px);right:0;background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;box-shadow:0 8px 32px -8px rgba(13,13,13,.18);min-width:180px;padding:6px;z-index:40;display:flex;flex-direction:column;gap:2px;}
+        .nav-more__item{padding:10px 14px;border-radius:8px;font-size:13px;color:var(--ink);cursor:pointer;background:none;border:none;text-align:left;font-family:inherit;transition:background .15s;width:100%;}
+        .nav-more__item:hover{background:var(--bg-2);}
         .main{max-width:1200px;margin:0 auto;padding:44px 40px 80px;}
         .page-header{margin-bottom:36px;}
         .page-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:28px;letter-spacing:-0.022em;color:var(--ink);}
@@ -278,12 +293,30 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
           <button className="btn-dashboard" onClick={() => router.push('/coordinator/projects')}>Proyectos</button>
           <button className="btn-dashboard" onClick={() => router.push('/coordinator/modules')}>Módulos</button>
           <button className="btn-dashboard" onClick={() => router.push('/coordinator/news')}>Noticias</button>
-          <button className="btn-dashboard" onClick={() => router.push('/coordinator/goals')}>Metas</button>
-          <button className="btn-dashboard" onClick={() => router.push('/coordinator/calendar')}>Calendario</button>
-          <button className="btn-dashboard" onClick={() => router.push('/coordinator/announcements')}>Anuncios</button>
-          <button className="btn-dashboard" onClick={() => router.push('/coordinator/success-stories')}>Historias</button>
-          <button className="btn-dashboard" onClick={() => router.push('/coordinator/report')}>Reporte PDF</button>
-          <button className="btn-dashboard" onClick={() => router.push('/dashboard')}>Ver Dashboard</button>
+          <div className="nav-more" ref={moreRef}>
+            <button className="nav-more__btn" onClick={() => setMoreOpen(o => !o)} type="button">
+              Más
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            {moreOpen && (
+              <div className="nav-more__dropdown">
+                {[
+                  { label: 'Metas',         href: '/coordinator/goals' },
+                  { label: 'Calendario',    href: '/coordinator/calendar' },
+                  { label: 'Anuncios',      href: '/coordinator/announcements' },
+                  { label: 'Historias',     href: '/coordinator/success-stories' },
+                  { label: 'Reporte PDF',   href: '/coordinator/report' },
+                  { label: 'Ver Dashboard', href: '/dashboard' },
+                ].map(item => (
+                  <button key={item.href} className="nav-more__item" onClick={() => { setMoreOpen(false); router.push(item.href) }}>
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button className="btn-logout" onClick={handleLogout}>Cerrar sesión</button>
         </div>
       </nav>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
@@ -85,9 +85,8 @@ export default function SubmitConfirmationPage() {
   return (
     <>
       <style>{`
-        @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900,500,400&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:#F5F3EF;font-family:"Inter",system-ui,sans-serif;min-height:100vh;}
+                *{box-sizing:border-box;margin:0;padding:0;}
+        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;min-height:100vh;}
         .sc-page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;}
         .sc-logo{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:36px;}
         .sc-logo-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:15px;color:#0D0D0D;}

@@ -344,8 +344,7 @@ export default function QuizPage() {
     return (
       <>
         <style>{`
-          @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900&display=swap');
-          *{box-sizing:border-box;margin:0;padding:0;}
+                    *{box-sizing:border-box;margin:0;padding:0;}
           html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;color:var(--ink);}
           @keyframes confetti-fall{
             0%{transform:translate(0,0) rotate(0deg) scale(1);opacity:1;}
@@ -505,8 +504,7 @@ export default function QuizPage() {
   return (
     <>
       <style>{`
-        @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900,600,500&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0;}
+                *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;color:var(--ink);}
         @keyframes spin{to{transform:rotate(360deg)}}
       `}</style>

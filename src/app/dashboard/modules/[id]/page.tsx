@@ -124,8 +124,7 @@ export default function ModulePage() {
   return (
     <>
       <style>{`
-        @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900,500,400&display=swap');
-        @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+                @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;color:var(--ink);}
         .mp-shell{display:flex;min-height:100vh;background:var(--bg);}

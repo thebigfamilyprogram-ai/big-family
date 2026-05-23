@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,7 +23,7 @@ function excerpt(html: string, max = 120): string {
 }
 
 function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?: number }) {
-  return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,#ece9e4 25%,#f5f3ef 50%,#ece9e4 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
+  return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
 }
 
 function PlaceholderImg({ size = 40 }: { size?: number }) {
@@ -84,10 +84,9 @@ export default function NewsListPage() {
   return (
     <>
       <style>{`
-        @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900,500,400&display=swap');
-        @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+                @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
         *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:#F5F3EF;font-family:"Inter",system-ui,sans-serif;color:#0D0D0D;}
+        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;color:#0D0D0D;}
 
         /* ── Nav ── */
         .nl-nav{position:sticky;top:0;z-index:30;background:rgba(245,243,239,.88);backdrop-filter:saturate(150%) blur(16px);border-bottom:1px solid rgba(13,13,13,.08);height:60px;display:flex;align-items:center;padding:0 40px;gap:24px;}
@@ -216,7 +215,7 @@ export default function NewsListPage() {
                 <Sk w="65%" h={16} />
                 <Sk w={120} h={40} r={999} />
               </div>
-              <div style={{ background:'linear-gradient(90deg,#ece9e4 25%,#f5f3ef 50%,#ece9e4 75%)', backgroundSize:'400% 100%', animation:'shimmer 1.4s ease infinite', minHeight:300 }} />
+              <div style={{ background:'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize:'400% 100%', animation:'shimmer 1.4s ease infinite', minHeight:300 }} />
             </div>
             {/* Grid skeleton */}
             <div className="nl-grid">

@@ -316,9 +316,7 @@ export default function LeadershipPathPage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-        @import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap');
-        @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+                        @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
         @keyframes pulseGlow{0%,100%{filter:drop-shadow(0 0 2px rgba(192,57,43,.4))}50%{filter:drop-shadow(0 0 8px rgba(192,57,43,.8))}}
         @keyframes confettiPhase{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(var(--tx),80px) rotate(var(--rot));opacity:0}}
         *{box-sizing:border-box;margin:0;padding:0;}

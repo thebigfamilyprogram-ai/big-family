@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,15 +22,15 @@ interface School { id: string; name: string }
 
 const CATEGORIES = ['Operativo', 'Motivacional', 'Evento', 'Logro'] as const
 const CATEGORY_STYLES: Record<string, { bg: string; color: string }> = {
-  'Operativo':    { bg: '#DBEAFE', color: '#1E40AF' },
-  'Motivacional': { bg: '#D1FAE5', color: '#065F46' },
-  'Evento':       { bg: 'rgba(192,57,43,.1)', color: '#C0392B' },
-  'Logro':        { bg: '#FEF9C3', color: '#713F12' },
+  'Operativo':    { bg: 'rgba(59,130,246,.15)',  color: '#3B82F6' },
+  'Motivacional': { bg: 'rgba(34,197,94,.15)',   color: '#16a34a' },
+  'Evento':       { bg: 'rgba(192,57,43,.15)',   color: '#C0392B' },
+  'Logro':        { bg: 'rgba(245,158,11,.15)',  color: '#d97706' },
 }
 const EMPTY_FORM = { title: '', content: '', category: 'Operativo' as string, target: 'all', expires_at: '' }
 
 function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?: number }) {
-  return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,#ece9e4 25%,#f5f3ef 50%,#ece9e4 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
+  return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
 }
 
 export default function CoordinatorAnnouncementsPage() {

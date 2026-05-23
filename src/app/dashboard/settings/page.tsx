@@ -260,9 +260,7 @@ export default function SettingsPage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-        @import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap');
-        .st-header{padding:36px 40px 0;}
+                        .st-header{padding:36px 40px 0;}
         .st-eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.18em;color:#C0392B;text-transform:uppercase;font-weight:700;margin-bottom:10px;}
         .st-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:28px;color:var(--ink);letter-spacing:-.02em;margin-bottom:0;}
         .st-body{display:flex;gap:32px;padding:28px 40px 60px;align-items:flex-start;}

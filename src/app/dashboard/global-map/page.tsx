@@ -179,9 +179,7 @@ export default function GlobalMapPage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-        @import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap');
-        /* ── Header ── */
+                        /* ── Header ── */
         .gm-header{padding:36px 40px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap;}
         .gm-eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;color:#C0392B;text-transform:uppercase;font-weight:700;margin-bottom:12px;}
         .gm-title{font-family:"Instrument Serif",serif;font-style:italic;font-size:clamp(40px,5vw,64px);color:var(--ink);letter-spacing:-.03em;line-height:1.05;margin-bottom:8px;}

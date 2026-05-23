@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,7 +74,7 @@ const ROLE_META: Record<string, { label: string; color: string; bg: string }> = 
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?: number }) {
-  return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,#ece9e4 25%,#f5f3ef 50%,#ece9e4 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
+  return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
 }
 
 function Badge({ label, color, bg }: { label: string; color: string; bg: string }) {
@@ -368,10 +368,9 @@ export default function AdminPage() {
   return (
     <>
       <style>{`
-        @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900,500,400&display=swap');
-        @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+                @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
         *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:var(--bg,#F5F3EF);font-family:"Inter",system-ui,sans-serif;min-height:100vh;color:var(--ink,#0D0D0D);}
+        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;min-height:100vh;color:var(--ink);}
 
         /* Nav */
         .adm-nav{position:sticky;top:0;z-index:30;background:rgba(245,243,239,.88);backdrop-filter:saturate(150%) blur(16px);border-bottom:1px solid rgba(13,13,13,.08);height:62px;display:flex;align-items:center;padding:0 40px;gap:16px;}

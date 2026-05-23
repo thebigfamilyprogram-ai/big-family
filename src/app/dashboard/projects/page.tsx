@@ -144,9 +144,7 @@ export default function ProjectsPage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-        @import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap');
-        .pj-header{padding:36px 40px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+                        .pj-header{padding:36px 40px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;}
         .pj-header__left{}
         .pj-eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.18em;color:#C0392B;text-transform:uppercase;font-weight:700;margin-bottom:10px;}
         .pj-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:28px;color:var(--ink);letter-spacing:-.02em;margin-bottom:6px;}
@@ -246,9 +244,17 @@ export default function ProjectsPage() {
                             <button className="btn-action pending" disabled>En revisión</button>
                           )}
                           {project.status === 'approved' && (
-                            nominatedIds.has(project.id)
-                              ? <span style={{ fontSize: 11, color: '#065F46', fontWeight: 600, padding: '5px 10px', background: '#D1FAE5', borderRadius: 999 }}>En revisión ✓</span>
-                              : <button className="btn-action approved" onClick={() => { setNominateTarget(project); setNominateForm({ title: project.title || '', story: '' }) }} style={{ fontSize: 11, whiteSpace: 'nowrap' }}>⭐ Nominar historia</button>
+                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                              <button className="btn-action approved">Ver proyecto ✓</button>
+                              {nominatedIds.has(project.id)
+                                ? <span style={{ fontSize: 11, color: '#065F46', fontWeight: 600, padding: '5px 10px', background: 'rgba(34,197,94,.15)', borderRadius: 999, display: 'inline-flex', alignItems: 'center' }}>Historia en revisión</span>
+                                : <button
+                                    className="btn-action"
+                                    onClick={() => { setNominateTarget(project); setNominateForm({ title: project.title || '', story: '' }) }}
+                                    style={{ fontSize: 11, whiteSpace: 'nowrap', background: 'rgba(192,57,43,.1)', color: '#C0392B', border: 'none', padding: '5px 10px', borderRadius: 999, cursor: 'pointer', fontFamily: '"Satoshi",sans-serif', fontWeight: 700, transition: 'background .2s' }}
+                                  >⭐ Nominar</button>
+                              }
+                            </div>
                           )}
                           {project.status === 'rejected' && (
                             <button className="btn-action rejected" onClick={() => router.push(`/dashboard/projects/${project.id}/edit`)}>

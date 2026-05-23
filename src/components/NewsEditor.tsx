@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -249,8 +249,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
   return (
     <>
       <style>{`
-        @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900,500,400&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0;}
+                *{box-sizing:border-box;margin:0;padding:0;}
         .ne-wrap{display:flex;gap:28px;align-items:flex-start;padding:36px 40px 80px;max-width:1480px;margin:0 auto;}
         .ne-left{flex:11;min-width:0;}
         .ne-right{flex:9;min-width:280px;position:sticky;top:24px;display:flex;flex-direction:column;gap:14px;max-height:calc(100vh - 48px);}

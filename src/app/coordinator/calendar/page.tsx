@@ -145,6 +145,7 @@ export default function CoordinatorCalendarPage() {
         .field input,.field textarea{padding:9px 12px;border:1px solid var(--line);border-radius:9px;font-size:13.5px;font-family:inherit;outline:none;background:var(--bg-2);color:var(--ink);transition:border-color .2s;}
         .field input:focus,.field textarea:focus{border-color:#C0392B;}
         @media(max-width:960px){.cal-layout{grid-template-columns:1fr;}}
+        @media(max-width:768px){.cal-cell{aspect-ratio:auto;min-height:36px;}.cal-num{font-size:11px;}}
       `}</style>
 
       <nav className="nav">

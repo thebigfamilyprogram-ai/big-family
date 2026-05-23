@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,14 +23,14 @@ interface AnnRead {
 }
 
 const CATEGORY_STYLES: Record<string, { bg: string; color: string }> = {
-  'Operativo':    { bg: '#DBEAFE', color: '#1E40AF' },
-  'Motivacional': { bg: '#D1FAE5', color: '#065F46' },
-  'Evento':       { bg: 'rgba(192,57,43,.1)', color: '#C0392B' },
-  'Logro':        { bg: '#FEF9C3', color: '#713F12' },
+  'Operativo':    { bg: 'rgba(59,130,246,.15)',  color: '#3B82F6' },
+  'Motivacional': { bg: 'rgba(34,197,94,.15)',   color: '#16a34a' },
+  'Evento':       { bg: 'rgba(192,57,43,.15)',   color: '#C0392B' },
+  'Logro':        { bg: 'rgba(245,158,11,.15)',  color: '#d97706' },
 }
 
 function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?: number }) {
-  return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,#ece9e4 25%,#f5f3ef 50%,#ece9e4 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
+  return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
 }
 
 export default function AnnouncementsPage() {
@@ -88,8 +88,8 @@ export default function AnnouncementsPage() {
         .page-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:26px;letter-spacing:-0.02em;color:var(--ink);}
         .ann-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:20px 22px;box-shadow:0 2px 12px -6px rgba(13,13,13,.07);cursor:pointer;transition:box-shadow .2s;}
         .ann-card:hover{box-shadow:0 6px 24px -8px rgba(13,13,13,.12);}
-        .ann-card.unread{border-left:3px solid #C0392B;}
-        .ann-card.read{opacity:.75;}
+        .ann-card.unread{box-shadow:inset 3px 0 0 #C0392B,0 2px 12px -6px rgba(13,13,13,.07);}
+        .ann-card.read{opacity:.72;}
         .ann-header{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
         .ann-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:15px;color:var(--ink);}
         .ann-content{font-size:13.5px;color:var(--ink-2);line-height:1.6;}

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
@@ -189,8 +189,7 @@ export default function DiaLiderazgoPage() {
   return (
     <>
       <style>{`
-        @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900,600,500,400&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0;}
+                *{box-sizing:border-box;margin:0;padding:0;}
         html,body{font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
         body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");opacity:.6;mix-blend-mode:multiply;}
 

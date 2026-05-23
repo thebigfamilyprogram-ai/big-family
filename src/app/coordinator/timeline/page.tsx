@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
@@ -194,9 +194,8 @@ export default function CoordinatorTimelinePage() {
   return (
     <>
       <style>{`
-        @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900,500,400&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:var(--bg,#F5F3EF);font-family:"Inter",system-ui,sans-serif;min-height:100vh;color:var(--ink,#0D0D0D);}
+                *{box-sizing:border-box;margin:0;padding:0;}
+        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;min-height:100vh;color:var(--ink);}
         .ct-nav{position:sticky;top:0;z-index:30;background:rgba(245,243,239,.88);backdrop-filter:saturate(150%) blur(16px);border-bottom:1px solid rgba(13,13,13,.08);height:62px;display:flex;align-items:center;padding:0 40px;gap:16px;}
         .ct-brand{display:flex;align-items:center;gap:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;text-decoration:none;color:var(--ink,#0D0D0D);}
         .ct-spacer{flex:1;}

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,7 +32,7 @@ interface Article {
 }
 
 function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?: number }) {
-  return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,#ece9e4 25%,#f5f3ef 50%,#ece9e4 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
+  return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
 }
 
 export default function ArticlePage() {
@@ -105,10 +105,9 @@ export default function ArticlePage() {
   return (
     <>
       <style>{`
-        @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900,500,400&display=swap');
-        @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+                @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
         *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:#F5F3EF;font-family:"Inter",system-ui,sans-serif;color:#0D0D0D;}
+        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;color:#0D0D0D;}
 
         /* ── Nav ── */
         .art-nav{position:sticky;top:0;z-index:30;background:rgba(245,243,239,.88);backdrop-filter:saturate(150%) blur(16px);border-bottom:1px solid rgba(13,13,13,.08);height:60px;display:flex;align-items:center;padding:0 40px;gap:24px;}
@@ -244,10 +243,10 @@ export default function ArticlePage() {
       {loading ? (
         <>
           <style>{`@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}`}</style>
-          <div style={{ width:'100%', height:420, background:'linear-gradient(90deg,#ece9e4 25%,#f5f3ef 50%,#ece9e4 75%)', backgroundSize:'400% 100%', animation:'shimmer 1.4s ease infinite' }} />
+          <div style={{ width:'100%', height:420, background:'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize:'400% 100%', animation:'shimmer 1.4s ease infinite' }} />
           <div style={{ maxWidth:720, margin:'0 auto', padding:'52px 24px' }}>
-            <div style={{ height:12, borderRadius:6, background:'linear-gradient(90deg,#ece9e4 25%,#f5f3ef 50%,#ece9e4 75%)', backgroundSize:'400% 100%', animation:'shimmer 1.4s ease infinite', width:'35%', marginBottom:18 }} />
-            <div style={{ height:52, borderRadius:8, background:'linear-gradient(90deg,#ece9e4 25%,#f5f3ef 50%,#ece9e4 75%)', backgroundSize:'400% 100%', animation:'shimmer 1.4s ease infinite', marginBottom:32 }} />
+            <div style={{ height:12, borderRadius:6, background:'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize:'400% 100%', animation:'shimmer 1.4s ease infinite', width:'35%', marginBottom:18 }} />
+            <div style={{ height:52, borderRadius:8, background:'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize:'400% 100%', animation:'shimmer 1.4s ease infinite', marginBottom:32 }} />
             {[100,90,95,80,100,70].map((w, i) => (
               <Sk key={i} h={17} r={5} w={`${w}%`} />
             ))}

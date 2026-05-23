@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
@@ -107,6 +107,7 @@ export default function CalendarPage() {
         .ev-title{font-family:"Satoshi",sans-serif;font-weight:600;font-size:13.5px;color:var(--ink);}
         .ev-loc{font-size:12px;color:var(--mute);margin-top:2px;}
         @media(max-width:960px){.cal-layout{grid-template-columns:1fr;}.layout{grid-template-columns:1fr;}}
+        @media(max-width:768px){.cal-cell{aspect-ratio:auto;min-height:36px;}.cal-num{font-size:11px;}}
       `}</style>
 
       <div className="layout">
@@ -163,7 +164,7 @@ export default function CalendarPage() {
               </div>
               {loading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {[1,2,3].map(i => <div key={i} style={{ height: 48, background: 'linear-gradient(90deg,#ece9e4 25%,#f5f3ef 50%,#ece9e4 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite', borderRadius: 8 }} />)}
+                  {[1,2,3].map(i => <div key={i} style={{ height: 48, background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite', borderRadius: 8 }} />)}
                 </div>
               ) : upcoming.length === 0 ? (
                 <p style={{ fontSize: 13, color: 'var(--mute)' }}>No hay eventos próximos.</p>

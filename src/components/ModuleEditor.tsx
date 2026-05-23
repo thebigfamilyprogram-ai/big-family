@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -371,8 +371,7 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
   return (
     <>
       <style>{`
-        @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900,500,400&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0;}
+                *{box-sizing:border-box;margin:0;padding:0;}
         .me-wrap{display:flex;gap:28px;align-items:flex-start;padding:36px 40px 80px;max-width:1200px;margin:0 auto;}
         .me-main{flex:1 1 0;min-width:0;}
         .me-sidebar{flex:0 0 280px;position:sticky;top:24px;}

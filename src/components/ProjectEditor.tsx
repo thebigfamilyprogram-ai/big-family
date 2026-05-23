@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
@@ -615,8 +615,7 @@ export default function ProjectEditor({
   return (
     <>
       <style>{`
-        @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900,500,400&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0;}
+                *{box-sizing:border-box;margin:0;padding:0;}
         .pe-wrap{display:flex;gap:28px;align-items:flex-start;padding:36px 40px 80px;max-width:1200px;margin:0 auto;}
         .pe-editor{flex:1 1 0;min-width:0;}
         .pe-sidebar{flex:0 0 300px;position:sticky;top:24px;}

@@ -1,21 +1,14 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { motion, AnimatePresence } from 'framer-motion'
 
 type ActivePage =
-  | 'dashboard'
-  | 'leadership-path'
-  | 'global-map'
-  | 'projects'
-  | 'team-hub'
-  | 'settings'
-  | 'goals'
-  | 'calendar'
-  | 'announcements'
-  | 'feed'
-  | 'stories'
+  | 'dashboard' | 'leadership-path' | 'global-map'
+  | 'projects' | 'team-hub' | 'goals' | 'calendar' | 'settings'
+  | 'announcements' | 'feed' | 'stories'
 
 interface Props {
   activePage: ActivePage
@@ -24,7 +17,7 @@ interface Props {
   unreadAnnouncements?: number
 }
 
-const NAV_ITEMS: { label: string; page: ActivePage; href: string; icon: React.ReactNode }[] = [
+const PRIMARY_NAV: { label: string; page: ActivePage; href: string; icon: React.ReactNode }[] = [
   {
     label: 'Dashboard', page: 'dashboard', href: '/dashboard',
     icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="7" height="7" rx="2" fill="currentColor"/><rect x="10" y="1" width="7" height="7" rx="2" fill="currentColor" opacity=".5"/><rect x="1" y="10" width="7" height="7" rx="2" fill="currentColor" opacity=".5"/><rect x="10" y="10" width="7" height="7" rx="2" fill="currentColor" opacity=".5"/></svg>,
@@ -53,23 +46,25 @@ const NAV_ITEMS: { label: string; page: ActivePage; href: string; icon: React.Re
     label: 'Calendario', page: 'calendar', href: '/dashboard/calendar',
     icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="3" width="14" height="13" rx="2" stroke="currentColor" strokeWidth="1.5"/><path d="M2 7h14M6 1v4M12 1v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
   },
+]
+
+// Comunidad sub-items (collapsible group)
+const COMUNIDAD_NAV: { label: string; page: ActivePage; href: string; icon: React.ReactNode }[] = [
   {
     label: 'Anuncios', page: 'announcements', href: '/dashboard/announcements',
-    icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1.5L16 5v8l-7 3.5L2 13V5L9 1.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>,
+    icon: <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M9 1.5L16 5v8l-7 3.5L2 13V5L9 1.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>,
   },
   {
     label: 'Feed', page: 'feed', href: '/dashboard/feed',
-    icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 4h14M2 9h10M2 14h7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+    icon: <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M2 4h14M2 9h10M2 14h7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
   },
   {
     label: 'Historias', page: 'stories', href: '/success-stories',
-    icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2l1.8 4.9H16l-4.1 3 1.5 4.9L9 12l-4.4 2.8 1.5-4.9L2 6.9h5.2L9 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>,
-  },
-  {
-    label: 'Settings', page: 'settings', href: '/dashboard/settings',
-    icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.5"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.2 3.2l1.4 1.4M13.4 13.4l1.4 1.4M3.2 14.8l1.4-1.4M13.4 4.6l1.4-1.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+    icon: <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M9 2l1.8 4.9H16l-4.1 3 1.5 4.9L9 12l-4.4 2.8 1.5-4.9L2 6.9h5.2L9 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/></svg>,
   },
 ]
+
+const COMUNIDAD_PAGES: ActivePage[] = ['announcements', 'feed', 'stories']
 
 const BF_LOGO = (
   <svg viewBox="0 0 24 24" width="22" height="22">
@@ -80,9 +75,16 @@ const BF_LOGO = (
   </svg>
 )
 
+const SETTINGS_ITEM = {
+  label: 'Settings', page: 'settings' as ActivePage, href: '/dashboard/settings',
+  icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.5"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.2 3.2l1.4 1.4M13.4 13.4l1.4 1.4M3.2 14.8l1.4-1.4M13.4 4.6l1.4-1.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+}
+
 export default function DashboardSidebar({ activePage, userName = '…', userInitial = 'L', unreadAnnouncements = 0 }: Props) {
-  const router      = useRouter()
-  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
+  const router        = useRouter()
+  const supabaseRef   = useRef<ReturnType<typeof createClient> | null>(null)
+  const isComunidadActive = COMUNIDAD_PAGES.includes(activePage)
+  const [comunidadOpen, setComunidadOpen] = useState(isComunidadActive)
 
   async function handleLogout() {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -99,7 +101,15 @@ export default function DashboardSidebar({ activePage, userName = '…', userIni
         .sb-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;font-size:13.5px;font-weight:500;color:var(--mute);cursor:pointer;transition:all .18s;text-decoration:none;border:none;background:none;width:100%;text-align:left;position:relative;}
         .sb-item:hover{background:var(--line);color:var(--ink);}
         .sb-item.sb-active{background:#C0392B;color:#fff;}
-        .sb-divider{height:1px;background:var(--line-soft);margin:16px 8px;transition:background .2s;}
+        .sb-item.sb-sub{padding-left:20px;font-size:13px;}
+        .sb-divider{height:1px;background:var(--line-soft);margin:12px 8px;transition:background .2s;}
+        .sb-group-btn{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;font-size:13.5px;font-weight:500;color:var(--mute);cursor:pointer;transition:all .18s;border:none;background:none;width:100%;text-align:left;}
+        .sb-group-btn:hover{background:var(--line);color:var(--ink);}
+        .sb-group-btn.sb-group-active{color:var(--ink);}
+        .sb-group-label{flex:1;text-align:left;}
+        .sb-group-arrow{transition:transform .2s;flex-shrink:0;}
+        .sb-group-arrow.open{transform:rotate(180deg);}
+        .sb-sub-list{display:flex;flex-direction:column;gap:2px;overflow:hidden;}
         .sb-btn-new{width:100%;padding:12px;background:#C0392B;color:#fff;border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;letter-spacing:.04em;cursor:pointer;transition:background .2s;margin-top:20px;}
         .sb-btn-new:hover{background:#a93226;}
         .sb-user{display:flex;align-items:center;gap:10px;padding:12px 8px 0;}
@@ -121,7 +131,8 @@ export default function DashboardSidebar({ activePage, userName = '…', userIni
         </div>
 
         <nav className="sb-nav">
-          {NAV_ITEMS.map(item => (
+          {/* Primary nav items */}
+          {PRIMARY_NAV.map(item => (
             <button
               key={item.page}
               className={`sb-item ${activePage === item.page ? 'sb-active' : ''}`}
@@ -129,11 +140,72 @@ export default function DashboardSidebar({ activePage, userName = '…', userIni
             >
               {item.icon}
               {item.label}
-              {item.page === 'announcements' && unreadAnnouncements > 0 && (
-                <span className="sb-badge">{unreadAnnouncements > 9 ? '9+' : unreadAnnouncements}</span>
-              )}
             </button>
           ))}
+
+          {/* Comunidad collapsible group */}
+          <div style={{ marginTop: 4 }}>
+            <button
+              className={`sb-group-btn ${isComunidadActive ? 'sb-group-active' : ''}`}
+              onClick={() => setComunidadOpen(o => !o)}
+              type="button"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M3 9a6 6 0 1 0 12 0A6 6 0 0 0 3 9Z" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M9 5v4l2.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="sb-group-label">Comunidad</span>
+              {unreadAnnouncements > 0 && !comunidadOpen && (
+                <span style={{ background: '#C0392B', color: '#fff', borderRadius: 999, fontSize: 9.5, fontWeight: 700, minWidth: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', lineHeight: 1, flexShrink: 0 }}>
+                  {unreadAnnouncements > 9 ? '9+' : unreadAnnouncements}
+                </span>
+              )}
+              <svg
+                width="14" height="14" viewBox="0 0 14 14" fill="none"
+                className={`sb-group-arrow ${comunidadOpen ? 'open' : ''}`}
+              >
+                <path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+
+            <AnimatePresence initial={false}>
+              {comunidadOpen && (
+                <motion.div
+                  key="comunidad"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <div className="sb-sub-list" style={{ paddingTop: 2 }}>
+                    {COMUNIDAD_NAV.map(item => (
+                      <button
+                        key={item.page}
+                        className={`sb-item sb-sub ${activePage === item.page ? 'sb-active' : ''}`}
+                        onClick={() => router.push(item.href)}
+                      >
+                        {item.icon}
+                        {item.label}
+                        {item.page === 'announcements' && unreadAnnouncements > 0 && (
+                          <span className="sb-badge">{unreadAnnouncements > 9 ? '9+' : unreadAnnouncements}</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Settings at bottom */}
+          <button
+            className={`sb-item ${activePage === 'settings' ? 'sb-active' : ''}`}
+            onClick={() => router.push(SETTINGS_ITEM.href)}
+          >
+            {SETTINGS_ITEM.icon}
+            {SETTINGS_ITEM.label}
+          </button>
         </nav>
 
         <div className="sb-divider" />

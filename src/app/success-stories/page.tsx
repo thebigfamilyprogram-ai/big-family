@@ -19,7 +19,7 @@ interface Story {
 }
 
 function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?: number }) {
-  return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,#ece9e4 25%,#f5f3ef 50%,#ece9e4 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
+  return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
 }
 
 export default function SuccessStoriesPage() {
@@ -64,31 +64,32 @@ export default function SuccessStoriesPage() {
       <style>{`
         @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
         *{box-sizing:border-box;margin:0;padding:0;}
+        html,body{background:var(--bg);color:var(--ink);}
+        .nav{height:62px;border-bottom:1px solid var(--card-border);display:flex;align-items:center;padding:0 40px;background:var(--card-bg);position:sticky;top:0;z-index:20;}
+        .nav__brand{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:8px;}
+        .nav__right{margin-left:auto;display:flex;gap:12px;}
+        .btn-sm{padding:7px 14px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;cursor:pointer;background:none;color:var(--ink);transition:all .2s;}
+        .btn-sm:hover{border-color:var(--ink);}
         .page{max-width:1100px;margin:0 auto;padding:60px 40px 80px;}
         .hero{text-align:center;margin-bottom:48px;}
         .hero__eyebrow{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#C0392B;margin-bottom:12px;}
-        .hero__h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:44px;letter-spacing:-0.03em;color:#0D0D0D;margin-bottom:16px;}
-        .hero__sub{font-size:16px;color:#6B6B6B;max-width:520px;margin:0 auto;line-height:1.6;}
+        .hero__h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:44px;letter-spacing:-0.03em;color:var(--ink);margin-bottom:16px;}
+        .hero__sub{font-size:16px;color:var(--mute);max-width:520px;margin:0 auto;line-height:1.6;}
         .masonry{columns:3 280px;gap:20px;}
-        .story-card{break-inside:avoid;margin-bottom:20px;background:#fff;border:1px solid rgba(13,13,13,.07);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px -4px rgba(13,13,13,.07);cursor:pointer;display:block;text-decoration:none;transition:transform .2s,box-shadow .2s;}
+        .story-card{break-inside:avoid;margin-bottom:20px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px -4px rgba(13,13,13,.07);display:block;text-decoration:none;transition:transform .2s,box-shadow .2s;}
         .story-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px -8px rgba(13,13,13,.14);}
         .story-cover{width:100%;height:180px;object-fit:cover;display:block;}
         .story-cover-placeholder{width:100%;height:120px;background:linear-gradient(135deg,#C0392B,#8B1A1A);display:flex;align-items:center;justify-content:center;}
         .story-body{padding:16px 18px 18px;}
-        .story-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:#0D0D0D;margin-bottom:6px;line-height:1.3;}
-        .story-excerpt{font-size:13.5px;color:#4a4a4a;line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:10px;}
-        .story-meta{font-size:12px;color:#9a9690;}
-        .nav{height:62px;border-bottom:1px solid rgba(13,13,13,.07);display:flex;align-items:center;padding:0 40px;background:#fff;position:sticky;top:0;z-index:20;}
-        .nav__brand{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:#0D0D0D;text-decoration:none;display:flex;align-items:center;gap:8px;}
-        .nav__right{margin-left:auto;display:flex;gap:12px;}
-        .btn-sm{padding:7px 14px;border:1px solid rgba(13,13,13,.12);border-radius:999px;font-size:12.5px;cursor:pointer;background:none;color:#0D0D0D;transition:all .2s;}
-        .btn-sm:hover{border-color:#0D0D0D;}
+        .story-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:var(--ink);margin-bottom:6px;line-height:1.3;}
+        .story-excerpt{font-size:13.5px;color:var(--ink-2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:10px;}
+        .story-meta{font-size:12px;color:var(--mute);}
         @media(max-width:600px){.hero__h1{font-size:32px;}.masonry{columns:1;}.page{padding:40px 20px 60px;}}
       `}</style>
 
       <nav className="nav">
         <a className="nav__brand" href="/">
-          <svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="5" r="2.4" fill="#C0392B"/><path d="M12 7.5 L20 22 H4 Z" fill="#0D0D0D"/></svg>
+          <svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="5" r="2.4" fill="#C0392B"/><path d="M12 7.5 L20 22 H4 Z" fill="var(--ink)"/></svg>
           Big Family
         </a>
         <div className="nav__right">
@@ -106,7 +107,7 @@ export default function SuccessStoriesPage() {
         {loading ? (
           <div style={{ columns: '3 280px', gap: 20 }}>
             {[1,2,3,4,5,6].map(i => (
-              <div key={i} style={{ breakInside: 'avoid', marginBottom: 20, borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(13,13,13,.07)' }}>
+              <div key={i} style={{ breakInside: 'avoid', marginBottom: 20, borderRadius: 16, overflow: 'hidden', border: '1px solid var(--card-border)' }}>
                 <Sk w="100%" h={160} r={0} />
                 <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <Sk w="80%" h={16} r={6} />
@@ -118,7 +119,7 @@ export default function SuccessStoriesPage() {
             ))}
           </div>
         ) : stories.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#9a9690', fontSize: 14 }}>
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--mute)', fontSize: 14 }}>
             No hay historias publicadas todavía. ¡Vuelve pronto!
           </div>
         ) : (
