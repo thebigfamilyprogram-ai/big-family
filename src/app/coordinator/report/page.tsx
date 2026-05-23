@@ -187,6 +187,7 @@ export default function CoordinatorReportPage() {
         th{padding:11px 14px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:600;border-bottom:1px solid var(--line);text-align:left;background:var(--bg-2);white-space:nowrap;}
         td{padding:11px 14px;border-bottom:1px solid var(--line-soft);color:var(--ink-2);vertical-align:middle;}
         tr:last-child td{border-bottom:none;}
+        tbody tr:nth-child(even) td{background:var(--bg-2);}
       `}</style>
 
       <nav className="nav">
@@ -209,8 +210,9 @@ export default function CoordinatorReportPage() {
             className="btn-export"
             onClick={handleExport}
             disabled={loading || exporting || students.length === 0}
-            whileHover={loading ? undefined : { scale: 1.02 }}
-            whileTap={loading ? undefined : { scale: 0.97 }}
+            title={students.length === 0 ? 'No hay estudiantes para exportar' : undefined}
+            whileHover={loading || students.length === 0 ? undefined : { scale: 1.02 }}
+            whileTap={loading || students.length === 0 ? undefined : { scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
           >
             {exporting ? 'Generando PDF…' : '↓ Exportar Reporte PDF'}

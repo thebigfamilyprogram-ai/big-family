@@ -161,6 +161,8 @@ export default function GoalsPage() {
 
   const activeGoals    = goals.filter(g => g.status === 'active')
   const completedGoals = goals.filter(g => g.status === 'completed')
+  const totalGoals     = goals.length
+  const completedPct   = totalGoals > 0 ? Math.round((completedGoals.length / totalGoals) * 100) : 0
 
   return (
     <>
@@ -181,9 +183,10 @@ export default function GoalsPage() {
         .field label{font-size:12px;font-weight:600;color:var(--mute);letter-spacing:.06em;text-transform:uppercase;}
         .field input,.field textarea{padding:10px 14px;border:1px solid var(--line);border-radius:10px;font-size:13.5px;font-family:inherit;outline:none;background:var(--bg-2);color:var(--ink);transition:border-color .2s;}
         .field input:focus,.field textarea:focus{border-color:#C0392B;}
+        .goals-progress-bar{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:8px;}
         .tmpl-card{padding:14px 16px;border:1px solid var(--line);border-radius:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:space-between;gap:12px;}
         .tmpl-card:hover{border-color:#C0392B;background:rgba(192,57,43,.03);}
-        .tmpl-card.adopted{opacity:.5;cursor:default;}
+        .tmpl-card.adopted{cursor:default;}
         .tmpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
         @media(max-width:860px){.layout{grid-template-columns:1fr;}.sidebar{position:relative;height:auto;}}
       `}</style>
@@ -201,6 +204,29 @@ export default function GoalsPage() {
             <div className="page-title">Mis Metas</div>
             <div className="page-sub">Establece objetivos personales y del programa para ganar XP</div>
           </div>
+
+          {/* Progress summary */}
+          {!loading && totalGoals > 0 && (
+            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 14, padding: '18px 22px', boxShadow: '0 2px 12px -6px rgba(13,13,13,.07)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--ink)' }}>
+                  {completedGoals.length === totalGoals && totalGoals > 0
+                    ? '🎉 ¡Todas las metas completadas!'
+                    : `${completedGoals.length} de ${totalGoals} metas completadas`}
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#C0392B' }}>{completedPct}%</span>
+              </div>
+              <div className="goals-progress-bar">
+                <motion.div
+                  style={{ height: '100%', background: '#C0392B', borderRadius: 999 }}
+                  initial={{ width: '0%' }}
+                  whileInView={{ width: `${completedPct}%` }}
+                  viewport={{ once: true }}
+                  transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.2 }}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Active goals */}
           <div className="card">
@@ -289,12 +315,24 @@ export default function GoalsPage() {
           </div>
 
           {/* Program templates */}
-          {!loading && templates.length > 0 && (
+          {!loading && (
             <div className="card">
               <div className="section-title">
                 Metas del programa
-                <span className="section-badge">{templates.length}</span>
+                {templates.length > 0 && <span className="section-badge">{templates.length}</span>}
               </div>
+              {templates.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '28px 20px' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                      <circle cx="11" cy="11" r="9" stroke="var(--mute)" strokeWidth="1.5"/>
+                      <path d="M11 7v4l2.5 2.5" stroke="var(--mute)" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 6 }}>No hay plantillas del programa todavía</div>
+                  <div style={{ fontSize: 13, color: 'var(--mute)', lineHeight: 1.5 }}>El coordinador agregará metas del programa próximamente.</div>
+                </div>
+              ) : (
               <div className="tmpl-grid">
                 {templates.map(tmpl => {
                   const adopted = goals.some(g => g.title === tmpl.title && g.type === 'program' && g.status === 'active')
@@ -302,6 +340,7 @@ export default function GoalsPage() {
                     <motion.div
                       key={tmpl.id}
                       className={`tmpl-card ${adopted ? 'adopted' : ''}`}
+                      style={{ border: adopted ? '1px solid rgba(34,197,94,.3)' : undefined }}
                       onClick={() => !adopted && handleAdoptTemplate(tmpl)}
                       whileHover={!adopted && !pref ? { y: -2 } : undefined}
                       transition={springSnappy}
@@ -309,17 +348,18 @@ export default function GoalsPage() {
                       <div>
                         <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 13.5, color: 'var(--ink)' }}>{tmpl.title}</div>
                         {tmpl.description && <div style={{ fontSize: 12, color: 'var(--mute)', marginTop: 3 }}>{tmpl.description}</div>}
-                        <div style={{ marginTop: 6, fontSize: 11.5, color: '#b25a00', fontWeight: 600 }}>+{tmpl.xp_reward} XP</div>
+                        <div style={{ marginTop: 6, fontSize: 11.5, color: 'rgba(180,90,0,.9)', fontWeight: 600 }}>+{tmpl.xp_reward} XP</div>
                       </div>
                       {adopted ? (
-                        <span style={{ fontSize: 11, color: '#065F46', fontWeight: 700, background: '#D1FAE5', padding: '3px 9px', borderRadius: 999, whiteSpace: 'nowrap' }}>Adoptada</span>
+                        <span style={{ fontSize: 11, color: '#065F46', fontWeight: 700, background: 'rgba(34,197,94,.15)', padding: '4px 10px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0 }}>✓ Adoptada</span>
                       ) : (
-                        <span style={{ fontSize: 20, color: '#C0392B' }}>+</span>
+                        <span style={{ fontSize: 20, color: '#C0392B', fontWeight: 300, lineHeight: 1 }}>+</span>
                       )}
                     </motion.div>
                   )
                 })}
               </div>
+              )}
             </div>
           )}
 

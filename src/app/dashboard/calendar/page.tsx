@@ -134,33 +134,42 @@ export default function CalendarPage() {
 
               <div className="cal-grid">
                 {DAYS.map(d => <div key={d} className="cal-day-label">{d}</div>)}
-                {cells.map((day, i) => {
-                  if (!day) return <div key={i} />
-                  const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-                  const dayEvents = eventsByDate[dateStr] ?? []
-                  const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day
-                  return (
-                    <div
-                      key={i}
-                      className={`cal-cell ${dayEvents.length > 0 ? 'has-events' : ''} ${isToday ? 'today' : ''}`}
-                      onClick={() => dayEvents.length > 0 && setSelected(dayEvents[0])}
-                    >
-                      <span className="cal-num">{day}</span>
-                      {dayEvents.length > 0 && (
-                        <div className="cal-dots">
-                          {dayEvents.slice(0, 3).map((_, j) => <span key={j} className="cal-dot" />)}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
+                {(() => {
+                  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month
+                  const todayCol = isCurrentMonth ? today.getDay() : -1
+                  return cells.map((day, i) => {
+                    if (!day) return <div key={i} style={i % 7 === todayCol ? { background: 'rgba(192,57,43,.04)', borderRadius: 8 } : undefined} />
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+                    const dayEvents = eventsByDate[dateStr] ?? []
+                    const isToday = isCurrentMonth && today.getDate() === day
+                    const isTodayCol = i % 7 === todayCol
+                    return (
+                      <div
+                        key={i}
+                        className={`cal-cell ${dayEvents.length > 0 ? 'has-events' : ''} ${isToday ? 'today' : ''}`}
+                        style={isTodayCol && !isToday ? { background: 'rgba(192,57,43,.04)' } : undefined}
+                        onClick={() => dayEvents.length > 0 && setSelected(dayEvents[0])}
+                      >
+                        <span className="cal-num">{day}</span>
+                        {dayEvents.length > 0 && (
+                          <div className="cal-dots">
+                            {dayEvents.slice(0, 3).map((_, j) => <span key={j} className="cal-dot" />)}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })
+                })()}
               </div>
             </div>
 
             {/* Upcoming events */}
             <div className="card">
-              <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 16 }}>
+              <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
                 Próximos eventos
+                {upcoming.length > 0 && (
+                  <span style={{ padding: '2px 8px', background: 'rgba(192,57,43,.1)', color: '#C0392B', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>{upcoming.length}</span>
+                )}
               </div>
               {loading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

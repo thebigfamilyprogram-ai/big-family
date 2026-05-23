@@ -19,11 +19,11 @@ export function showToast(type: ToastType, message: string) {
   listeners.forEach(l => l(toast))
 }
 
-const COLORS: Record<ToastType, { bg: string; border: string; color: string }> = {
-  success: { bg: '#D1FAE5', border: '#6EE7B7', color: '#065F46' },
-  error:   { bg: '#FEE2E2', border: '#FCA5A5', color: '#991B1B' },
-  info:    { bg: '#EFF6FF', border: '#93C5FD', color: '#1E40AF' },
-  warning: { bg: '#FFFBEB', border: '#FCD34D', color: '#92400E' },
+const COLORS: Record<ToastType, { bg: string; border: string; color: string; accent: string }> = {
+  success: { bg: 'rgba(16,185,129,0.12)',  border: 'rgba(16,185,129,0.3)',  color: 'var(--ink)', accent: '#10B981' },
+  error:   { bg: 'rgba(192,57,43,0.12)',   border: 'rgba(192,57,43,0.3)',   color: 'var(--ink)', accent: '#C0392B' },
+  info:    { bg: 'rgba(59,130,246,0.12)',  border: 'rgba(59,130,246,0.3)',  color: 'var(--ink)', accent: '#3B82F6' },
+  warning: { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)', color: 'var(--ink)', accent: '#F59E0B' },
 }
 
 export function ToastContainer() {
@@ -56,14 +56,15 @@ export function ToastContainer() {
               style={{
                 background: c.bg,
                 border: `1px solid ${c.border}`,
+                boxShadow: `inset 3px 0 0 ${c.accent}, 0 4px 18px -4px rgba(0,0,0,.14)`,
                 color: c.color,
                 borderRadius: 12,
                 padding: '12px 18px',
                 fontSize: 13.5,
                 fontFamily: 'Inter, sans-serif',
                 fontWeight: 500,
-                boxShadow: '0 4px 18px -4px rgba(0,0,0,.14)',
                 maxWidth: 320,
+                backdropFilter: 'blur(8px)',
               }}
             >
               {t.message}

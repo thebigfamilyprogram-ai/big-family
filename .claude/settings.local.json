@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(npm install *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "PowerShell(Get-Content \"c:\\\\Users\\\\Sammy\\\\big-family\\\\src\\\\app\\\\dashboard\\\\calendar\\\\page.tsx\" -Raw | Select-String -Pattern \"upcoming|cal-layout|Próximos\" -AllMatches | ForEach-Object { $_.Matches } | Select-Object -ExpandProperty Value)",
+      "PowerShell(Get-Content \"c:\\\\Users\\\\Sammy\\\\big-family\\\\src\\\\app\\\\coordinator\\\\report\\\\page.tsx\" -Raw | Select-String \"tbl-wrap|table|tbl|disabled|export\" -AllMatches | ForEach-Object { $_.Line } | Select-Object -First 20)",
+      "Read(//c/Users/Sammy/big-family/src/app/success-stories/**)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

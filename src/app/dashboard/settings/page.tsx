@@ -397,9 +397,30 @@ export default function SettingsPage() {
                         onChange={handleAvatarPick}
                       />
                       <div className="st-avatar-hint">
-                        <div style={{ fontWeight: 600, fontSize: 13.5, color: 'var(--ink)', marginBottom: 4 }}>Foto de perfil</div>
-                        <div>Haz clic para subir una imagen.</div>
-                        <div>JPG, PNG o WEBP · máx. 2MB</div>
+                        <div style={{ fontWeight: 600, fontSize: 13.5, color: 'var(--ink)', marginBottom: 4 }}>
+                          {avatarPreview ? 'Nueva foto seleccionada' : 'Foto de perfil'}
+                        </div>
+                        {avatarPreview ? (
+                          <>
+                            <div style={{ fontSize: 13, color: 'var(--mute)', marginBottom: 8 }}>La foto se subirá al guardar el perfil.</div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAvatarFile(null)
+                                setAvatarPreview('')
+                                if (fileRef.current) fileRef.current.value = ''
+                              }}
+                              style={{ padding: '5px 12px', border: '1px solid var(--line)', borderRadius: 999, background: 'none', cursor: 'pointer', fontSize: 12.5, color: 'var(--mute)', fontFamily: 'inherit', transition: 'all .15s' }}
+                            >
+                              × Cancelar
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <div>Haz clic para subir una imagen.</div>
+                            <div>JPG, PNG o WEBP · máx. 2MB</div>
+                          </>
+                        )}
                       </div>
                     </div>
 

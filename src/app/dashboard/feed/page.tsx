@@ -1,12 +1,12 @@
-﻿'use client'
+'use client'
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import DashboardSidebar from '@/components/DashboardSidebar'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
 
 interface FeedItem {
@@ -24,12 +24,12 @@ type FeedFilter = 'all' | 'module_completed' | 'project_submitted' | 'badge_earn
 
 const PAGE_SIZE = 20
 
-const TYPE_META: Record<string, { icon: string; label: string; color: string }> = {
-  module_completed:  { icon: '📚', label: 'completó un módulo', color: '#1E40AF' },
-  project_submitted: { icon: '📤', label: 'envió un proyecto', color: '#065F46' },
-  badge_earned:      { icon: '🏅', label: 'ganó un badge', color: '#713F12' },
-  certified:         { icon: '🎓', label: 'fue certificado/a', color: '#C0392B' },
-  goal_completed:    { icon: '🎯', label: 'completó una meta', color: '#7c3e9e' },
+const TYPE_META: Record<string, { icon: string; label: string; color: string; border: string }> = {
+  module_completed:  { icon: '📚', label: 'completó un módulo',  color: '#3B82F6', border: '#3B82F6' },
+  project_submitted: { icon: '📤', label: 'envió un proyecto',   color: '#C0392B', border: '#C0392B' },
+  badge_earned:      { icon: '🏅', label: 'ganó un badge',       color: '#F59E0B', border: '#F59E0B' },
+  certified:         { icon: '🎓', label: 'fue certificado/a',   color: '#10B981', border: '#10B981' },
+  goal_completed:    { icon: '🎯', label: 'completó una meta',   color: '#8B5CF6', border: '#8B5CF6' },
 }
 
 const FILTER_LABELS: Record<FeedFilter, string> = {
@@ -70,7 +70,15 @@ export default function FeedPage() {
   const [hasMore,    setHasMore]    = useState(true)
   const [userName,   setUserName]   = useState('…')
   const [userInit,   setUserInit]   = useState('L')
+  const [showTop,    setShowTop]    = useState(false)
   const loadRef     = useRef<HTMLDivElement>(null)
+
+  // Scroll-to-top: show button after 400px scroll
+  useEffect(() => {
+    function onScroll() { setShowTop(window.scrollY > 400) }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   async function fetchItems(off: number, f: FeedFilter, reset: boolean) {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -149,11 +157,11 @@ export default function FeedPage() {
 
   function getDescription(item: FeedItem): string {
     const meta = item.metadata ?? {}
-    if (item.type === 'module_completed' && meta.module_title) return `"${meta.module_title}"`
+    if (item.type === 'module_completed'  && meta.module_title)  return `"${meta.module_title}"`
     if (item.type === 'project_submitted' && meta.project_title) return `"${meta.project_title}"`
-    if (item.type === 'badge_earned' && meta.badge_name) return `${meta.badge_icon ?? '🏅'} ${meta.badge_name}`
-    if (item.type === 'certified' && meta.project_title) return `"${meta.project_title}"`
-    if (item.type === 'goal_completed' && meta.goal_title) return `"${meta.goal_title}"`
+    if (item.type === 'badge_earned'      && meta.badge_name)    return `${meta.badge_icon ?? '🏅'} ${meta.badge_name}`
+    if (item.type === 'certified'         && meta.project_title) return `"${meta.project_title}"`
+    if (item.type === 'goal_completed'    && meta.goal_title)    return `"${meta.goal_title}"`
     return ''
   }
 
@@ -170,11 +178,13 @@ export default function FeedPage() {
         .filter-btn.active{background:var(--ink);border-color:var(--ink);color:#fff;}
         .feed-item{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line-soft);}
         .feed-item:last-child{border-bottom:none;}
-        .feed-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#C0392B,#8B1A1A);color:#fff;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+        .feed-avatar{width:38px;height:38px;border-radius:50%;color:#fff;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
         .feed-body{flex:1;min-width:0;}
         .feed-name{font-family:"Satoshi",sans-serif;font-weight:600;font-size:13.5px;color:var(--ink);}
         .feed-action{font-size:13px;color:var(--ink-2);margin-top:2px;line-height:1.45;}
         .feed-meta{font-size:11.5px;color:var(--mute);margin-top:4px;}
+        .scroll-top{position:fixed;bottom:32px;right:32px;width:44px;height:44px;border-radius:50%;background:var(--ink);color:var(--bg);border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px -4px rgba(0,0,0,.3);z-index:50;transition:background .2s;}
+        .scroll-top:hover{background:#C0392B;}
         @media(max-width:860px){.layout{grid-template-columns:1fr;}}
       `}</style>
 
@@ -191,7 +201,7 @@ export default function FeedPage() {
 
           <div className="filter-row">
             {(Object.keys(FILTER_LABELS) as FeedFilter[]).map(f => (
-              <button key={f} className={`filter-btn ${filter === f ? 'active' : ''}`} onClick={() => handleFilterChange(f)}>
+              <button type="button" key={f} className={`filter-btn ${filter === f ? 'active' : ''}`} onClick={() => handleFilterChange(f)}>
                 {FILTER_LABELS[f]}
               </button>
             ))}
@@ -216,18 +226,26 @@ export default function FeedPage() {
               <motion.div
                 initial={pref ? false : 'hidden'}
                 animate="visible"
-                variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.04 } } }}
+                variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.025 } } }}
               >
-                {items.map(item => {
-                  const meta = TYPE_META[item.type] ?? { icon: '⚡', label: item.type, color: '#C0392B' }
+                {items.map((item, idx) => {
+                  const meta = TYPE_META[item.type] ?? { icon: '⚡', label: item.type, color: '#C0392B', border: '#C0392B' }
                   const desc = getDescription(item)
+                  // Cap stagger at 8 items: beyond index 7, appear instantly
+                  const itemVariants = idx < 8
+                    ? { hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: springNatural } }
+                    : { hidden: { opacity: 1, y: 0 }, visible: { opacity: 1, y: 0 } }
                   return (
                     <motion.div
                       key={item.id}
                       className="feed-item"
-                      variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: springNatural } }}
+                      variants={itemVariants}
+                      style={{ boxShadow: `inset 3px 0 0 ${meta.border}`, paddingLeft: 12, marginLeft: -12 }}
                     >
-                      <div className="feed-avatar" style={{ background: `linear-gradient(135deg, ${meta.color}, #0D0D0D)` }}>
+                      <div
+                        className="feed-avatar"
+                        style={{ background: `linear-gradient(135deg, ${meta.color}, color-mix(in srgb, ${meta.color} 60%, #0D0D0D))` }}
+                      >
                         {item.initials}
                       </div>
                       <div className="feed-body">
@@ -254,11 +272,30 @@ export default function FeedPage() {
               <div style={{ textAlign: 'center', padding: '16px 0', fontSize: 13, color: 'var(--mute)' }}>Cargando más…</div>
             )}
             {!hasMore && items.length > 0 && (
-              <div style={{ textAlign: 'center', padding: '16px 0', fontSize: 12, color: 'var(--mute)' }}>Fin del feed</div>
+              <div style={{ textAlign: 'center', padding: '16px 0', fontSize: 12, color: 'var(--mute)', borderTop: '1px solid var(--line-soft)', marginTop: 4 }}>
+                — Fin del feed —
+              </div>
             )}
           </div>
         </motion.main>
       </div>
+
+      {/* Scroll-to-top button */}
+      <AnimatePresence>
+        {showTop && (
+          <motion.button
+            className="scroll-top"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            initial={pref ? false : { opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+            aria-label="Volver arriba"
+          >
+            ↑
+          </motion.button>
+        )}
+      </AnimatePresence>
     </>
   )
 }
