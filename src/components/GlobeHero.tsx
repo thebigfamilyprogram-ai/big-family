@@ -315,6 +315,8 @@ export default function GlobeHero() {
 
     let renderer: any
     let sceneObserver: IntersectionObserver | undefined
+    let earthMatClosure: any
+    let atmInnerMatClosure: any, atmOuterMatClosure: any
     async function initGlobe() {
       const THREE = (window as any).THREE
       const wrap       = wrapRef.current   as HTMLDivElement
@@ -548,11 +550,35 @@ export default function GlobeHero() {
 
       // ── GLOBE ──────────────────────────────────────────────────────
       const R = 1.25
-      const earthTex = await buildEarthTexture()
-      const globe = new THREE.Mesh(
-        new THREE.SphereGeometry(R, 64, 64),
-        new THREE.MeshStandardMaterial({ map: earthTex, roughness: 0.70, metalness: 0.04 })
-      )
+      const sunDir = new THREE.Vector3(5, 3, 5).normalize()
+
+      const EARTH_VERT = `varying vec2 vUv;varying vec3 vWorldNormal;void main(){vUv=uv;vWorldNormal=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`
+      const EARTH_FRAG = `uniform sampler2D uDay;uniform sampler2D uNight;uniform vec3 uSun;uniform float uNightLoaded;varying vec2 vUv;varying vec3 vWorldNormal;void main(){vec3 n=normalize(vWorldNormal);float d=dot(n,uSun);float lit=clamp(d*0.85+0.13,0.05,1.0);vec3 dayCol=texture2D(uDay,vUv).rgb*lit;if(uNightLoaded<0.5){gl_FragColor=vec4(dayCol,1.0);return;}vec3 nightCol=texture2D(uNight,vUv).rgb*1.8;float nightBlend=smoothstep(0.15,-0.25,d);gl_FragColor=vec4(mix(dayCol,nightCol,nightBlend),1.0);}`
+
+      let dayTex: any
+      try {
+        dayTex = await new Promise<any>((resolve, reject) => {
+          new THREE.TextureLoader().load('/textures/earth-day.jpg',
+            (tex: any) => { tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 16; resolve(tex) },
+            undefined, () => reject())
+        })
+      } catch {
+        dayTex = await buildEarthTexture()
+      }
+
+      const earthMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uDay:         { value: dayTex },
+          uNight:       { value: null },
+          uSun:         { value: sunDir },
+          uNightLoaded: { value: 0.0 },
+        },
+        vertexShader:   EARTH_VERT,
+        fragmentShader: EARTH_FRAG,
+      })
+      earthMatClosure = earthMat
+
+      const globe = new THREE.Mesh(new THREE.SphereGeometry(R, 64, 64), earthMat)
       scene.add(globe)
 
       // ── HUD GRATICULE — EdgesGeometry wire sphere ──────────────────
@@ -561,46 +587,36 @@ export default function GlobeHero() {
         new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.05, depthWrite: false })
       ))
 
-      // ── NIGHT-SIDE OVERLAY ─────────────────────────────────────────
-      const sunDir = new THREE.Vector3(5, 3, 5).normalize()
-      const nightMat = new THREE.ShaderMaterial({
-        transparent: true, depthWrite: false,
-        uniforms: { uSun: { value: sunDir } },
-        vertexShader: `
-          varying vec3 vWN;
-          void main(){
-            vWN = normalize(mat3(modelMatrix) * normal);
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          }`,
-        fragmentShader: `
-          uniform vec3 uSun;
-          varying vec3 vWN;
-          void main(){
-            float day = dot(normalize(vWN), uSun);
-            float a = smoothstep(0.12, -0.55, day) * 0.78;
-            gl_FragColor = vec4(0.0, 0.01, 0.06, a);
-          }`,
-      })
-      scene.add(new THREE.Mesh(new THREE.SphereGeometry(R * 1.001, 32, 32), nightMat))
+      // Lazy-load night texture (city lights) after globe is visible
+      setTimeout(() => {
+        new THREE.TextureLoader().load('/textures/earth-night.jpg', (tex: any) => {
+          tex.colorSpace = THREE.SRGBColorSpace
+          tex.anisotropy = 8
+          earthMat.uniforms.uNight.value = tex
+          earthMat.uniforms.uNightLoaded.value = 1.0
+        })
+      }, 300)
 
-      // ── ATMOSPHERE — two-layer Fresnel ─────────────────────────────
+      // ── ATMOSPHERE — two-layer Fresnel with breathing ───────────────
       const ATM_VERT = `varying vec3 vN; void main(){ vN=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`
-      // Inner: electric blue limb glow
-      scene.add(new THREE.Mesh(new THREE.SphereGeometry(R * 1.020, 32, 32), new THREE.ShaderMaterial({
+      const atmInnerMat = new THREE.ShaderMaterial({
         transparent: true, side: THREE.BackSide, depthWrite: false,
         blending: THREE.AdditiveBlending,
-        uniforms: { uC: { value: new THREE.Color('#60A5FA') } },
+        uniforms: { uC: { value: new THREE.Color('#60A5FA') }, uBreath: { value: 0.40 } },
         vertexShader: ATM_VERT,
-        fragmentShader: `varying vec3 vN; uniform vec3 uC; void main(){ float f=pow(1.0-abs(dot(vN,vec3(0.,0.,1.))),2.5); gl_FragColor=vec4(uC,f*0.40);}`,
-      })))
-      // Outer: diffuse dark halo
-      scene.add(new THREE.Mesh(new THREE.SphereGeometry(R * 1.08, 32, 32), new THREE.ShaderMaterial({
+        fragmentShader: `varying vec3 vN; uniform vec3 uC; uniform float uBreath; void main(){ float f=pow(1.0-abs(dot(vN,vec3(0.,0.,1.))),2.5); gl_FragColor=vec4(uC,f*uBreath);}`,
+      })
+      scene.add(new THREE.Mesh(new THREE.SphereGeometry(R * 1.020, 32, 32), atmInnerMat))
+      const atmOuterMat = new THREE.ShaderMaterial({
         transparent: true, side: THREE.BackSide, depthWrite: false,
         blending: THREE.AdditiveBlending,
-        uniforms: { uC: { value: new THREE.Color('#1E3A5F') } },
+        uniforms: { uC: { value: new THREE.Color('#1E3A5F') }, uBreath: { value: 0.15 } },
         vertexShader: ATM_VERT,
-        fragmentShader: `varying vec3 vN; uniform vec3 uC; void main(){ float f=pow(1.0-abs(dot(vN,vec3(0.,0.,1.))),2.0); gl_FragColor=vec4(uC,f*0.15);}`,
-      })))
+        fragmentShader: `varying vec3 vN; uniform vec3 uC; uniform float uBreath; void main(){ float f=pow(1.0-abs(dot(vN,vec3(0.,0.,1.))),2.0); gl_FragColor=vec4(uC,f*uBreath);}`,
+      })
+      scene.add(new THREE.Mesh(new THREE.SphereGeometry(R * 1.08, 32, 32), atmOuterMat))
+      atmInnerMatClosure = atmInnerMat
+      atmOuterMatClosure = atmOuterMat
 
       // ── PINS ───────────────────────────────────────────────────────
       const pinsGroup = new THREE.Group()
@@ -737,7 +753,7 @@ export default function GlobeHero() {
       SCHOOLS_GUAJIRA.forEach((s, i) => {
         const pos = latLonToVec3(s.lat, s.lon, R * 1.010)
         const geo = new THREE.SphereGeometry(0.014, 8, 8)
-        const mat = new THREE.MeshBasicMaterial({ color: 0xC0392B })
+        const mat = new THREE.MeshBasicMaterial({ color: 0xF59E0B, transparent: true, opacity: 0.9 })
         const mesh = new THREE.Mesh(geo, mat)
         mesh.position.copy(pos)
         schoolGroup.add(mesh)
@@ -804,9 +820,9 @@ export default function GlobeHero() {
       const clock    = new THREE.Clock()
       const camFwd   = new THREE.Vector3(0, 0, 1)
 
-      // Inertia state (shared with drag handlers below)
+      // Angular velocity state (shared with drag handlers below)
       let isDown = false, lastX = 0, lastY = 0
-      let velY = 0, velX = 0
+      let angVelY = 0.0008, angVelX = 0.0
       let isVisible = true
       let elapsed   = 0
 
@@ -821,11 +837,13 @@ export default function GlobeHero() {
         const dt = clock.getDelta()
         elapsed += dt
 
-        // Inertia: decay when released, direct-set when dragging
-        if (!isDown) { velY *= 0.95; velX *= 0.95 }
-        globe.rotation.y += 0.084 * dt + velY
-        globe.rotation.x = Math.max(-0.9, Math.min(0.9, globe.rotation.x + velX))
-        if (isDown) { velY = 0; velX = 0 }
+        // Inertia: blend toward base spin when not dragging
+        if (!isDown) {
+          angVelY = angVelY * 0.995 + 0.0008 * 0.005
+          angVelX *= 0.97
+          globe.rotation.y += angVelY
+          globe.rotation.x = Math.max(-0.9, Math.min(0.9, globe.rotation.x + angVelX))
+        }
 
         // Arc pulses — only uniform updates (no geometry rebuild)
         arcEntries.forEach(arc => {
@@ -846,10 +864,15 @@ export default function GlobeHero() {
           arc.particle.material.opacity = vis * 0.9
         })
 
-        // School dot pulses — sinusoidal scale
+        // School dot pulses — organic sin² "breathing" pattern
         schoolEntries.forEach(d => {
-          d.mesh.scale.setScalar(1.0 + Math.sin((elapsed + d.timeOffset) * 3.0) * 0.4)
+          const s = Math.sin((elapsed + d.timeOffset) * 3.0)
+          d.mesh.scale.setScalar(1.0 + 0.35 * s * s)
         })
+
+        // Atmosphere breathing — subtle sine oscillation
+        atmInnerMat.uniforms.uBreath.value = 0.40 + 0.08 * Math.sin(elapsed * 0.5)
+        atmOuterMat.uniforms.uBreath.value = 0.15 + 0.04 * Math.sin(elapsed * 0.5)
 
         // School arc pulses
         schoolArcEntries.forEach(arc => {
@@ -895,8 +918,9 @@ export default function GlobeHero() {
           const dotAlpha = p._visible ? Math.min(1, (p._facing - 0.15) * 4) : 0
           p.flagEl.style.opacity       = String(dotAlpha)
           p.flagEl.style.pointerEvents = p._visible ? 'auto' : 'none'
-          // Amber dot 3D pulse
-          const dotScale = 1.0 + Math.sin(elapsed * p.dotFreq * 2.5) * 0.35
+          // Amber dot 3D pulse — organic sin² breathing
+          const _ds = Math.sin(elapsed * p.dotFreq * 2.5)
+          const dotScale = 1.0 + 0.35 * _ds * _ds
           p.dot.scale.setScalar(dotScale)
           p.dot.material.opacity = dotAlpha
           p.dot.visible = dotAlpha > 0.01
@@ -935,7 +959,7 @@ export default function GlobeHero() {
       // ── DRAG TO ROTATE (inertia) ────────────────────────────────
       const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
       wrap.addEventListener('pointerdown', e => {
-        isDown = true; lastX = e.clientX; lastY = e.clientY; velY = 0; velX = 0
+        isDown = true; lastX = e.clientX; lastY = e.clientY
         if (!reducedMotion()) wrap.classList.add('globe-dragging')
       })
       window.addEventListener('pointerup', () => {
@@ -946,14 +970,21 @@ export default function GlobeHero() {
         if (!isDown) return
         const dx = e.clientX - lastX, dy = e.clientY - lastY
         lastX = e.clientX; lastY = e.clientY
-        velY = dx * 0.005
-        velX = dy * 0.005
+        const vy = dx * 0.005, vx = dy * 0.005
+        globe.rotation.y += vy
+        globe.rotation.x = Math.max(-0.9, Math.min(0.9, globe.rotation.x + vx))
+        angVelY = vy; angVelX = vx
       })
     }
 
     return () => {
       window.removeEventListener('scroll', onScroll)
       sceneObserver?.disconnect()
+      earthMatClosure?.uniforms?.uDay?.value?.dispose()
+      earthMatClosure?.uniforms?.uNight?.value?.dispose()
+      earthMatClosure?.dispose()
+      atmInnerMatClosure?.dispose()
+      atmOuterMatClosure?.dispose()
       if (rendererRef.current) {
         const canvas = rendererRef.current.domElement
         if (wrapRef.current?.contains(canvas)) {
@@ -1032,7 +1063,7 @@ export default function GlobeHero() {
         .annot::before{content:"";display:inline-block;width:24px;height:1px;background:rgba(13,13,13,0.2);vertical-align:middle;margin-right:8px;}
         .flags-layer{position:absolute;inset:0;pointer-events:none;z-index:15;overflow:visible;}
         .flag-pin{position:absolute;left:0;top:0;pointer-events:auto;opacity:0;transition:opacity .35s ease;cursor:pointer;}
-        .flag-pin__img{width:20px;height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.65);box-shadow:0 2px 8px rgba(0,0,0,0.4);background:#fff;object-fit:cover;display:block;transition:transform .2s ease;}
+        .flag-pin__img{width:22px;height:22px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);box-shadow:0 2px 8px rgba(0,0,0,0.4);background:#fff;object-fit:cover;display:block;transition:transform .2s ease;}
         .flag-pin:hover .flag-pin__img{transform:scale(1.2);}
         .conferencista{position:absolute;left:40px;right:40px;bottom:-60px;z-index:5;display:flex;align-items:center;background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.9);border-radius:18px;box-shadow:var(--shadow-lg);overflow:hidden;}
         .conf__person{display:flex;align-items:center;gap:14px;flex:1;padding:16px 20px;}
