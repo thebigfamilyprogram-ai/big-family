@@ -552,29 +552,26 @@ export default function GlobeHero() {
       const R = 1.25
       const sunDir = new THREE.Vector3(5, 3, 5).normalize()
 
-      const EARTH_VERT = `varying vec2 vUv;varying vec3 vWorldNormal;void main(){vUv=uv;vWorldNormal=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`
-      const EARTH_FRAG = `uniform sampler2D uDay;uniform sampler2D uNight;uniform vec3 uSun;uniform float uNightLoaded;varying vec2 vUv;varying vec3 vWorldNormal;void main(){vec3 n=normalize(vWorldNormal);float d=dot(n,uSun);float lit=clamp(d*0.85+0.13,0.05,1.0);vec3 dayCol=texture2D(uDay,vUv).rgb*lit;if(uNightLoaded<0.5){gl_FragColor=vec4(dayCol,1.0);return;}vec3 nightCol=texture2D(uNight,vUv).rgb*1.8;float nightBlend=smoothstep(0.15,-0.25,d);gl_FragColor=vec4(mix(dayCol,nightCol,nightBlend),1.0);}`
-
+      // Load NASA day texture; fall back to procedural if unavailable
       let dayTex: any
       try {
         dayTex = await new Promise<any>((resolve, reject) => {
           new THREE.TextureLoader().load('/textures/earth-day.jpg',
             (tex: any) => { tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 16; resolve(tex) },
-            undefined, () => reject())
+            undefined, (err: any) => { console.error('[Globe] earth-day.jpg load failed:', err); reject(err) })
         })
       } catch {
+        console.warn('[Globe] Falling back to procedural texture')
         dayTex = await buildEarthTexture()
       }
 
-      const earthMat = new THREE.ShaderMaterial({
-        uniforms: {
-          uDay:         { value: dayTex },
-          uNight:       { value: null },
-          uSun:         { value: sunDir },
-          uNightLoaded: { value: 0.0 },
-        },
-        vertexShader:   EARTH_VERT,
-        fragmentShader: EARTH_FRAG,
+      // day texture on map; night lights on emissiveMap (loaded lazily)
+      const earthMat = new THREE.MeshStandardMaterial({
+        map:              dayTex,
+        emissive:         new THREE.Color(0xffffff),
+        emissiveIntensity: 0.0,
+        roughness:        0.8,
+        metalness:        0.02,
       })
       earthMatClosure = earthMat
 
@@ -587,14 +584,28 @@ export default function GlobeHero() {
         new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.05, depthWrite: false })
       ))
 
-      // Lazy-load night texture (city lights) after globe is visible
+      // Night overlay — darkens the unlit hemisphere so city lights pop
+      const nightMat = new THREE.ShaderMaterial({
+        transparent: true, depthWrite: false,
+        uniforms: { uSun: { value: sunDir } },
+        vertexShader:   `varying vec3 vWN;void main(){vWN=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+        fragmentShader: `uniform vec3 uSun;varying vec3 vWN;void main(){float d=dot(normalize(vWN),uSun);float a=smoothstep(0.15,-0.55,d)*0.82;gl_FragColor=vec4(0.0,0.01,0.05,a);}`,
+      })
+      scene.add(new THREE.Mesh(new THREE.SphereGeometry(R * 1.001, 32, 32), nightMat))
+
+      // Lazy-load night texture (city lights) — assigned to emissiveMap only
       setTimeout(() => {
-        new THREE.TextureLoader().load('/textures/earth-night.jpg', (tex: any) => {
-          tex.colorSpace = THREE.SRGBColorSpace
-          tex.anisotropy = 8
-          earthMat.uniforms.uNight.value = tex
-          earthMat.uniforms.uNightLoaded.value = 1.0
-        })
+        new THREE.TextureLoader().load('/textures/earth-night.jpg',
+          (tex: any) => {
+            tex.colorSpace = THREE.SRGBColorSpace
+            tex.anisotropy = 8
+            earthMat.emissiveMap      = tex
+            earthMat.emissiveIntensity = 0.85
+            earthMat.needsUpdate      = true
+          },
+          undefined,
+          (err: any) => { console.error('[Globe] earth-night.jpg load failed:', err) }
+        )
       }, 300)
 
       // ── ATMOSPHERE — two-layer Fresnel with breathing ───────────────
@@ -980,8 +991,8 @@ export default function GlobeHero() {
     return () => {
       window.removeEventListener('scroll', onScroll)
       sceneObserver?.disconnect()
-      earthMatClosure?.uniforms?.uDay?.value?.dispose()
-      earthMatClosure?.uniforms?.uNight?.value?.dispose()
+      earthMatClosure?.map?.dispose()
+      earthMatClosure?.emissiveMap?.dispose()
       earthMatClosure?.dispose()
       atmInnerMatClosure?.dispose()
       atmOuterMatClosure?.dispose()
