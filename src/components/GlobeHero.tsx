@@ -85,6 +85,7 @@ const PULSE_FRAG = `
   uniform float uH2;
   uniform float uLen;
   uniform float uVis;
+  uniform float uMaxA;
   varying float vT;
   float pulse(float head, float t, float len){
     float d = mod(head - t + 2.0, 1.0);
@@ -92,8 +93,8 @@ const PULSE_FRAG = `
     return sin((d / len) * 3.14159265);
   }
   void main(){
-    float a = max(pulse(uH1, vT, uLen), pulse(uH2, vT, uLen)) * uVis;
-    gl_FragColor = vec4(0.753, 0.22, 0.169, a);
+    float a = max(pulse(uH1, vT, uLen), pulse(uH2, vT, uLen)) * uVis * uMaxA;
+    gl_FragColor = vec4(1.0, 1.0, 1.0, a);
   }`
 
 // ── CountNumber helper ────────────────────────────────────────────────────────
@@ -539,11 +540,11 @@ export default function GlobeHero() {
       resize()
 
       // ── LIGHTS ─────────────────────────────────────────────────────
-      scene.add(new THREE.AmbientLight(0x8899cc, 0.45))
-      const sun = new THREE.DirectionalLight(0xfff5e0, 1.5)
-      sun.position.set(4, 3, 3); scene.add(sun)
-      const fill = new THREE.DirectionalLight(0xaaccff, 0.25)
-      fill.position.set(-2, -1, 2); scene.add(fill)
+      scene.add(new THREE.AmbientLight(0x0F172A, 0.4))
+      const sun = new THREE.DirectionalLight(0xFFFFFF, 1.2)
+      sun.position.set(5, 3, 5); scene.add(sun)
+      const fill = new THREE.DirectionalLight(0x1D4ED8, 0.3)
+      fill.position.set(-5, -2, -3); scene.add(fill)
 
       // ── GLOBE ──────────────────────────────────────────────────────
       const R = 1.25
@@ -554,8 +555,14 @@ export default function GlobeHero() {
       )
       scene.add(globe)
 
+      // ── HUD GRATICULE — EdgesGeometry wire sphere ──────────────────
+      globe.add(new THREE.LineSegments(
+        new THREE.EdgesGeometry(new THREE.SphereGeometry(R, 24, 12)),
+        new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.05, depthWrite: false })
+      ))
+
       // ── NIGHT-SIDE OVERLAY ─────────────────────────────────────────
-      const sunDir = new THREE.Vector3(4, 3, 3).normalize()
+      const sunDir = new THREE.Vector3(5, 3, 5).normalize()
       const nightMat = new THREE.ShaderMaterial({
         transparent: true, depthWrite: false,
         uniforms: { uSun: { value: sunDir } },
@@ -576,23 +583,24 @@ export default function GlobeHero() {
       })
       scene.add(new THREE.Mesh(new THREE.SphereGeometry(R * 1.001, 32, 32), nightMat))
 
-      // ── ATMOSPHERE ─────────────────────────────────────────────────
-      const atmMat = new THREE.ShaderMaterial({
+      // ── ATMOSPHERE — two-layer Fresnel ─────────────────────────────
+      const ATM_VERT = `varying vec3 vN; void main(){ vN=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`
+      // Inner: electric blue limb glow
+      scene.add(new THREE.Mesh(new THREE.SphereGeometry(R * 1.020, 32, 32), new THREE.ShaderMaterial({
         transparent: true, side: THREE.BackSide, depthWrite: false,
         blending: THREE.AdditiveBlending,
-        uniforms: { uC: { value: new THREE.Color('#4a92e8') } },
-        vertexShader: `varying vec3 vN; void main(){ vN=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-        fragmentShader: `varying vec3 vN; uniform vec3 uC; void main(){ float fresnel=pow(1.0-abs(dot(vN,vec3(0.,0.,1.))),3.0); gl_FragColor=vec4(uC,fresnel*0.55);}`,
-      })
-      scene.add(new THREE.Mesh(new THREE.SphereGeometry(R * 1.030, 32, 32), atmMat))
-
-      const haloMat = new THREE.ShaderMaterial({
+        uniforms: { uC: { value: new THREE.Color('#60A5FA') } },
+        vertexShader: ATM_VERT,
+        fragmentShader: `varying vec3 vN; uniform vec3 uC; void main(){ float f=pow(1.0-abs(dot(vN,vec3(0.,0.,1.))),2.5); gl_FragColor=vec4(uC,f*0.40);}`,
+      })))
+      // Outer: diffuse dark halo
+      scene.add(new THREE.Mesh(new THREE.SphereGeometry(R * 1.08, 32, 32), new THREE.ShaderMaterial({
         transparent: true, side: THREE.BackSide, depthWrite: false,
-        uniforms: { uC: { value: new THREE.Color('#5599dd') } },
-        vertexShader: `varying vec3 vN; void main(){ vN=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
-        fragmentShader: `varying vec3 vN; uniform vec3 uC; void main(){ float i=pow(0.58-dot(vN,vec3(0.,0.,1.)),3.2); gl_FragColor=vec4(uC,i*0.20);}`,
-      })
-      scene.add(new THREE.Mesh(new THREE.SphereGeometry(R * 1.08, 32, 32), haloMat))
+        blending: THREE.AdditiveBlending,
+        uniforms: { uC: { value: new THREE.Color('#1E3A5F') } },
+        vertexShader: ATM_VERT,
+        fragmentShader: `varying vec3 vN; uniform vec3 uC; void main(){ float f=pow(1.0-abs(dot(vN,vec3(0.,0.,1.))),2.0); gl_FragColor=vec4(uC,f*0.15);}`,
+      })))
 
       // ── PINS ───────────────────────────────────────────────────────
       const pinsGroup = new THREE.Group()
@@ -611,18 +619,33 @@ export default function GlobeHero() {
       if (flagsLayer) { flagsLayer.innerHTML = '' }
       const pinData: any[] = []
       countries.forEach((c, idx) => {
-        const pos = latLonToVec3(c.lat, c.lon, R * 1.005)
+        const surfaceNormal = latLonToVec3(c.lat, c.lon, 1.0)
+        const pos = surfaceNormal.clone().multiplyScalar(R * 1.008)
         const anchor = new THREE.Object3D()
         anchor.position.copy(pos)
         pinsGroup.add(anchor)
 
+        // Amber pulsing dot
+        const dot = new THREE.Mesh(
+          new THREE.SphereGeometry(0.012, 8, 8),
+          new THREE.MeshBasicMaterial({ color: 0xF59E0B, transparent: true, opacity: 0.0 })
+        )
+        dot.position.copy(pos)
+        pinsGroup.add(dot)
+
+        // White torus ring oriented to surface
+        const ring = new THREE.Mesh(
+          new THREE.TorusGeometry(0.024, 0.003, 6, 16),
+          new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5, depthWrite: false })
+        )
+        ring.position.copy(pos)
+        const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), surfaceNormal)
+        ring.quaternion.copy(q)
+        pinsGroup.add(ring)
+
         const flagEl = document.createElement('div')
         flagEl.className = 'flag-pin'
-        flagEl.innerHTML = `
-          <img class="flag-pin__img" alt="${c.name}" src="https://flagcdn.com/w80/${c.code}.png" />
-          <div class="flag-pin__line"></div>
-          <div class="flag-pin__dot"></div>
-        `
+        flagEl.innerHTML = `<img class="flag-pin__img" alt="${c.name}" src="https://flagcdn.com/w80/${c.code}.png" />`
         flagEl.addEventListener('mouseenter', () => {
           const r  = flagsLayer.getBoundingClientRect()
           const fr = flagEl.getBoundingClientRect()
@@ -633,20 +656,18 @@ export default function GlobeHero() {
           tip.classList.add('show')
         })
         flagEl.addEventListener('mouseleave', () => tip.classList.remove('show'))
-        const dotEl = flagEl.querySelector('.flag-pin__dot') as HTMLElement | null
-        if (dotEl) dotEl.style.setProperty('--pin-delay', `${idx * 0.4}s`)
         flagsLayer.appendChild(flagEl)
-        pinData.push({ ...c, anchor, flagEl, worldPos: new THREE.Vector3() })
+        pinData.push({ ...c, anchor, flagEl, worldPos: new THREE.Vector3(), dot, dotFreq: 0.8 + idx * 0.1 })
       })
 
       // ── ARCS ───────────────────────────────────────────────────────
       const arcGroup = new THREE.Group()
       globe.add(arcGroup)
 
-      interface ArcEntry { staticLine: any; pulseMat: any; midVec: any; speed: number; phase: number }
+      interface ArcEntry { staticLine: any; pulseMat: any; midVec: any; speed: number; phase: number; particle: any; vA: any; vB: any }
       const arcEntries: ArcEntry[] = []
 
-      function buildArc(idxA: number, idxB: number, initPhase: number) {
+      function buildArc(idxA: number, idxB: number, initPhase: number, isHub = false) {
         const cA = countries[idxA], cB = countries[idxB]
         const vA = latLonToVec3(cA.lat, cA.lon, R)
         const vB = latLonToVec3(cB.lat, cB.lon, R)
@@ -669,15 +690,15 @@ export default function GlobeHero() {
           tValues[i] = t
         }
 
-        // Static faint path (pre-computed, never updated)
+        // Static faint path — white, thin
         const sGeo = new THREE.BufferGeometry()
         sGeo.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3))
         const staticLine = new THREE.Line(sGeo,
-          new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.05, depthWrite: false })
+          new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.08, depthWrite: false })
         )
         arcGroup.add(staticLine)
 
-        // Gradient pulse via ShaderMaterial — only uniforms updated per frame
+        // Pulse line — white, hub arcs slightly brighter
         const pGeo = new THREE.BufferGeometry()
         pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
         pGeo.setAttribute('aT',       new THREE.BufferAttribute(tValues, 1))
@@ -688,18 +709,24 @@ export default function GlobeHero() {
             uH2:  { value: (initPhase + 0.5) % 1 },
             uLen: { value: 0.22 },
             uVis: { value: 1.0 },
+            uMaxA: { value: isHub ? 0.35 : 0.22 },
           },
           vertexShader:   PULSE_VERT,
           fragmentShader: PULSE_FRAG,
         })
         arcGroup.add(new THREE.Line(pGeo, pulseMat))
 
-        // Longer arcs rotate slower
+        // Traveling particle along the bezier
+        const partMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.0 })
+        const particle = new THREE.Mesh(new THREE.SphereGeometry(0.008, 6, 6), partMat)
+        arcGroup.add(particle)
+
         const speed = 0.18 / (0.35 + dist)
-        arcEntries.push({ staticLine, pulseMat, midVec: mid, speed, phase: initPhase })
+        arcEntries.push({ staticLine, pulseMat, midVec: mid, speed, phase: initPhase, particle, vA: vA.clone(), vB: vB.clone() })
       }
 
-      arcPairs.forEach(([a, b], i) => buildArc(a, b, i / arcPairs.length))
+      // Colombia (idx 6) is the hub — its arcs get higher opacity
+      arcPairs.forEach(([a, b], i) => buildArc(a, b, i / arcPairs.length, a === 6 || b === 6))
 
       // ── LA GUAJIRA SCHOOL DOTS ─────────────────────────────────
       const schoolGroup = new THREE.Group()
@@ -746,7 +773,7 @@ export default function GlobeHero() {
         const sGeo = new THREE.BufferGeometry()
         sGeo.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3))
         schoolArcGroup.add(new THREE.Line(sGeo,
-          new THREE.LineBasicMaterial({ color: 0xC0392B, transparent: true, opacity: 0.07, depthWrite: false })
+          new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.06, depthWrite: false })
         ))
 
         const pGeo = new THREE.BufferGeometry()
@@ -759,6 +786,7 @@ export default function GlobeHero() {
             uH2:  { value: (initPhase + 0.5) % 1 },
             uLen: { value: 0.28 },
             uVis: { value: 1.0 },
+            uMaxA: { value: 0.30 },
           },
           vertexShader:   PULSE_VERT,
           fragmentShader: PULSE_FRAG,
@@ -807,7 +835,15 @@ export default function GlobeHero() {
           const mw  = arc.midVec.clone().applyEuler(globe.rotation)
           const vis = Math.max(0, mw.normalize().dot(camFwd))
           arc.pulseMat.uniforms.uVis.value   = vis * 0.90
-          arc.staticLine.material.opacity    = vis * 0.055
+          arc.staticLine.material.opacity    = vis * 0.08
+          // Traveling particle
+          const t = arc.phase
+          arc.particle.position.set(
+            (1-t)*(1-t)*arc.vA.x + 2*(1-t)*t*arc.midVec.x + t*t*arc.vB.x,
+            (1-t)*(1-t)*arc.vA.y + 2*(1-t)*t*arc.midVec.y + t*t*arc.vB.y,
+            (1-t)*(1-t)*arc.vA.z + 2*(1-t)*t*arc.midVec.z + t*t*arc.vB.z,
+          )
+          arc.particle.material.opacity = vis * 0.9
         })
 
         // School dot pulses — sinusoidal scale
@@ -855,9 +891,15 @@ export default function GlobeHero() {
               }
             })
           }
-          p.flagEl.style.transform     = `translate(${p._sx}px,${p._sy - 42 - lift}px) translateX(-50%)`
-          p.flagEl.style.opacity       = p._visible ? String(Math.min(1, (p._facing - 0.15) * 4)) : '0'
+          p.flagEl.style.transform     = `translate(${p._sx}px,${p._sy - 28 - lift}px) translateX(-50%)`
+          const dotAlpha = p._visible ? Math.min(1, (p._facing - 0.15) * 4) : 0
+          p.flagEl.style.opacity       = String(dotAlpha)
           p.flagEl.style.pointerEvents = p._visible ? 'auto' : 'none'
+          // Amber dot 3D pulse
+          const dotScale = 1.0 + Math.sin(elapsed * p.dotFreq * 2.5) * 0.35
+          p.dot.scale.setScalar(dotScale)
+          p.dot.material.opacity = dotAlpha
+          p.dot.visible = dotAlpha > 0.01
         })
 
         if (bestCenter && bestCenter.name !== lastCoordKey) {
@@ -986,16 +1028,12 @@ export default function GlobeHero() {
         .orbit{position:absolute;inset:6%;border-radius:50%;border:1px dashed rgba(13,13,13,.08);pointer-events:none;}
         .orbit::before{content:"";position:absolute;width:6px;height:6px;border-radius:50%;background:var(--accent);top:6%;left:50%;transform:translateX(-50%);box-shadow:0 0 14px var(--accent);}
         @keyframes globePulse{0%,100%{transform:translate(-50%,-50%) scale(0.97)}50%{transform:translate(-50%,-50%) scale(1.03)}}
-        .annot{position:absolute;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);z-index:4;}
-        .annot::before{content:"";display:inline-block;width:30px;height:1px;background:var(--line);vertical-align:middle;margin-right:10px;}
+        .annot{position:absolute;font-family:"JetBrains Mono","Courier New",monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:rgba(13,13,13,0.45);z-index:4;}
+        .annot::before{content:"";display:inline-block;width:24px;height:1px;background:rgba(13,13,13,0.2);vertical-align:middle;margin-right:8px;}
         .flags-layer{position:absolute;inset:0;pointer-events:none;z-index:15;overflow:visible;}
-        .flag-pin{position:absolute;left:0;top:0;pointer-events:auto;opacity:0;transition:opacity .35s ease;cursor:pointer;display:flex;flex-direction:column;align-items:center;}
-        .flag-pin__img{width:26px;height:26px;border-radius:50%;border:1.5px solid #fff;box-shadow:0 4px 12px -2px rgba(13,13,13,.4);background:#fff;object-fit:cover;display:block;transition:transform .2s ease;}
-        .flag-pin:hover .flag-pin__img{transform:scale(1.15);}
-        .flag-pin__line{width:1.2px;height:12px;background:linear-gradient(to bottom,rgba(192,57,43,.85),rgba(192,57,43,.55));pointer-events:none;}
-        .flag-pin__dot{width:8px;height:8px;border-radius:50%;background:#C0392B;border:1.5px solid #fff;box-shadow:0 0 10px rgba(192,57,43,.7);position:relative;}
-        .flag-pin__dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid rgba(192,57,43,.6);animation:pinPulse 3.5s ease-out infinite;animation-delay:var(--pin-delay,0s);}
-        @keyframes pinPulse{0%{transform:scale(.6);opacity:.8}100%{transform:scale(2.4);opacity:0}}
+        .flag-pin{position:absolute;left:0;top:0;pointer-events:auto;opacity:0;transition:opacity .35s ease;cursor:pointer;}
+        .flag-pin__img{width:20px;height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.65);box-shadow:0 2px 8px rgba(0,0,0,0.4);background:#fff;object-fit:cover;display:block;transition:transform .2s ease;}
+        .flag-pin:hover .flag-pin__img{transform:scale(1.2);}
         .conferencista{position:absolute;left:40px;right:40px;bottom:-60px;z-index:5;display:flex;align-items:center;background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.9);border-radius:18px;box-shadow:var(--shadow-lg);overflow:hidden;}
         .conf__person{display:flex;align-items:center;gap:14px;flex:1;padding:16px 20px;}
         .conf__sep{width:1px;align-self:stretch;background:rgba(13,13,13,.09);flex-shrink:0;}
@@ -1014,7 +1052,7 @@ export default function GlobeHero() {
         @keyframes drop{0%{transform:translateY(-10px);opacity:0}40%{opacity:1}100%{transform:translateY(40px);opacity:0}}
         .hero-bottom-spacer{height:0;}
         @media(prefers-reduced-motion:reduce){
-          .meta .dot,.meta .dot::after,.flag-pin__dot::after,.conf__badge .pulse,.conf__badge .pulse::after,.scroll-ind .bar::after{animation:none !important;}
+          .meta .dot,.meta .dot::after,.conf__badge .pulse,.conf__badge .pulse::after,.scroll-ind .bar::after{animation:none !important;}
         }
         @media(max-width:960px){.hero{grid-template-columns:1fr;padding:110px 24px 120px;}.nav{padding:14px 20px;}.nav__links{display:none;}.right{height:460px;}.conferencista{left:20px;right:20px;flex-direction:column;align-items:stretch;}.conf__person{flex:none;}.conf__sep{width:auto;height:1px;align-self:auto;}.conf__badge{border-left:none;border-top:1px solid rgba(13,13,13,.09);justify-content:center;}.meta{left:20px;right:20px;}}
         /* ── MISIÓN ──────────────────────────────────────────────────────────── */
