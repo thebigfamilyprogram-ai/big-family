@@ -174,8 +174,9 @@ export default function EvaluatePage() {
   const [submitted,  setSubmitted]  = useState(false)
 
   const emptyScores = () => Object.fromEntries(CRITERIA.map(c => [c.id, 0])) as Record<CriterionId, number>
-  const [scores,   setScores]   = useState<Record<CriterionId, number>>(emptyScores())
-  const [feedback, setFeedback] = useState('')
+  const [scores,       setScores]       = useState<Record<CriterionId, number>>(emptyScores())
+  const [feedback,     setFeedback]     = useState('')
+  const [justSelected, setJustSelected] = useState<{ criterionId: string; score: number } | null>(null)
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -252,7 +253,11 @@ export default function EvaluatePage() {
     prevCanSubmitRef.current = canSubmit
   }, [canSubmit]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const setScore = (id: CriterionId, val: number) => setScores(prev => ({ ...prev, [id]: val }))
+  const setScore = (id: CriterionId, val: number) => {
+    setScores(prev => ({ ...prev, [id]: val }))
+    setJustSelected({ criterionId: id, score: val })
+    setTimeout(() => setJustSelected(null), 350)
+  }
 
   return (
     <>
@@ -279,17 +284,21 @@ export default function EvaluatePage() {
         .ev-breadcrumb a{color:rgba(13,13,13,.42);text-decoration:none;transition:color .15s;cursor:pointer;}
         .ev-breadcrumb a:hover{color:#C0392B;}
         .ev-breadcrumb-sep{color:rgba(13,13,13,.22);}
-        .ev-section-body{font-size:14.5px;color:#2D2D2D;line-height:1.75;white-space:pre-wrap;}
-        .ev-md{white-space:normal;}
-        .ev-md p{margin-bottom:10px;}
-        .ev-md strong{font-weight:700;}
+        .ev-section-body{font-size:14.5px;color:var(--ink-2);line-height:1.75;white-space:pre-wrap;}
+        .ev-md{white-space:normal;color:var(--ink-2);}
+        .ev-md p{margin-bottom:10px;line-height:1.7;}
+        .ev-md strong{font-weight:700;color:var(--ink);}
         .ev-md em{font-style:italic;}
-        .ev-md h2,.ev-md h3{font-family:"Satoshi",sans-serif;font-weight:700;margin-bottom:6px;}
+        .ev-md h1,.ev-md h2,.ev-md h3,.ev-md h4{font-family:"Satoshi",sans-serif;font-weight:700;color:var(--ink);margin:14px 0 6px;}
+        .ev-md h1{font-size:18px;} .ev-md h2{font-size:16px;} .ev-md h3{font-size:14.5px;}
         .ev-md ul,.ev-md ol{padding-left:20px;margin-bottom:10px;}
-        .ev-md li{margin-bottom:4px;}
-        .ev-md blockquote{border-left:3px solid #C0392B;padding-left:12px;color:#6B6B6B;font-style:italic;margin:8px 0;}
-        .ev-md a{color:#C0392B;}
-        .ev-section-empty{font-size:13px;color:#bbb;font-style:italic;}
+        .ev-md li{margin-bottom:4px;line-height:1.6;}
+        .ev-md blockquote{border-left:3px solid #C0392B;padding-left:12px;color:var(--mute);font-style:italic;margin:8px 0;}
+        .ev-md a{color:#C0392B;text-underline-offset:2px;}
+        .ev-md code{font-family:monospace;font-size:12.5px;background:var(--bg-2);color:var(--ink);padding:1px 5px;border-radius:4px;border:1px solid var(--line-soft);}
+        .ev-md pre{background:var(--bg-2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;margin-bottom:10px;}
+        .ev-md pre code{background:none;border:none;padding:0;font-size:12px;}
+        .ev-section-empty{font-size:13px;color:var(--mute);font-style:italic;}
         .ev-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;}
         .ev-photo{aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:rgba(13,13,13,.05);}
         .ev-photo img{width:100%;height:100%;object-fit:cover;}
@@ -500,8 +509,8 @@ export default function EvaluatePage() {
                           key={score}
                           className={`rub-score-row${scores[criterion.id] === score ? ' selected' : ''}`}
                           onClick={() => setScore(criterion.id, score)}
-                          animate={!pref ? { scale: scores[criterion.id] === score ? 1.01 : 1 } : {}}
-                          transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                          animate={!pref && justSelected?.criterionId === criterion.id && justSelected.score === score ? { scale: [1, 1.02, 1] } : {}}
+                          transition={{ type: 'spring', stiffness: 300, damping: 18 }}
                         >
                           <div className="rub-score-num">{score}</div>
                           <div className="rub-score-text">{criterion.levels[score]}</div>

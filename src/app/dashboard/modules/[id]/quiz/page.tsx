@@ -545,7 +545,7 @@ export default function QuizPage() {
           <motion.div
             style={{ height: '100%', background: '#C0392B', borderRadius: 999 }}
             animate={{ width: `${((currentIdx + 1) / questions.length) * 100}%` }}
-            transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 30 }}
           />
         </div>
         <div style={{ textAlign: 'center', padding: '10px 0', fontSize: 12, color: 'var(--mute)', background: 'var(--card-bg)', borderBottom: '1px solid var(--line-soft)' }}>

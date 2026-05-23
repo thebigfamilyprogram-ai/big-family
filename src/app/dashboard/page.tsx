@@ -407,7 +407,7 @@ export default function DashboardPage() {
         .btn-coordinator{padding:8px 16px;background:transparent;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;transition:border-color .2s,color .2s;white-space:nowrap;flex-shrink:0;}
         .btn-coordinator:hover{border-color:#C0392B;color:#C0392B;}
 
-        @media(max-width:1100px){.layout{grid-template-columns:260px 1fr;}.mods-grid{grid-template-columns:repeat(2,1fr);}}
+        @media(max-width:1200px){.mods-grid{grid-template-columns:repeat(2,1fr);}}
         @media(max-width:860px){
           .layout{grid-template-columns:1fr;}
           .sidebar{position:relative;height:auto;flex-direction:row;flex-wrap:wrap;padding:16px;border-right:none;border-bottom:1px solid var(--line);}

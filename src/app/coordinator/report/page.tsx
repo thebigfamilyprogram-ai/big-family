@@ -33,11 +33,12 @@ export default function CoordinatorReportPage() {
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
-  const [loading,    setLoading]    = useState(true)
-  const [exporting,  setExporting]  = useState(false)
-  const [students,   setStudents]   = useState<StudentReport[]>([])
-  const [schoolName, setSchoolName] = useState('')
-  const [coordName,  setCoordName]  = useState('')
+  const [loading,     setLoading]     = useState(true)
+  const [exporting,   setExporting]   = useState(false)
+  const [students,    setStudents]    = useState<StudentReport[]>([])
+  const [schoolName,  setSchoolName]  = useState('')
+  const [coordName,   setCoordName]   = useState('')
+  const [showAllCols, setShowAllCols] = useState(false)
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -188,6 +189,8 @@ export default function CoordinatorReportPage() {
         td{padding:11px 14px;border-bottom:1px solid var(--line-soft);color:var(--ink-2);vertical-align:middle;}
         tr:last-child td{border-bottom:none;}
         tbody tr:nth-child(even) td{background:var(--bg-2);}
+        .col-toggle{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;background:none;color:var(--mute);transition:all .15s;}
+        .col-toggle:hover{border-color:var(--ink);color:var(--ink);}
       `}</style>
 
       <nav className="nav">
@@ -219,6 +222,12 @@ export default function CoordinatorReportPage() {
           </motion.button>
         </div>
 
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
+          <button type="button" className="col-toggle" onClick={() => setShowAllCols(s => !s)}>
+            {showAllCols ? '↑ Menos columnas' : '↓ Mostrar todas las columnas'}
+          </button>
+        </div>
+
         <div className="tbl-wrap">
           {loading ? (
             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -230,23 +239,31 @@ export default function CoordinatorReportPage() {
             <table>
               <thead>
                 <tr>
-                  <th>Nombre</th><th>Email</th><th>Nivel</th><th>XP</th><th>Módulos</th><th>Badges</th><th>Proyecto</th><th>Estado</th><th>Capstone</th><th>Metas</th><th>Registro</th>
+                  <th>Nombre</th>
+                  <th>Nivel</th>
+                  <th>XP Total</th>
+                  <th>Módulos</th>
+                  <th>Proyecto</th>
+                  <th>Capstone</th>
+                  {showAllCols && <><th>Email</th><th>Badges</th><th>Estado</th><th>Metas</th><th>Registro</th></>}
                 </tr>
               </thead>
               <tbody>
                 {students.map(s => (
                   <tr key={s.id}>
                     <td style={{ fontWeight: 500 }}>{s.full_name}</td>
-                    <td style={{ color: 'var(--mute)' }}>{s.email}</td>
                     <td>{s.school_level === 'junior' ? 'Junior' : 'Senior'}</td>
                     <td style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, color: '#C0392B' }}>{s.total_xp.toLocaleString()}</td>
                     <td style={{ textAlign: 'center' }}>{s.modules_completed}</td>
-                    <td style={{ textAlign: 'center' }}>{s.badges_earned}</td>
-                    <td style={{ maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.project_title ?? '—'}</td>
-                    <td>{s.project_status ? <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: s.project_status === 'approved' ? '#D1FAE5' : s.project_status === 'pending' ? '#FEF3C7' : 'var(--line)', color: s.project_status === 'approved' ? '#065F46' : s.project_status === 'pending' ? '#92400E' : 'var(--mute)' }}>{s.project_status}</span> : '—'}</td>
-                    <td>{s.capstone_resultado ? <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: '#D1FAE5', color: '#065F46' }}>{s.capstone_resultado}</span> : '—'}</td>
-                    <td style={{ textAlign: 'center' }}>{s.goals_completed} / {s.goals_active + s.goals_completed}</td>
-                    <td style={{ color: 'var(--mute)', whiteSpace: 'nowrap' }}>{new Date(s.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                    <td style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.project_title ?? '—'}</td>
+                    <td>{s.capstone_resultado ? <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: 'rgba(34,197,94,.15)', color: '#065F46' }}>{s.capstone_resultado}</span> : '—'}</td>
+                    {showAllCols && <>
+                      <td style={{ color: 'var(--mute)', fontSize: 12 }}>{s.email}</td>
+                      <td style={{ textAlign: 'center' }}>{s.badges_earned}</td>
+                      <td>{s.project_status ? <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: s.project_status === 'approved' ? 'rgba(34,197,94,.15)' : s.project_status === 'pending' ? 'rgba(245,158,11,.15)' : 'var(--line)', color: s.project_status === 'approved' ? '#065F46' : s.project_status === 'pending' ? '#92400E' : 'var(--mute)' }}>{s.project_status}</span> : '—'}</td>
+                      <td style={{ textAlign: 'center' }}>{s.goals_completed} / {s.goals_active + s.goals_completed}</td>
+                      <td style={{ color: 'var(--mute)', whiteSpace: 'nowrap' }}>{new Date(s.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                    </>}
                   </tr>
                 ))}
               </tbody>

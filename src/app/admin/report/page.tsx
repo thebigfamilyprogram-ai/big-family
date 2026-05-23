@@ -44,6 +44,7 @@ export default function AdminReportPage() {
   const [students,       setStudents]       = useState<StudentReport[]>([])
   const [schools,        setSchools]        = useState<School[]>([])
   const [selectedSchool, setSelectedSchool] = useState('all')
+  const [showAllCols,    setShowAllCols]    = useState(false)
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -192,6 +193,8 @@ export default function AdminReportPage() {
         .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
         .filter-btn{padding:6px 14px;border-radius:999px;border:1.5px solid var(--line);font-size:12px;font-weight:600;cursor:pointer;background:none;color:var(--mute);transition:all .15s;}
         .filter-btn:hover,.filter-btn.active{background:var(--ink);border-color:var(--ink);color:#fff;}
+        .col-toggle{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;background:none;color:var(--mute);transition:all .15s;}
+        .col-toggle:hover{border-color:var(--ink);color:var(--ink);}
       `}</style>
 
       <nav className="nav">
@@ -232,6 +235,12 @@ export default function AdminReportPage() {
           </div>
         )}
 
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
+          <button type="button" className="col-toggle" onClick={() => setShowAllCols(s => !s)}>
+            {showAllCols ? '↑ Menos columnas' : '↓ Mostrar todas las columnas'}
+          </button>
+        </div>
+
         <div className="tbl-wrap">
           {loading ? (
             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -243,7 +252,13 @@ export default function AdminReportPage() {
             <table>
               <thead>
                 <tr>
-                  <th>Nombre</th><th>Colegio</th><th>Nivel</th><th>XP</th><th>Módulos</th><th>Badges</th><th>Proyecto</th><th>Capstone</th><th>Metas</th>
+                  <th>Nombre</th>
+                  <th>Colegio</th>
+                  <th>Nivel</th>
+                  <th>XP Total</th>
+                  <th>Módulos</th>
+                  <th>Capstone</th>
+                  {showAllCols && <><th>Badges</th><th>Proyecto</th><th>Metas</th></>}
                 </tr>
               </thead>
               <tbody>
@@ -254,10 +269,12 @@ export default function AdminReportPage() {
                     <td>{s.school_level === 'junior' ? 'Junior' : 'Senior'}</td>
                     <td style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, color: '#C0392B' }}>{s.total_xp.toLocaleString()}</td>
                     <td style={{ textAlign: 'center' }}>{s.modules_completed}</td>
-                    <td style={{ textAlign: 'center' }}>{s.badges_earned}</td>
-                    <td style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.project_title ?? '—'}</td>
-                    <td>{s.capstone_resultado ? <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: '#D1FAE5', color: '#065F46' }}>{s.capstone_resultado}</span> : '—'}</td>
-                    <td style={{ textAlign: 'center' }}>{s.goals_completed}/{s.goals_active + s.goals_completed}</td>
+                    <td>{s.capstone_resultado ? <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: 'rgba(34,197,94,.15)', color: '#065F46' }}>{s.capstone_resultado}</span> : '—'}</td>
+                    {showAllCols && <>
+                      <td style={{ textAlign: 'center' }}>{s.badges_earned}</td>
+                      <td style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.project_title ?? '—'}</td>
+                      <td style={{ textAlign: 'center' }}>{s.goals_completed}/{s.goals_active + s.goals_completed}</td>
+                    </>}
                   </tr>
                 ))}
               </tbody>

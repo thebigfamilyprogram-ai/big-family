@@ -35,18 +35,24 @@ function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?
 function GoalRow({ goal, onComplete, completing }: { goal: Goal; onComplete: (g: Goal) => void; completing: boolean }) {
   const overdue = goal.due_date && goal.status === 'active' && new Date(goal.due_date) < new Date()
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '16px 0', borderBottom: '1px solid var(--line-soft)' }}>
-      <button
-        onClick={() => goal.status === 'active' && onComplete(goal)}
-        disabled={goal.status !== 'active' || completing}
-        style={{ width: 22, height: 22, borderRadius: '50%', border: `2px solid ${goal.status === 'completed' ? '#22c55e' : '#C0392B'}`, background: goal.status === 'completed' ? '#22c55e' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: goal.status === 'active' ? 'pointer' : 'default', flexShrink: 0, marginTop: 2, transition: 'all .2s' }}
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, padding: '16px 0', borderBottom: '1px solid var(--line-soft)' }}>
+      {/* Touch-target wrapper: min 44×44px for mobile */}
+      <div
+        style={{ minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: goal.status === 'active' ? 'pointer' : 'default' }}
+        onClick={() => goal.status === 'active' && !completing && onComplete(goal)}
       >
-        {goal.status === 'completed' && (
-          <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-            <path d="M2 6l3 3 5-5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        )}
-      </button>
+        <button
+          tabIndex={-1}
+          disabled={goal.status !== 'active' || completing}
+          style={{ width: 22, height: 22, borderRadius: '50%', border: `2px solid ${goal.status === 'completed' ? '#22c55e' : '#C0392B'}`, background: goal.status === 'completed' ? '#22c55e' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'inherit', flexShrink: 0, transition: 'all .2s', pointerEvents: 'none' }}
+        >
+          {goal.status === 'completed' && (
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+              <path d="M2 6l3 3 5-5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          )}
+        </button>
+      </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, color: goal.status === 'completed' ? 'var(--mute)' : 'var(--ink)', textDecoration: goal.status === 'completed' ? 'line-through' : 'none' }}>
@@ -181,8 +187,10 @@ export default function GoalsPage() {
         .btn-ghost:hover{border-color:var(--ink);}
         .field{display:flex;flex-direction:column;gap:6px;}
         .field label{font-size:12px;font-weight:600;color:var(--mute);letter-spacing:.06em;text-transform:uppercase;}
-        .field input,.field textarea{padding:10px 14px;border:1px solid var(--line);border-radius:10px;font-size:13.5px;font-family:inherit;outline:none;background:var(--bg-2);color:var(--ink);transition:border-color .2s;}
-        .field input:focus,.field textarea:focus{border-color:#C0392B;}
+        .field input,.field textarea{padding:10px 14px;border:1px solid var(--line);border-radius:10px;font-size:13.5px;font-family:inherit;outline:none;background:var(--bg-2);color:var(--ink);transition:border-color .2s,box-shadow .2s;}
+        .field input:focus,.field textarea:focus{border-color:#C0392B;box-shadow:0 0 0 3px rgba(192,57,43,.12);}
+        .field textarea,.field-textarea{padding:10px 14px;border:1px solid var(--line);border-radius:10px;font-size:13.5px;font-family:inherit;outline:none;background:var(--bg-2);color:var(--ink);transition:border-color .2s,box-shadow .2s;resize:vertical;width:100%;}
+        .field-textarea:focus{border-color:#C0392B;box-shadow:0 0 0 3px rgba(192,57,43,.12);}
         .goals-progress-bar{height:6px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:8px;}
         .tmpl-card{padding:14px 16px;border:1px solid var(--line);border-radius:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:space-between;gap:12px;}
         .tmpl-card:hover{border-color:#C0392B;background:rgba(192,57,43,.03);}
@@ -228,6 +236,19 @@ export default function GoalsPage() {
             </div>
           )}
 
+          {/* Completed goals — shown FIRST when there are no active goals */}
+          {!loading && activeGoals.length === 0 && completedGoals.length > 0 && (
+            <div className="card">
+              <div className="section-title">
+                Metas completadas
+                <span className="section-badge">{completedGoals.length}</span>
+              </div>
+              {completedGoals.map(goal => (
+                <GoalRow key={goal.id} goal={goal} onComplete={() => {}} completing={false} />
+              ))}
+            </div>
+          )}
+
           {/* Active goals */}
           <div className="card">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -264,7 +285,7 @@ export default function GoalsPage() {
                     </div>
                     <div className="field">
                       <label>Descripción (opcional)</label>
-                      <textarea value={formDesc} onChange={e => setFormDesc(e.target.value)} placeholder="Describe tu meta..." rows={2} style={{ resize: 'vertical', padding: '10px 14px', border: '1px solid var(--line)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--card-bg)', color: 'var(--ink)' }} />
+                      <textarea className="field-textarea" value={formDesc} onChange={e => setFormDesc(e.target.value)} placeholder="Describe tu meta..." rows={2} />
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                       <div className="field">
@@ -363,8 +384,8 @@ export default function GoalsPage() {
             </div>
           )}
 
-          {/* Completed goals */}
-          {!loading && completedGoals.length > 0 && (
+          {/* Completed goals — shown BELOW active when both exist */}
+          {!loading && completedGoals.length > 0 && activeGoals.length > 0 && (
             <div className="card">
               <div className="section-title">
                 Metas completadas
