@@ -3,11 +3,9 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
-import * as THREE from 'three'
 import CoordinatorButton from '@/components/CoordinatorButton'
 import TimelineSection from '@/components/TimelineSection'
 import { createClient } from '@/lib/supabase'
-import * as topojson from 'topojson-client'
 
 const countries = [
   { name: 'Canadá',          code: 'ca', lat: 45.42,  lon: -75.69, students: 8,  coordLabel: 'N 45°25′ · W 75°41′ · Ottawa' },
@@ -316,6 +314,12 @@ export default function GlobeHero() {
     let earthMatClosure: any
     let atmInnerMatClosure: any, atmOuterMatClosure: any
     async function initGlobe() {
+      // Deferred so the h1 / LCP element renders before Three.js parses
+      const [THREE, topojson] = await Promise.all([
+        import('three'),
+        import('topojson-client'),
+      ])
+
       const wrap       = wrapRef.current   as HTMLDivElement
       const flagsLayer = flagsRef.current  as HTMLDivElement
       const tip        = tipRef.current    as HTMLDivElement
