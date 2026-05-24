@@ -1,8 +1,16 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Geist_Mono } from 'next/font/google'
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastContainer } from "@/components/Toast";
 import { LazyMotion, domAnimation } from 'framer-motion'
+
+const geistMono = Geist_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+  preload: false,
+})
 
 export const metadata: Metadata = {
   title: "Big Family",
@@ -46,7 +54,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning className={geistMono.variable}>
       <head>
         <style dangerouslySetInnerHTML={{ __html: CSS_VARS }} />
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}

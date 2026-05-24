@@ -61,5 +61,5 @@ export default function AnimatedNumber({ value, loading = false, suffix = '', fo
   }
 
   const label = formatK && displayed >= 1000 ? `${(displayed / 1000).toFixed(1)}k` : String(displayed)
-  return <>{label}{suffix}</>
+  return <span style={{ fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)' }}>{label}{suffix}</span>
 }

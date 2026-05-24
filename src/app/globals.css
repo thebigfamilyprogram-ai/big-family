@@ -76,6 +76,9 @@ html, body {
   .text-balance {
     text-wrap: balance;
   }
+  .font-mono {
+    font-family: var(--font-mono, 'JetBrains Mono', 'Courier New', monospace);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
