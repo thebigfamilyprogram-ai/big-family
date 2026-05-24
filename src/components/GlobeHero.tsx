@@ -309,7 +309,7 @@ export default function GlobeHero() {
     const onScroll = () => nav?.classList.toggle('scrolled', window.scrollY > 10)
     window.addEventListener('scroll', onScroll)
 
-    const globeInitTimeout = setTimeout(() => { initGlobe().catch(console.error) }, 0)
+    const globeInitTimeout = setTimeout(() => { initGlobe().catch(console.error) }, 100)
 
     let renderer: any
     let sceneObserver: IntersectionObserver | undefined
