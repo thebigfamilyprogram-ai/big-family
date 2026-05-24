@@ -84,8 +84,8 @@ const PULSE_FRAG = `
     gl_FragColor = vec4(1.0, 1.0, 1.0, a);
   }`
 
-// ── Module-level state shared between initGlobe and animate ────────────────
-let T: any = null  // THREE module
+// ── Module-level state ──────────────────────────────────────────────────────
+let T: any = null
 let scene: any, camera: any, _renderer: any, clock: any
 let globe: any
 let arcEntries: any[] = []
@@ -103,6 +103,17 @@ let rafId = 0
 let frameCount = 0
 let glWidth = 0, glHeight = 0
 let isMobile = false
+let lowQuality = false
+
+// Pre-allocated vectors — never new T.Vector3() inside the render loop
+let _tmpV3a: any = null
+let _tmpV3b: any = null
+let _tmpV3c: any = null
+
+// Adaptive quality: measure FPS for first 60 frames
+let _fpsMeasuring = true
+let _fpsFrameCount = 0
+let _fpsMeasureStart = 0
 
 function handleResize(w: number, h: number) {
   if (!_renderer || !camera) return
@@ -115,22 +126,39 @@ function handleResize(w: number, h: number) {
 function animate() {
   rafId = requestAnimationFrame(animate)
   if (!isVisible) return
+
   const dt = clock.getDelta()
   elapsed += dt
 
-  if (!isDown) {
-    angVelY = angVelY * 0.995 + 0.0008 * 0.005
-    angVelX *= 0.97
-    globe.rotation.y += angVelY
-    globe.rotation.x = Math.max(-0.9, Math.min(0.9, globe.rotation.x + angVelX))
+  // Adaptive quality measurement (first 60 rendered frames)
+  if (_fpsMeasuring) {
+    if (_fpsFrameCount === 0) _fpsMeasureStart = performance.now()
+    _fpsFrameCount++
+    if (_fpsFrameCount >= 60) {
+      _fpsMeasuring = false
+      const elapsed60 = performance.now() - _fpsMeasureStart
+      const fps = 60000 / elapsed60
+      if (fps < 45) {
+        lowQuality = true
+        _renderer.setPixelRatio(1)
+        // Reduce atmosphere geometry update rate
+      }
+    }
   }
 
+  if (!isDown) {
+    globe.rotation.y += 0.0008 * dt * 60
+    globe.rotation.x = Math.max(-0.9, Math.min(0.9, globe.rotation.x + angVelX))
+    angVelX *= 0.97
+  }
+
+  // Update arcs every frame — but use pre-allocated vectors
   arcEntries.forEach(arc => {
     arc.phase = (arc.phase + dt * arc.speed) % 1.0
     arc.pulseMat.uniforms.uH1.value = arc.phase
     arc.pulseMat.uniforms.uH2.value = (arc.phase + 0.5) % 1.0
-    const mw = arc.midVec.clone().applyEuler(globe.rotation)
-    const vis = Math.max(0, mw.normalize().dot(camFwd))
+    _tmpV3a.copy(arc.midVec).applyEuler(globe.rotation)
+    const vis = Math.max(0, _tmpV3a.normalize().dot(camFwd))
     arc.pulseMat.uniforms.uVis.value = vis * 0.90
     arc.staticLine.material.opacity = vis * 0.08
     const t = arc.phase
@@ -142,20 +170,22 @@ function animate() {
     arc.particle.material.opacity = vis * 0.9
   })
 
-  schoolEntries.forEach(d => {
-    const s = Math.sin((elapsed + d.timeOffset) * 3.0)
-    d.mesh.scale.setScalar(1.0 + 0.35 * s * s)
-  })
+  if (!lowQuality) {
+    schoolEntries.forEach(d => {
+      const s = Math.sin((elapsed + d.timeOffset) * 3.0)
+      d.mesh.scale.setScalar(1.0 + 0.35 * s * s)
+    })
 
-  atmInnerMat.uniforms.uBreath.value = 0.40 + 0.08 * Math.sin(elapsed * 0.5)
-  atmOuterMat.uniforms.uBreath.value = 0.15 + 0.04 * Math.sin(elapsed * 0.5)
+    atmInnerMat.uniforms.uBreath.value = 0.40 + 0.08 * Math.sin(elapsed * 0.5)
+    atmOuterMat.uniforms.uBreath.value = 0.15 + 0.04 * Math.sin(elapsed * 0.5)
+  }
 
   schoolArcEntries.forEach(arc => {
     arc.phase = (arc.phase + dt * arc.speed) % 1.0
     arc.pulseMat.uniforms.uH1.value = arc.phase
     arc.pulseMat.uniforms.uH2.value = (arc.phase + 0.5) % 1.0
-    const mw = arc.midVec.clone().applyEuler(globe.rotation)
-    arc.pulseMat.uniforms.uVis.value = Math.max(0, mw.normalize().dot(camFwd))
+    _tmpV3b.copy(arc.midVec).applyEuler(globe.rotation)
+    arc.pulseMat.uniforms.uVis.value = Math.max(0, _tmpV3b.normalize().dot(camFwd))
   })
 
   frameCount++
@@ -164,12 +194,13 @@ function animate() {
 
     const flagData = pinData.map((p, i) => {
       p.anchor.getWorldPosition(p.worldPos)
-      const camDir = new T.Vector3().subVectors(camera.position, p.worldPos).normalize()
-      p._facing  = camDir.dot(p.worldPos.clone().normalize())
+      _tmpV3c.subVectors(camera.position, p.worldPos).normalize()
+      p._facing  = _tmpV3c.dot(p.worldPos.clone().normalize())
       p._visible = p._facing > 0.15
-      const proj = p.worldPos.clone().project(camera)
-      p._ndcX = proj.x
-      p._ndcY = proj.y
+      p.worldPos.project(camera)
+      p._ndcX = p.worldPos.x
+      p._ndcY = p.worldPos.y
+      // Restore worldPos from NDC by reprojecting after (anchor re-fetched next frame anyway)
 
       let lift = 0
       if (p._visible) {
@@ -188,7 +219,7 @@ function animate() {
       p.dot.material.opacity = dotAlpha
       p.dot.visible = dotAlpha > 0.01
 
-      const score = p._facing - Math.hypot(proj.x, proj.y) * 0.6
+      const score = p._facing - Math.hypot(p._ndcX, p._ndcY) * 0.6
       if (p._visible && score > bestScore) { bestScore = score; bestCenter = p }
 
       return { index: i, ndcX: p._ndcX, ndcY: p._ndcY, visible: p._visible, facing: p._facing, lift }
@@ -206,11 +237,16 @@ function animate() {
 }
 
 // ── Main init ───────────────────────────────────────────────────────────────
-async function initGlobe(canvas: OffscreenCanvas, w: number, h: number, mobile: boolean) {
+async function initGlobe(canvas: OffscreenCanvas, w: number, h: number, mobile: boolean, dpr: number) {
   try {
     T = (await import('three') as any).default ?? await import('three')
     isMobile = mobile
     glWidth = w; glHeight = h
+
+    // Pre-allocate reusable vectors
+    _tmpV3a = new T.Vector3()
+    _tmpV3b = new T.Vector3()
+    _tmpV3c = new T.Vector3()
 
     // ── BUILD EARTH TEXTURE (fallback) ──────────────────────────────────────
     async function buildEarthTexture() {
@@ -377,10 +413,17 @@ async function initGlobe(canvas: OffscreenCanvas, w: number, h: number, mobile: 
     camera = new T.PerspectiveCamera(35, w / h, 0.1, 100)
     camera.position.set(0, 0, 4.2)
 
-    _renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true })
-    _renderer.setPixelRatio(Math.min(1.5, self.devicePixelRatio ?? 1))
-    _renderer.setClearColor(0x000000, 0)
+    const useAntialias = dpr < 2
+    _renderer = new T.WebGLRenderer({
+      canvas,
+      antialias: useAntialias,
+      alpha: false,
+      powerPreference: 'high-performance',
+    })
+    _renderer.setPixelRatio(Math.min(dpr, 1.5))
+    _renderer.setClearColor(0x000000, 1)
     _renderer.setSize(w, h, false)
+    _renderer.shadowMap.enabled = false
 
     // ── LIGHTS ──────────────────────────────────────────────────────────────
     scene.add(new T.AmbientLight(0x0F172A, 0.4))
@@ -393,20 +436,30 @@ async function initGlobe(canvas: OffscreenCanvas, w: number, h: number, mobile: 
     const R = 1.25
     const sunDir = new T.Vector3(5, 3, 5).normalize()
 
-    let dayTex: any
-    try {
-      const res = await fetch('/textures/earth-day.jpg')
-      if (!res.ok) throw new Error('HTTP ' + res.status)
-      const blob = await res.blob()
-      // imageOrientation:'flipY' pre-flips the bitmap so THREE.js flipY=false
-      // matches TextureLoader behaviour in the main thread.
-      const bitmap = await createImageBitmap(blob, { imageOrientation: 'flipY', premultiplyAlpha: 'none', colorSpaceConversion: 'none' })
-      dayTex = new T.Texture(bitmap)
-      dayTex.flipY = false
-      dayTex.colorSpace = T.SRGBColorSpace
-      dayTex.anisotropy = 16
-      dayTex.needsUpdate = true
-    } catch {
+    async function loadTexture(webpPath: string, jpgPath: string) {
+      for (const path of [webpPath, jpgPath]) {
+        try {
+          const res = await fetch(path)
+          if (!res.ok) continue
+          const blob = await res.blob()
+          const bitmap = await createImageBitmap(blob, {
+            imageOrientation: 'flipY',
+            premultiplyAlpha: 'none',
+            colorSpaceConversion: 'none',
+          })
+          const tex = new T.Texture(bitmap)
+          tex.flipY = false
+          tex.colorSpace = T.SRGBColorSpace
+          tex.anisotropy = _renderer.capabilities.getMaxAnisotropy()
+          tex.needsUpdate = true
+          return tex
+        } catch { continue }
+      }
+      return null
+    }
+
+    let dayTex: any = await loadTexture('/textures/earth-day.webp', '/textures/earth-day.jpg')
+    if (!dayTex) {
       console.warn('[GlobeWorker] Falling back to procedural texture')
       dayTex = await buildEarthTexture()
     }
@@ -419,7 +472,8 @@ async function initGlobe(canvas: OffscreenCanvas, w: number, h: number, mobile: 
       metalness: 0.02,
     })
 
-    globe = new T.Mesh(new T.SphereGeometry(R, 64, 64), earthMat)
+    const sphereSegments = lowQuality ? 32 : 64
+    globe = new T.Mesh(new T.SphereGeometry(R, sphereSegments, sphereSegments), earthMat)
     scene.add(globe)
 
     globe.add(new T.LineSegments(
@@ -436,15 +490,9 @@ async function initGlobe(canvas: OffscreenCanvas, w: number, h: number, mobile: 
     scene.add(new T.Mesh(new T.SphereGeometry(R * 1.001, 32, 32), nightMat))
 
     setTimeout(() => {
-      fetch('/textures/earth-night.jpg')
-        .then(r => r.blob())
-        .then(b => createImageBitmap(b, { imageOrientation: 'flipY', premultiplyAlpha: 'none', colorSpaceConversion: 'none' }))
-        .then(bitmap => {
-          const tex = new T.Texture(bitmap)
-          tex.flipY = false
-          tex.colorSpace = T.SRGBColorSpace
-          tex.anisotropy = 8
-          tex.needsUpdate = true
+      loadTexture('/textures/earth-night.webp', '/textures/earth-night.jpg')
+        .then(tex => {
+          if (!tex) return
           earthMat.emissiveMap      = tex
           earthMat.emissiveIntensity = 0.85
           earthMat.needsUpdate      = true
@@ -506,6 +554,7 @@ async function initGlobe(canvas: OffscreenCanvas, w: number, h: number, mobile: 
       ring.quaternion.copy(new T.Quaternion().setFromUnitVectors(new T.Vector3(0, 0, 1), surfaceNormal))
       pinsGroup.add(ring)
 
+      // Pre-allocate worldPos vector per pin (reused each frame without new)
       pinData.push({ ...c, anchor, worldPos: new T.Vector3(), dot, dotFreq: 0.8 + idx * 0.1 })
     })
 
@@ -615,7 +664,7 @@ async function initGlobe(canvas: OffscreenCanvas, w: number, h: number, mobile: 
         vertexShader: PULSE_VERT, fragmentShader: PULSE_FRAG,
       })
       schoolArcGroup.add(new T.Line(pGeo, pulseMat))
-      schoolArcEntries.push({ pulseMat, midVec: mid, speed: 0.35, phase: initPhase })
+      schoolArcEntries.push({ pulseMat, midVec: mid.clone(), speed: 0.35, phase: initPhase })
     })
 
     // ── START ───────────────────────────────────────────────────────────────
@@ -632,12 +681,32 @@ async function initGlobe(canvas: OffscreenCanvas, w: number, h: number, mobile: 
   }
 }
 
+function destroyGlobe() {
+  cancelAnimationFrame(rafId)
+  if (scene) {
+    scene.traverse((obj: any) => {
+      if (obj.geometry) obj.geometry.dispose()
+      if (obj.material) {
+        if (Array.isArray(obj.material)) obj.material.forEach((m: any) => m.dispose())
+        else obj.material.dispose()
+      }
+    })
+  }
+  if (_renderer) {
+    _renderer.dispose()
+    _renderer.forceContextLoss()
+    _renderer = null
+  }
+  scene = null; camera = null; globe = null; clock = null
+  arcEntries = []; schoolEntries = []; schoolArcEntries = []; pinData = []
+}
+
 // ── Message handler ─────────────────────────────────────────────────────────
 self.onmessage = (e: MessageEvent) => {
   const msg = e.data
   switch (msg.type) {
     case 'init':
-      initGlobe(msg.canvas, msg.width, msg.height, msg.isMobile)
+      initGlobe(msg.canvas, msg.width, msg.height, msg.isMobile, msg.dpr ?? 1)
       break
     case 'resize':
       handleResize(msg.width, msg.height)
@@ -667,8 +736,7 @@ self.onmessage = (e: MessageEvent) => {
       }
       break
     case 'destroy':
-      cancelAnimationFrame(rafId)
-      _renderer?.dispose()
+      destroyGlobe()
       break
   }
 }

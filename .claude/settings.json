@@ -23,7 +23,9 @@
       "Bash(node -e \"const n = require\\('eslint-config-next'\\); console.log\\(Object.keys\\(n\\)\\)\")",
       "Bash(node -e \"const n = require\\('eslint-config-next'\\); console.log\\(JSON.stringify\\(Object.keys\\(n[0]\\), null, 2\\)\\)\")",
       "Bash(node -e \"import\\('./eslint.config.mjs'\\).then\\(m => console.log\\('ok', m.default?.length, 'configs'\\)\\).catch\\(e => console.log\\('error:', e.message\\)\\)\")",
-      "Bash(git commit -m 'fix: critical bugs pre-launch *)"
+      "Bash(git commit -m 'fix: critical bugs pre-launch *)",
+      "Bash(node -e \"const s=require\\('sharp'\\); s\\('public/textures/earth-day.jpg'\\).webp\\({quality:80}\\).toFile\\('public/textures/earth-day.webp'\\).then\\(r=>console.log\\('day:',r.size\\)\\); s\\('public/textures/earth-night.jpg'\\).webp\\({quality:60}\\).toFile\\('public/textures/earth-night.webp'\\).then\\(r=>console.log\\('night:',r.size\\)\\);\")",
+      "Bash(git commit -m 'perf: globe 60fps render loop optimization *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Sammy\\big-family\\src\\app\\dashboard\\modules\\[id]"

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, memo } from 'react'
 
 const countries = [
   { name: 'Canadá',          code: 'ca', students: 8  },
@@ -39,7 +39,7 @@ interface Props {
   onCoordChange?: (label: string) => void
 }
 
-export default function GlobeCanvas({ onReady, onCoordChange }: Props) {
+function GlobeCanvas({ onReady, onCoordChange }: Props) {
   const canvasRef    = useRef<HTMLCanvasElement>(null)
   const wrapRef      = useRef<HTMLDivElement>(null)
   const workerRef    = useRef<Worker | null>(null)
@@ -96,8 +96,9 @@ export default function GlobeCanvas({ onReady, onCoordChange }: Props) {
 
     const { width, height } = wrap.getBoundingClientRect()
     const isMobile = window.innerWidth < 768
+    const dpr = window.devicePixelRatio ?? 1
 
-    worker.postMessage({ type: 'init', canvas: offscreen, width, height, isMobile }, [offscreen])
+    worker.postMessage({ type: 'init', canvas: offscreen, width, height, isMobile, dpr }, [offscreen])
 
     worker.onmessage = (e: MessageEvent) => {
       const msg = e.data
@@ -237,3 +238,5 @@ export default function GlobeCanvas({ onReady, onCoordChange }: Props) {
     </div>
   )
 }
+
+export default memo(GlobeCanvas)
