@@ -28,7 +28,8 @@
       "Bash(git commit -m 'perf: globe 60fps render loop optimization *)",
       "Bash(git commit -m 'feat: globe visual redesign technical-elegant *)",
       "Bash(grep -v \"//.*#\")",
-      "Bash(git commit -m 'fix: dark mode complete *)"
+      "Bash(git commit -m 'fix: dark mode complete *)",
+      "Bash(git commit -m 'fix: coordinator sidebar grouped collapsible *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Sammy\\big-family\\src\\app\\dashboard\\modules\\[id]"

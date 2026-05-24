@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -8,6 +8,7 @@ import {
 } from 'recharts'
 import { createClient } from '@/lib/supabase'
 import { m, useReducedMotion } from 'framer-motion'
+import CoordinatorSidebar from '@/components/CoordinatorSidebar'
 
 interface CoordProfile {
   full_name:   string
@@ -61,17 +62,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [page,    setPage]    = useState(1)
   const [hovBar,   setHovBar]   = useState<number | null>(null)
-  const [moreOpen, setMoreOpen] = useState(false)
-  const moreRef = useRef<HTMLDivElement>(null)
   const pref = useReducedMotion()
-
-  useEffect(() => {
-    function onClickOutside(e: MouseEvent) {
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false)
-    }
-    document.addEventListener('mousedown', onClickOutside)
-    return () => document.removeEventListener('mousedown', onClickOutside)
-  }, [])
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -206,24 +197,9 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
                 @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
         @keyframes spin{to{transform:rotate(360deg)}}
         *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;min-height:100vh;color:var(--ink);}
-        .nav{position:sticky;top:0;z-index:30;background:var(--bg);backdrop-filter:saturate(150%) blur(16px);border-bottom:1px solid var(--line);height:62px;display:flex;align-items:center;padding:0 40px;gap:24px;}
-        .nav__brand{display:flex;align-items:center;gap:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;text-decoration:none;color:var(--ink);flex-shrink:0;}
-        .nav__school{flex:1;text-align:center;font-size:13.5px;font-weight:600;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-        .nav__right{display:flex;align-items:center;gap:12px;flex-shrink:0;}
-        .nav__badge{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;background:#FFF4E6;color:#7A4A00;border:1px solid #FFD699;border-radius:999px;padding:3px 10px;font-weight:700;}
-        .nav__name{font-size:13px;color:var(--ink-2);font-weight:500;}
-        .btn-dashboard{background:transparent;border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:13px;color:var(--ink);cursor:pointer;transition:border-color .2s,background .2s;white-space:nowrap;font-family:inherit;}
-        .btn-dashboard:hover{border-color:var(--ink);background:var(--line);}
-        .btn-logout{background:none;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:12px;color:var(--mute);cursor:pointer;transition:all .2s;white-space:nowrap;}
-        .btn-logout:hover{border-color:var(--ink);color:var(--ink);}
-        .nav-more{position:relative;}
-        .nav-more__btn{background:transparent;border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:13px;color:var(--ink);cursor:pointer;transition:border-color .2s,background .2s;white-space:nowrap;font-family:inherit;display:flex;align-items:center;gap:5px;}
-        .nav-more__btn:hover{border-color:var(--ink);background:var(--line);}
-        .nav-more__dropdown{position:absolute;top:calc(100% + 8px);right:0;background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;box-shadow:0 8px 32px -8px rgba(13,13,13,.18);min-width:180px;padding:6px;z-index:40;display:flex;flex-direction:column;gap:2px;}
-        .nav-more__item{padding:10px 14px;border-radius:8px;font-size:13px;color:var(--ink);cursor:pointer;background:none;border:none;text-align:left;font-family:inherit;transition:background .15s;width:100%;}
-        .nav-more__item:hover{background:var(--bg-2);}
-        .main{max-width:1200px;margin:0 auto;padding:44px 40px 80px;}
+        html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;color:var(--ink);}
+        .coord-layout{display:flex;min-height:100vh;}
+        .main{flex:1;min-width:0;max-width:1000px;padding:44px 40px 80px;}
         .page-header{margin-bottom:36px;}
         .page-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:28px;letter-spacing:-0.022em;color:var(--ink);}
         .page-header p{margin-top:5px;font-size:13.5px;color:var(--mute);}
@@ -263,8 +239,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
         @media(max-width:900px){
           .metrics{grid-template-columns:repeat(2,1fr);}
           .main{padding:28px 20px 60px;}
-          .nav{padding:0 20px;}
-          .nav__school{display:none;}
+          .main{padding:28px 20px 60px;}
         }
         @media(max-width:600px){
           .metrics{grid-template-columns:1fr 1fr;}
@@ -272,54 +247,12 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
         }
       `}</style>
 
-      <nav className="nav">
-        <a className="nav__brand" href="/">
-          <svg width="20" height="20" viewBox="0 0 52 52" fill="none">
-            <circle cx="26" cy="10" r="6" fill="#0D0D0D"/>
-            <path d="M26 16 L44 48 H8 Z" fill="#0D0D0D"/>
-            <circle cx="9" cy="18" r="4" fill="#6B6B6B"/>
-            <circle cx="43" cy="18" r="4" fill="#6B6B6B"/>
-          </svg>
-          Big Family
-        </a>
-        <div className="nav__school">
-          {loading ? <Sk w={160} h={14} r={6} /> : coord?.school_name}
-        </div>
-        <div className="nav__right">
-          <span className="nav__badge">Coordinador</span>
-          <span className="nav__name">
-            {loading ? <Sk w={100} h={13} r={5} /> : coord?.full_name}
-          </span>
-          <button className="btn-dashboard" onClick={() => router.push('/coordinator/projects')}>Proyectos</button>
-          <button className="btn-dashboard" onClick={() => router.push('/coordinator/modules')}>Módulos</button>
-          <button className="btn-dashboard" onClick={() => router.push('/coordinator/news')}>Noticias</button>
-          <div className="nav-more" ref={moreRef}>
-            <button className="nav-more__btn" onClick={() => setMoreOpen(o => !o)} type="button">
-              Más
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-            {moreOpen && (
-              <div className="nav-more__dropdown">
-                {[
-                  { label: 'Metas',         href: '/coordinator/goals' },
-                  { label: 'Calendario',    href: '/coordinator/calendar' },
-                  { label: 'Anuncios',      href: '/coordinator/announcements' },
-                  { label: 'Historias',     href: '/coordinator/success-stories' },
-                  { label: 'Reporte PDF',   href: '/coordinator/report' },
-                  { label: 'Ver Dashboard', href: '/dashboard' },
-                ].map(item => (
-                  <button key={item.href} className="nav-more__item" onClick={() => { setMoreOpen(false); router.push(item.href) }}>
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <button className="btn-logout" onClick={handleLogout}>Cerrar sesión</button>
-        </div>
-      </nav>
+      <div className="coord-layout">
+        <CoordinatorSidebar
+          userName={loading ? '…' : (coord?.full_name ?? '…')}
+          userInitial={coord?.full_name?.[0]?.toUpperCase() ?? 'C'}
+          schoolName={loading ? '…' : (coord?.school_name ?? 'Mi Colegio')}
+        />
 
       <m.main
         className="main"
@@ -520,6 +453,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
           )}
         </div>
       </m.main>
+      </div>
     </>
   )
 }
