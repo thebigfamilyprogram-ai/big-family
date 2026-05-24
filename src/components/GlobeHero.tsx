@@ -290,7 +290,7 @@ export default function GlobeHero() {
         :root{--bg:#F5F3EF;--bg-2:#EFECE6;--ink:#0D0D0D;--ink-2:#2D2D2D;--mute:#6B6B6B;--line:rgba(13,13,13,.10);--line-soft:rgba(13,13,13,.06);--accent:#C0392B;--shadow-lg:0 30px 80px -20px rgba(13,13,13,.18),0 10px 30px -10px rgba(13,13,13,.10);}
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);color:var(--ink);font-family:"Satoshi",sans-serif;-webkit-font-smoothing:antialiased;}
-        body{min-height:100vh;overflow-x:hidden;}
+        body{min-height:100dvh;overflow-x:hidden;}
         body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");opacity:.55;mix-blend-mode:multiply;}
         .nav{position:sticky;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;padding:18px 40px;transition:background .3s ease,border-color .3s ease;border-bottom:1px solid transparent;}
         .nav.scrolled{background:rgba(245,243,239,.78);backdrop-filter:saturate(140%) blur(14px);border-bottom-color:var(--line-soft);}
@@ -307,7 +307,7 @@ export default function GlobeHero() {
         .btn--ghost:hover{border-color:var(--ink-2);background:rgba(13,13,13,.04);}
         .btn--solid{background:var(--ink);color:#fff;border-color:var(--ink);}
         .btn--solid:hover{background:var(--accent);border-color:var(--accent);transform:translateY(-1px);box-shadow:0 10px 24px -8px rgba(192,57,43,.45);}
-        .hero{position:relative;min-height:100vh;padding:120px 40px 140px;display:grid;grid-template-columns:45fr 55fr;gap:40px;align-items:center;overflow:visible;}
+        .hero{position:relative;min-height:100dvh;padding:120px 40px 140px;display:grid;grid-template-columns:60fr 40fr;gap:40px;align-items:center;overflow:visible;}
         .hero::before{content:"";position:absolute;left:40px;right:40px;top:90px;height:1px;background:var(--line-soft);}
         .meta{position:absolute;left:40px;right:40px;top:100px;display:flex;justify-content:space-between;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);z-index:2;}
         .meta .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:8px;vertical-align:middle;position:relative;box-shadow:0 0 8px rgba(192,57,43,.6);animation:blink 1.6s ease-in-out infinite;}
@@ -319,10 +319,10 @@ export default function GlobeHero() {
         .brand__logo{width:88px;height:88px;display:flex;align-items:center;justify-content:center;}
         .brand__word{font-size:10.5px;letter-spacing:.56em;text-transform:uppercase;color:var(--mute);border-top:1px solid var(--line);padding-top:12px;width:240px;display:flex;justify-content:space-between;align-items:center;}
         .brand__word .word{font-weight:400;letter-spacing:.48em;color:var(--ink-2);}
-        h1.headline{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(40px,4.6vw,68px);line-height:1.02;letter-spacing:-0.035em;color:var(--ink);max-width:620px;font-synthesis:none;}
+        h1.headline{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(40px,4.6vw,68px);line-height:1.02;letter-spacing:-0.045em;color:var(--ink);max-width:620px;font-synthesis:none;}
         h1.headline em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:var(--accent);}
         h1.headline .dot-end{color:var(--accent);}
-        .lede{margin-top:26px;max-width:460px;color:var(--ink-2);font-size:16px;line-height:1.65;}
+        .lede{margin-top:26px;max-width:52ch;color:var(--ink-2);font-size:16px;line-height:1.65;}
         .cta-row{display:flex;gap:12px;margin-top:34px;align-items:center;}
         .stats{display:grid;grid-template-columns:1fr 1fr 1fr;margin-top:52px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);max-width:560px;}
         .stat{padding:20px 22px;border-right:1px solid var(--line);}
@@ -372,7 +372,7 @@ export default function GlobeHero() {
         @media(prefers-reduced-motion:reduce){
           .meta .dot,.meta .dot::after,.conf__badge .pulse,.conf__badge .pulse::after,.scroll-ind .bar::after{animation:none !important;}
         }
-        @media(max-width:960px){.hero{grid-template-columns:1fr;padding:110px 24px 120px;}.nav{padding:14px 20px;}.nav__links{display:none;}.right{height:460px;}.conferencista{left:20px;right:20px;flex-direction:column;align-items:stretch;}.conf__person{flex:none;}.conf__sep{width:auto;height:1px;align-self:auto;}.conf__badge{border-left:none;border-top:1px solid rgba(13,13,13,.09);justify-content:center;}.meta{left:20px;right:20px;}}
+        @media(max-width:960px){.hero{grid-template-columns:1fr;padding:80px 24px 100px;}.nav{padding:14px 20px;}.nav__links{display:none;}.right{order:-1;height:50vh;min-height:320px;}.left{order:1;}.conferencista{left:20px;right:20px;flex-direction:column;align-items:stretch;}.conf__person{flex:none;}.conf__sep{width:auto;height:1px;align-self:auto;}.conf__badge{border-left:none;border-top:1px solid rgba(13,13,13,.09);justify-content:center;}.meta{left:20px;right:20px;}}
         /* ── MISIÓN ──────────────────────────────────────────────────────────── */
         .mision{background:#080808;padding:160px 40px;}
         .mision__inner{max-width:900px;margin:0 auto;text-align:center;}
@@ -563,7 +563,7 @@ export default function GlobeHero() {
             className="brand"
             initial={prefersReduced ? false : { opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0 }}
           >
             <div className="brand__logo">
               <svg viewBox="0 0 24 24" width="88" height="88" aria-label="Big Family" role="img">
@@ -583,7 +583,7 @@ export default function GlobeHero() {
             className="headline"
             initial={prefersReduced ? false : { opacity: 0, y: 32 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
+            transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.1 }}
           >
             Liderazgo juvenil<br/>que <em>transforma</em><br/>comunidades<span className="dot-end">.</span>
           </m.h1>
@@ -591,7 +591,7 @@ export default function GlobeHero() {
             className="lede"
             initial={prefersReduced ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1], delay: 0.18 }}
+            transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.2 }}
           >
             Un programa global que conecta a una generación decidida a cambiar el rumbo de sus ciudades — con módulos, mentorías y una comunidad que trasciende fronteras.
           </m.p>
@@ -599,7 +599,7 @@ export default function GlobeHero() {
             className="cta-row"
             initial={prefersReduced ? false : { opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.28 }}
+            transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.3 }}
           >
             <Link href="/submit" className="btn btn--solid">Soy estudiante →</Link>
             <button className="btn btn--ghost" onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}>Conocer el programa</button>
