@@ -1048,7 +1048,7 @@ export default function GlobeHero() {
         .brand__logo{width:88px;height:88px;display:flex;align-items:center;justify-content:center;}
         .brand__word{font-size:10.5px;letter-spacing:.56em;text-transform:uppercase;color:var(--mute);border-top:1px solid var(--line);padding-top:12px;width:240px;display:flex;justify-content:space-between;align-items:center;}
         .brand__word .word{font-weight:400;letter-spacing:.48em;color:var(--ink-2);}
-        h1.headline{font-family:"Satoshi","Inter",sans-serif;font-weight:900;font-size:clamp(40px,4.6vw,68px);line-height:1.02;letter-spacing:-0.035em;color:var(--ink);max-width:620px;}
+        h1.headline{font-family:"Satoshi","Inter",sans-serif;font-weight:900;font-size:clamp(40px,4.6vw,68px);line-height:1.02;letter-spacing:-0.035em;color:var(--ink);max-width:620px;font-synthesis:none;}
         h1.headline em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:var(--accent);}
         h1.headline .dot-end{color:var(--accent);}
         .lede{margin-top:26px;max-width:460px;color:var(--ink-2);font-size:16px;line-height:1.65;}
