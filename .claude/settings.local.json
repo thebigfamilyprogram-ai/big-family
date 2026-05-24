@@ -6,7 +6,35 @@
       "PowerShell(Get-Content \"c:\\\\Users\\\\Sammy\\\\big-family\\\\src\\\\app\\\\dashboard\\\\calendar\\\\page.tsx\" -Raw | Select-String -Pattern \"upcoming|cal-layout|Próximos\" -AllMatches | ForEach-Object { $_.Matches } | Select-Object -ExpandProperty Value)",
       "PowerShell(Get-Content \"c:\\\\Users\\\\Sammy\\\\big-family\\\\src\\\\app\\\\coordinator\\\\report\\\\page.tsx\" -Raw | Select-String \"tbl-wrap|table|tbl|disabled|export\" -AllMatches | ForEach-Object { $_.Line } | Select-Object -First 20)",
       "Read(//c/Users/Sammy/big-family/src/app/success-stories/**)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git add *)",
+      "Bash(git push *)",
+      "Bash(xargs grep -l -i \"globe\\\\|globo\\\\|earth\\\\|three\\\\|canvas\")",
+      "Bash(mkdir -p public/textures)",
+      "Bash(node -e \"const fs=require\\('fs'\\);console.log\\(fs.existsSync\\('public/textures'\\)?'exists':'missing'\\)\")",
+      "Bash(node -e \"require\\('sharp'\\)\")",
+      "Bash(node -e ' *)",
+      "WebFetch(domain:api.fontshare.com)",
+      "WebFetch(domain:fonts.googleapis.com)",
+      "Bash(curl -s -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/120.0.0.0 Safari/537.36\" \"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap\")",
+      "Bash(curl -s -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/120.0.0.0 Safari/537.36\" \"https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap\")",
+      "Bash(curl -s -o satoshi-400.woff2 \"https://cdn.fontshare.com/wf/TTX2Z3BF3P6Y5BQT3IV2VNOK6FL22KUT/7QYRJOI3JIMYHGY6CH7SOIFRQLZOLNJ6/KFIAZD4RUMEZIYV6FQ3T3GP5PDBDB6JY.woff2\")",
+      "Bash(curl -s -o satoshi-500.woff2 \"https://cdn.fontshare.com/wf/P2LQKHE6KA6ZP4AAGN72KDWMHH6ZH3TA/ZC32TK2P7FPS5GFTL46EU6KQJA24ZYDB/7AHDUZ4A7LFLVFUIFSARGIWCRQJHISQP.woff2\")",
+      "Bash(curl -s -o satoshi-700.woff2 \"https://cdn.fontshare.com/wf/LAFFD4SDUCDVQEXFPDC7C53EQ4ZELWQI/PXCT3G6LO6ICM5I3NTYENYPWJAECAWDD/GHM6WVH6MILNYOOCXHXB5GTSGNTMGXZR.woff2\")",
+      "Bash(curl -s -o satoshi-900.woff2 \"https://cdn.fontshare.com/wf/NHPGVFYUXYXE33DZ75OIT4JFGHITX5PE/PSUTMASCDJTVPERDYJZPN23BVUFUCQIF/J64QX5IPOHK56I2KYUNBQ5M2XWZEYKYX.woff2\")",
+      "Bash(curl -s -o inter-400.woff2 \"https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2\")",
+      "Bash(curl -s -o inter-500.woff2 \"https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2\")",
+      "Bash(curl -s -o inter-600.woff2 \"https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2\")",
+      "Bash(curl -s -o instrument-serif-400.woff2 \"https://fonts.gstatic.com/s/instrumentserif/v5/jizBRFtNs2ka5fXjeivQ4LroWlx-6zUTjg.woff2\")",
+      "Bash(curl -s -o instrument-serif-400-italic.woff2 \"https://fonts.gstatic.com/s/instrumentserif/v5/jizHRFtNs2ka5fXjeivQ4LroWlx-6zAjjH7M.woff2\")",
+      "Bash(awk '{print $5, $9}')",
+      "Bash(node -e \"const p = require\\('./node_modules/three/package.json'\\); console.log\\('types:', p.types || p.typings\\); console.log\\('exports main:', Object.keys\\(p.exports || {}\\).slice\\(0,5\\)\\)\")",
+      "Bash(git restore *)",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\('next:', p.dependencies.next, '\\\\nthree:', p.dependencies.three\\)\")",
+      "Bash(node -e \"require\\('@next/bundle-analyzer'\\); console.log\\('installed'\\)\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Sammy\\.claude\\projects\\c--Users-Sammy-big-family\\memory"
     ]
   }
 }

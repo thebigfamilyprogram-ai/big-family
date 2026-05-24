@@ -310,7 +310,7 @@ export default function GlobeHero() {
       <style>{`
         :root{--bg:#F5F3EF;--bg-2:#EFECE6;--ink:#0D0D0D;--ink-2:#2D2D2D;--mute:#6B6B6B;--line:rgba(13,13,13,.10);--line-soft:rgba(13,13,13,.06);--accent:#C0392B;--shadow-lg:0 30px 80px -20px rgba(13,13,13,.18),0 10px 30px -10px rgba(13,13,13,.10);}
         *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+        html,body{background:var(--bg);color:var(--ink);font-family:"Satoshi",sans-serif;-webkit-font-smoothing:antialiased;}
         body{min-height:100vh;overflow-x:hidden;}
         body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");opacity:.55;mix-blend-mode:multiply;}
         .nav{position:sticky;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;padding:18px 40px;transition:background .3s ease,border-color .3s ease;border-bottom:1px solid transparent;}
@@ -323,7 +323,7 @@ export default function GlobeHero() {
         .nav__links a::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:1px;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform .3s ease;}
         .nav__links a:hover::after{transform:scaleX(1);}
         .nav__cta{display:flex;gap:10px;align-items:center;}
-        .btn{font-family:"Inter",sans-serif;font-size:13px;font-weight:500;padding:10px 16px;border-radius:999px;border:1px solid transparent;cursor:pointer;transition:all .25s ease;}
+        .btn{font-family:"Satoshi",sans-serif;font-size:13px;font-weight:500;padding:10px 16px;border-radius:999px;border:1px solid transparent;cursor:pointer;transition:all .25s ease;}
         .btn--ghost{background:transparent;color:var(--ink);border-color:var(--line);}
         .btn--ghost:hover{border-color:var(--ink-2);background:rgba(13,13,13,.04);}
         .btn--solid{background:var(--ink);color:#fff;border-color:var(--ink);}
@@ -340,7 +340,7 @@ export default function GlobeHero() {
         .brand__logo{width:88px;height:88px;display:flex;align-items:center;justify-content:center;}
         .brand__word{font-size:10.5px;letter-spacing:.56em;text-transform:uppercase;color:var(--mute);border-top:1px solid var(--line);padding-top:12px;width:240px;display:flex;justify-content:space-between;align-items:center;}
         .brand__word .word{font-weight:400;letter-spacing:.48em;color:var(--ink-2);}
-        h1.headline{font-family:"Satoshi","Inter",sans-serif;font-weight:900;font-size:clamp(40px,4.6vw,68px);line-height:1.02;letter-spacing:-0.035em;color:var(--ink);max-width:620px;font-synthesis:none;}
+        h1.headline{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(40px,4.6vw,68px);line-height:1.02;letter-spacing:-0.035em;color:var(--ink);max-width:620px;font-synthesis:none;}
         h1.headline em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:var(--accent);}
         h1.headline .dot-end{color:var(--accent);}
         .lede{margin-top:26px;max-width:460px;color:var(--ink-2);font-size:16px;line-height:1.65;}
@@ -358,7 +358,7 @@ export default function GlobeHero() {
           .globe-wrap.globe-dragging{transform:translate(-50%,-50%) scale(0.98) !important;transition:transform 0.3s cubic-bezier(0.16,1,0.3,1) !important;cursor:grabbing;}
         }
         .globe-wrap canvas{display:block;width:100% !important;height:100% !important;}
-        .tip{position:absolute;pointer-events:none;z-index:20;padding:10px 14px 12px;background:rgba(255,255,255,.62);backdrop-filter:blur(14px) saturate(160%);border:1px solid rgba(255,255,255,.9);box-shadow:0 20px 50px -20px rgba(13,13,13,.25);border-radius:10px;font-family:"Inter",sans-serif;opacity:0;transform:translate(-50%,-110%) translateY(6px);transition:opacity .18s ease,transform .18s ease;min-width:170px;}
+        .tip{position:absolute;pointer-events:none;z-index:20;padding:10px 14px 12px;background:rgba(255,255,255,.62);backdrop-filter:blur(14px) saturate(160%);border:1px solid rgba(255,255,255,.9);box-shadow:0 20px 50px -20px rgba(13,13,13,.25);border-radius:10px;font-family:"Satoshi",sans-serif;opacity:0;transform:translate(-50%,-110%) translateY(6px);transition:opacity .18s ease,transform .18s ease;min-width:170px;}
         .tip.show{opacity:1;transform:translate(-50%,-110%) translateY(0);}
         .tip__country{font-size:13px;font-weight:600;color:var(--ink);}
         .tip__meta{font-size:11px;color:var(--mute);margin-top:4px;display:flex;align-items:center;gap:8px;}
@@ -401,7 +401,7 @@ export default function GlobeHero() {
         .mision__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(52px,7vw,96px);line-height:1.0;letter-spacing:-0.04em;margin-top:0;}
         .mision__title-line{display:block;color:rgba(255,255,255,0.92);}
         .mision__title-line--accent{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:#C0392B;}
-        .mision__sub{font-family:"Inter",sans-serif;font-size:18px;color:rgba(255,255,255,0.5);line-height:1.7;max-width:600px;margin:28px auto 0;text-align:center;}
+        .mision__sub{font-family:"Satoshi",sans-serif;font-size:18px;color:rgba(255,255,255,0.5);line-height:1.7;max-width:600px;margin:28px auto 0;text-align:center;}
         .mision__stats{max-width:1200px;margin:100px auto 0;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid rgba(255,255,255,0.06);}
         .mision__stat{padding:48px 32px;border-right:1px solid rgba(255,255,255,0.06);text-align:center;}
         .mision__stat:last-child{border-right:none;}
@@ -418,23 +418,23 @@ export default function GlobeHero() {
         .vision__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(40px,6vw,80px);letter-spacing:-.035em;line-height:1.08;color:#fff;}
         .vision__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:#C0392B;}
         .vision__cols{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;}
-        .vision__para{font-family:"Inter",sans-serif;font-size:16px;color:rgba(255,255,255,.72);line-height:1.8;border-left:2px solid rgba(192,57,43,.35);padding:4px 0 4px 20px;}
+        .vision__para{font-family:"Satoshi",sans-serif;font-size:16px;color:rgba(255,255,255,.72);line-height:1.8;border-left:2px solid rgba(192,57,43,.35);padding:4px 0 4px 20px;}
         /* ── BIG LEADER CARD ─────────────────────────────────────────────────── */
         .big-leader{margin-top:80px;position:relative;background:linear-gradient(135deg,rgba(192,57,43,0.12) 0%,rgba(255,255,255,0.02) 50%,rgba(192,57,43,0.06) 100%);border:1px solid rgba(192,57,43,0.25);border-radius:24px;padding:48px;overflow:hidden;cursor:default;transition:border-color 0.4s cubic-bezier(0.16,1,0.3,1),box-shadow 0.4s cubic-bezier(0.16,1,0.3,1);}
         .big-leader:hover{border-color:rgba(192,57,43,0.45);box-shadow:0 0 60px rgba(192,57,43,0.08);}
         .big-leader__glow{position:absolute;top:-60px;left:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(192,57,43,0.2),transparent);pointer-events:none;}
         .big-leader__inner{display:grid;grid-template-columns:45% 55%;gap:48px;position:relative;z-index:1;}
         .big-leader__badge{display:inline-flex;align-items:center;background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.3);border-radius:999px;padding:6px 14px;font-size:11px;letter-spacing:0.25em;text-transform:uppercase;color:#C0392B;margin-bottom:24px;}
-        .big-leader__name-the{font-family:"Inter",sans-serif;font-weight:400;font-size:42px;color:rgba(255,255,255,0.5);display:block;line-height:1.1;}
+        .big-leader__name-the{font-family:"Satoshi",sans-serif;font-weight:400;font-size:42px;color:rgba(255,255,255,0.5);display:block;line-height:1.1;}
         .big-leader__name-leader{font-family:"Satoshi",sans-serif;font-weight:900;font-size:64px;color:#fff;letter-spacing:-0.04em;display:block;line-height:1.0;}
-        .big-leader__sub{font-family:"Inter",sans-serif;font-size:15px;color:rgba(255,255,255,0.5);line-height:1.6;margin-top:16px;max-width:280px;}
+        .big-leader__sub{font-family:"Satoshi",sans-serif;font-size:15px;color:rgba(255,255,255,0.5);line-height:1.6;margin-top:16px;max-width:280px;}
         .big-leader__skills{display:flex;flex-direction:column;justify-content:center;}
         .big-leader__skill{display:flex;gap:14px;align-items:flex-start;padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
         .big-leader__skill:first-child{padding-top:0;}
         .big-leader__skill:last-child{border-bottom:none;padding-bottom:0;}
         .big-leader__skill-icon{width:36px;height:36px;background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
         .big-leader__skill-title{font-family:"Satoshi",sans-serif;font-weight:600;font-size:15px;color:#fff;}
-        .big-leader__skill-sub{font-family:"Inter",sans-serif;font-size:13px;color:rgba(255,255,255,0.4);margin-top:3px;line-height:1.5;}
+        .big-leader__skill-sub{font-family:"Satoshi",sans-serif;font-size:13px;color:rgba(255,255,255,0.4);margin-top:3px;line-height:1.5;}
         /* ── NUESTRA HISTORIA ───────────────────────────────────────────────── */
         .historia{position:relative;background:#080808;padding:140px 40px;overflow:hidden;}
         .historia__grain{position:absolute;inset:0;pointer-events:none;z-index:0;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");opacity:0.35;mix-blend-mode:overlay;}
@@ -446,7 +446,7 @@ export default function GlobeHero() {
         .historia__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:0.32em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:20px;}
         .historia__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(44px,6vw,80px);color:#fff;letter-spacing:-0.04em;line-height:1.0;}
         .historia__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:#C0392B;}
-        .historia__sub{font-family:"Inter",sans-serif;font-size:16px;color:rgba(255,255,255,0.5);line-height:1.65;max-width:420px;}
+        .historia__sub{font-family:"Satoshi",sans-serif;font-size:16px;color:rgba(255,255,255,0.5);line-height:1.65;max-width:420px;}
         .bento{display:grid;grid-template-columns:1.4fr 1fr 1fr;grid-template-rows:auto auto;gap:16px;}
         .bento__cell{position:relative;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 24px 48px rgba(0,0,0,0.4);border-radius:20px;padding:32px;overflow:hidden;will-change:transform;transition:border-color 0.3s ease,box-shadow 0.3s ease;}
         .bento__cell:hover{border-color:rgba(255,255,255,0.14);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 32px 64px rgba(0,0,0,0.5);}
@@ -456,7 +456,7 @@ export default function GlobeHero() {
         .bento__cell--wide{grid-row:2;grid-column:2/span 2;}
         .bento__year{font-family:"Courier New",monospace;font-size:13px;letter-spacing:0.15em;color:#C0392B;margin-bottom:16px;}
         .bento__title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:20px;color:rgba(255,255,255,0.92);margin-bottom:12px;line-height:1.25;}
-        .bento__desc{font-family:"Inter",sans-serif;font-size:14px;color:rgba(255,255,255,0.45);line-height:1.65;}
+        .bento__desc{font-family:"Satoshi",sans-serif;font-size:14px;color:rgba(255,255,255,0.45);line-height:1.65;}
         .bento__tag{display:inline-block;margin-top:20px;border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.35);font-size:11px;letter-spacing:0.15em;border-radius:999px;padding:4px 12px;}
         /* ── ABOUT DARK ─────────────────────────────────────────────────────── */
         .about-dark{background:#080808;padding:120px 40px;border-top:1px solid rgba(255,255,255,0.06);}
@@ -465,14 +465,14 @@ export default function GlobeHero() {
         .about-dark__photo-perspective{perspective:1200px;}
         .about-dark__photo{aspect-ratio:3/4;border-radius:20px;background:linear-gradient(145deg,#1a1a1a 0%,#0d0d0d 100%);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;will-change:transform;}
         .about-dark__photo-dots{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,0.06) 1px,transparent 1px);background-size:24px 24px;}
-        .about-dark__photo-label{color:rgba(255,255,255,0.15);font-size:12px;font-family:"Inter",sans-serif;letter-spacing:0.2em;text-transform:uppercase;position:relative;z-index:1;}
+        .about-dark__photo-label{color:rgba(255,255,255,0.15);font-size:12px;font-family:"Satoshi",sans-serif;letter-spacing:0.2em;text-transform:uppercase;position:relative;z-index:1;}
         .about-dark__badge{position:absolute;top:-16px;right:-16px;background:rgba(192,57,43,0.9);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.15);border-radius:14px;padding:12px 16px;z-index:10;}
         .about-dark__badge-num{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:#fff;}
         .about-dark__badge-label{font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px;}
         .about-dark__text{display:flex;flex-direction:column;}
         .about-dark__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:0.32em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:20px;}
         .about-dark__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(32px,4vw,52px);color:#fff;letter-spacing:-0.03em;line-height:1.1;margin-bottom:24px;}
-        .about-dark__para{font-family:"Inter",sans-serif;font-size:16px;color:rgba(255,255,255,0.55);line-height:1.75;max-width:480px;}
+        .about-dark__para{font-family:"Satoshi",sans-serif;font-size:16px;color:rgba(255,255,255,0.55);line-height:1.75;max-width:480px;}
         .about-dark__para+.about-dark__para{margin-top:20px;}
         .about-dark__divider{height:1px;background:rgba(255,255,255,0.08);margin:32px 0;}
         .about-dark__stats{display:flex;align-items:center;}
@@ -491,17 +491,17 @@ export default function GlobeHero() {
         .equipo__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#6B6B6B;margin-bottom:20px;}
         .equipo__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(36px,4vw,56px);color:#0D0D0D;letter-spacing:-0.03em;line-height:1.1;}
         .equipo__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:#C0392B;}
-        .equipo__desc{font-family:"Inter",sans-serif;font-size:16px;color:#6B6B6B;line-height:1.65;}
+        .equipo__desc{font-family:"Satoshi",sans-serif;font-size:16px;color:#6B6B6B;line-height:1.65;}
         .equipo__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:rgba(13,13,13,.06);border:1px solid rgba(13,13,13,.06);border-radius:20px;overflow:hidden;}
         .equipo__card{background:#F5F3EF;padding:40px 36px;display:flex;flex-direction:column;border:1px solid transparent;transition:box-shadow .2s,transform .2s,border-color .2s;}
         .equipo__card:hover{transform:translateY(-4px);box-shadow:0 16px 40px -8px rgba(13,13,13,.18),inset 0 2px 0 #C0392B;border-color:rgba(192,57,43,.3);}
         .equipo__avatar{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-weight:700;font-size:32px;color:#fff;margin-bottom:28px;flex-shrink:0;}
         .equipo__card-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:20px;color:#0D0D0D;letter-spacing:-0.01em;margin-bottom:6px;}
-        .equipo__card-role{font-family:"Inter",sans-serif;font-size:14px;color:#C0392B;margin-bottom:0;}
-        .equipo__card-bio{font-family:"Inter",sans-serif;font-size:14px;color:#6B6B6B;line-height:1.6;flex:1;}
+        .equipo__card-role{font-family:"Satoshi",sans-serif;font-size:14px;color:#C0392B;margin-bottom:0;}
+        .equipo__card-bio{font-family:"Satoshi",sans-serif;font-size:14px;color:#6B6B6B;line-height:1.6;flex:1;}
         .equipo__card-divider{border-top:1px solid var(--line);margin:12px 0;}
         .equipo__tags{display:flex;flex-wrap:wrap;gap:8px;}
-        .equipo__tag{font-family:"Inter",sans-serif;font-size:11px;color:#C0392B;background:rgba(192,57,43,.08);border-radius:999px;padding:4px 12px;}
+        .equipo__tag{font-family:"Satoshi",sans-serif;font-size:11px;color:#C0392B;background:rgba(192,57,43,.08);border-radius:999px;padding:4px 12px;}
         /* ── DL Banner ── */
         .dl-banner{background:#C0392B;color:#fff;padding:9px 52px 9px 20px;display:flex;align-items:center;justify-content:center;gap:14px;font-size:13px;font-weight:500;position:relative;flex-wrap:wrap;}
         .dl-banner a{color:#fff;font-weight:700;text-decoration:underline;white-space:nowrap;}
@@ -513,7 +513,7 @@ export default function GlobeHero() {
         .dl-landing__inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;position:relative;z-index:1;}
         .dl-landing__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#C0392B;margin-bottom:16px;}
         .dl-landing__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(32px,4vw,52px);color:#fff;letter-spacing:-.03em;line-height:1.1;margin-bottom:14px;}
-        .dl-landing__desc{font-family:"Inter",sans-serif;font-size:16px;color:rgba(255,255,255,.52);line-height:1.7;margin-bottom:28px;}
+        .dl-landing__desc{font-family:"Satoshi",sans-serif;font-size:16px;color:rgba(255,255,255,.52);line-height:1.7;margin-bottom:28px;}
         .dl-landing__btns{display:flex;gap:12px;flex-wrap:wrap;}
         .dl-landing__btn-p{padding:13px 26px;background:#C0392B;color:#fff;border-radius:999px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;text-decoration:none;transition:background .2s;white-space:nowrap;}
         .dl-landing__btn-p:hover{background:#a93226;}

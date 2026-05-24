@@ -33,9 +33,6 @@ export async function GET(request: NextRequest) {
     }
   )
 
-  console.log('role from params:', role)
-  console.log('school_id from params:', schoolId)
-
   const { data: sessionData, error: sessionError } = await supabase.auth.exchangeCodeForSession(code)
   if (sessionError || !sessionData.user) {
     return NextResponse.redirect(`${origin}/login?error=auth_failed`)
@@ -86,8 +83,6 @@ export async function GET(request: NextRequest) {
     .select('role')
     .eq('id', user.id)
     .maybeSingle()
-
-  console.log('role from DB:', profile?.role)
 
   const finalRole = profile?.role ?? 'student'
   const dest = finalRole === 'coordinator' ? '/coordinator' : finalRole === 'expositor' ? '/expositor' : '/dashboard'

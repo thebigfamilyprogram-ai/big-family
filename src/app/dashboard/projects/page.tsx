@@ -49,9 +49,6 @@ export default function ProjectsPage() {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
-      console.log('projects:', rows)
-      if (rows?.length) console.log('project fields:', rows[0])
-
       if (rows && rows.length > 0) {
         const ids = rows.map((r: { id: string }) => r.id)
         const [{ data: imgs }, { data: likes }, { data: cmts }] = await Promise.all([

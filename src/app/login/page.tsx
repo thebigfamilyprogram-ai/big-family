@@ -38,15 +38,12 @@ export default function LoginPage() {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) { setLoading(false); setError(error.message); return }
 
-    console.log('[login] auth OK — user:', data.user?.id)
-
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', data.user!.id)
       .maybeSingle()
 
-    console.log('[login] role from DB:', profile?.role)
     setLoading(false)
     router.push(
       profile?.role === 'coordinator' ? '/coordinator' :
