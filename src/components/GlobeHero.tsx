@@ -330,11 +330,11 @@ export default function GlobeHero() {
         .stat__num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:40px;letter-spacing:-0.03em;color:var(--ink);line-height:1;display:flex;align-items:baseline;gap:2px;}
         .stat__num .plus{font-family:"Instrument Serif",serif;font-weight:400;font-style:italic;color:var(--accent);font-size:28px;}
         .stat__label{margin-top:10px;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);}
-        .right{position:relative;height:clamp(560px,80vh,820px);z-index:2;}
-        .globe-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.92);width:120%;height:120%;max-width:900px;max-height:900px;opacity:0;transition:opacity 1.6s ease,transform 1.6s cubic-bezier(.2,.7,.2,1);cursor:grab;}
-        .globe-wrap.in{opacity:1;transform:translate(-50%,-50%) scale(1);}
+        .right{position:relative;height:clamp(560px,80vh,820px);z-index:2;display:flex;align-items:center;justify-content:center;}
+        .globe-wrap{position:relative;width:100%;max-width:600px;aspect-ratio:1;flex-shrink:0;opacity:0;transform:scale(.92);transition:opacity 1.6s ease,transform 1.6s cubic-bezier(.2,.7,.2,1);cursor:grab;}
+        .globe-wrap.in{opacity:1;transform:scale(1);}
         @media(prefers-reduced-motion:no-preference){
-          .globe-wrap.globe-dragging{transform:translate(-50%,-50%) scale(0.98) !important;transition:transform 0.3s cubic-bezier(0.16,1,0.3,1) !important;cursor:grabbing;}
+          .globe-wrap.globe-dragging{transform:scale(0.98) !important;transition:transform 0.3s cubic-bezier(0.16,1,0.3,1) !important;cursor:grabbing;}
         }
         .globe-wrap canvas{display:block;width:100% !important;height:100% !important;}
         .tip{position:absolute;pointer-events:none;z-index:20;padding:10px 14px 12px;background:rgba(255,255,255,.62);backdrop-filter:blur(14px) saturate(160%);border:1px solid rgba(255,255,255,.9);box-shadow:0 20px 50px -20px rgba(13,13,13,.25);border-radius:10px;font-family:"Satoshi",sans-serif;opacity:0;transform:translate(-50%,-110%) translateY(6px);transition:opacity .18s ease,transform .18s ease;min-width:170px;}
