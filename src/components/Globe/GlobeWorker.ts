@@ -167,7 +167,9 @@ function animate() {
       (1-t)*(1-t)*arc.vA.y + 2*(1-t)*t*arc.midVec.y + t*t*arc.vB.y,
       (1-t)*(1-t)*arc.vA.z + 2*(1-t)*t*arc.midVec.z + t*t*arc.vB.z,
     )
-    arc.particle.material.opacity = vis * 0.9
+    const fadeIn  = t < 0.1 ? t / 0.1 : 1.0
+    const fadeOut = t > 0.9 ? (1 - t) / 0.1 : 1.0
+    arc.particle.material.opacity = vis * 0.9 * fadeIn * fadeOut
   })
 
   if (!lowQuality) {
