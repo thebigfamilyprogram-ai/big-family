@@ -50,8 +50,7 @@ export default function RootLayout({
         <style dangerouslySetInnerHTML={{ __html: CSS_VARS }} />
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script dangerouslySetInnerHTML={{ __html: ANTI_FLASH }} />
-        <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-        <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet" />
+        <link rel="preload" href="/fonts/satoshi-700.woff2" as="font" type="font/woff2" crossOrigin="" />
       </head>
       <body className="antialiased">
         <ThemeProvider>

@@ -1,4 +1,3 @@
-// Trigger fresh build
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -9,6 +8,21 @@ const nextConfig = {
         pathname: '/storage/v1/object/public/**',
       },
     ],
+  },
+  async headers() {
+    return [
+      {
+        source: '/fonts/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+      {
+        source: '/textures/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+    ]
+  },
+  experimental: {
+    optimizeCss: true,
   },
 }
 

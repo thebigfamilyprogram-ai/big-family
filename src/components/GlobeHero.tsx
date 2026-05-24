@@ -532,11 +532,23 @@ export default function GlobeHero() {
       wrap.querySelector('canvas')?.remove()
       wrap.appendChild(renderer.domElement)
 
+      // Cached overlay offset — updated on resize to avoid forced layout in rAF
+      let rectOx = 0, rectOy = 0, rectW = 0, rectH = 0
+      function updateRectCache() {
+        const wr = wrap.getBoundingClientRect()
+        const lr = flagsLayer.getBoundingClientRect()
+        rectOx = wr.left - lr.left
+        rectOy = wr.top  - lr.top
+        rectW  = wr.width
+        rectH  = wr.height
+      }
+
       function resize() {
         const w = wrap.clientWidth, h = wrap.clientHeight
         renderer.setSize(w, h, false)
         camera.aspect = w / h
         camera.updateProjectionMatrix()
+        updateRectCache()
       }
       new ResizeObserver(resize).observe(wrap)
       resize()
@@ -895,12 +907,7 @@ export default function GlobeHero() {
         })
 
         // Pin screen projections — pass 1: compute positions & find best center
-        // globe-wrap is 120% of .right, centered; flags-layer is inset:0 on .right.
-        // Must offset NDC→pixel conversion by the difference between their origins.
-        const wrapRect  = wrap.getBoundingClientRect()
-        const layerRect = flagsLayer.getBoundingClientRect()
-        const ox = wrapRect.left - layerRect.left
-        const oy = wrapRect.top  - layerRect.top
+        // rectOx/rectOy are the cached offset between globe-wrap and flags-layer origins
         let bestCenter: any = null, bestScore = -1
         pinData.forEach(p => {
           p.anchor.getWorldPosition(p.worldPos)
@@ -908,8 +915,8 @@ export default function GlobeHero() {
           p._facing  = camDir.dot(p.worldPos.clone().normalize())
           p._visible = p._facing > 0.15
           const proj = p.worldPos.clone().project(camera)
-          p._sx = (proj.x * 0.5 + 0.5) * wrapRect.width  + ox
-          p._sy = (-proj.y * 0.5 + 0.5) * wrapRect.height + oy
+          p._sx = (proj.x * 0.5 + 0.5) * rectW  + rectOx
+          p._sy = (-proj.y * 0.5 + 0.5) * rectH + rectOy
           const score = p._facing - Math.hypot(proj.x, proj.y) * 0.6
           if (p._visible && score > bestScore) { bestScore = score; bestCenter = p }
         })
@@ -1229,11 +1236,6 @@ export default function GlobeHero() {
         .dl-cd-label{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.32);margin-top:8px;}
         @media(max-width:960px){.mision{padding:80px 24px;}.mision__stats{grid-template-columns:1fr 1fr;}.mision__stat{border-right:none;border-bottom:1px solid rgba(255,255,255,0.06);}.vision{padding:80px 24px;}.vision__cols{grid-template-columns:1fr;gap:36px;}.vision__watermark{font-size:80px;}.big-leader__inner{grid-template-columns:1fr;}.historia{padding:80px 24px;}.historia__header{grid-template-columns:1fr;gap:24px;}.bento{grid-template-columns:1fr;}.bento__cell--tall,.bento__cell--wide{grid-row:auto;grid-column:auto;}.about-dark{padding:80px 24px;}.about-dark__inner{grid-template-columns:1fr;gap:48px;}.equipo{padding:100px 24px;}.equipo__header{grid-template-columns:1fr;}.equipo__grid{grid-template-columns:1fr;}.dl-landing{padding:80px 24px;}.dl-landing__inner{grid-template-columns:1fr;gap:48px;}}
       `}</style>
-
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" />
-      <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@700,900,500,400&display=swap" />
 
       {/* Post-event banner */}
       <AnimatePresence>
