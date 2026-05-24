@@ -40,11 +40,12 @@ interface Props {
 }
 
 export default function GlobeCanvas({ onReady, onCoordChange }: Props) {
-  const canvasRef  = useRef<HTMLCanvasElement>(null)
-  const wrapRef    = useRef<HTMLDivElement>(null)
-  const workerRef  = useRef<Worker | null>(null)
-  const isDownRef  = useRef(false)
-  const lastPosRef = useRef({ x: 0, y: 0 })
+  const canvasRef    = useRef<HTMLCanvasElement>(null)
+  const wrapRef      = useRef<HTMLDivElement>(null)
+  const workerRef    = useRef<Worker | null>(null)
+  const transferredRef = useRef(false)
+  const isDownRef    = useRef(false)
+  const lastPosRef   = useRef({ x: 0, y: 0 })
 
   const [flags, setFlags] = useState<FlagState[]>([])
   const [tooltip, setTooltip] = useState<TooltipState>({ visible: false, x: 0, y: 0, country: '', students: 0 })
@@ -72,8 +73,14 @@ export default function GlobeCanvas({ onReady, onCoordChange }: Props) {
     const wrap   = wrapRef.current
     if (!canvas || !wrap) return
 
+    // Guard: OffscreenCanvas control can only be transferred once.
+    // React StrictMode mounts twice in dev — without this the second
+    // mount throws "Cannot transfer control from a canvas for more than one time".
+    if (transferredRef.current) return
+    transferredRef.current = true
+
     // Bail on browsers without OffscreenCanvas (Safari < 16.4)
-    if (!canvas.transferControlToOffscreen) {
+    if (!('transferControlToOffscreen' in HTMLCanvasElement.prototype)) {
       import('./GlobeFallback').then(m => {
         m.initGlobeFallback(canvas, wrap, {
           onReady: () => { wrap.classList.add('in'); onReady?.() },
@@ -158,7 +165,7 @@ export default function GlobeCanvas({ onReady, onCoordChange }: Props) {
       window.removeEventListener('pointerup',   onPointerUp)
       window.removeEventListener('pointermove', onPointerMove)
     }
-  }, [onReady, onCoordChange])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div
