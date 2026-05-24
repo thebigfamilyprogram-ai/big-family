@@ -26,7 +26,9 @@
       "Bash(git commit -m 'fix: critical bugs pre-launch *)",
       "Bash(node -e \"const s=require\\('sharp'\\); s\\('public/textures/earth-day.jpg'\\).webp\\({quality:80}\\).toFile\\('public/textures/earth-day.webp'\\).then\\(r=>console.log\\('day:',r.size\\)\\); s\\('public/textures/earth-night.jpg'\\).webp\\({quality:60}\\).toFile\\('public/textures/earth-night.webp'\\).then\\(r=>console.log\\('night:',r.size\\)\\);\")",
       "Bash(git commit -m 'perf: globe 60fps render loop optimization *)",
-      "Bash(git commit -m 'feat: globe visual redesign technical-elegant *)"
+      "Bash(git commit -m 'feat: globe visual redesign technical-elegant *)",
+      "Bash(grep -v \"//.*#\")",
+      "Bash(git commit -m 'fix: dark mode complete *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Sammy\\big-family\\src\\app\\dashboard\\modules\\[id]"

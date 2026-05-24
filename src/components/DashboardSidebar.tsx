@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { m, AnimatePresence } from 'framer-motion'
+import { useTheme } from '@/contexts/ThemeContext'
 
 type ActivePage =
   | 'dashboard' | 'leadership-path' | 'global-map'
@@ -85,6 +86,7 @@ export default function DashboardSidebar({ activePage, userName = '…', userIni
   const supabaseRef   = useRef<ReturnType<typeof createClient> | null>(null)
   const isComunidadActive = COMUNIDAD_PAGES.includes(activePage)
   const [comunidadOpen, setComunidadOpen] = useState(isComunidadActive)
+  const { theme, setTheme } = useTheme()
 
   async function handleLogout() {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -226,6 +228,17 @@ export default function DashboardSidebar({ activePage, userName = '…', userIni
           <a href="#">Support</a>
           <span style={{ color: 'var(--line)' }}>·</span>
           <button onClick={handleLogout}>Log Out</button>
+          <span style={{ color: 'var(--line)' }}>·</span>
+          <button
+            aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            style={{ minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', transition: 'color .15s', padding: 0, borderRadius: 8 }}
+          >
+            {theme === 'dark'
+              ? <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 1.5a5.5 5.5 0 1 1 0 11A5.5 5.5 0 0 1 8 2.5zM8 4a4 4 0 1 0 0 8A4 4 0 0 0 8 4z"/></svg>
+              : <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/></svg>
+            }
+          </button>
         </div>
       </aside>
     </>
