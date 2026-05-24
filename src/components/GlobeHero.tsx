@@ -7,6 +7,8 @@ import CoordinatorButton from '@/components/CoordinatorButton'
 import GlobeCanvas from '@/components/Globe/GlobeCanvas'
 import TimelineSection from '@/components/TimelineSection'
 import { createClient } from '@/lib/supabase'
+import AnimatedNumber from '@/components/AnimatedNumber'
+import { useRealtimeStats } from '@/hooks/useRealtimeStats'
 
 const countries = [
   { name: 'Canadá',          code: 'ca', lat: 45.42,  lon: -75.69, students: 8,  coordLabel: 'N 45°25′ · W 75°41′ · Ottawa' },
@@ -222,6 +224,8 @@ export default function GlobeHero() {
   const [globeReady,        setGlobeReady]        = useState(false)
   const dlCd = useCountdown(DL_TARGET)
 
+  const { stats: liveStats, loading: statsLoading } = useRealtimeStats()
+
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const [featuredStories, setFeaturedStories] = useState<{ id: string; title: string; story: string; cover_url: string | null; student_name: string | null; school_name: string | null }[]>([])
 
@@ -273,35 +277,10 @@ export default function GlobeHero() {
   }
 
   useEffect(() => {
-    function countUp(el: HTMLElement, to: number, dur = 1400) {
-      const start = performance.now()
-      function tick(t: number) {
-        const p = Math.min((t - start) / dur, 1)
-        const e = 1 - Math.pow(1 - p, 3)
-        el.textContent = String(Math.round(to * e))
-        if (p < 1) requestAnimationFrame(tick)
-        else el.textContent = String(to)
-      }
-      requestAnimationFrame(tick)
-    }
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          countUp(e.target as HTMLElement, +(e.target as HTMLElement).dataset.to!)
-          io.unobserve(e.target)
-        }
-      })
-    }, { threshold: 0.4 })
-    document.querySelectorAll<HTMLElement>('.count').forEach(el => io.observe(el))
-
     const nav = document.getElementById('nav')
     const onScroll = () => nav?.classList.toggle('scrolled', window.scrollY > 10)
     window.addEventListener('scroll', onScroll)
-
-    return () => {
-      io.disconnect()
-      window.removeEventListener('scroll', onScroll)
-    }
+    return () => { window.removeEventListener('scroll', onScroll) }
   }, [])
 
 
@@ -632,16 +611,22 @@ export default function GlobeHero() {
             transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.36 }}
           >
             <div className="stat">
-              <div className="stat__num"><span className="count" data-to="100">0</span><span className="plus">+</span></div>
+              <div className="stat__num">
+                <AnimatedNumber value={liveStats.students} loading={statsLoading} suffix="+" skeletonWidth={48} />
+              </div>
               <div className="stat__label">Estudiantes</div>
             </div>
             <div className="stat">
-              <div className="stat__num"><span className="count" data-to="90">0</span></div>
+              <div className="stat__num">
+                <AnimatedNumber value={liveStats.schools} loading={statsLoading} skeletonWidth={40} />
+              </div>
               <div className="stat__label">Colegios</div>
             </div>
             <div className="stat">
-              <div className="stat__num"><span className="count" data-to="10">0</span></div>
-              <div className="stat__label">Países</div>
+              <div className="stat__num">
+                <AnimatedNumber value={liveStats.badges} loading={statsLoading} skeletonWidth={40} />
+              </div>
+              <div className="stat__label">Insignias</div>
             </div>
           </m.div>
         </div>
