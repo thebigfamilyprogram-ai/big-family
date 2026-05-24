@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
+import * as THREE from 'three'
 import CoordinatorButton from '@/components/CoordinatorButton'
 import TimelineSection from '@/components/TimelineSection'
 import { createClient } from '@/lib/supabase'
@@ -308,17 +309,13 @@ export default function GlobeHero() {
     const onScroll = () => nav?.classList.toggle('scrolled', window.scrollY > 10)
     window.addEventListener('scroll', onScroll)
 
-    const script = document.createElement('script')
-    script.src = 'https://unpkg.com/three@0.160.0/build/three.min.js'
-    script.onload = () => { initGlobe().catch(console.error) }
-    document.head.appendChild(script)
+    initGlobe().catch(console.error)
 
     let renderer: any
     let sceneObserver: IntersectionObserver | undefined
     let earthMatClosure: any
     let atmInnerMatClosure: any, atmOuterMatClosure: any
     async function initGlobe() {
-      const THREE = (window as any).THREE
       const wrap       = wrapRef.current   as HTMLDivElement
       const flagsLayer = flagsRef.current  as HTMLDivElement
       const tip        = tipRef.current    as HTMLDivElement

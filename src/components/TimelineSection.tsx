@@ -133,8 +133,12 @@ export default function TimelineSection({
   const containerRef = useRef<HTMLDivElement>(null)
 
   const isDark = theme === 'dark'
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
 
-  const { scrollYProgress } = useScroll({ target: containerRef, offset: ['start 85%', 'end 15%'] })
+  // Pass target only after mount so SSR never sees a ref object with null .current
+  // (Framer Motion v12 throws "Target ref is defined but not hydrated" in that case)
+  const { scrollYProgress } = useScroll({ target: mounted ? containerRef : undefined, offset: ['start 85%', 'end 15%'] })
   const scaleY = useSpring(scrollYProgress, { stiffness: 80, damping: 30 })
 
   useEffect(() => {
