@@ -1,8 +1,9 @@
 ﻿'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { motion, useInView, useScroll, useSpring } from 'framer-motion'
+import { motion, useInView, useSpring } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
+import { useSafeScroll } from '@/hooks/useSafeScroll'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export interface TimelineEvent {
@@ -134,9 +135,7 @@ export default function TimelineSection({
 
   const isDark = theme === 'dark'
 
-  // Guard with loading: containerRef is only attached to the DOM when loading=false.
-  // Using a mounted flag is insufficient — it becomes true while loading is still true.
-  const { scrollYProgress } = useScroll({ target: loading ? undefined : containerRef, offset: ['start 85%', 'end 15%'] })
+  const { scrollYProgress } = useSafeScroll(containerRef, { offset: ['start 85%', 'end 15%'] })
   const scaleY = useSpring(scrollYProgress, { stiffness: 80, damping: 30 })
 
   useEffect(() => {
