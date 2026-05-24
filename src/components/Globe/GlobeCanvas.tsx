@@ -172,10 +172,11 @@ function GlobeCanvas({ onReady, onCoordChange }: Props) {
     <div
       ref={wrapRef}
       className="globe-wrap"
+      style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%) scale(.92)', width: '120%', height: '120%', maxWidth: 900, maxHeight: 900 }}
     >
       <canvas
         ref={canvasRef}
-        style={{ display: 'block', width: '100%', height: '100%', cursor: 'grab' }}
+        style={{ display: 'block', width: '100%', height: '100%', cursor: 'grab', background: 'transparent' }}
       />
 
       {/* Flag overlays — positioned from worker NDC coords */}

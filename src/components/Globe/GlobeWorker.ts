@@ -419,11 +419,11 @@ async function initGlobe(canvas: OffscreenCanvas, w: number, h: number, mobile: 
     _renderer = new T.WebGLRenderer({
       canvas,
       antialias: useAntialias,
-      alpha: false,
+      alpha: true,
       powerPreference: 'high-performance',
     })
     _renderer.setPixelRatio(Math.min(dpr, 1.5))
-    _renderer.setClearColor(0x000000, 1)
+    _renderer.setClearColor(0x000000, 0)
     _renderer.setSize(w, h, false)
     _renderer.shadowMap.enabled = false
 
