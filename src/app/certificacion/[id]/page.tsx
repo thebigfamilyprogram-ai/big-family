@@ -1,430 +1,287 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { m } from 'framer-motion'
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-interface DiplomaData {
-  student_name:     string
-  school_name:      string
-  project_title:    string
-  approved_at:      string | null
-  evaluated_at:     string | null
-  resultado:        'certificado' | 'mencion_honor'
-  coordinator_name: string
+interface School {
+  id: string
+  name: string
 }
 
-type PageState = 'loading' | 'found' | 'not-certified' | 'not-found'
-
-// ── Confetti ──────────────────────────────────────────────────────────────────
-function fireConfetti() {
-  if (typeof window === 'undefined') return
-  const wrap = document.createElement('div')
-  wrap.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;'
-  document.body.appendChild(wrap)
-  const colors = ['#C0392B', '#8B1A1A', '#D4AF37', '#F5C842', '#B8860B', '#fffdf8', '#f0e8d8']
-  for (let i = 0; i < 90; i++) {
-    const p = document.createElement('div')
-    const size = 5 + Math.random() * 9
-    const xStart = 20 + Math.random() * 60
-    const xDrift = (Math.random() - 0.5) * 340
-    const yUp = -(100 + Math.random() * 200)
-    const delay = Math.random() * 0.5
-    p.style.cssText = `
-      position:absolute;width:${size}px;height:${size}px;
-      left:${xStart}%;top:50%;
-      background:${colors[Math.floor(Math.random() * colors.length)]};
-      border-radius:${Math.random() > 0.45 ? '50%' : '1px'};
-      animation:cffly ${1.5 + Math.random() * 1.8}s ease-in ${delay}s forwards;
-      --dx:${xDrift}px;--dy:${yUp}px;
-    `
-    wrap.appendChild(p)
-  }
-  if (!document.getElementById('cf-cert-style')) {
-    const s = document.createElement('style')
-    s.id = 'cf-cert-style'
-    s.textContent = '@keyframes cffly{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(var(--dx),calc(var(--dy) + 520px)) rotate(540deg);opacity:0}}'
-    document.head.appendChild(s)
-  }
-  setTimeout(() => wrap.remove(), 3600)
+interface StudentReport {
+  id: string
+  full_name: string
+  email: string
+  school_id: string
+  school_name: string
+  school_level: string | null
+  created_at: string
+  total_xp: number
+  modules_completed: number
+  badges_earned: number
+  project_title: string | null
+  project_status: string | null
+  capstone_resultado: string | null
+  goals_active: number
+  goals_completed: number
+  quiz_attempts: number
 }
 
-// ── Shimmer sweep ─────────────────────────────────────────────────────────────
-function Shimmer({ trigger }: { trigger: boolean }) {
-  return (
-    <AnimatePresence>
-      {trigger && (
-        <motion.div
-          key="shimmer"
-          initial={{ x: '-110%', skewX: '-8deg' }}
-          animate={{ x: '220%', skewX: '-8deg' }}
-          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-          style={{
-            position: 'absolute', top: 0, bottom: 0, width: '45%',
-            background: 'linear-gradient(105deg, transparent 10%, rgba(212,175,55,.28) 50%, transparent 90%)',
-            pointerEvents: 'none', zIndex: 10,
-          }}
-        />
-      )}
-    </AnimatePresence>
-  )
+function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?: number }) {
+  return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
 }
 
-// ── Wax seal ──────────────────────────────────────────────────────────────────
-function WaxSeal() {
-  return (
-    <motion.div
-      initial={{ scale: 0, rotate: -20, opacity: 0 }}
-      animate={{ scale: [0, 1.18, 0.92, 1], rotate: ['-20deg', '4deg', '-2deg', '0deg'], opacity: 1 }}
-      transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 2.4, duration: 0.9 }}
-      style={{ width: 88, height: 88, margin: '0 auto', cursor: 'default' }}
-    >
-      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
-        {/* Seal background */}
-        <circle cx="50" cy="50" r="49" fill="#7A1010" />
-        <circle cx="50" cy="50" r="46" fill="#911414" />
-        {/* Dashed inner ring */}
-        <circle cx="50" cy="50" r="41" fill="none" stroke="rgba(255,255,255,.18)" strokeWidth="1" strokeDasharray="3.5 2.5" />
-        {/* Inner circle */}
-        <circle cx="50" cy="50" r="34" fill="#A81818" />
-        {/* BF logo mark */}
-        <circle cx="50" cy="30" r="5.5" fill="rgba(255,255,255,.88)" />
-        <path d="M50 36 L65 62 H35 Z" fill="rgba(255,255,255,.88)" />
-        <circle cx="35" cy="38" r="3.5" fill="rgba(255,255,255,.5)" />
-        <circle cx="65" cy="38" r="3.5" fill="rgba(255,255,255,.5)" />
-        {/* Stars */}
-        <text x="22" y="80" fontSize="7" fill="rgba(255,220,100,.65)" textAnchor="middle">★</text>
-        <text x="78" y="80" fontSize="7" fill="rgba(255,220,100,.65)" textAnchor="middle">★</text>
-        {/* Label */}
-        <text x="50" y="75" fontSize="5" fill="rgba(255,255,255,.45)" textAnchor="middle" fontFamily="sans-serif" letterSpacing="1.5">BIG FAMILY</text>
-      </svg>
-    </motion.div>
-  )
-}
-
-// ── Stagger variants ──────────────────────────────────────────────────────────
-const containerVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.16, delayChildren: 0.45 } },
-}
-
-const itemVariants = {
-  hidden:  { opacity: 0, y: 22 },
-  visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 110, damping: 18 } },
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function fmtDate(iso: string | null) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })
-}
-
-// ── Page ─────────────────────────────────────────────────────────────────────
-export default function CertificacionPage() {
-  const { id } = useParams<{ id: string }>()
-  const router  = useRouter()
+export default function AdminReportPage() {
+  const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
-  const [pageState,   setPageState]   = useState<PageState>('loading')
-  const [data,        setData]        = useState<DiplomaData | null>(null)
-  const [shimmer,     setShimmer]     = useState(false)
-  const [confettiFired, setConfettiFired] = useState(false)
+  const [loading,        setLoading]        = useState(true)
+  const [exporting,      setExporting]      = useState(false)
+  const [students,       setStudents]       = useState<StudentReport[]>([])
+  const [schools,        setSchools]        = useState<School[]>([])
+  const [selectedSchool, setSelectedSchool] = useState('all')
+  const [showAllCols,    setShowAllCols]    = useState(false)
 
-  // ── Fetch ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
-    const supabase = supabaseRef.current
-    if (!supabase) return
-
+    const sb = supabaseRef.current
+    if (!sb) return
     async function load() {
-      const { data: project } = await supabase
-        .from('projects')
-        .select('id, title, approved_at, user_id, school_id')
-        .eq('id', id)
-        .maybeSingle()
+      const { data: { user } } = await sb!.auth.getUser()
+      if (!user) { router.replace('/login'); return }
+      const { data: profile } = await sb!.from('profiles').select('role').eq('id', user.id).maybeSingle()
+      if (profile?.role !== 'admin') { router.replace('/dashboard'); return }
 
-      if (!project) { setPageState('not-found'); return }
+      const { data: schoolsData } = await sb!.from('schools').select('id, name').order('name')
+      setSchools(schoolsData ?? [])
 
-      const { data: evaluation } = await supabase
-        .from('capstone_evaluations')
-        .select('resultado, coordinator_id, evaluated_at')
-        .eq('project_id', id)
-        .maybeSingle()
+      const schoolMap: Record<string, string> = {}
+      schoolsData?.forEach((s: { id: string; name: string }) => { schoolMap[s.id] = s.name })
 
-      if (!evaluation || !['certificado', 'mencion_honor'].includes(evaluation.resultado ?? '')) {
-        setPageState('not-certified'); return
-      }
+      const { data: studs } = await sb!.from('profiles').select('id, full_name, email, school_level, school_id, created_at').eq('role', 'student')
+      if (!studs || studs.length === 0) { setLoading(false); return }
 
-      const userIds = [project.user_id, evaluation.coordinator_id].filter(Boolean) as string[]
-      const { data: profiles } = userIds.length
-        ? await supabase.from('profiles').select('id, full_name').in('id', userIds)
-        : { data: [] as { id: string; full_name: string | null }[] }
+      const ids = studs.map((s: { id: string }) => s.id)
+      const [
+        { data: xpRows }, { data: progRows }, { data: badgeRows },
+        { data: projRows }, { data: evalRows }, { data: goalRows }, { data: quizRows },
+      ] = await Promise.all([
+        sb!.from('xp_log').select('user_id, amount').in('user_id', ids),
+        sb!.from('progress').select('user_id').eq('completed', true).in('user_id', ids),
+        sb!.from('user_badges').select('user_id').in('user_id', ids),
+        sb!.from('projects').select('user_id, title, status').in('user_id', ids).order('created_at', { ascending: false }),
+        sb!.from('capstone_evaluations').select('project_id, resultado, projects(user_id)').in('resultado', ['certificado','mencion_honor']),
+        sb!.from('goals').select('user_id, status').in('user_id', ids),
+        sb!.from('quiz_attempts').select('user_id').in('user_id', ids),
+      ])
 
-      const pMap: Record<string, string> = {}
-      profiles?.forEach((p: { id: string; full_name: string | null }) => { pMap[p.id] = p.full_name ?? '—' })
-
-      const { data: school } = project.school_id
-        ? await supabase.from('schools').select('name').eq('id', project.school_id).maybeSingle()
-        : { data: null }
-
-      setData({
-        student_name:     pMap[project.user_id] ?? '—',
-        school_name:      (school as { name: string } | null)?.name ?? '—',
-        project_title:    project.title ?? '(Sin título)',
-        approved_at:      project.approved_at,
-        evaluated_at:     evaluation.evaluated_at,
-        resultado:        evaluation.resultado as 'certificado' | 'mencion_honor',
-        coordinator_name: evaluation.coordinator_id ? (pMap[evaluation.coordinator_id] ?? '—') : '—',
+      const xpMap: Record<string, number> = {}
+      xpRows?.forEach((r: { user_id: string; amount: number }) => { xpMap[r.user_id] = (xpMap[r.user_id] ?? 0) + r.amount })
+      const modMap: Record<string, number> = {}
+      progRows?.forEach((r: { user_id: string }) => { modMap[r.user_id] = (modMap[r.user_id] ?? 0) + 1 })
+      const badgeMap: Record<string, number> = {}
+      badgeRows?.forEach((r: { user_id: string }) => { badgeMap[r.user_id] = (badgeMap[r.user_id] ?? 0) + 1 })
+      const projMap: Record<string, { title: string | null; status: string }> = {}
+      projRows?.forEach((r: { user_id: string; title: string | null; status: string }) => { if (!projMap[r.user_id]) projMap[r.user_id] = { title: r.title, status: r.status } })
+      const evalMap: Record<string, string> = {}
+      evalRows?.forEach((e: { resultado: string | null; projects: { user_id: string } | null }) => {
+        if (e.projects?.user_id) evalMap[e.projects.user_id] = e.resultado ?? ''
       })
-      setPageState('found')
+      const goalActive: Record<string, number> = {}; const goalDone: Record<string, number> = {}
+      goalRows?.forEach((g: { user_id: string; status: string }) => {
+        if (g.status === 'active') goalActive[g.user_id] = (goalActive[g.user_id] ?? 0) + 1
+        if (g.status === 'completed') goalDone[g.user_id] = (goalDone[g.user_id] ?? 0) + 1
+      })
+      const quizMap: Record<string, number> = {}
+      quizRows?.forEach((r: { user_id: string }) => { quizMap[r.user_id] = (quizMap[r.user_id] ?? 0) + 1 })
+
+      setStudents(studs.map((s: { id: string; full_name: string | null; email: string | null; school_level: string | null; school_id: string | null; created_at: string }) => ({
+        id: s.id, full_name: s.full_name ?? '—', email: s.email ?? '—',
+        school_id: s.school_id ?? '', school_name: s.school_id ? (schoolMap[s.school_id] ?? '—') : '—',
+        school_level: s.school_level, created_at: s.created_at,
+        total_xp: xpMap[s.id] ?? 0, modules_completed: modMap[s.id] ?? 0, badges_earned: badgeMap[s.id] ?? 0,
+        project_title: projMap[s.id]?.title ?? null, project_status: projMap[s.id]?.status ?? null,
+        capstone_resultado: evalMap[s.id] ?? null,
+        goals_active: goalActive[s.id] ?? 0, goals_completed: goalDone[s.id] ?? 0,
+        quiz_attempts: quizMap[s.id] ?? 0,
+      })))
+      setLoading(false)
     }
-
     load()
-  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
-  // ── Trigger animations once diploma appears ────────────────────────────────
-  useEffect(() => {
-    if (pageState !== 'found' || confettiFired) return
-    const t = setTimeout(() => {
-      fireConfetti()
-      setShimmer(true)
-      setConfettiFired(true)
-    }, 1100)
-    return () => clearTimeout(t)
-  }, [pageState, confettiFired])
+  const displayed = selectedSchool === 'all' ? students : students.filter(s => s.school_id === selectedSchool)
+  const selectedSchoolName = selectedSchool === 'all' ? 'Todos los colegios' : (schools.find(s => s.id === selectedSchool)?.name ?? '')
 
-  // ── Loading ────────────────────────────────────────────────────────────────
-  if (pageState === 'loading') {
-    return (
-      <>
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-        <div style={{ minHeight: '100vh', background: '#f0e8d8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ width: 36, height: 36, border: '3px solid rgba(192,57,43,.15)', borderTopColor: '#C0392B', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-        </div>
-      </>
-    )
+  async function handleExport() {
+    setExporting(true)
+    try {
+      const { default: jsPDF } = await import('jspdf')
+      const autoTable = (await import('jspdf-autotable')).default
+      const doc = new jsPDF({ orientation: 'landscape' })
+
+      doc.setFontSize(20); doc.setTextColor(192, 57, 43)
+      doc.text('Big Family — Reporte Global', 14, 18)
+      doc.setFontSize(11); doc.setTextColor(100)
+      doc.text(`${selectedSchoolName} · Exportado: ${new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })}`, 14, 26)
+
+      // Group by school if all
+      const schoolGroups = selectedSchool === 'all'
+        ? schools.map(s => ({ name: s.name, rows: displayed.filter(d => d.school_id === s.id) })).filter(g => g.rows.length > 0)
+        : [{ name: selectedSchoolName, rows: displayed }]
+
+      let currentY = 34
+      schoolGroups.forEach(group => {
+        doc.setFontSize(12); doc.setTextColor(192, 57, 43)
+        doc.text(group.name, 14, currentY + 10)
+        autoTable(doc, {
+          startY: currentY + 14,
+          head: [['Nombre', 'Email', 'Nivel', 'XP', 'Módulos', 'Proyecto', 'Capstone', 'Metas']],
+          body: group.rows.map(s => [
+            s.full_name, s.email, s.school_level ?? '—', s.total_xp,
+            s.modules_completed, s.project_title ?? '—', s.capstone_resultado ?? '—',
+            `${s.goals_completed}/${s.goals_active + s.goals_completed}`,
+          ]),
+          headStyles: { fillColor: [192, 57, 43], textColor: 255, fontStyle: 'bold' },
+          alternateRowStyles: { fillColor: [245, 243, 239] },
+          styles: { fontSize: 8 },
+        })
+        currentY = (doc as typeof doc & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8
+      })
+
+      // Summary
+      doc.setFontSize(10); doc.setTextColor(60)
+      const certified = displayed.filter(s => s.capstone_resultado !== null).length
+      const avgXp = displayed.length > 0 ? Math.round(displayed.reduce((s, r) => s + r.total_xp, 0) / displayed.length) : 0
+      doc.text(`Total: ${displayed.length} estudiantes  |  Certificados: ${certified}  |  XP promedio: ${avgXp}`, 14, currentY + 6)
+
+      doc.save(`reporte-big-family-${new Date().toISOString().split('T')[0]}.pdf`)
+    } catch (err) {
+      console.error('[PDF export]', err)
+    }
+    setExporting(false)
   }
 
-  // ── Error states ───────────────────────────────────────────────────────────
-  if (pageState === 'not-found' || pageState === 'not-certified') {
-    return (
-      <div style={{ minHeight: '100vh', background: '#f0e8d8', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter,sans-serif', textAlign: 'center', padding: '40px 24px' }}>
-        <div style={{ fontSize: 40, marginBottom: 16 }}>🎓</div>
-        <h1 style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 22, color: '#0D0D0D', marginBottom: 8 }}>
-          {pageState === 'not-found' ? 'Certificado no encontrado' : 'Certificado no disponible'}
-        </h1>
-        <p style={{ fontSize: 14, color: '#6B6B6B', maxWidth: 360, lineHeight: 1.6 }}>
-          {pageState === 'not-found'
-            ? 'El proyecto solicitado no existe.'
-            : 'Este proyecto aún no cuenta con una certificación o mención de honor.'}
-        </p>
-        <button
-          onClick={() => router.back()}
-          style={{ marginTop: 24, padding: '10px 24px', borderRadius: 999, border: 'none', background: '#0D0D0D', color: '#fff', fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}
-        >
-          Volver
-        </button>
-      </div>
-    )
+  async function handleLogout() {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    await supabaseRef.current.auth.signOut()
+    router.push('/login')
   }
-
-  // ── Diploma ────────────────────────────────────────────────────────────────
-  const isMencion = data!.resultado === 'mencion_honor'
-  const displayDate = fmtDate(data!.approved_at ?? data!.evaluated_at)
 
   return (
     <>
       <style>{`
+        @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
         *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:#f0e8d8;min-height:100vh;font-family:"Satoshi",system-ui,sans-serif;}
-
-        .cert-page{
-          min-height:100vh;display:flex;flex-direction:column;
-          align-items:center;justify-content:center;
-          padding:40px 24px 80px;background:#f0e8d8;
-        }
-
-        /* ── Diploma shell ── */
-        .diploma{
-          position:relative;width:100%;max-width:780px;
-          background:#fffdf9;
-          border:1.5px solid rgba(192,57,43,.3);
-          border-radius:3px;
-          padding:64px 80px 52px;
-          box-shadow:
-            0 2px 0 0 rgba(192,57,43,.15),
-            0 32px 80px -16px rgba(0,0,0,.18),
-            inset 0 0 0 10px rgba(192,57,43,.04);
-          overflow:hidden;text-align:center;
-        }
-        .diploma::before{
-          content:"";position:absolute;inset:14px;
-          border:1px solid rgba(192,57,43,.12);border-radius:1px;
-          pointer-events:none;z-index:0;
-        }
-        .diploma > * { position:relative;z-index:1; }
-
-        .d-eyebrow{font-family:"Satoshi",sans-serif;font-size:9.5px;letter-spacing:.38em;text-transform:uppercase;color:#C0392B;margin-bottom:5px;}
-        .d-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(18px,3.5vw,26px);letter-spacing:.08em;text-transform:uppercase;color:#0D0D0D;margin-bottom:3px;}
-        .d-subtitle{font-family:"Satoshi",sans-serif;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#9a9690;margin-bottom:32px;}
-        .d-badge{
-          display:inline-flex;align-items:center;gap:7px;
-          padding:5px 16px 5px 10px;border-radius:999px;border:1.5px solid;
-          font-family:"Satoshi",sans-serif;font-weight:700;font-size:11px;
-          letter-spacing:.06em;text-transform:uppercase;margin-bottom:28px;
-        }
-        .d-badge.mencion{background:#FEF9C3;border-color:#FBBF24;color:#713F12;}
-        .d-badge.cert{background:#D1FAE5;border-color:#34D399;color:#065F46;}
-        .d-presented{font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-size:17px;color:#9a9690;margin-bottom:10px;}
-        .d-name{font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-size:clamp(38px,7vw,58px);color:#0D0D0D;line-height:1;letter-spacing:-.01em;margin-bottom:7px;}
-        .d-school{font-family:"Satoshi",sans-serif;font-size:13px;color:#6B6B6B;letter-spacing:.05em;margin-bottom:32px;}
-        .d-divider{width:100px;height:1px;background:rgba(192,57,43,.22);margin:0 auto 30px;}
-        .d-for{font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-size:16px;color:#9a9690;margin-bottom:8px;}
-        .d-project{font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-size:clamp(17px,3vw,22px);color:#0D0D0D;line-height:1.4;margin-bottom:6px;}
-        .d-date{font-family:"Satoshi",sans-serif;font-size:11.5px;color:#9a9690;letter-spacing:.08em;margin-bottom:36px;}
-        .d-sigs{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:28px;}
-        .d-sig-line{height:1px;background:rgba(13,13,13,.14);margin-bottom:7px;}
-        .d-sig-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#0D0D0D;}
-        .d-sig-role{font-family:"Satoshi",sans-serif;font-size:10.5px;color:#9a9690;letter-spacing:.06em;text-transform:uppercase;margin-top:2px;}
-
-        /* ── Actions ── */
-        .cert-actions{display:flex;justify-content:center;gap:12px;margin-top:28px;}
-        .cert-btn{padding:12px 28px;border-radius:999px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;transition:all .2s;border:none;}
-        .cert-btn--dl{background:#C0392B;color:#fff;}
-        .cert-btn--dl:hover{background:#a93226;}
-        .cert-btn--back{background:transparent;border:1.5px solid rgba(13,13,13,.18);color:#6B6B6B;}
-        .cert-btn--back:hover{border-color:#0D0D0D;color:#0D0D0D;}
-
-        /* ── Print ── */
-        @media print {
-          html,body{background:#fff !important;}
-          .no-print{display:none !important;}
-          /* Hide all interactive and animated elements */
-          .cert-actions{display:none !important;}
-          button{display:none !important;}
-          /* Hide confetti (fixed-position overlay added by JS) */
-          body > div[style*="position:fixed"],
-          body > div[style*="position: fixed"]{display:none !important;}
-          /* Hide shimmer / motion overlays that aren't diploma content */
-          .diploma > div:first-child:not([class]){display:none !important;}
-          /* SVG decorations outside diploma */
-          svg:not(.diploma svg){display:none !important;}
-          /* Loading spinners */
-          *[style*="border-top-color"]{display:none !important;}
-          /* Freeze all animations */
-          *{animation:none !important;transition:none !important;}
-
-          .cert-page{padding:0;background:#fff !important;min-height:unset;justify-content:flex-start;}
-          .diploma{
-            max-width:100%;width:100%;
-            box-shadow:none !important;
-            border:1.5px solid #C0392B !important;
-            page-break-inside:avoid;
-          }
-        }
-
-        @media(max-width:640px){
-          .diploma{padding:40px 28px 40px;}
-          .d-sigs{grid-template-columns:1fr;gap:20px;}
-        }
+        .nav{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--line);height:62px;display:flex;align-items:center;padding:0 40px;gap:16px;}
+        .btn-sm{padding:7px 14px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:500;color:var(--ink);cursor:pointer;background:none;transition:all .2s;}
+        .btn-sm:hover{border-color:var(--ink);}
+        .btn-export{padding:10px 22px;background:#C0392B;border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .2s;}
+        .btn-export:hover{background:#a93226;}
+        .btn-export:disabled{opacity:.5;cursor:not-allowed;}
+        .main{max-width:1200px;margin:0 auto;padding:40px 40px 80px;}
+        .tbl-wrap{overflow-x:auto;border:1px solid var(--card-border);border-radius:14px;background:var(--card-bg);}
+        table{width:100%;border-collapse:collapse;font-size:12.5px;}
+        th{padding:11px 14px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:600;border-bottom:1px solid var(--line);text-align:left;background:var(--bg-2);white-space:nowrap;}
+        td{padding:11px 14px;border-bottom:1px solid var(--line-soft);color:var(--ink-2);vertical-align:middle;}
+        tr:last-child td{border-bottom:none;}
+        tbody tr:nth-child(even) td{background:var(--bg-2);}
+        .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+        .filter-btn{padding:6px 14px;border-radius:999px;border:1.5px solid var(--line);font-size:12px;font-weight:600;cursor:pointer;background:none;color:var(--mute);transition:all .15s;}
+        .filter-btn:hover,.filter-btn.active{background:var(--ink);border-color:var(--ink);color:#fff;}
+        .col-toggle{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;background:none;color:var(--mute);transition:all .15s;}
+        .col-toggle:hover{border-color:var(--ink);color:var(--ink);}
       `}</style>
 
-      <div className="cert-page">
+      <nav className="nav">
+        <a href="/admin" style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 16, color: 'var(--ink)', textDecoration: 'none' }}>Big Family</a>
+        <span style={{ fontSize: 12, color: 'var(--mute)' }}>→ Reporte PDF</span>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 10 }}>
+          <button className="btn-sm" onClick={() => router.push('/admin')}>Panel Admin</button>
+          <button className="btn-sm" onClick={handleLogout}>Salir</button>
+        </div>
+      </nav>
 
-        {/* ── Diploma ── */}
-        <motion.div
-          className="diploma"
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 18 }}
-        >
-          {/* Gold shimmer sweep */}
-          <Shimmer trigger={shimmer} />
+      <m.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
+          <div>
+            <h1 style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 4 }}>Reporte Global</h1>
+            <p style={{ fontSize: 13, color: 'var(--mute)' }}>{displayed.length} estudiante{displayed.length !== 1 ? 's' : ''} · {selectedSchoolName}</p>
+          </div>
+          <m.button
+            className="btn-export"
+            onClick={handleExport}
+            disabled={loading || exporting || displayed.length === 0}
+            title={displayed.length === 0 ? 'No hay estudiantes para exportar' : undefined}
+            whileHover={loading || displayed.length === 0 ? undefined : { scale: 1.02 }}
+            whileTap={loading || displayed.length === 0 ? undefined : { scale: 0.97 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+          >
+            {exporting ? 'Generando PDF…' : '↓ Exportar Reporte PDF'}
+          </m.button>
+        </div>
 
-          {/* All inner elements stagger in */}
-          <motion.div variants={containerVariants} initial="hidden" animate="visible">
+        {/* School filter */}
+        {!loading && (
+          <div className="filter-row">
+            <button className={`filter-btn ${selectedSchool === 'all' ? 'active' : ''}`} onClick={() => setSelectedSchool('all')}>Todos los colegios</button>
+            {schools.map(s => (
+              <button key={s.id} className={`filter-btn ${selectedSchool === s.id ? 'active' : ''}`} onClick={() => setSelectedSchool(s.id)}>{s.name}</button>
+            ))}
+          </div>
+        )}
 
-            {/* 1 · Logo */}
-            <motion.div variants={itemVariants} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10, marginBottom: 24 }}>
-              <svg width="26" height="26" viewBox="0 0 52 52" fill="none">
-                <circle cx="26" cy="10" r="6" fill="#C0392B"/>
-                <path d="M26 16 L44 48 H8 Z" fill="#0D0D0D"/>
-                <circle cx="9" cy="18" r="4" fill="#9a9690"/>
-                <circle cx="43" cy="18" r="4" fill="#9a9690"/>
-              </svg>
-              <span style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 16, color: '#0D0D0D', letterSpacing: '.02em' }}>Big Family</span>
-            </motion.div>
-
-            {/* 2 · Heading */}
-            <motion.div variants={itemVariants}>
-              <p className="d-eyebrow">The Big Leader Program</p>
-              <h1 className="d-title">Certificado de Liderazgo</h1>
-              <p className="d-subtitle">Programa de Formación de Líderes · Colombia</p>
-            </motion.div>
-
-            {/* 3 · resultado badge */}
-            <motion.div variants={itemVariants} style={{ display: 'flex', justifyContent: 'center' }}>
-              <span className={`d-badge ${isMencion ? 'mencion' : 'cert'}`}>
-                <span style={{ fontSize: 15 }}>{isMencion ? '🏆' : '✓'}</span>
-                {isMencion ? 'Mención de Honor' : 'Certificado'}
-              </span>
-            </motion.div>
-
-            {/* 4 · Student name */}
-            <motion.div variants={itemVariants}>
-              <p className="d-presented">se otorga con orgullo a</p>
-              <h2 className="d-name">{data!.student_name}</h2>
-              <p className="d-school">{data!.school_name}</p>
-            </motion.div>
-
-            {/* Divider */}
-            <motion.div variants={itemVariants}>
-              <div className="d-divider" />
-            </motion.div>
-
-            {/* 5 · Project */}
-            <motion.div variants={itemVariants}>
-              <p className="d-for">por haber completado con éxito el proyecto de liderazgo</p>
-              <p className="d-project">"{data!.project_title}"</p>
-              <p className="d-date">Aprobado el {displayDate}</p>
-            </motion.div>
-
-            {/* 6 · Signatures */}
-            <motion.div variants={itemVariants} className="d-sigs">
-              <div>
-                <div className="d-sig-line" />
-                <div className="d-sig-name">Luis Barrios</div>
-                <div className="d-sig-role">Fundador · Big Family</div>
-              </div>
-              <div>
-                <div className="d-sig-line" />
-                <div className="d-sig-name">{data!.coordinator_name}</div>
-                <div className="d-sig-role">Coordinador del Programa</div>
-              </div>
-            </motion.div>
-
-          </motion.div>
-
-          {/* 7 · Wax seal — animates in last */}
-          <WaxSeal />
-
-        </motion.div>
-
-        {/* Actions */}
-        <div className="cert-actions no-print">
-          <button className="cert-btn cert-btn--dl" onClick={() => window.print()}>
-            Descargar PDF
-          </button>
-          <button className="cert-btn cert-btn--back" onClick={() => router.back()}>
-            Volver
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
+          <button type="button" className="col-toggle" onClick={() => setShowAllCols(s => !s)}>
+            {showAllCols ? '↑ Menos columnas' : '↓ Mostrar todas las columnas'}
           </button>
         </div>
 
-      </div>
+        <div className="tbl-wrap">
+          {loading ? (
+            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[1,2,3,4,5].map(i => <Sk key={i} h={20} r={6} />)}
+            </div>
+          ) : displayed.length === 0 ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--mute)', fontSize: 13 }}>Sin datos.</div>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Colegio</th>
+                  <th>Nivel</th>
+                  <th>XP Total</th>
+                  <th>Módulos</th>
+                  <th>Capstone</th>
+                  {showAllCols && <><th>Badges</th><th>Proyecto</th><th>Metas</th></>}
+                </tr>
+              </thead>
+              <tbody>
+                {displayed.map(s => (
+                  <tr key={s.id}>
+                    <td style={{ fontWeight: 500 }}>{s.full_name}</td>
+                    <td style={{ color: 'var(--mute)', fontSize: 12 }}>{s.school_name}</td>
+                    <td>{s.school_level === 'junior' ? 'Junior' : 'Senior'}</td>
+                    <td style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, color: '#C0392B' }}>{s.total_xp.toLocaleString()}</td>
+                    <td style={{ textAlign: 'center' }}>{s.modules_completed}</td>
+                    <td>{s.capstone_resultado ? <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: 'rgba(34,197,94,.15)', color: '#065F46' }}>{s.capstone_resultado}</span> : '—'}</td>
+                    {showAllCols && <>
+                      <td style={{ textAlign: 'center' }}>{s.badges_earned}</td>
+                      <td style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.project_title ?? '—'}</td>
+                      <td style={{ textAlign: 'center' }}>{s.goals_completed}/{s.goals_active + s.goals_completed}</td>
+                    </>}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </m.div>
     </>
   )
 }

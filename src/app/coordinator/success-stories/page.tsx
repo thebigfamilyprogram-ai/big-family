@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
 
 interface Story {
@@ -158,12 +158,12 @@ export default function CoordinatorSuccessStoriesPage() {
         </div>
       </nav>
 
-      <motion.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}>
+      <m.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}>
         <h1 style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 24 }}>Historias de Éxito</h1>
 
         <AnimatePresence>
           {showCreate && (
-            <motion.div key="form" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={springNatural} style={{ overflow: 'hidden', marginBottom: 20 }}>
+            <m.div key="form" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={springNatural} style={{ overflow: 'hidden', marginBottom: 20 }}>
               <div className="panel" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 <div className="field" style={{ gridColumn: '1 / -1' }}>
                   <label>Estudiante *</label>
@@ -187,7 +187,7 @@ export default function CoordinatorSuccessStoriesPage() {
                   <button onClick={() => setShowCreate(false)} style={{ padding: '10px 18px', border: '1px solid var(--line)', borderRadius: 10, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--mute)' }}>Cancelar</button>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 
@@ -224,7 +224,7 @@ export default function CoordinatorSuccessStoriesPage() {
               <p style={{ fontSize: 13, color: 'var(--mute)' }}>Haz clic en una historia para ver detalles y publicarla.</p>
             ) : (
               <AnimatePresence mode="wait">
-                <motion.div key={selected.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={springNatural}>
+                <m.div key={selected.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={springNatural}>
                   {selected.cover_url && <img src={selected.cover_url} alt="" style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 10, marginBottom: 12 }} />}
                   <div style={{ fontSize: 13, color: 'var(--ink-2)', lineHeight: 1.6, marginBottom: 14, maxHeight: 180, overflow: 'auto' }}>{selected.story}</div>
                   <div style={{ fontSize: 12, color: 'var(--mute)', lineHeight: 2, marginBottom: 14 }}>
@@ -254,12 +254,12 @@ export default function CoordinatorSuccessStoriesPage() {
                       Ver página
                     </a>
                   </div>
-                </motion.div>
+                </m.div>
               </AnimatePresence>
             )}
           </div>
         </div>
-      </motion.div>
+      </m.div>
     </>
   )
 }

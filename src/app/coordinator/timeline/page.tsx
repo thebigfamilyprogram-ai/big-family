@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { showToast, ToastContainer } from '@/components/Toast'
 
@@ -262,7 +262,7 @@ export default function CoordinatorTimelinePage() {
         {/* Add/Edit form — AnimatePresence slide down */}
         <AnimatePresence>
           {showForm && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, height: 0, marginBottom: 0 }}
               animate={{ opacity: 1, height: 'auto', marginBottom: 32 }}
               exit={{ opacity: 0, height: 0, marginBottom: 0 }}
@@ -305,7 +305,7 @@ export default function CoordinatorTimelinePage() {
                   </button>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 
@@ -323,7 +323,7 @@ export default function CoordinatorTimelinePage() {
                 const isFlashing = flashId === ev.id
 
                 return (
-                  <motion.div
+                  <m.div
                     key={ev.id}
                     layout
                     initial={{ opacity: 0, y: 20 }}
@@ -356,7 +356,7 @@ export default function CoordinatorTimelinePage() {
                         {deletingId === ev.id ? '…' : 'Eliminar'}
                       </button>
                     </div>
-                  </motion.div>
+                  </m.div>
                 )
               })}
             </AnimatePresence>

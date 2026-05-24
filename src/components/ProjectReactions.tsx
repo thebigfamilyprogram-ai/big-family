@@ -1,7 +1,7 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 
 const EMOJIS = ['🔥', '💡', '❤️', '👏', '⭐'] as const
@@ -107,7 +107,7 @@ export default function ProjectReactions({ projectId, compact = false }: Props) 
           onMouseEnter={() => setTooltip(r.emoji)}
           onMouseLeave={() => setTooltip(null)}
         >
-          <motion.button
+          <m.button
             type="button"
             onClick={() => handleToggle(r.emoji)}
             style={{
@@ -123,7 +123,7 @@ export default function ProjectReactions({ projectId, compact = false }: Props) 
           >
             <span style={{ fontSize, lineHeight: 1 }}>{r.emoji}</span>
             <AnimatePresence mode="wait">
-              <motion.span
+              <m.span
                 key={r.count}
                 initial={pref ? false : { opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -132,14 +132,14 @@ export default function ProjectReactions({ projectId, compact = false }: Props) 
                 style={{ fontSize: countSize, fontWeight: 600, color: r.byMe ? '#C0392B' : 'var(--mute,#6B6B6B)', minWidth: 10, textAlign: 'center' }}
               >
                 {r.count}
-              </motion.span>
+              </m.span>
             </AnimatePresence>
-          </motion.button>
+          </m.button>
 
           {/* Tooltip */}
           <AnimatePresence>
             {tooltip === r.emoji && r.users.length > 0 && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: 4, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 4, scale: 0.95 }}
@@ -154,7 +154,7 @@ export default function ProjectReactions({ projectId, compact = false }: Props) 
               >
                 {r.users.slice(0, 5).join(', ')}{r.users.length > 5 ? ` +${r.users.length - 5}` : ''}
                 <div style={{ position: 'absolute', bottom: -4, left: '50%', transform: 'translateX(-50%)', width: 8, height: 8, background: 'var(--ink,#0D0D0D)', clipPath: 'polygon(0 0, 100% 0, 50% 100%)' }} />
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>
@@ -163,7 +163,7 @@ export default function ProjectReactions({ projectId, compact = false }: Props) 
       {/* Picker: expand button → emoji palette */}
       <AnimatePresence>
         {expanded && (
-          <motion.div
+          <m.div
             key="picker"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -172,7 +172,7 @@ export default function ProjectReactions({ projectId, compact = false }: Props) 
             style={{ display: 'flex', gap: compact ? 3 : 4, background: 'var(--card-bg,#fff)', border: '1px solid var(--line)', borderRadius: 999, padding: compact ? '3px 6px' : '5px 8px', boxShadow: '0 4px 16px -4px rgba(0,0,0,.12)' }}
           >
             {reactions.filter(r => !r.byMe).map(r => (
-              <motion.button
+              <m.button
                 key={r.emoji}
                 type="button"
                 onClick={() => handleToggle(r.emoji)}
@@ -183,14 +183,14 @@ export default function ProjectReactions({ projectId, compact = false }: Props) 
                 title={r.emoji}
               >
                 {r.emoji}
-              </motion.button>
+              </m.button>
             ))}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
       {/* + Reaccionar trigger */}
-      <motion.button
+      <m.button
         type="button"
         onClick={() => setExpanded(o => !o)}
         style={{
@@ -208,7 +208,7 @@ export default function ProjectReactions({ projectId, compact = false }: Props) 
       >
         <span style={{ fontSize: compact ? 12 : 14 }}>+</span>
         {!compact && <span>Reaccionar</span>}
-      </motion.button>
+      </m.button>
 
     </div>
   )

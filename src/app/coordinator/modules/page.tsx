@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { showToast, ToastContainer } from '@/components/Toast'
 
@@ -59,12 +59,12 @@ function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?
 // ── Approval / rejection modals ───────────────────────────────────────────────
 function ApproveModal({ mod, onConfirm, onClose, loading }: { mod: ModuleRow; onConfirm: () => void; onClose: () => void; loading: boolean }) {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
       onClick={() => { if (!loading) onClose() }}
     >
-      <motion.div
+      <m.div
         initial={{ scale: 0.92, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.92, opacity: 0, y: 16 }} transition={{ type: 'spring', stiffness: 280, damping: 26 }}
         onClick={e => e.stopPropagation()}
@@ -79,20 +79,20 @@ function ApproveModal({ mod, onConfirm, onClose, loading }: { mod: ModuleRow; on
             {loading ? 'Publicando…' : 'Sí, publicar'}
           </button>
         </div>
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   )
 }
 
 function RejectModal({ mod, onConfirm, onClose, loading }: { mod: ModuleRow; onConfirm: (reason: string) => void; onClose: () => void; loading: boolean }) {
   const [reason, setReason] = useState('')
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
       onClick={() => { if (!loading) onClose() }}
     >
-      <motion.div
+      <m.div
         initial={{ scale: 0.92, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.92, opacity: 0, y: 16 }} transition={{ type: 'spring', stiffness: 280, damping: 26 }}
         onClick={e => e.stopPropagation()}
@@ -112,8 +112,8 @@ function RejectModal({ mod, onConfirm, onClose, loading }: { mod: ModuleRow; onC
             {loading ? 'Rechazando…' : 'Confirmar rechazo'}
           </button>
         </div>
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   )
 }
 
@@ -515,7 +515,7 @@ export default function CoordinatorModulesPage() {
           ) : (
             <div className="cm-feed">
               {retryRequests.map((req, i) => (
-                <motion.div
+                <m.div
                   key={req.id}
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -546,7 +546,7 @@ export default function CoordinatorModulesPage() {
                       )}
                     </button>
                   </div>
-                </motion.div>
+                </m.div>
               ))}
             </div>
           )
@@ -589,7 +589,7 @@ export default function CoordinatorModulesPage() {
         ) : (
           <div className="cm-feed">
             {currentList.map((mod, i) => (
-              <motion.div
+              <m.div
                 key={mod.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -603,7 +603,7 @@ export default function CoordinatorModulesPage() {
                   onReject={tab === 'pending' ? setRejecting : undefined}
                   onUnpublish={tab === 'published' ? handleUnpublish : undefined}
                 />
-              </motion.div>
+              </m.div>
             ))}
           </div>
         ))}

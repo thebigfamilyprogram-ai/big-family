@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 
 // SQL to run in Supabase:
@@ -570,7 +570,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
         {/* ── RIGHT: sidebar + preview ── */}
         <AnimatePresence>
           {previewOpen && (
-            <motion.div
+            <m.div
               key="ne-right"
               className="ne-right"
               initial={{ opacity: 0, x: 24 }}
@@ -705,7 +705,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 

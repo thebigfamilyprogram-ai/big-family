@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import ExpositorSidebar from '@/components/ExpositorSidebar'
 
@@ -158,7 +158,7 @@ export default function ExpositorPage() {
       <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
         <ExpositorSidebar activePage="modules" userName={userName} userInitial={userInitial} />
 
-        <motion.div
+        <m.div
           className="exp-content"
           initial={pref ? false : { opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -170,7 +170,7 @@ export default function ExpositorPage() {
               <div className="exp-title">Mis Módulos</div>
               <div className="exp-subtitle">Panel del Expositor · {userName}</div>
             </div>
-            <motion.button
+            <m.button
               className="btn-new"
               onClick={() => router.push('/expositor/modules/new')}
               whileHover={pref ? undefined : { scale: 1.02 }}
@@ -178,7 +178,7 @@ export default function ExpositorPage() {
               transition={{ type: 'spring', stiffness: 200, damping: 22 }}
             >
               + Nuevo módulo
-            </motion.button>
+            </m.button>
           </div>
 
           {/* Stats */}
@@ -199,7 +199,7 @@ export default function ExpositorPage() {
                 { label: 'En revisión', num: stats.pending,   accent: false                 },
                 { label: 'Rechazados',  num: stats.rejected,  accent: stats.rejected > 0    },
               ] as { label: string; num: number; accent: boolean }[]).map((s, i) => (
-                <motion.div
+                <m.div
                   key={s.label}
                   className="stat-card"
                   initial={pref ? false : { opacity: 0, scale: 0.96 }}
@@ -208,7 +208,7 @@ export default function ExpositorPage() {
                 >
                   <div className="stat-label">{s.label}</div>
                   <div className={`stat-num${s.accent ? ' accent' : ''}`}>{s.num}</div>
-                </motion.div>
+                </m.div>
               ))}
             </div>
           )}
@@ -239,7 +239,7 @@ export default function ExpositorPage() {
           ) : (
             <div className="mod-list">
               {modules.map((mod, i) => (
-                <motion.div
+                <m.div
                   key={mod.id}
                   className="mod-card"
                   initial={pref ? false : { opacity: 0, y: 12 }}
@@ -270,22 +270,22 @@ export default function ExpositorPage() {
                       <strong>Motivo de rechazo:</strong> {mod.rejection_reason}
                     </div>
                   )}
-                </motion.div>
+                </m.div>
               ))}
             </div>
           )}
-        </motion.div>
+        </m.div>
       </div>
 
       {/* Delete confirmation modal */}
       <AnimatePresence>
         {deleteTarget && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
             onClick={() => { if (!deleting) setDeleteTarget(null) }}
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.92, opacity: 0, y: 16 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.92, opacity: 0, y: 16 }}
@@ -321,8 +321,8 @@ export default function ExpositorPage() {
                   {deleting ? 'Eliminando…' : 'Sí, eliminar'}
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>

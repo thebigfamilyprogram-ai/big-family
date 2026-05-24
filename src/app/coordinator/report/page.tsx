@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 
 interface StudentReport {
   id: string
@@ -203,13 +203,13 @@ export default function CoordinatorReportPage() {
         </div>
       </nav>
 
-      <motion.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}>
+      <m.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 28 }}>
           <div>
             <h1 className="page-h">Reporte de Estudiantes</h1>
             <p className="page-sub">{schoolName} · {students.length} estudiante{students.length !== 1 ? 's' : ''}</p>
           </div>
-          <motion.button
+          <m.button
             className="btn-export"
             onClick={handleExport}
             disabled={loading || exporting || students.length === 0}
@@ -219,7 +219,7 @@ export default function CoordinatorReportPage() {
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
           >
             {exporting ? 'Generando PDF…' : '↓ Exportar Reporte PDF'}
-          </motion.button>
+          </m.button>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
@@ -270,7 +270,7 @@ export default function CoordinatorReportPage() {
             </table>
           )}
         </div>
-      </motion.div>
+      </m.div>
     </>
   )
 }

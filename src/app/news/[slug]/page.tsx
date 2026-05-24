@@ -3,104 +3,83 @@
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
-import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { showToast, ToastContainer } from '@/components/Toast'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 
-interface LayoutOptions {
-  coverStyle:   'full' | 'lateral'
-  galleryStyle: 'grid' | 'carousel'
+interface NewsItem {
+  id:           string
+  title:        string
+  slug:         string
+  content:      string
+  cover_url:    string | null
+  published_at: string | null
+  author_name:  string
+  featured:     boolean
 }
-interface HighlightStat {
-  number:      string
-  label:       string
-  description: string
-}
-interface Article {
-  id:             string
-  title:          string
-  content:        string
-  cover_url:      string | null
-  gallery_urls:   string[]
-  published_at:   string | null
-  author_name:    string
-  layout_options: LayoutOptions | null
-  featured_quote: string | null
-  accent_color:   string | null
-  highlight_stat: HighlightStat | null
+
+function excerpt(html: string, max = 120): string {
+  const text = html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
+  return text.length > max ? text.slice(0, max).trimEnd() + '…' : text
 }
 
 function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?: number }) {
   return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
 }
 
-export default function ArticlePage() {
-  const { slug }    = useParams<{ slug: string }>()
-  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
-  const [article,      setArticle]      = useState<Article | null>(null)
-  const [loading,      setLoading]      = useState(true)
-  const [notFound,     setNotFound]     = useState(false)
-  const [shareSuccess, setShareSuccess] = useState(false)
+function PlaceholderImg({ size = 40 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ opacity: .2 }}>
+      <rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="1.5"/>
+      <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.3"/>
+      <path d="M3 15l5-4 4 4 3-2.5 6 5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
 
-  async function handleShare() {
-    const url   = window.location.href
-    const title = article?.title ?? 'Big Family'
-    if (navigator.share) {
-      try {
-        await navigator.share({ title, url })
-        setShareSuccess(true)
-        setTimeout(() => setShareSuccess(false), 1500)
-      } catch { /* user cancelled */ }
-    } else {
-      try {
-        await navigator.clipboard.writeText(url)
-        setShareSuccess(true)
-        setTimeout(() => setShareSuccess(false), 1500)
-        showToast('success', 'Enlace copiado al portapapeles')
-      } catch {
-        showToast('error', 'No se pudo copiar el enlace')
-      }
-    }
-  }
+export default function NewsListPage() {
+  const pref        = useReducedMotion()
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
+  const [articles,  setArticles]  = useState<NewsItem[]>([])
+  const [loading,   setLoading]   = useState(true)
+  const [readSlugs, setReadSlugs] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
     if (!supabase) return
     async function load() {
-      const { data } = await supabase
+      const { data: rows } = await supabase
         .from('news')
-        .select('id, title, content, cover_url, gallery_urls, published_at, author_id, layout_options, featured_quote, accent_color, highlight_stat')
-        .eq('slug', slug)
+        .select('id, title, slug, content, cover_url, published_at, author_id, featured')
         .eq('published', true)
-        .maybeSingle()
+        .order('published_at', { ascending: false })
 
-      if (!data) { setNotFound(true); setLoading(false); return }
+      if (!rows || rows.length === 0) { setLoading(false); return }
 
-      const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', data.author_id).maybeSingle()
-      setArticle({
-        ...data,
-        gallery_urls:   data.gallery_urls ?? [],
-        author_name:    profile?.full_name ?? '—',
-        layout_options: data.layout_options ?? null,
-        featured_quote: data.featured_quote ?? null,
-        accent_color:   data.accent_color ?? null,
-        highlight_stat: data.highlight_stat ?? null,
-      })
-      setLoading(false)
+      const authorIds = [...new Set(rows.map((r: { author_id: string }) => r.author_id))]
+      const { data: profiles } = await supabase.from('profiles').select('id, full_name').in('id', authorIds)
+      const pMap: Record<string, string> = {}
+      profiles?.forEach((p: { id: string; full_name: string | null }) => { pMap[p.id] = p.full_name ?? '—' })
 
-      // Record read — best-effort, ignore errors if table doesn't exist
+      setArticles(rows.map((r: { id: string; title: string; slug: string; content: string; cover_url: string | null; published_at: string | null; author_id: string; featured: boolean | null }) => ({ ...r, author_name: pMap[r.author_id] ?? '—', featured: r.featured ?? false })))
+
+      // Fetch reads — best-effort
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        await supabase.from('news_reads').upsert(
-          { user_id: user.id, news_slug: slug, read_at: new Date().toISOString() },
-          { onConflict: 'user_id,news_slug' }
-        )
+        const { data: reads } = await supabase
+          .from('news_reads')
+          .select('news_slug')
+          .eq('user_id', user.id)
+        if (reads) setReadSlugs(new Set(reads.map((r: { news_slug: string }) => r.news_slug)))
       }
+
+      setLoading(false)
     }
     load()
-  }, [slug]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const featured  = articles.find(a => a.featured) ?? null
+  const rest      = articles.filter(a => !a.featured)
 
   return (
     <>
@@ -110,82 +89,78 @@ export default function ArticlePage() {
         html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;color:#0D0D0D;}
 
         /* ── Nav ── */
-        .art-nav{position:sticky;top:0;z-index:30;background:rgba(245,243,239,.88);backdrop-filter:saturate(150%) blur(16px);border-bottom:1px solid rgba(13,13,13,.08);height:60px;display:flex;align-items:center;padding:0 40px;gap:24px;}
-        .art-brand{display:flex;align-items:center;gap:8px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;text-decoration:none;color:#0D0D0D;}
-        .art-back{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#6B6B6B;text-decoration:none;transition:color .15s;}
-        .art-back:hover{color:#0D0D0D;}
-        .art-share{margin-left:auto;display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:999px;background:rgba(13,13,13,.06);border:none;font-size:13px;font-family:inherit;color:#0D0D0D;cursor:pointer;transition:background .3s,color .3s;}
-        .art-share:hover{background:rgba(13,13,13,.1);}
+        .nl-nav{position:sticky;top:0;z-index:30;background:rgba(245,243,239,.88);backdrop-filter:saturate(150%) blur(16px);border-bottom:1px solid rgba(13,13,13,.08);height:60px;display:flex;align-items:center;padding:0 40px;gap:24px;}
+        .nl-brand{display:flex;align-items:center;gap:8px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;text-decoration:none;color:#0D0D0D;}
+        .nl-nav-links{display:flex;gap:28px;flex:1;justify-content:center;}
+        .nl-nav-links a{font-size:13.5px;color:#6B6B6B;text-decoration:none;transition:color .15s;}
+        .nl-nav-links a:hover{color:#0D0D0D;}
+        .nl-nav-links a.active{color:#C0392B;font-weight:600;}
 
-        /* ── Cover — full style ── */
-        .art-cover-full{width:100%;max-height:500px;overflow:hidden;background:linear-gradient(135deg,#ece9e4,#e2ddd8);}
-        .art-cover-full img{width:100%;height:100%;object-fit:cover;display:block;max-height:500px;}
+        /* ── Main ── */
+        .nl-main{max-width:1100px;margin:0 auto;padding:60px 40px 100px;}
 
-        /* ── Standard article (full cover) ── */
-        .art-main{max-width:720px;margin:0 auto;padding:52px 24px 100px;}
-        .art-meta{display:flex;align-items:center;gap:14px;font-size:13px;color:#9a9690;margin-bottom:16px;flex-wrap:wrap;}
-        .art-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(28px,4.5vw,48px);letter-spacing:-.025em;line-height:1.1;color:#0D0D0D;margin-bottom:32px;}
+        /* ── Hero ── */
+        .nl-hero{text-align:center;margin-bottom:60px;}
+        .nl-hero-eyebrow{font-size:11px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:#C0392B;margin-bottom:12px;}
+        .nl-hero-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(36px,6vw,64px);letter-spacing:-.03em;color:#0D0D0D;margin-bottom:14px;line-height:1.05;}
+        .nl-hero-sub{font-size:17px;color:#6B6B6B;line-height:1.6;max-width:540px;margin:0 auto;}
 
-        /* ── Lateral layout ── */
-        .art-lateral-wrap{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 400px;min-height:520px;}
-        .art-lateral-text{padding:52px 48px 80px 40px;}
-        .art-lateral-img{overflow:hidden;background:linear-gradient(135deg,#e8e4df,#ddd9d3);position:relative;}
-        .art-lateral-img img{width:100%;height:100%;object-fit:cover;display:block;position:sticky;top:60px;max-height:calc(100vh - 60px);}
-        .art-lateral-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#9a9690;font-size:13px;min-height:400px;}
+        /* ── Featured card ── */
+        .nl-featured{display:grid;grid-template-columns:1fr 420px;border-radius:24px;overflow:hidden;background:#fff;border:1px solid rgba(13,13,13,.07);box-shadow:0 4px 32px -8px rgba(13,13,13,.12);margin-bottom:56px;text-decoration:none;color:inherit;transition:box-shadow .2s;}
+        .nl-featured:hover{box-shadow:0 12px 48px -12px rgba(13,13,13,.18);}
+        .nl-featured-body{padding:44px 44px 48px;}
+        .nl-featured-eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#C0392B;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+        .nl-featured-eyebrow span{display:inline-block;width:6px;height:6px;border-radius:50%;background:#C0392B;}
+        .nl-featured-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(24px,3vw,36px);letter-spacing:-.025em;line-height:1.15;color:#0D0D0D;margin-bottom:16px;}
+        .nl-featured-excerpt{font-size:16px;color:#6B6B6B;line-height:1.65;margin-bottom:20px;}
+        .nl-featured-meta{font-size:12.5px;color:#9a9690;}
+        .nl-featured-cta{display:inline-flex;align-items:center;gap:6px;margin-top:24px;padding:10px 20px;background:#C0392B;color:#fff;border-radius:999px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;text-decoration:none;transition:background .2s;}
+        .nl-featured-cta:hover{background:#a93226;}
+        .nl-featured-img{overflow:hidden;background:linear-gradient(135deg,#ece9e4,#e2ddd8);}
+        .nl-featured-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease;}
+        .nl-featured:hover .nl-featured-img img{transform:scale(1.04);}
+        .nl-featured-img-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;min-height:340px;}
 
-        /* ── Rich content ── */
-        .art-content{font-size:17px;line-height:1.8;color:#2D2D2D;--art-accent:#C0392B;}
-        .art-content h2{font-family:"Satoshi",sans-serif;font-weight:700;font-size:26px;margin:32px 0 10px;color:var(--art-accent);letter-spacing:-.015em;}
-        .art-content h3{font-family:"Satoshi",sans-serif;font-weight:700;font-size:20px;margin:24px 0 8px;color:var(--art-accent);}
-        .art-content p{margin-bottom:18px;}
-        .art-content ul,.art-content ol{padding-left:24px;margin-bottom:18px;}
-        .art-content li{margin-bottom:6px;}
-        .art-content strong{font-weight:700;color:#0D0D0D;}
-        .art-content em{font-style:italic;}
+        /* ── Section divider ── */
+        .nl-section-label{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#9a9690;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid rgba(13,13,13,.08);}
 
-        /* ── Extra blocks ── */
-        .art-highlight-stat{text-align:center;padding:48px 24px;margin:40px 0;border-radius:16px;}
-        .art-highlight-stat-num{font-family:"Satoshi",sans-serif;font-weight:900;line-height:1;letter-spacing:-.04em;font-size:clamp(56px,10vw,88px);}
-        .art-highlight-stat-label{font-family:"Satoshi",sans-serif;font-weight:700;font-size:20px;margin-top:10px;color:#0D0D0D;}
-        .art-highlight-stat-desc{font-size:16px;color:#6B6B6B;margin-top:6px;line-height:1.5;}
-        .art-featured-quote{padding:20px 24px;margin:32px 0;border-radius:0 12px 12px 0;font-size:20px;font-style:italic;line-height:1.6;color:#2D2D2D;}
+        /* ── Card grid ── */
+        .nl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;}
+        .nl-card{border-radius:20px;overflow:hidden;background:#fff;border:1px solid rgba(13,13,13,.07);box-shadow:0 2px 16px -6px rgba(13,13,13,.09);transition:box-shadow .2s,transform .2s;text-decoration:none;display:block;color:inherit;}
+        .nl-card:hover{box-shadow:0 8px 32px -8px rgba(13,13,13,.16);transform:translateY(-2px);}
+        .nl-card-cover{aspect-ratio:16/9;overflow:hidden;background:linear-gradient(135deg,#ece9e4,#e8e4df);}
+        .nl-card-cover img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s ease;}
+        .nl-card:hover .nl-card-cover img{transform:scale(1.04);}
+        .nl-card-cover-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+        .nl-card-body{padding:22px 22px 24px;}
+        .nl-card-date{font-size:11.5px;color:#9a9690;letter-spacing:.06em;margin-bottom:8px;}
+        .nl-card-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:17px;color:#0D0D0D;margin-bottom:10px;line-height:1.35;}
+        .nl-card-excerpt{font-size:13.5px;color:#6B6B6B;line-height:1.6;}
+        .nl-card-meta{margin-top:14px;font-size:12px;color:#9a9690;}
 
-        /* ── Gallery ── */
-        .art-gallery{max-width:1100px;margin:0 auto;padding:0 24px 80px;}
-        .art-gallery-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:20px;color:#0D0D0D;margin-bottom:20px;}
-        .art-gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-        .art-gallery-img{aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:rgba(13,13,13,.05);}
-        .art-gallery-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease;}
-        .art-gallery-img:hover img{transform:scale(1.04);}
-        .art-gallery-carousel{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:16px;scrollbar-width:thin;scrollbar-color:rgba(13,13,13,.2) transparent;}
-        .art-gallery-carousel::-webkit-scrollbar{height:4px;}
-        .art-gallery-carousel::-webkit-scrollbar-track{background:transparent;}
-        .art-gallery-carousel::-webkit-scrollbar-thumb{background:rgba(13,13,13,.2);border-radius:999px;}
-        .art-gallery-carousel-item{flex-shrink:0;width:380px;scroll-snap-align:start;}
-        .art-gallery-carousel-item img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;display:block;}
-        .art-divider{max-width:1100px;margin:0 auto;height:1px;background:rgba(13,13,13,.08);}
+        /* ── Read badge ── */
+        .nl-read-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;background:rgba(34,197,94,.1);color:#16a34a;font-size:10.5px;font-weight:600;letter-spacing:.04em;vertical-align:middle;margin-left:6px;flex-shrink:0;}
 
-        /* ── Not found ── */
-        .art-not-found{text-align:center;padding:120px 24px;font-family:"Satoshi",sans-serif;}
+        /* ── Empty ── */
+        .nl-empty{text-align:center;padding:80px 20px;color:#9a9690;}
 
         @media(max-width:960px){
-          .art-lateral-wrap{grid-template-columns:1fr;}
-          .art-lateral-img{min-height:300px;max-height:380px;order:-1;}
-          .art-lateral-img img{position:static;max-height:380px;}
-          .art-lateral-text{padding:36px 24px 60px;}
-          .art-gallery-carousel-item{width:280px;}
+          .nl-featured{grid-template-columns:1fr;}
+          .nl-featured-img{min-height:280px;order:-1;}
+          .nl-featured-body{padding:32px 28px 36px;}
+          .nl-grid{grid-template-columns:repeat(2,1fr);}
+          .nl-main{padding:48px 24px 80px;}
         }
         @media(max-width:640px){
-          .art-gallery-grid{grid-template-columns:repeat(2,1fr);}
-          .art-nav{padding:0 20px;}
-          .art-main{padding:36px 20px 80px;}
-          .art-lateral-text{padding:28px 20px 60px;}
-          .art-gallery{padding:0 16px 60px;}
+          .nl-grid{grid-template-columns:1fr;}
+          .nl-nav-links{display:none;}
+          .nl-nav{padding:0 20px;}
         }
       `}</style>
 
-      <nav className="art-nav">
-        <a href="/" className="art-brand">
+      {/* Nav */}
+      <nav className="nl-nav">
+        <a href="/" className="nl-brand">
           <svg width="20" height="20" viewBox="0 0 52 52" fill="none">
             <circle cx="26" cy="10" r="6" fill="#0D0D0D"/>
             <path d="M26 16 L44 48 H8 Z" fill="#0D0D0D"/>
@@ -194,203 +169,161 @@ export default function ArticlePage() {
           </svg>
           Big Family
         </a>
-        <a href="/news" className="art-back">
-          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M9 12L4 7l5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          Noticias
-        </a>
-        {!loading && article && (
-          <button
-            className="art-share"
-            onClick={handleShare}
-            style={shareSuccess ? { background: 'rgba(34,197,94,.12)', color: '#16a34a' } : undefined}
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              {shareSuccess ? (
-                <motion.span
-                  key="check"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0, opacity: 0 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M2 7l4 4 6-6" stroke="#16a34a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  Copiado
-                </motion.span>
-              ) : (
-                <motion.span
-                  key="share"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}
-                  initial={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0, opacity: 0 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <path d="M12 5.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM4 9.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM12 15.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" strokeWidth="1.4"/>
-                    <path d="M6.3 8.3l3.4 1.9M9.7 5.8L6.3 7.7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-                  </svg>
-                  Compartir
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </button>
-        )}
-      </nav>
-      <ToastContainer />
-
-      {loading ? (
-        <>
-          <style>{`@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}`}</style>
-          <div style={{ width:'100%', height:420, background:'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize:'400% 100%', animation:'shimmer 1.4s ease infinite' }} />
-          <div style={{ maxWidth:720, margin:'0 auto', padding:'52px 24px' }}>
-            <div style={{ height:12, borderRadius:6, background:'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize:'400% 100%', animation:'shimmer 1.4s ease infinite', width:'35%', marginBottom:18 }} />
-            <div style={{ height:52, borderRadius:8, background:'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize:'400% 100%', animation:'shimmer 1.4s ease infinite', marginBottom:32 }} />
-            {[100,90,95,80,100,70].map((w, i) => (
-              <Sk key={i} h={17} r={5} w={`${w}%`} />
-            ))}
-          </div>
-        </>
-      ) : notFound ? (
-        <div className="art-not-found">
-          <div style={{ fontSize:22, fontWeight:700, marginBottom:10 }}>Artículo no encontrado</div>
-          <a href="/news" style={{ color:'#C0392B', fontSize:14 }}>← Volver a Noticias</a>
+        <div className="nl-nav-links">
+          <a href="/#mision">Cómo funciona</a>
+          <a href="/#about">Países</a>
+          <a href="/#equipo">Equipo</a>
+          <a href="/news" className="active">Noticias</a>
         </div>
-      ) : article ? (() => {
-        const accent       = article.accent_color ?? '#C0392B'
-        const layout       = article.layout_options ?? { coverStyle: 'full', galleryStyle: 'grid' }
-        const isLateral    = layout.coverStyle === 'lateral'
-        const isCarousel   = layout.galleryStyle === 'carousel'
-        const hasGallery   = article.gallery_urls.length > 0
-        const hasStat      = !!article.highlight_stat?.number
-        const hasQuote     = !!article.featured_quote?.trim()
-        const pubDate      = article.published_at
-          ? new Date(article.published_at).toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' })
-          : null
+        <a href="/login" style={{ padding:'8px 18px', borderRadius:999, background:'#0D0D0D', color:'#fff', fontSize:13, fontFamily:'Satoshi,sans-serif', fontWeight:700, textDecoration:'none', whiteSpace:'nowrap' }}>
+          Ingresar
+        </a>
+      </nav>
 
-        // Shared inner content blocks (used in both layouts)
-        const StatCard = hasStat ? (
-          <div
-            className="art-highlight-stat"
-            style={{ background: accent + '0D', border: `1px solid ${accent}30` }}
-          >
-            <div className="art-highlight-stat-num" style={{ color: accent }}>
-              {article.highlight_stat!.number}
-            </div>
-            {article.highlight_stat!.label && (
-              <div className="art-highlight-stat-label">{article.highlight_stat!.label}</div>
-            )}
-            {article.highlight_stat!.description && (
-              <div className="art-highlight-stat-desc">{article.highlight_stat!.description}</div>
-            )}
-          </div>
-        ) : null
+      <main className="nl-main">
+        {/* Hero */}
+        <div className="nl-hero">
+          <m.div
+            className="nl-hero-eyebrow"
+            initial={pref ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          >Blog</m.div>
+          <m.h1
+            className="nl-hero-title"
+            initial={pref ? false : { opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.06 }}
+          >Noticias</m.h1>
+          <m.p
+            className="nl-hero-sub"
+            initial={pref ? false : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.12 }}
+          >Lo que está pasando en Big Family</m.p>
+        </div>
 
-        const QuoteBlock = hasQuote ? (
-          <blockquote
-            className="art-featured-quote"
-            style={{
-              borderLeft: `5px solid ${accent}`,
-              background:  accent + '0A',
-            }}
-          >
-            {article.featured_quote}
-          </blockquote>
-        ) : null
-
-        const ContentBlock = (
-          <div
-            className="art-content"
-            style={{ '--art-accent': accent } as React.CSSProperties}
-            dangerouslySetInnerHTML={{ __html: article.content }}
-          />
-        )
-
-        const GalleryBlock = hasGallery ? (
+        {loading ? (
           <>
-            <div className="art-divider" />
-            <div className="art-gallery" style={{ paddingTop:48 }}>
-              <div className="art-gallery-title">Galería de fotos</div>
-              {isCarousel ? (
-                <div className="art-gallery-carousel">
-                  {article.gallery_urls.map((url, i) => (
-                    <div key={i} className="art-gallery-carousel-item">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt="" />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="art-gallery-grid">
-                  {article.gallery_urls.map((url, i) => (
-                    <div key={i} className="art-gallery-img">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt="" />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </>
-        ) : null
-
-        return (
-          <>
-            {/* ── Full cover (only when coverStyle = 'full') ── */}
-            {!isLateral && article.cover_url && (
-              <div className="art-cover-full">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={article.cover_url} alt={article.title} />
+            {/* Featured skeleton */}
+            <div style={{ borderRadius:24, overflow:'hidden', background:'#fff', border:'1px solid rgba(13,13,13,.07)', marginBottom:56, display:'grid', gridTemplateColumns:'1fr 420px' }}>
+              <div style={{ padding:44, display:'flex', flexDirection:'column', gap:14 }}>
+                <Sk w="20%" h={11} r={5} />
+                <Sk w="80%" h={36} r={8} />
+                <Sk w="70%" h={36} r={8} />
+                <Sk h={16} />
+                <Sk w="65%" h={16} />
+                <Sk w={120} h={40} r={999} />
               </div>
-            )}
-
-            {/* ── Lateral layout ── */}
-            {isLateral ? (
-              <>
-                <div className="art-lateral-wrap">
-                  <div className="art-lateral-text">
-                    <div className="art-meta">
-                      {pubDate && <span>{pubDate}</span>}
-                      {pubDate && <span>·</span>}
-                      <span>Por {article.author_name}</span>
-                    </div>
-                    <h1 className="art-title">{article.title}</h1>
-                    {StatCard}
-                    {QuoteBlock}
-                    {ContentBlock}
-                  </div>
-                  <div className="art-lateral-img">
-                    {article.cover_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={article.cover_url} alt={article.title} />
-                    ) : (
-                      <div className="art-lateral-placeholder">Sin imagen</div>
-                    )}
+              <div style={{ background:'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize:'400% 100%', animation:'shimmer 1.4s ease infinite', minHeight:300 }} />
+            </div>
+            {/* Grid skeleton */}
+            <div className="nl-grid">
+              {[0,1,2,3,4,5].map(i => (
+                <div key={i} style={{ borderRadius:20, overflow:'hidden', background:'#fff', border:'1px solid rgba(13,13,13,.07)' }}>
+                  <Sk h={200} r={0} />
+                  <div style={{ padding:22, display:'flex', flexDirection:'column', gap:10 }}>
+                    <Sk w="40%" h={11} />
+                    <Sk w="85%" h={18} />
+                    <Sk h={12} />
+                    <Sk w="70%" h={12} />
                   </div>
                 </div>
-                {GalleryBlock}
-              </>
-            ) : (
-              /* ── Standard (full cover) layout ── */
-              <>
-                <article className="art-main">
-                  <div className="art-meta">
-                    {pubDate && <span>{pubDate}</span>}
-                    {pubDate && <span>·</span>}
-                    <span>Por {article.author_name}</span>
+              ))}
+            </div>
+          </>
+        ) : articles.length === 0 ? (
+          <div className="nl-empty">
+            <p style={{ fontFamily:'Satoshi,sans-serif', fontWeight:700, fontSize:18, marginBottom:8 }}>Próximamente</p>
+            <p style={{ fontSize:14 }}>No hay noticias publicadas aún.</p>
+          </div>
+        ) : (
+          <>
+            {/* Featured hero card */}
+            {featured && (
+              <m.a
+                href={`/news/${featured.slug}`}
+                className="nl-featured"
+                initial={pref ? false : { opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.2 }}
+              >
+                <div className="nl-featured-body">
+                  <div className="nl-featured-eyebrow">
+                    <span />
+                    Destacado
                   </div>
-                  <h1 className="art-title">{article.title}</h1>
-                  {StatCard}
-                  {QuoteBlock}
-                  {ContentBlock}
-                </article>
-                {GalleryBlock}
+                  <div className="nl-featured-title">{featured.title}</div>
+                  <div className="nl-featured-excerpt">{excerpt(featured.content, 180)}</div>
+                  <div className="nl-featured-meta">
+                    {featured.published_at && (
+                      <>{new Date(featured.published_at).toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' })} · </>
+                    )}
+                    Por {featured.author_name}
+                  </div>
+                  <span className="nl-featured-cta">Leer artículo →</span>
+                </div>
+                <div className="nl-featured-img">
+                  {featured.cover_url
+                    ? <img src={featured.cover_url} alt={featured.title} /> // eslint-disable-line @next/next/no-img-element
+                    : <div className="nl-featured-img-placeholder"><PlaceholderImg size={56} /></div>
+                  }
+                </div>
+              </m.a>
+            )}
+
+            {/* Rest of articles */}
+            {rest.length > 0 && (
+              <>
+                {featured && <div className="nl-section-label">Más noticias</div>}
+                <m.div
+                  className="nl-grid"
+                  initial={pref ? false : 'hidden'}
+                  whileInView="visible"
+                  viewport={{ once: true, margin: '-60px' }}
+                  variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
+                >
+                  {rest.map(art => (
+                    <m.a
+                      key={art.id}
+                      href={`/news/${art.slug}`}
+                      className="nl-card"
+                      variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 140, damping: 20 } } }}
+                    >
+                      <div className="nl-card-cover">
+                        {art.cover_url
+                          ? <img src={art.cover_url} alt={art.title} /> // eslint-disable-line @next/next/no-img-element
+                          : <div className="nl-card-cover-placeholder"><PlaceholderImg /></div>
+                        }
+                      </div>
+                      <div className="nl-card-body">
+                        {art.published_at && (
+                          <div className="nl-card-date">
+                            {new Date(art.published_at).toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' })}
+                          </div>
+                        )}
+                        <div className="nl-card-title" style={{ display: 'flex', alignItems: 'baseline', gap: 0, flexWrap: 'wrap' }}>
+                          {art.title}
+                          {readSlugs.has(art.slug) && (
+                            <m.span
+                              className="nl-read-badge"
+                              initial={pref ? false : { scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                            >✓ Leído</m.span>
+                          )}
+                        </div>
+                        <div className="nl-card-excerpt">{excerpt(art.content)}</div>
+                        <div className="nl-card-meta">Por {art.author_name}</div>
+                      </div>
+                    </m.a>
+                  ))}
+                </m.div>
               </>
             )}
           </>
-        )
-      })() : null}
+        )}
+      </main>
     </>
   )
 }

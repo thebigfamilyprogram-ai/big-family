@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
-import { motion, useInView, useReducedMotion } from 'framer-motion'
+import { m, useInView, useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
 import { fadeUp } from '@/lib/animations'
 import { createClient } from '@/lib/supabase'
@@ -291,24 +291,24 @@ export default function DiaLiderazgoPage() {
 
       {/* ── Hero ── */}
       <section className="dl-hero">
-        <motion.div
+        <m.div
           initial="hidden" animate="visible"
           variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }}
           style={{ position: 'relative', zIndex: 2 }}
         >
-          <motion.div variants={fadeUp}>
+          <m.div variants={fadeUp}>
             <div className="dl-eyebrow"><span />GUAJIRA 2026</div>
-          </motion.div>
+          </m.div>
 
-          <motion.h1 className="dl-title" variants={fadeUp}>
+          <m.h1 className="dl-title" variants={fadeUp}>
             Día de<br /><em>Liderazgo</em>
-          </motion.h1>
+          </m.h1>
 
-          <motion.p className="dl-subtitle" variants={fadeUp}>
+          <m.p className="dl-subtitle" variants={fadeUp}>
             8 colegios. 1 día. Un proyecto que cambia tu comunidad.
-          </motion.p>
+          </m.p>
 
-          <motion.div variants={fadeUp} style={{ display: 'flex', justifyContent: 'center', marginBottom: 48 }}>
+          <m.div variants={fadeUp} style={{ display: 'flex', justifyContent: 'center', marginBottom: 48 }}>
             {cd.expired ? (
               <p className="dl-expired-msg">¡El evento ha comenzado! 🎉</p>
             ) : (
@@ -331,29 +331,29 @@ export default function DiaLiderazgoPage() {
                 </div>
               </div>
             )}
-          </motion.div>
+          </m.div>
 
-          <motion.div variants={fadeUp}>
+          <m.div variants={fadeUp}>
             <Link href="/submit" className="dl-cta-primary">Subir mi proyecto →</Link>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       </section>
 
       {/* ── Colegios participantes ── */}
       <section className="dl-schools">
         <div className="dl-schools__inner">
-          <motion.div
+          <m.div
             className="dl-schools-header"
             initial={pref ? false : 'hidden'}
             whileInView="visible"
             viewport={{ once: true, margin: '-80px' }}
             variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
           >
-            <motion.div className="dl-section-eyebrow" variants={fadeUp}>Participantes</motion.div>
-            <motion.h2 className="dl-section-title" variants={fadeUp}>Colegios participantes</motion.h2>
-          </motion.div>
+            <m.div className="dl-section-eyebrow" variants={fadeUp}>Participantes</m.div>
+            <m.h2 className="dl-section-title" variants={fadeUp}>Colegios participantes</m.h2>
+          </m.div>
 
-          <motion.div
+          <m.div
             className="dl-schools-grid"
             initial={pref ? false : 'hidden'}
             whileInView="visible"
@@ -361,7 +361,7 @@ export default function DiaLiderazgoPage() {
             variants={schoolStagger}
           >
             {schools.map((school, i) => (
-              <motion.div key={school.name} className="dl-school-card" variants={schoolCard}>
+              <m.div key={school.name} className="dl-school-card" variants={schoolCard}>
                 <div className="dl-school-num">{String(i + 1).padStart(2, '0')}</div>
                 <div className="dl-school-logo-wrap">
                   {school.logo_url ? (
@@ -376,9 +376,9 @@ export default function DiaLiderazgoPage() {
                   <span className="dl-school-name">{school.name}</span>
                 </div>
                 {school.code && <CodeBadge code={school.code} />}
-              </motion.div>
+              </m.div>
             ))}
-          </motion.div>
+          </m.div>
         </div>
       </section>
 
@@ -388,32 +388,32 @@ export default function DiaLiderazgoPage() {
           <div className="dl-about__row">
 
             {/* Left: eyebrow + title + description + CTA */}
-            <motion.div
+            <m.div
               className="dl-about__left"
               initial={pref ? false : 'hidden'}
               whileInView="visible"
               viewport={{ once: true, margin: '-80px' }}
               variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
             >
-              <motion.div className="dl-about-eyebrow" variants={fadeUp}>
+              <m.div className="dl-about-eyebrow" variants={fadeUp}>
                 DÍA DE LIDERAZGO · LA GUAJIRA
-              </motion.div>
-              <motion.h2 className="dl-about-title" variants={fadeUp}>
+              </m.div>
+              <m.h2 className="dl-about-title" variants={fadeUp}>
                 ¿Qué es el Día de Liderazgo?
-              </motion.h2>
-              <motion.p className="dl-about-text" variants={fadeUp}>
+              </m.h2>
+              <m.p className="dl-about-text" variants={fadeUp}>
                 Una jornada donde estudiantes de La Guajira documentan y presentan sus proyectos de liderazgo comunitario. Cada proyecto es evaluado por coordinadores del programa The Big Leader de Big Family.
-              </motion.p>
-              <motion.div variants={fadeUp}>
+              </m.p>
+              <m.div variants={fadeUp}>
                 <Link href="/submit" className="dl-cta-primary">Participar ahora →</Link>
-              </motion.div>
-            </motion.div>
+              </m.div>
+            </m.div>
 
             {/* Right: 3 stat cards stacked */}
             <div className="dl-about__right">
               <div className="dl-stats-col">
                 {STATS.map((s, i) => (
-                  <motion.div
+                  <m.div
                     key={i}
                     className="dl-stat-card"
                     initial={pref ? false : { opacity: 0, y: 20 }}
@@ -425,7 +425,7 @@ export default function DiaLiderazgoPage() {
                       {s.countUp ? <CountUp to={s.value as number} /> : s.display}
                     </div>
                     <div className="dl-stat-label">{s.label}</div>
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
             </div>
@@ -436,22 +436,22 @@ export default function DiaLiderazgoPage() {
 
       {/* ── Final CTA ── */}
       <section className="dl-final">
-        <motion.div
+        <m.div
           initial="hidden" whileInView="visible"
           viewport={{ once: true, margin: '-60px' }}
           variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }}
           style={{ position: 'relative', zIndex: 2 }}
         >
-          <motion.h2 className="dl-final-title" variants={fadeUp}>
+          <m.h2 className="dl-final-title" variants={fadeUp}>
             ¿Listo para subir tu proyecto?
-          </motion.h2>
-          <motion.p className="dl-final-sub" variants={fadeUp}>
+          </m.h2>
+          <m.p className="dl-final-sub" variants={fadeUp}>
             Completa tu proyecto y envíalo antes del 16 de mayo
-          </motion.p>
-          <motion.div variants={fadeUp}>
+          </m.p>
+          <m.div variants={fadeUp}>
             <Link href="/submit" className="dl-cta-primary">Comenzar ahora →</Link>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       </section>
 
       {/* ── Footer ── */}

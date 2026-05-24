@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import ProjectReactions from '@/components/ProjectReactions'
 
@@ -213,7 +213,7 @@ export default function ProjectCard({
   if (mode === 'student') {
     const cover = project.images?.[0]
     return (
-      <motion.div
+      <m.div
         style={{
           background: '#fff',
           border: '1px solid rgba(13,13,13,.07)',
@@ -237,9 +237,9 @@ export default function ProjectCard({
           }
           <div style={{ position: 'absolute', top: 10, right: 10 }}>
             <AnimatePresence mode="wait">
-              <motion.div key={localStatus} initial={{ opacity: 0, scale: 0.88 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.88 }} transition={{ duration: 0.18 }}>
+              <m.div key={localStatus} initial={{ opacity: 0, scale: 0.88 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.88 }} transition={{ duration: 0.18 }}>
                 <StatusBadge status={localStatus} />
-              </motion.div>
+              </m.div>
             </AnimatePresence>
           </div>
         </div>
@@ -270,7 +270,7 @@ export default function ProjectCard({
             </div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
     )
   }
 
@@ -278,7 +278,7 @@ export default function ProjectCard({
   const initials = (project.full_name ?? '?').charAt(0).toUpperCase()
 
   return (
-    <motion.div
+    <m.div
       style={{
         background: '#fff',
         border: '1px solid rgba(13,13,13,.07)',
@@ -310,9 +310,9 @@ export default function ProjectCard({
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
           <CategoryPill category={project.category} />
           <AnimatePresence mode="wait">
-            <motion.div key={localStatus} initial={{ opacity: 0, scale: 0.88 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.88 }} transition={{ duration: 0.18 }}>
+            <m.div key={localStatus} initial={{ opacity: 0, scale: 0.88 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.88 }} transition={{ duration: 0.18 }}>
               <StatusBadge status={localStatus} />
-            </motion.div>
+            </m.div>
           </AnimatePresence>
         </div>
       </div>
@@ -499,6 +499,6 @@ export default function ProjectCard({
           </button>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   )
 }

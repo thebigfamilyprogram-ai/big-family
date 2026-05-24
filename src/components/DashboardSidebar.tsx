@@ -1,9 +1,9 @@
-'use client'
+﻿'use client'
 
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 
 type ActivePage =
   | 'dashboard' | 'leadership-path' | 'global-map'
@@ -170,7 +170,7 @@ export default function DashboardSidebar({ activePage, userName = '…', userIni
 
             <AnimatePresence initial={false}>
               {comunidadOpen && (
-                <motion.div
+                <m.div
                   key="comunidad"
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
@@ -193,7 +193,7 @@ export default function DashboardSidebar({ activePage, userName = '…', userIni
                       </button>
                     ))}
                   </div>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
           </div>

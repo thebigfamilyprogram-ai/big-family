@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { motion, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import ProjectCard, { type Project, type ProjectComment } from '@/components/ProjectCard'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -293,7 +293,7 @@ export default function CoordinatorProjectsPage() {
         </div>
       </nav>
 
-      <motion.main
+      <m.main
         className="cpj-main"
         initial={pref ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -319,7 +319,7 @@ export default function CoordinatorProjectsPage() {
               { num: counts.approved, label: 'Aprobados',       color: '#065F46'    },
               { num: counts.rejected, label: 'Rechazados',      color: '#991B1B'    },
             ] as { num: number; label: string; color: string | undefined }[]).map((s, i) => (
-              <motion.div
+              <m.div
                 key={s.label}
                 className="cpj-stat"
                 initial={pref ? false : { opacity: 0, scale: 0.96 }}
@@ -328,7 +328,7 @@ export default function CoordinatorProjectsPage() {
               >
                 <div className="cpj-stat__num" style={{ color: s.color }}>{s.num}</div>
                 <div className="cpj-stat__label">{s.label}</div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         )}
@@ -407,7 +407,7 @@ export default function CoordinatorProjectsPage() {
                 </div>
               ) : (
                 pagedFiltered.map((project, i) => (
-                  <motion.div
+                  <m.div
                     key={project.id}
                     initial={pref ? false : { opacity: 0, y: 24 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -423,7 +423,7 @@ export default function CoordinatorProjectsPage() {
                       onEvaluate={id => router.push(`/coordinator/projects/${id}/evaluate`)}
                       resultado={project.resultado}
                     />
-                  </motion.div>
+                  </m.div>
                 ))
               )}
             </div>
@@ -441,7 +441,7 @@ export default function CoordinatorProjectsPage() {
             )}
           </>
         )}
-      </motion.main>
+      </m.main>
     </>
   )
 }

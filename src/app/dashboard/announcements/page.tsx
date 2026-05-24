@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import DashboardSidebar from '@/components/DashboardSidebar'
-import { motion, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
 
 interface Announcement {
@@ -100,7 +100,7 @@ export default function AnnouncementsPage() {
       <div className="layout">
         <DashboardSidebar activePage="announcements" userName={userName} userInitial={userInit} unreadAnnouncements={unread} />
 
-        <motion.main
+        <m.main
           className="content"
           initial={pref ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -124,7 +124,7 @@ export default function AnnouncementsPage() {
               No hay anuncios todavía.
             </div>
           ) : (
-            <motion.div
+            <m.div
               style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
               initial={pref ? false : 'hidden'}
               whileInView="visible"
@@ -135,7 +135,7 @@ export default function AnnouncementsPage() {
                 const isRead = readIds.has(ann.id)
                 const catStyle = CATEGORY_STYLES[ann.category] ?? { bg: 'var(--line)', color: 'var(--mute)' }
                 return (
-                  <motion.div
+                  <m.div
                     key={ann.id}
                     variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: springNatural } }}
                     className={`ann-card ${isRead ? 'read' : 'unread'}`}
@@ -148,12 +148,12 @@ export default function AnnouncementsPage() {
                     <div className="ann-title">{ann.title}</div>
                     <div className="ann-content">{ann.content}</div>
                     <div className="ann-meta">{new Date(ann.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })}</div>
-                  </motion.div>
+                  </m.div>
                 )
               })}
-            </motion.div>
+            </m.div>
           )}
-        </motion.main>
+        </m.main>
       </div>
     </>
   )

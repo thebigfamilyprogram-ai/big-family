@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 
 const expoOut = [0.22, 1, 0.36, 1] as const
 
@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
       `}</style>
 
       <div className="page">
-        <motion.div
+        <m.div
           className="logo-wrap"
           initial={pref ? false : { opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -78,9 +78,9 @@ export default function ForgotPasswordPage() {
             <circle cx="43" cy="18" r="4" fill="#6B6B6B"/>
           </svg>
           <span className="logo-name">BIG FAMILY</span>
-        </motion.div>
+        </m.div>
 
-        <motion.div
+        <m.div
           className="card"
           initial={pref ? false : { opacity: 0, y: 16, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -101,7 +101,7 @@ export default function ForgotPasswordPage() {
             <>
               <AnimatePresence>
                 {error && (
-                  <motion.div
+                  <m.div
                     className="err"
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -109,12 +109,12 @@ export default function ForgotPasswordPage() {
                     transition={{ duration: 0.18, ease: expoOut }}
                   >
                     {error}
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
 
               <form onSubmit={handleSubmit}>
-                <motion.div
+                <m.div
                   className="field"
                   initial={pref ? false : { opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -125,8 +125,8 @@ export default function ForgotPasswordPage() {
                     id="email" type="email" placeholder="tu@correo.com"
                     value={email} onChange={e => setEmail(e.target.value)} required
                   />
-                </motion.div>
-                <motion.div
+                </m.div>
+                <m.div
                   initial={pref ? false : { opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, ease: expoOut, delay: 0.26 }}
@@ -134,7 +134,7 @@ export default function ForgotPasswordPage() {
                   <button className={`btn-main${loading ? ' shimmer' : ''}`} type="submit" disabled={loading}>
                     {loading ? 'Enviando…' : 'Enviar enlace de recuperación'}
                   </button>
-                </motion.div>
+                </m.div>
               </form>
             </>
           )}
@@ -142,7 +142,7 @@ export default function ForgotPasswordPage() {
           <div className="footer-links">
             <a href="/login">← Volver al inicio de sesión</a>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </>
   )

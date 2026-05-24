@@ -1,11 +1,11 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { motion, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
 
 interface Story {
@@ -123,7 +123,7 @@ export default function SuccessStoriesPage() {
             No hay historias publicadas todavía. ¡Vuelve pronto!
           </div>
         ) : (
-          <motion.div
+          <m.div
             className="masonry"
             initial={pref ? false : 'hidden'}
             whileInView="visible"
@@ -131,7 +131,7 @@ export default function SuccessStoriesPage() {
             variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.07 } } }}
           >
             {stories.map(s => (
-              <motion.a
+              <m.a
                 key={s.id}
                 href={`/success-stories/${s.id}`}
                 className="story-card"
@@ -157,9 +157,9 @@ export default function SuccessStoriesPage() {
                     {s.school_name && <span style={{ marginLeft: 6 }}>· {s.school_name}</span>}
                   </div>
                 </div>
-              </motion.a>
+              </m.a>
             ))}
-          </motion.div>
+          </m.div>
         )}
       </div>
     </>

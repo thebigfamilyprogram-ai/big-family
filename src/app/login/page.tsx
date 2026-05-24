@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 
 const expoOut = [0.22, 1, 0.36, 1] as const
 
@@ -89,7 +89,7 @@ export default function LoginPage() {
       `}</style>
 
       <div className="page">
-        <motion.div
+        <m.div
           className="logo-wrap"
           initial={pref ? false : { opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -102,9 +102,9 @@ export default function LoginPage() {
             <circle cx="43" cy="18" r="4" fill="#6B6B6B"/>
           </svg>
           <span className="logo-name">BIG FAMILY</span>
-        </motion.div>
+        </m.div>
 
-        <motion.div
+        <m.div
           className="card"
           initial={pref ? false : { opacity: 0, y: 16, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -113,7 +113,7 @@ export default function LoginPage() {
           <h1 className="card-title">Bienvenido de vuelta</h1>
           <p className="card-sub">Ingresa a tu cuenta</p>
 
-          <motion.div
+          <m.div
             initial={pref ? false : { opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, ease: expoOut, delay: 0.18 }}
@@ -127,13 +127,13 @@ export default function LoginPage() {
               </svg>
               Continuar con Google
             </button>
-          </motion.div>
+          </m.div>
 
           <div className="divider">o</div>
 
           <AnimatePresence>
             {error && (
-              <motion.div
+              <m.div
                 className="err"
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -141,7 +141,7 @@ export default function LoginPage() {
                 transition={{ duration: 0.18, ease: expoOut }}
               >
                 {error}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 
@@ -150,7 +150,7 @@ export default function LoginPage() {
               { id: 'email', type: 'email', label: 'Correo electrónico', placeholder: 'tu@correo.com', value: email, onChange: (v: string) => setEmail(v) },
               { id: 'password', type: 'password', label: 'Contraseña', placeholder: '••••••••', value: password, onChange: (v: string) => setPassword(v) },
             ].map((f, i) => (
-              <motion.div
+              <m.div
                 key={f.id}
                 className="field"
                 initial={pref ? false : { opacity: 0, y: 6 }}
@@ -162,9 +162,9 @@ export default function LoginPage() {
                   id={f.id} type={f.type} placeholder={f.placeholder}
                   value={f.value} onChange={e => f.onChange(e.target.value)} required
                 />
-              </motion.div>
+              </m.div>
             ))}
-            <motion.div
+            <m.div
               initial={pref ? false : { opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, ease: expoOut, delay: 0.3 }}
@@ -172,14 +172,14 @@ export default function LoginPage() {
               <button className={`btn-main${loading ? ' shimmer' : ''}`} type="submit" disabled={loading}>
                 {loading ? 'Ingresando…' : 'Ingresar'}
               </button>
-            </motion.div>
+            </m.div>
           </form>
 
           <div className="footer-links">
             <span>¿Olvidaste tu contraseña? <a href="/forgot-password">Recupérala</a></span>
             <span>¿No tienes cuenta? <a href="/register">Regístrate</a></span>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </>
   )

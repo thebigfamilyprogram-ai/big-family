@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 
 const expoOut = [0.22, 1, 0.36, 1] as const
 const springSnappy  = { type: 'spring' as const, stiffness: 200, damping: 22 }
@@ -16,7 +16,7 @@ type Track = 'junior' | 'senior'
 
 function Logo({ pref }: { pref: boolean | null }) {
   return (
-    <motion.div
+    <m.div
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginBottom: 28 }}
       initial={pref ? false : { opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -29,7 +29,7 @@ function Logo({ pref }: { pref: boolean | null }) {
         <circle cx="43" cy="18" r="4" fill="#6B6B6B"/>
       </svg>
       <span style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, color: '#0D0D0D' }}>Big Family</span>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -44,21 +44,21 @@ function Progress({ step, pref }: { step: 1 | 2 | 3; pref: boolean | null }) {
         return (
           <div key={label} style={{ display: 'flex', alignItems: 'center' }}>
             {i > 0 && (
-              <motion.div
+              <m.div
                 style={{ width: 36, height: 1 }}
                 animate={{ background: done ? '#C0392B' : '#E0DDD8' }}
                 transition={{ duration: 0.4 }}
               />
             )}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
-              <motion.div
+              <m.div
                 style={{ width: 26, height: 26, borderRadius: '50%', background: done ? '#C0392B' : active ? '#0D0D0D' : '#E8E4DF', color: done || active ? '#fff' : '#9a9690', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}
                 initial={pref ? false : { scale: 0.6 }}
                 animate={{ scale: 1 }}
                 transition={springSnappy}
               >
                 {done ? '✓' : n}
-              </motion.div>
+              </m.div>
               <span style={{ fontSize: 10.5, fontWeight: active ? 700 : 400, color: active ? '#0D0D0D' : '#9a9690', whiteSpace: 'nowrap' }}>{label}</span>
             </div>
           </div>
@@ -192,7 +192,7 @@ export default function SubmitRegisterPage() {
 
       <div className="sr-page">
         <Logo pref={pref} />
-        <motion.div
+        <m.div
           className="sr-card"
           initial={pref ? false : { opacity: 0, y: 16, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -206,7 +206,7 @@ export default function SubmitRegisterPage() {
               <div className="sr-sub">Ingresa el código de tu colegio para comenzar</div>
 
               <form onSubmit={handleCodeSubmit}>
-                <motion.div
+                <m.div
                   className="sr-field"
                   initial={pref ? false : { opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -222,11 +222,11 @@ export default function SubmitRegisterPage() {
                     autoFocus
                     required
                   />
-                </motion.div>
+                </m.div>
 
                 <AnimatePresence>
                   {codeError && (
-                    <motion.div
+                    <m.div
                       className="sr-error"
                       initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -234,7 +234,7 @@ export default function SubmitRegisterPage() {
                       transition={{ duration: 0.18, ease: expoOut }}
                     >
                       {codeError}
-                    </motion.div>
+                    </m.div>
                   )}
                 </AnimatePresence>
 
@@ -264,7 +264,7 @@ export default function SubmitRegisterPage() {
                   { label: 'Email', type: 'email', value: email, onChange: setEmail, placeholder: 'tu@email.com' },
                   { label: 'Contraseña', type: 'password', value: password, onChange: setPassword, placeholder: 'Mínimo 8 caracteres', minLength: 8 },
                 ].map((f, i) => (
-                  <motion.div
+                  <m.div
                     key={f.label}
                     className="sr-field"
                     initial={pref ? false : { opacity: 0, y: 6 }}
@@ -282,10 +282,10 @@ export default function SubmitRegisterPage() {
                       autoFocus={f.autoFocus}
                       minLength={(f as { minLength?: number }).minLength}
                     />
-                  </motion.div>
+                  </m.div>
                 ))}
 
-                <motion.div
+                <m.div
                   className="sr-field"
                   initial={pref ? false : { opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -302,12 +302,12 @@ export default function SubmitRegisterPage() {
                       <div className="sr-track-sub">14 a 18 años</div>
                     </div>
                   </div>
-                </motion.div>
+                </m.div>
 
                 {/* Guardian email — animated reveal for junior track */}
                 <AnimatePresence>
                   {track === 'junior' && (
-                    <motion.div
+                    <m.div
                       key="guardian"
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
@@ -326,12 +326,12 @@ export default function SubmitRegisterPage() {
                           required={track === 'junior'}
                         />
                       </div>
-                    </motion.div>
+                    </m.div>
                   )}
                 </AnimatePresence>
 
                 {/* Terms checkbox with pop animation on check */}
-                <motion.label
+                <m.label
                   className="sr-terms"
                   animate={termsAccepted && !pref ? { scale: [1, 1.01, 1] } : {}}
                   transition={{ duration: 0.15, ...springSnappy }}
@@ -344,11 +344,11 @@ export default function SubmitRegisterPage() {
                   <span className="sr-terms-text">
                     Acepto los <a href="/terminos" target="_blank" rel="noopener noreferrer">términos y condiciones</a> y la <a href="/privacidad" target="_blank" rel="noopener noreferrer">política de privacidad</a> del programa Big Family.
                   </span>
-                </motion.label>
+                </m.label>
 
                 <AnimatePresence>
                   {formError && (
-                    <motion.div
+                    <m.div
                       className="sr-error"
                       initial={{ opacity: 0, y: -4 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -356,7 +356,7 @@ export default function SubmitRegisterPage() {
                       transition={{ duration: 0.18, ease: expoOut }}
                     >
                       {formError}
-                    </motion.div>
+                    </m.div>
                   )}
                 </AnimatePresence>
 
@@ -374,7 +374,7 @@ export default function SubmitRegisterPage() {
           <div className="sr-link">
             ¿Ya tienes cuenta? <a href="/submit/login">Ingresar</a>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     </>
   )

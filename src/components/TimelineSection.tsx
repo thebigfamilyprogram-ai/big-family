@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { motion, useInView, useSpring } from 'framer-motion'
+import { m, useInView, useSpring } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { useSafeScroll } from '@/hooks/useSafeScroll'
 
@@ -39,7 +39,7 @@ function CountYear({ year }: { year: number }) {
 function Dot({ isDark }: { isDark: boolean }) {
   const [hov, setHov] = useState(false)
   return (
-    <motion.div
+    <m.div
       onHoverStart={() => setHov(true)}
       onHoverEnd={() => setHov(false)}
       animate={{ scale: [1, 1.2, 1] }}
@@ -68,7 +68,7 @@ function EventCard({ ev, index, isDark }: { ev: TimelineEvent; index: number; is
   const shadow      = isDark ? '0 8px 32px rgba(0,0,0,.35)' : '0 2px 16px -4px rgba(13,13,13,.1)'
 
   return (
-    <motion.div
+    <m.div
       className="tl-card"
       initial={{ opacity: 0, x: isLeft ? -50 : 50 }}
       whileInView={{ opacity: 1, x: 0 }}
@@ -84,7 +84,7 @@ function EventCard({ ev, index, isDark }: { ev: TimelineEvent; index: number; is
 
       {/* Title — clip-path reveal left to right */}
       <div style={{ overflow: 'hidden' }}>
-        <motion.h3
+        <m.h3
           initial={{ clipPath: 'inset(0 100% 0 0)' }}
           whileInView={{ clipPath: 'inset(0 0% 0 0)' }}
           viewport={{ once: true }}
@@ -92,19 +92,19 @@ function EventCard({ ev, index, isDark }: { ev: TimelineEvent; index: number; is
           style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 17, color: ink, lineHeight: 1.3, marginBottom: ev.description || ev.image_url ? 12 : 0 }}
         >
           {ev.title}
-        </motion.h3>
+        </m.h3>
       </div>
 
       {/* Image with hover scale */}
       {ev.image_url && (
-        <motion.div
+        <m.div
           whileHover={{ scale: 1.05 }}
           transition={{ type: 'spring', stiffness: 200, damping: 22 }}
           style={{ borderRadius: 10, overflow: 'hidden', marginBottom: 12, aspectRatio: '16/9' }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={ev.image_url} alt={ev.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-        </motion.div>
+        </m.div>
       )}
 
       {ev.description && (
@@ -116,7 +116,7 @@ function EventCard({ ev, index, isDark }: { ev: TimelineEvent; index: number; is
       <div style={{ fontFamily: 'Inter,sans-serif', fontSize: 11, color: mute, opacity: .6, textTransform: 'capitalize' }}>
         {month}
       </div>
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -192,11 +192,11 @@ export default function TimelineSection({
 
       {/* Vertical growing thread */}
       <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, transform: 'translateX(-50%)', background: lineBase }}>
-        <motion.div style={{ position: 'absolute', inset: 0, background: '#C0392B', transformOrigin: 'top', scaleY }} />
+        <m.div style={{ position: 'absolute', inset: 0, background: '#C0392B', transformOrigin: 'top', scaleY }} />
       </div>
       {/* Mobile: thread on left edge */}
       <div className="tl-mobile-line" style={{ display: 'none', position: 'absolute', left: 12, top: 0, bottom: 0, width: 2, background: lineBase }}>
-        <motion.div style={{ position: 'absolute', inset: 0, background: '#C0392B', transformOrigin: 'top', scaleY }} />
+        <m.div style={{ position: 'absolute', inset: 0, background: '#C0392B', transformOrigin: 'top', scaleY }} />
       </div>
 
       {/* Rows */}

@@ -1,11 +1,11 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
 
 interface CalEvent {
@@ -161,13 +161,13 @@ export default function CoordinatorCalendarPage() {
         </div>
       </nav>
 
-      <motion.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}>
+      <m.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}>
         <h1 style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 24 }}>Calendario de Eventos</h1>
 
         {/* Create/edit form */}
         <AnimatePresence>
           {showForm && (
-            <motion.div
+            <m.div
               key="form"
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
@@ -215,7 +215,7 @@ export default function CoordinatorCalendarPage() {
                   <button onClick={() => { setShowForm(false); setEditing(null); setForm(EMPTY_FORM) }} style={{ padding: '10px 18px', border: '1px solid var(--line)', borderRadius: 10, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--mute)' }}>Cancelar</button>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
 
@@ -266,7 +266,7 @@ export default function CoordinatorCalendarPage() {
               <p style={{ fontSize: 13, color: 'var(--mute)' }}>Haz clic en una fecha con eventos.</p>
             ) : (
               <AnimatePresence mode="wait">
-                <motion.div key={selected.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={springNatural}>
+                <m.div key={selected.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={springNatural}>
                   <div style={{ fontSize: 12.5, color: 'var(--mute)', lineHeight: 2, marginBottom: 10 }}>
                     <div>📅 {new Date(selected.event_date + 'T00:00:00').toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
                     {selected.event_time && <div>🕐 {selected.event_time.slice(0,5)}</div>}
@@ -282,12 +282,12 @@ export default function CoordinatorCalendarPage() {
                       {deleting === selected.id ? '…' : 'Eliminar'}
                     </button>
                   </div>
-                </motion.div>
+                </m.div>
               </AnimatePresence>
             )}
           </div>
         </div>
-      </motion.div>
+      </m.div>
     </>
   )
 }

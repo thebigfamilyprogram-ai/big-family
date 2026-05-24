@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import DashboardSidebar from '@/components/DashboardSidebar'
 import ProjectCard, { type Project } from '@/components/ProjectCard'
 import { showToast } from '@/components/Toast'
@@ -215,7 +215,7 @@ export default function ProjectsPage() {
               <div className="pj-grid">
                 <AnimatePresence>
                   {projects.map((project, i) => (
-                    <motion.div
+                    <m.div
                       key={project.id}
                       initial={{ opacity: 0, y: 24 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -263,7 +263,7 @@ export default function ProjectsPage() {
                           )}
                         </div>
                       </div>
-                    </motion.div>
+                    </m.div>
                   ))}
                 </AnimatePresence>
               </div>
@@ -275,8 +275,8 @@ export default function ProjectsPage() {
       {/* Nominate modal */}
       <AnimatePresence>
         {nominateTarget && (
-          <motion.div key="nom-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => !nominating && setNominateTarget(null)}>
-            <motion.div initial={{ opacity: 0, scale: 0.92, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }} onClick={e => e.stopPropagation()} style={{ background: 'var(--card-bg)', borderRadius: 20, padding: '32px 28px', maxWidth: 500, width: '100%', boxShadow: '0 24px 64px -12px rgba(0,0,0,.25)', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <m.div key="nom-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => !nominating && setNominateTarget(null)}>
+            <m.div initial={{ opacity: 0, scale: 0.92, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }} onClick={e => e.stopPropagation()} style={{ background: 'var(--card-bg)', borderRadius: 20, padding: '32px 28px', maxWidth: 500, width: '100%', boxShadow: '0 24px 64px -12px rgba(0,0,0,.25)', display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
                 <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 4 }}>⭐ Nominar Historia de Éxito</div>
                 <div style={{ fontSize: 13, color: 'var(--mute)', lineHeight: 1.5 }}>Comparte tu historia de liderazgo. Si es seleccionada, aparecerá en la sección pública de Big Family.</div>
@@ -295,14 +295,14 @@ export default function ProjectsPage() {
                 </button>
                 <button onClick={() => { setNominateTarget(null); setNominateForm({ title: '', story: '' }) }} style={{ padding: '12px 20px', border: '1px solid var(--line)', borderRadius: 10, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--mute)' }}>Cancelar</button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {deleteTarget && (
-          <motion.div
+          <m.div
             key="delete-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -310,7 +310,7 @@ export default function ProjectsPage() {
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
             onClick={() => { if (!deleting) setDeleteTarget(null) }}
           >
-            <motion.div
+            <m.div
               initial={{ opacity: 0, scale: 0.92, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 20 }}
@@ -345,8 +345,8 @@ export default function ProjectsPage() {
                   {deleting ? 'Eliminando…' : 'Sí, eliminar'}
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>

@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase'
-import { motion, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 
 interface NewsItem {
   id:           string
@@ -183,24 +183,24 @@ export default function NewsListPage() {
       <main className="nl-main">
         {/* Hero */}
         <div className="nl-hero">
-          <motion.div
+          <m.div
             className="nl-hero-eyebrow"
             initial={pref ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          >Blog</motion.div>
-          <motion.h1
+          >Blog</m.div>
+          <m.h1
             className="nl-hero-title"
             initial={pref ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.06 }}
-          >Noticias</motion.h1>
-          <motion.p
+          >Noticias</m.h1>
+          <m.p
             className="nl-hero-sub"
             initial={pref ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.12 }}
-          >Lo que está pasando en Big Family</motion.p>
+          >Lo que está pasando en Big Family</m.p>
         </div>
 
         {loading ? (
@@ -241,7 +241,7 @@ export default function NewsListPage() {
           <>
             {/* Featured hero card */}
             {featured && (
-              <motion.a
+              <m.a
                 href={`/news/${featured.slug}`}
                 className="nl-featured"
                 initial={pref ? false : { opacity: 0, y: 20 }}
@@ -269,14 +269,14 @@ export default function NewsListPage() {
                     : <div className="nl-featured-img-placeholder"><PlaceholderImg size={56} /></div>
                   }
                 </div>
-              </motion.a>
+              </m.a>
             )}
 
             {/* Rest of articles */}
             {rest.length > 0 && (
               <>
                 {featured && <div className="nl-section-label">Más noticias</div>}
-                <motion.div
+                <m.div
                   className="nl-grid"
                   initial={pref ? false : 'hidden'}
                   whileInView="visible"
@@ -284,7 +284,7 @@ export default function NewsListPage() {
                   variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
                 >
                   {rest.map(art => (
-                    <motion.a
+                    <m.a
                       key={art.id}
                       href={`/news/${art.slug}`}
                       className="nl-card"
@@ -305,20 +305,20 @@ export default function NewsListPage() {
                         <div className="nl-card-title" style={{ display: 'flex', alignItems: 'baseline', gap: 0, flexWrap: 'wrap' }}>
                           {art.title}
                           {readSlugs.has(art.slug) && (
-                            <motion.span
+                            <m.span
                               className="nl-read-badge"
                               initial={pref ? false : { scale: 0 }}
                               animate={{ scale: 1 }}
                               transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                            >✓ Leído</motion.span>
+                            >✓ Leído</m.span>
                           )}
                         </div>
                         <div className="nl-card-excerpt">{excerpt(art.content)}</div>
                         <div className="nl-card-meta">Por {art.author_name}</div>
                       </div>
-                    </motion.a>
+                    </m.a>
                   ))}
-                </motion.div>
+                </m.div>
               </>
             )}
           </>

@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import DashboardSidebar from '@/components/DashboardSidebar'
 
@@ -375,7 +375,7 @@ export default function LeadershipPathPage() {
 
             {/* ── Progress summary card ── */}
             {!loading && nodes.length > 0 && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: -12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
@@ -395,7 +395,7 @@ export default function LeadershipPathPage() {
                     {completedCount} de {nodes.length} módulos completados
                   </div>
                   <div style={{ width: 200, height: 6, borderRadius: 999, background: '#f0ede8', overflow: 'hidden' }}>
-                    <motion.div
+                    <m.div
                       initial={{ width: 0 }}
                       animate={{ width: nodes.length ? `${(completedCount / nodes.length) * 100}%` : '0%' }}
                       transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
@@ -416,7 +416,7 @@ export default function LeadershipPathPage() {
                   </svg>
                   ~{remainingHours} horas restantes
                 </div>
-              </motion.div>
+              </m.div>
             )}
 
             {/* ── Path ── */}
@@ -445,7 +445,7 @@ export default function LeadershipPathPage() {
                     <path d={fullPath} fill="none" stroke="#e0ddd8" strokeWidth="3" strokeDasharray="8 6" />
                   )}
                   {completedPath && completedCount > 0 && (
-                    <motion.path
+                    <m.path
                       d={completedPath}
                       fill="none"
                       stroke="#C0392B"
@@ -470,7 +470,7 @@ export default function LeadershipPathPage() {
                     const particles   = celebrating ? phaseConfettiParticles(slot.phase.label) : []
 
                     return (
-                      <motion.div
+                      <m.div
                         key={`phase-${slot.phase.label}`}
                         style={{
                           position: 'absolute',
@@ -520,7 +520,7 @@ export default function LeadershipPathPage() {
                             </span>
                           )}
                         </div>
-                      </motion.div>
+                      </m.div>
                     )
                   }
 
@@ -538,7 +538,7 @@ export default function LeadershipPathPage() {
                     : { type: 'spring' as const, stiffness: 200, damping: 20, delay: slot.nodeIdx * 0.07 }
 
                   return (
-                    <motion.div
+                    <m.div
                       key={node.module.id}
                       id={isActive ? 'active-node' : undefined}
                       className="node-wrap"
@@ -550,14 +550,14 @@ export default function LeadershipPathPage() {
                     >
                       {/* "Continúa aquí" badge */}
                       {isActive && (
-                        <motion.div
+                        <m.div
                           className="continue-badge"
                           initial={{ opacity: 0, y: 6 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.8 + slot.nodeIdx * 0.07 }}
                         >
                           ¡Continúa aquí!
-                        </motion.div>
+                        </m.div>
                       )}
 
                       {/* Streak badge — right of active node */}
@@ -579,19 +579,19 @@ export default function LeadershipPathPage() {
 
                       {/* ── Completed node ── */}
                       {isCompleted && (
-                        <motion.div
+                        <m.div
                           className="node node-completed"
                           whileHover={srm ? {} : { scale: 1.05 }}
                           transition={{ type: 'spring', stiffness: 300 }}
                           onClick={() => setSelected(node)}
                         >
                           {CHECK_ICON}
-                        </motion.div>
+                        </m.div>
                       )}
 
                       {/* ── Active node ── */}
                       {isActive && (
-                        <motion.div
+                        <m.div
                           className="node node-active"
                           animate={srm ? {} : { scale: [1, 1.06, 1] }}
                           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
@@ -599,7 +599,7 @@ export default function LeadershipPathPage() {
                           onClick={() => setSelected(node)}
                         >
                           {NODE_ICONS[node.module.order_index] ?? NODE_ICONS[1]}
-                        </motion.div>
+                        </m.div>
                       )}
 
                       {/* ── Locked node ── */}
@@ -612,7 +612,7 @@ export default function LeadershipPathPage() {
                           {LOCK_ICON}
                           <AnimatePresence>
                             {hoveredLocked === node.module.id && (
-                              <motion.div
+                              <m.div
                                 initial={{ opacity: 0, y: 6, scale: 0.95 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: 4, scale: 0.97 }}
@@ -629,7 +629,7 @@ export default function LeadershipPathPage() {
                                 }}
                               >
                                 🔒 Completa &ldquo;{prevNode?.module.title ?? 'el módulo anterior'}&rdquo; para desbloquear
-                              </motion.div>
+                              </m.div>
                             )}
                           </AnimatePresence>
                         </div>
@@ -652,7 +652,7 @@ export default function LeadershipPathPage() {
                       }}>
                         {String(node.module.order_index).padStart(2, '0')} · {node.module.title}
                       </div>
-                    </motion.div>
+                    </m.div>
                   )
                 })}
               </div>
@@ -666,7 +666,7 @@ export default function LeadershipPathPage() {
         {selected && (
           <>
             {/* Overlay */}
-            <motion.div
+            <m.div
               key="overlay"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -676,7 +676,7 @@ export default function LeadershipPathPage() {
             />
 
             {/* Panel */}
-            <motion.div
+            <m.div
               key="panel"
               initial={{ opacity: 0, x: 320 }}
               animate={{ opacity: 1, x: 0 }}
@@ -796,7 +796,7 @@ export default function LeadershipPathPage() {
                   </button>
                 )}
               </div>
-            </motion.div>
+            </m.div>
           </>
         )}
       </AnimatePresence>

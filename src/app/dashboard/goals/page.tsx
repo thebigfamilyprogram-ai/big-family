@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import DashboardSidebar from '@/components/DashboardSidebar'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { springNatural, springSnappy } from '@/lib/animations'
 
 interface Goal {
@@ -202,7 +202,7 @@ export default function GoalsPage() {
       <div className="layout">
         <DashboardSidebar activePage="goals" userName={userName} userInitial={userInitial} />
 
-        <motion.main
+        <m.main
           className="content"
           initial={pref ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -225,7 +225,7 @@ export default function GoalsPage() {
                 <span style={{ fontSize: 12, fontWeight: 700, color: '#C0392B' }}>{completedPct}%</span>
               </div>
               <div className="goals-progress-bar">
-                <motion.div
+                <m.div
                   style={{ height: '100%', background: '#C0392B', borderRadius: 999 }}
                   initial={{ width: '0%' }}
                   whileInView={{ width: `${completedPct}%` }}
@@ -256,7 +256,7 @@ export default function GoalsPage() {
                 Metas activas
                 {!loading && <span className="section-badge">{activeGoals.length}</span>}
               </div>
-              <motion.button
+              <m.button
                 className="btn-primary"
                 onClick={() => setShowForm(s => !s)}
                 whileHover={pref ? undefined : { scale: 1.02 }}
@@ -264,13 +264,13 @@ export default function GoalsPage() {
                 transition={springSnappy}
               >
                 + Nueva meta
-              </motion.button>
+              </m.button>
             </div>
 
             {/* Create form */}
             <AnimatePresence>
               {showForm && (
-                <motion.div
+                <m.div
                   key="form"
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
@@ -304,7 +304,7 @@ export default function GoalsPage() {
                       <button className="btn-ghost" onClick={() => setShowForm(false)}>Cancelar</button>
                     </div>
                   </div>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
 
@@ -317,21 +317,21 @@ export default function GoalsPage() {
                 No tienes metas activas. ¡Crea una o adopta una del programa!
               </div>
             ) : (
-              <motion.div
+              <m.div
                 initial={pref ? false : 'hidden'}
                 whileInView="visible"
                 viewport={{ once: true }}
                 variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
               >
                 {activeGoals.map(goal => (
-                  <motion.div
+                  <m.div
                     key={goal.id}
                     variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: springNatural } }}
                   >
                     <GoalRow goal={goal} onComplete={handleComplete} completing={completing === goal.id} />
-                  </motion.div>
+                  </m.div>
                 ))}
-              </motion.div>
+              </m.div>
             )}
           </div>
 
@@ -358,7 +358,7 @@ export default function GoalsPage() {
                 {templates.map(tmpl => {
                   const adopted = goals.some(g => g.title === tmpl.title && g.type === 'program' && g.status === 'active')
                   return (
-                    <motion.div
+                    <m.div
                       key={tmpl.id}
                       className={`tmpl-card ${adopted ? 'adopted' : ''}`}
                       style={{ border: adopted ? '1px solid rgba(34,197,94,.3)' : undefined }}
@@ -376,7 +376,7 @@ export default function GoalsPage() {
                       ) : (
                         <span style={{ fontSize: 20, color: '#C0392B', fontWeight: 300, lineHeight: 1 }}>+</span>
                       )}
-                    </motion.div>
+                    </m.div>
                   )
                 })}
               </div>
@@ -397,7 +397,7 @@ export default function GoalsPage() {
             </div>
           )}
 
-        </motion.main>
+        </m.main>
       </div>
     </>
   )

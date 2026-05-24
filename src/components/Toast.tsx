@@ -1,7 +1,7 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 
 type ToastType = 'success' | 'error' | 'info' | 'warning'
 
@@ -47,7 +47,7 @@ export function ToastContainer() {
         {toasts.map(t => {
           const c = COLORS[t.type]
           return (
-            <motion.div
+            <m.div
               key={t.id}
               initial={{ opacity: 0, x: 60 }}
               animate={{ opacity: 1, x: 0 }}
@@ -68,7 +68,7 @@ export function ToastContainer() {
               }}
             >
               {t.message}
-            </motion.div>
+            </m.div>
           )
         })}
       </AnimatePresence>

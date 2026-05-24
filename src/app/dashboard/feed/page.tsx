@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import DashboardSidebar from '@/components/DashboardSidebar'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
 
 interface FeedItem {
@@ -191,7 +191,7 @@ export default function FeedPage() {
       <div className="layout">
         <DashboardSidebar activePage="feed" userName={userName} userInitial={userInit} />
 
-        <motion.main
+        <m.main
           className="content"
           initial={pref ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -223,7 +223,7 @@ export default function FeedPage() {
             ) : items.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--mute)', fontSize: 13 }}>No hay actividad todavía.</div>
             ) : (
-              <motion.div
+              <m.div
                 initial={pref ? false : 'hidden'}
                 animate="visible"
                 variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.025 } } }}
@@ -236,7 +236,7 @@ export default function FeedPage() {
                     ? { hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: springNatural } }
                     : { hidden: { opacity: 1, y: 0 }, visible: { opacity: 1, y: 0 } }
                   return (
-                    <motion.div
+                    <m.div
                       key={item.id}
                       className="feed-item"
                       variants={itemVariants}
@@ -260,10 +260,10 @@ export default function FeedPage() {
                           <span>{timeAgo(item.created_at)}</span>
                         </div>
                       </div>
-                    </motion.div>
+                    </m.div>
                   )
                 })}
-              </motion.div>
+              </m.div>
             )}
 
             {/* Infinite scroll sentinel */}
@@ -277,13 +277,13 @@ export default function FeedPage() {
               </div>
             )}
           </div>
-        </motion.main>
+        </m.main>
       </div>
 
       {/* Scroll-to-top button */}
       <AnimatePresence>
         {showTop && (
-          <motion.button
+          <m.button
             className="scroll-top"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             initial={pref ? false : { opacity: 0, scale: 0.8 }}
@@ -293,7 +293,7 @@ export default function FeedPage() {
             aria-label="Volver arriba"
           >
             ↑
-          </motion.button>
+          </m.button>
         )}
       </AnimatePresence>
     </>

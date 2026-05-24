@@ -2,566 +2,446 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useRef, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { marked } from 'marked'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
+import ProjectCard, { type Project, type ProjectComment } from '@/components/ProjectCard'
 
-// ── Types ────────────────────────────────────────────────────────────────────
-interface ProjectData {
-  id:                          string
-  title:                       string
-  subtitle:                    string
-  category:                    string
-  track:                       string
-  idemr_identificar:           string | null
-  idemr_diseniar:              string | null
-  idemr_ejecutar:              string | null
-  idemr_medir:                 string | null
-  idemr_reflexionar:           string | null
-  plan_continuidad:            string | null
-  big_leader_model_reflection: string | null
-  user_id:                     string
-  submitted_at:                string | null
-  video_url:                   string | null
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type StatusFilter = 'all' | 'draft' | 'pending' | 'approved' | 'rejected'
+
+interface CoordInfo {
+  full_name:   string
+  school_id:   string
+  school_name: string
+  user_id:     string
 }
 
-function getVideoEmbedUrl(url: string): string | null {
-  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
-  if (yt) return `https://www.youtube.com/embed/${yt[1]}`
-  const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)/)
-  if (vm) return `https://player.vimeo.com/video/${vm[1]}`
-  return null
+interface EnrichedProject extends Project {
+  comments:  ProjectComment[]
+  resultado?: string | null
 }
 
-function renderMarkdown(text: string): string {
-  try {
-    const result = marked.parse(text, { async: false })
-    return typeof result === 'string' ? result : ''
-  } catch {
-    return text
-  }
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?: number }) {
+  return (
+    <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
+  )
 }
 
-interface StudentInfo {
-  full_name:    string
-  school_name:  string
-}
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
-// ── Rubric definition ────────────────────────────────────────────────────────
-const CRITERIA = [
-  {
-    id: 'identidad',
-    label: 'Claridad de identidad y propósito',
-    levels: {
-      1: 'No es claro quién es el estudiante como líder ni qué lo motiva',
-      2: 'Hay identidad y propósito, pero genéricos o sin conexión con el proyecto',
-      3: 'Identidad y propósito articulados y conectados al proyecto',
-      4: 'Identidad y propósito propios, originales, integrados en cada decisión',
-    },
-  },
-  {
-    id: 'calidad',
-    label: 'Calidad del proyecto',
-    levels: {
-      1: 'Problema mal definido, plan vago, ejecución no documentada',
-      2: 'Problema y plan razonables, ejecución parcial o poco documentada',
-      3: 'Problema bien definido, plan ejecutado, evidencia clara de impacto',
-      4: 'El proyecto sobresale por originalidad, ejecución impecable y profundidad',
-    },
-  },
-  {
-    id: 'liderazgo',
-    label: 'Liderazgo en equipo',
-    levels: {
-      1: 'Trabajó solo o no logró movilizar a nadie',
-      2: 'Involucró a otros pero sin rol claro de liderazgo',
-      3: 'Lideró un equipo, comunicó la visión, manejó al menos un conflicto',
-      4: 'Construyó cultura, formó a otros líderes, demostró liderazgo bajo presión',
-    },
-  },
-  {
-    id: 'evidencia',
-    label: 'Evidencia de impacto',
-    levels: {
-      1: 'Sin evidencia o solo afirmaciones cualitativas vagas',
-      2: 'Alguna evidencia (fotos, testimonios) pero sin datos',
-      3: 'Evidencia visual y datos concretos del impacto generado',
-      4: 'Datos rigurosos, antes/después, testimonios múltiples, impacto verificable',
-    },
-  },
-  {
-    id: 'reflexion',
-    label: 'Reflexión y aprendizaje',
-    levels: {
-      1: 'Reflexión superficial o ausente',
-      2: 'Reflexión presente pero genérica',
-      3: 'Reflexión específica, identifica fallos propios y aprendizajes concretos',
-      4: 'Reflexión profunda, autocrítica honesta, aprendizajes que cambian la forma de actuar',
-    },
-  },
-  {
-    id: 'continuidad',
-    label: 'Plan de continuidad',
-    levels: {
-      1: 'Sin plan, el proyecto se acaba con la entrega',
-      2: 'Plan vago, "a ver si alguien sigue"',
-      3: 'Plan claro: persona identificada, herramientas documentadas, indicadores',
-      4: 'Plan robusto con sistema de medición a un año, mentoría activa, evidencia de transición',
-    },
-  },
-  {
-    id: 'big_leader',
-    label: 'Aplicación del Big Leader Model',
-    levels: {
-      1: 'El modelo no aparece o se cita superficialmente',
-      2: 'Aparecen 1-2 pilares aplicados',
-      3: 'Los 5 pilares aparecen aplicados al proyecto, identificados explícitamente',
-      4: 'Los 5 pilares integrados de forma orgánica, el estudiante los explica con voz propia',
-    },
-  },
-] as const
-
-type CriterionId = typeof CRITERIA[number]['id']
-
-// ── Resultado calculation ────────────────────────────────────────────────────
-function calcResultado(scores: Record<CriterionId, number>): string | null {
-  const vals = Object.values(scores)
-  if (vals.some(v => v === 0)) return null // not all filled
-  if (vals.some(v => v === 1)) return 'no_certificado'
-  if (vals.some(v => v === 2)) return 'retroalimentacion'
-  if (vals.every(v => v >= 3) && vals.some(v => v === 4)) return 'mencion_honor'
-  return 'certificado'
-}
-
-const RESULTADO_META: Record<string, { label: string; emoji: string; bg: string; color: string }> = {
-  mencion_honor:      { label: 'Mención de Honor',                           emoji: '🏆', bg: '#FEF9C3', color: '#713F12' },
-  certificado:        { label: 'Certificación otorgada',                     emoji: '✓',  bg: '#D1FAE5', color: '#065F46' },
-  retroalimentacion:  { label: 'Retroalimentación — puede reentregar en 30 días', emoji: '↩',  bg: '#FEF3C7', color: '#92400E' },
-  no_certificado:     { label: 'No certificado — invitar a repetir el ciclo',emoji: '✗',  bg: '#FEE2E2', color: '#991B1B' },
-}
-
-const IDEMR_FIELDS: { key: keyof ProjectData; label: string; pilar: string }[] = [
-  { key: 'idemr_identificar',           label: 'Identificar',                 pilar: 'Pilar II — Propósito y Visión' },
-  { key: 'idemr_diseniar',              label: 'Diseñar',                     pilar: 'Pilares II, III, V' },
-  { key: 'idemr_ejecutar',              label: 'Ejecutar',                    pilar: 'Pilares III, IV' },
-  { key: 'idemr_medir',                 label: 'Medir',                       pilar: 'Pilar IV' },
-  { key: 'idemr_reflexionar',           label: 'Reflexionar',                 pilar: 'Pilares I, VI' },
-  { key: 'plan_continuidad',            label: 'Plan de Continuidad',         pilar: 'Pilar V' },
-  { key: 'big_leader_model_reflection', label: 'Mi Mapa al Big Leader Model', pilar: 'Los 5 pilares' },
-]
-
-function Sk({ w = '100%', h = 16, r = 6 }: { w?: string | number; h?: number; r?: number }) {
-  return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
-}
-
-// ── Page ─────────────────────────────────────────────────────────────────────
-export default function EvaluatePage() {
-  const params      = useParams()
-  const projectId   = params.id as string
+export default function CoordinatorProjectsPage() {
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
-  const pref        = useReducedMotion()
-  const prevCanSubmitRef = useRef(false)
-  const [pulseSub,  setPulseSub]  = useState(false)
-  const [loading,   setLoading]   = useState(true)
-  const [project,   setProject]   = useState<ProjectData | null>(null)
-  const [student,   setStudent]   = useState<StudentInfo | null>(null)
-  const [images,    setImages]    = useState<string[]>([])
-  const [submitting, setSubmitting] = useState(false)
-  const [submitted,  setSubmitted]  = useState(false)
+  const [loading,  setLoading]  = useState(true)
+  const [coord,    setCoord]    = useState<CoordInfo | null>(null)
+  const [projects, setProjects] = useState<EnrichedProject[]>([])
 
-  const emptyScores = () => Object.fromEntries(CRITERIA.map(c => [c.id, 0])) as Record<CriterionId, number>
-  const [scores,       setScores]       = useState<Record<CriterionId, number>>(emptyScores())
-  const [feedback,     setFeedback]     = useState('')
-  const [justSelected, setJustSelected] = useState<{ criterionId: string; score: number } | null>(null)
+  const [filterStatus,   setFilterStatus]   = useState<StatusFilter>('all')
+  const [filterCategory, setFilterCategory] = useState('')
+  const [search,         setSearch]         = useState('')
+  const [projPage,       setProjPage]       = useState(0)
+  const PROJ_PAGE_SIZE = 20
+  const pref = useReducedMotion()
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
-    let cancelled = false
-    async function boot() {
+    async function load() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.replace('/login'); return }
+      if (!user) { router.push('/login'); return }
 
-      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
-      if (!profile || profile.role !== 'coordinator') { router.replace('/dashboard'); return }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, role, school_id')
+        .eq('id', user.id)
+        .maybeSingle()
 
-      const { data: proj } = await supabase.from('projects').select('*').eq('id', projectId).maybeSingle()
-      if (cancelled) return
-      if (!proj) { router.replace('/coordinator/projects'); return }
+      if (profile?.role !== 'coordinator' && profile?.role !== 'admin') { router.push('/dashboard'); return }
 
-      const [{ data: studentProfile }, { data: schoolRow }, { data: imgs }] = await Promise.all([
-        supabase.from('profiles').select('full_name, school_id').eq('id', proj.user_id).maybeSingle(),
-        proj.school_id ? supabase.from('schools').select('name').eq('id', proj.school_id).maybeSingle() : Promise.resolve({ data: null }),
-        supabase.from('project_images').select('url').eq('project_id', projectId),
+      const { data: schoolRow } = profile?.school_id
+        ? await supabase.from('schools').select('name').eq('id', profile.school_id).maybeSingle()
+        : { data: null }
+
+      setCoord({
+        full_name:   profile?.full_name ?? '—',
+        school_id:   profile?.school_id ?? '',
+        school_name: (schoolRow as any)?.name ?? 'Mi colegio',
+        user_id:     user.id,
+      })
+
+      const { data: rows } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('school_id', profile?.school_id)
+        .order('created_at', { ascending: false })
+
+      if (!rows || rows.length === 0) { setLoading(false); return }
+
+      const ids      = rows.map((r: { id: string; user_id: string; school_id: string | null }) => r.id)
+      const userIds  = [...new Set(rows.map((r: { id: string; user_id: string; school_id: string | null }) => r.user_id))]
+      const schoolIds = [...new Set(rows.map((r: { id: string; user_id: string; school_id: string | null }) => r.school_id).filter(Boolean))]
+
+      const [{ data: imgs }, { data: likes }, { data: cmts }, { data: profiles }, { data: evals }, { data: schools }] = await Promise.all([
+        supabase.from('project_images').select('project_id, url').in('project_id', ids),
+        supabase.from('project_likes').select('project_id').in('project_id', ids),
+        supabase.from('project_comments').select('project_id, id, body, created_at').in('project_id', ids),
+        supabase.from('profiles').select('id, full_name').in('id', userIds),
+        supabase.from('capstone_evaluations').select('project_id, resultado').in('project_id', ids),
+        schoolIds.length ? supabase.from('schools').select('id, name').in('id', schoolIds) : Promise.resolve({ data: [] }),
       ])
 
-      if (cancelled) return
+      const profileMap: Record<string, string> = {}
+      profiles?.forEach((p: { id: string; full_name: string | null }) => { profileMap[p.id] = p.full_name ?? '—' })
 
-      setProject(proj as ProjectData)
-      setStudent({ full_name: studentProfile?.full_name ?? '—', school_name: (schoolRow as any)?.name ?? '—' })
-      setImages(imgs?.map((i: { url: string }) => i.url) ?? [])
+      const evalMap: Record<string, string | null> = {}
+      evals?.forEach((e: { project_id: string; resultado: string | null }) => { evalMap[e.project_id] = e.resultado })
+
+      const schoolMap: Record<string, string> = {}
+      schools?.forEach((s: { id: string; name: string }) => { schoolMap[s.id] = s.name })
+
+      const enriched: EnrichedProject[] = rows
+        .map((p: { id: string; title: string; description: string; category: string; status: 'draft' | 'pending' | 'approved' | 'rejected'; created_at: string; user_id: string; school_id: string | null; video_url: string | null; pdf_url: string | null; rejection_reason: string | null; approved_at: string | null; completion_percentage: number }) => ({
+          ...p,
+          images:         imgs?.filter((i: { project_id: string; url: string }) => i.project_id === p.id).map((i: { project_id: string; url: string }) => i.url) ?? [],
+          likes_count:    likes?.filter((l: { project_id: string }) => l.project_id === p.id).length ?? 0,
+          comments_count: cmts?.filter((c: { project_id: string; id: string; body: string; created_at: string }) => c.project_id === p.id).length ?? 0,
+          full_name:      profileMap[p.user_id] ?? '—',
+          school_name:    schoolMap[p.school_id ?? ''] ?? '—',
+          comments:       (cmts?.filter((c: { project_id: string; id: string; body: string; created_at: string }) => c.project_id === p.id) ?? []) as ProjectComment[],
+          resultado:      evalMap[p.id] ?? null,
+        }))
+        // pending → draft → approved/rejected, then newest within group
+        .sort((a: EnrichedProject, b: EnrichedProject) => {
+          const ord = { pending: 0, draft: 1, approved: 2, rejected: 2 } as Record<string, number>
+          const ao = ord[a.status] ?? 2
+          const bo = ord[b.status] ?? 2
+          if (ao !== bo) return ao - bo
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        })
+
+      setProjects(enriched)
       setLoading(false)
     }
-    boot()
-    return () => { cancelled = true }
-  }, [projectId]) // eslint-disable-line react-hooks/exhaustive-deps
+    load()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const resultado = calcResultado(scores)
-  const allFilled = Object.values(scores).every(v => v > 0)
-  const canSubmit = allFilled && feedback.trim().length > 0
-
-  async function handleSubmit() {
-    if (!canSubmit || !resultado || !supabaseRef.current) return
+  async function handleApprove(projectId: string) {
+    if (!supabaseRef.current) return
     const supabase = supabaseRef.current
-    setSubmitting(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setSubmitting(false); return }
-
-    const projectStatus = resultado === 'retroalimentacion' || resultado === 'no_certificado' ? 'rejected' : 'approved'
-
-    await supabase.from('capstone_evaluations').insert({
-      project_id:      projectId,
-      coordinator_id:  user.id,
-      scores,
-      resultado,
-      feedback:        feedback.trim(),
-      evaluated_at:    new Date().toISOString(),
-    })
-
-    await supabase.from('projects').update({
-      status:           projectStatus,
-      approved_at:      projectStatus === 'approved' ? new Date().toISOString() : null,
-      approved_by:      projectStatus === 'approved' ? user.id : null,
-      rejection_reason: projectStatus === 'rejected' ? `${RESULTADO_META[resultado].label}: ${feedback.trim()}` : null,
-    }).eq('id', projectId)
-
-    setSubmitting(false)
-    setSubmitted(true)
-    setTimeout(() => router.replace('/coordinator/projects'), 2000)
-  }
-
-  useEffect(() => {
-    if (!prevCanSubmitRef.current && canSubmit && !pref) {
-      setPulseSub(true)
-      const t = setTimeout(() => setPulseSub(false), 400)
-      return () => clearTimeout(t)
+    if (projectId.startsWith('revoke-')) {
+      const id = projectId.replace('revoke-', '')
+      await supabase.from('projects').update({ status: 'pending', approved_at: null, approved_by: null }).eq('id', id)
+      setProjects(prev => prev.map(p => p.id === id ? { ...p, status: 'pending', approved_at: null } : p))
+      return
     }
-    prevCanSubmitRef.current = canSubmit
-  }, [canSubmit]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const setScore = (id: CriterionId, val: number) => {
-    setScores(prev => ({ ...prev, [id]: val }))
-    setJustSelected({ criterionId: id, score: val })
-    setTimeout(() => setJustSelected(null), 350)
+    const { data: { user } } = await supabase.auth.getUser()
+    await supabase
+      .from('projects')
+      .update({ status: 'approved', approved_at: new Date().toISOString(), approved_by: user?.id })
+      .eq('id', projectId)
+    setProjects(prev => prev.map(p => p.id === projectId
+      ? { ...p, status: 'approved', approved_at: new Date().toISOString() }
+      : p
+    ))
   }
+
+  async function handleReject(projectId: string, reason: string) {
+    if (!supabaseRef.current) return
+    const supabase = supabaseRef.current
+    await supabase
+      .from('projects')
+      .update({ status: 'rejected', rejection_reason: reason || null })
+      .eq('id', projectId)
+    setProjects(prev => prev.map(p => p.id === projectId
+      ? { ...p, status: 'rejected', rejection_reason: reason }
+      : p
+    ))
+  }
+
+  const filtered = useMemo(() => {
+    setProjPage(0)
+    const q = search.toLowerCase()
+    return projects.filter(p => {
+      if (filterStatus !== 'all' && p.status !== filterStatus) return false
+      if (filterCategory && p.category !== filterCategory) return false
+      if (q && !p.title.toLowerCase().includes(q) && !(p.full_name ?? '').toLowerCase().includes(q)) return false
+      return true
+    })
+  }, [projects, filterStatus, filterCategory, search])
+
+  const totalProjPages = Math.ceil(filtered.length / PROJ_PAGE_SIZE)
+  const pagedFiltered  = filtered.slice(projPage * PROJ_PAGE_SIZE, (projPage + 1) * PROJ_PAGE_SIZE)
+
+  const counts = useMemo(() => ({
+    total:    projects.length,
+    draft:    projects.filter(p => p.status === 'draft').length,
+    pending:  projects.filter(p => p.status === 'pending').length,
+    approved: projects.filter(p => p.status === 'approved').length,
+    rejected: projects.filter(p => p.status === 'rejected').length,
+  }), [projects])
+
+  async function handleLogout() {
+    if (supabaseRef.current) await supabaseRef.current.auth.signOut()
+    router.push('/login')
+  }
+
+  const FILTER_TABS: { value: StatusFilter; label: string }[] = [
+    { value: 'all',      label: 'Todos' },
+    { value: 'draft',    label: 'Borrador' },
+    { value: 'pending',  label: 'En revisión' },
+    { value: 'approved', label: 'Aprobados' },
+    { value: 'rejected', label: 'Rechazados' },
+  ]
 
   return (
     <>
       <style>{`
                 @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
         *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;color:#0D0D0D;}
-        .ev-nav{position:sticky;top:0;z-index:30;background:rgba(245,243,239,.9);backdrop-filter:blur(16px);border-bottom:1px solid rgba(13,13,13,.08);height:58px;display:flex;align-items:center;padding:0 32px;gap:16px;}
-        .ev-nav-back{display:flex;align-items:center;gap:6px;font-size:13px;color:#6B6B6B;background:none;border:none;cursor:pointer;transition:color .15s;padding:0;}
-        .ev-nav-back:hover{color:#0D0D0D;}
-        .ev-nav-title{flex:1;text-align:center;font-family:"Satoshi",sans-serif;font-weight:700;font-size:15px;color:#0D0D0D;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-        .ev-layout{display:grid;grid-template-columns:1fr 420px;gap:24px;max-width:1320px;margin:0 auto;padding:32px 32px 80px;align-items:start;}
-        .ev-left{min-width:0;}
-        .ev-right{position:sticky;top:74px;max-height:calc(100vh - 100px);overflow-y:auto;}
-        .ev-card{background:#fff;border:1px solid rgba(13,13,13,.07);border-radius:20px;padding:28px;box-shadow:0 2px 12px -4px rgba(13,13,13,.07);margin-bottom:16px;}
-        .ev-student-row{display:flex;flex-direction:column;gap:4px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(13,13,13,.07);}
-        .ev-student-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:20px;color:#0D0D0D;}
-        .ev-student-meta{display:flex;gap:12px;font-size:12.5px;color:#6B6B6B;flex-wrap:wrap;}
-        .ev-project-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:26px;letter-spacing:-.02em;color:#0D0D0D;margin-bottom:6px;}
-        .ev-section{margin-bottom:24px;}
-        .ev-section-eyebrow{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#C0392B;margin-bottom:4px;}
-        .ev-section-pilar{font-size:11px;color:#9a9690;margin-bottom:8px;}
-        .ev-breadcrumb{display:flex;align-items:center;gap:6px;font-size:12.5px;color:rgba(13,13,13,.42);margin-bottom:20px;flex-wrap:wrap;}
-        .ev-breadcrumb a{color:rgba(13,13,13,.42);text-decoration:none;transition:color .15s;cursor:pointer;}
-        .ev-breadcrumb a:hover{color:#C0392B;}
-        .ev-breadcrumb-sep{color:rgba(13,13,13,.22);}
-        .ev-section-body{font-size:14.5px;color:var(--ink-2);line-height:1.75;white-space:pre-wrap;}
-        .ev-md{white-space:normal;color:var(--ink-2);}
-        .ev-md p{margin-bottom:10px;line-height:1.7;}
-        .ev-md strong{font-weight:700;color:var(--ink);}
-        .ev-md em{font-style:italic;}
-        .ev-md h1,.ev-md h2,.ev-md h3,.ev-md h4{font-family:"Satoshi",sans-serif;font-weight:700;color:var(--ink);margin:14px 0 6px;}
-        .ev-md h1{font-size:18px;} .ev-md h2{font-size:16px;} .ev-md h3{font-size:14.5px;}
-        .ev-md ul,.ev-md ol{padding-left:20px;margin-bottom:10px;}
-        .ev-md li{margin-bottom:4px;line-height:1.6;}
-        .ev-md blockquote{border-left:3px solid #C0392B;padding-left:12px;color:var(--mute);font-style:italic;margin:8px 0;}
-        .ev-md a{color:#C0392B;text-underline-offset:2px;}
-        .ev-md code{font-family:monospace;font-size:12.5px;background:var(--bg-2);color:var(--ink);padding:1px 5px;border-radius:4px;border:1px solid var(--line-soft);}
-        .ev-md pre{background:var(--bg-2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;margin-bottom:10px;}
-        .ev-md pre code{background:none;border:none;padding:0;font-size:12px;}
-        .ev-section-empty{font-size:13px;color:var(--mute);font-style:italic;}
-        .ev-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;}
-        .ev-photo{aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:rgba(13,13,13,.05);}
-        .ev-photo img{width:100%;height:100%;object-fit:cover;}
-        .rub-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:18px;color:#0D0D0D;margin-bottom:4px;}
-        .rub-subtitle{font-size:12.5px;color:#9a9690;margin-bottom:20px;}
-        .rub-criterion{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(13,13,13,.06);}
-        .rub-criterion:last-of-type{border-bottom:none;}
-        .rub-crit-label{font-family:"Satoshi",sans-serif;font-weight:700;font-size:13.5px;color:#0D0D0D;margin-bottom:10px;}
-        .rub-scores{display:flex;flex-direction:column;gap:6px;}
-        .rub-score-row{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background .13s;border:1.5px solid transparent;}
-        .rub-score-row:hover{background:rgba(13,13,13,.03);}
-        .rub-score-row.selected{background:rgba(192,57,43,.05);border-color:rgba(192,57,43,.2);}
-        .rub-score-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-weight:700;font-size:11px;flex-shrink:0;margin-top:1px;border:1.5px solid rgba(13,13,13,.15);color:#6B6B6B;}
-        .rub-score-row.selected .rub-score-num{background:#C0392B;border-color:#C0392B;color:#fff;}
-        .rub-score-text{font-size:12.5px;color:#6B6B6B;line-height:1.45;}
-        .rub-score-row.selected .rub-score-text{color:#0D0D0D;}
-        .resultado-box{border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:10px;margin-bottom:20px;}
-        .rub-feedback-label{font-family:"Satoshi",sans-serif;font-weight:600;font-size:13px;color:#0D0D0D;margin-bottom:8px;}
-        .rub-feedback{width:100%;padding:12px 14px;border:1px solid rgba(13,13,13,.14);border-radius:10px;font-size:13.5px;font-family:inherit;outline:none;resize:vertical;min-height:100px;color:#0D0D0D;transition:border-color .18s;}
-        .rub-feedback:focus{border-color:#C0392B;}
-        .btn-submit{width:100%;padding:13px;border-radius:999px;background:#C0392B;color:#fff;border:none;font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:background .2s,opacity .2s;margin-top:16px;}
-        .btn-submit:hover:not(:disabled){background:#a93226;}
-        .btn-submit:disabled{opacity:.4;cursor:not-allowed;}
-        .ev-submitted{text-align:center;padding:32px 0;font-family:"Satoshi",sans-serif;}
-        @media(max-width:1100px){.ev-layout{grid-template-columns:1fr;}.ev-right{position:static;max-height:none;}}
-        @media(max-width:600px){.ev-photos{grid-template-columns:repeat(2,1fr);}.ev-layout{padding:20px 16px 80px;}}
+        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;min-height:100vh;color:#0D0D0D;}
+
+        /* Nav */
+        .cpj-nav{position:sticky;top:0;z-index:30;background:rgba(245,243,239,.88);backdrop-filter:saturate(150%) blur(16px);border-bottom:1px solid rgba(13,13,13,.08);height:62px;display:flex;align-items:center;padding:0 40px;gap:24px;}
+        .cpj-brand{display:flex;align-items:center;gap:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;text-decoration:none;color:#0D0D0D;flex-shrink:0;}
+        .cpj-school{flex:1;text-align:center;font-size:13.5px;font-weight:600;color:#2D2D2D;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .cpj-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+        .cpj-badge{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;background:#FFF4E6;color:#7A4A00;border:1px solid #FFD699;border-radius:999px;padding:3px 10px;font-weight:700;}
+        .cpj-btn{background:transparent;border:1px solid rgba(13,13,13,.12);border-radius:999px;padding:8px 16px;font-size:13px;color:#0D0D0D;cursor:pointer;transition:border-color .2s,background .2s;white-space:nowrap;font-family:inherit;}
+        .cpj-btn:hover{border-color:#0D0D0D;background:rgba(13,13,13,.04);}
+        .cpj-btn--active{background:#0D0D0D !important;color:#fff !important;border-color:#0D0D0D !important;}
+        .cpj-btn--ghost{background:none;border:1px solid rgba(13,13,13,.14);border-radius:999px;padding:7px 14px;font-size:12px;color:#6B6B6B;cursor:pointer;transition:all .2s;white-space:nowrap;}
+        .cpj-btn--ghost:hover{border-color:#0D0D0D;color:#0D0D0D;}
+
+        /* Main */
+        .cpj-main{max-width:860px;margin:0 auto;padding:44px 40px 80px;}
+
+        /* Header */
+        .cpj-header{margin-bottom:28px;}
+        .cpj-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:28px;letter-spacing:-.022em;color:#0D0D0D;}
+        .cpj-header p{margin-top:5px;font-size:13.5px;color:#6B6B6B;}
+
+        /* Stats row */
+        .cpj-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px;}
+        .cpj-stat{background:#fff;border:1px solid rgba(13,13,13,.07);border-radius:12px;padding:14px 18px;min-width:110px;box-shadow:0 1px 6px -2px rgba(13,13,13,.06);}
+        .cpj-stat__num{font-family:"Satoshi",sans-serif;font-weight:800;font-size:26px;color:#0D0D0D;line-height:1;}
+        .cpj-stat__label{font-size:11.5px;color:#9a9690;margin-top:4px;}
+        .badge-pending{display:inline-block;padding:1px 7px;borderRadius:999px;background:#FEF3C7;color:#92400E;font-size:11px;fontWeight:600;verticalAlign:middle;}
+        .badge-approved{display:inline-block;padding:1px 7px;border-radius:999px;background:#D1FAE5;color:#065F46;font-size:11px;font-weight:600;vertical-align:middle;}
+        .badge-rejected{display:inline-block;padding:1px 7px;border-radius:999px;background:#FEE2E2;color:#991B1B;font-size:11px;font-weight:600;vertical-align:middle;}
+
+        /* Filters */
+        .cpj-filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:28px;}
+        .cpj-tab{padding:8px 16px;border-radius:999px;background:rgba(13,13,13,.06);color:#6B6B6B;border:none;font-family:"Satoshi",sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:all .18s;}
+        .cpj-tab:hover{background:rgba(13,13,13,.1);color:#0D0D0D;}
+        .cpj-tab.active{background:#0D0D0D;color:#fff;}
+        .cpj-select{padding:8px 32px 8px 12px;border-radius:999px;border:1px solid rgba(13,13,13,.14);background:#fff;font-size:13px;font-family:inherit;color:#0D0D0D;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236B6B6B' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer;}
+        .cpj-search{padding:8px 14px 8px 34px;border:1px solid rgba(13,13,13,.14);border-radius:999px;font-size:13px;font-family:inherit;outline:none;background:#fff;color:#0D0D0D;transition:border-color .18s;}
+        .cpj-search:focus{border-color:#0D0D0D;}
+        .cpj-search-wrap{position:relative;}
+        .cpj-search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9a9690;pointer-events:none;}
+
+        /* Feed */
+        .cpj-feed{display:flex;flex-direction:column;gap:20px;}
+        .cpj-empty{background:#fff;border:1px solid rgba(13,13,13,.07);border-radius:20px;padding:60px 48px;text-align:center;}
+        .cpj-empty-icon{font-size:40px;margin-bottom:16px;}
+        .cpj-empty-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:18px;color:#0D0D0D;margin-bottom:8px;}
+        .cpj-empty-sub{font-size:14px;color:#9a9690;line-height:1.55;max-width:340px;margin:0 auto;}
+
+        /* Pagination */
+        .cpj-pagination{display:flex;align-items:center;justify-content:space-between;margin-top:24px;gap:12px;}
+        .cpj-page-info{font-size:12.5px;color:#9a9690;}
+        .cpj-page-btns{display:flex;gap:8px;}
+        .cpj-page-btn{padding:8px 20px;border-radius:999px;border:1.5px solid rgba(13,13,13,.12);font-family:"Satoshi",sans-serif;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#6B6B6B;transition:all .15s;}
+        .cpj-page-btn:hover:not(:disabled){border-color:#0D0D0D;color:#0D0D0D;}
+        .cpj-page-btn:disabled{opacity:.35;cursor:not-allowed;}
+
+        @media(max-width:860px){
+          .cpj-main{padding:28px 20px 60px;}
+          .cpj-nav{padding:0 20px;}
+          .cpj-school{display:none;}
+        }
       `}</style>
 
       {/* Nav */}
-      <nav className="ev-nav">
-        <button className="ev-nav-back" onClick={() => router.push('/coordinator/projects')}>
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M9 12L4 7l5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+      <nav className="cpj-nav">
+        <a className="cpj-brand" href="/">
+          <svg width="20" height="20" viewBox="0 0 52 52" fill="none">
+            <circle cx="26" cy="10" r="6" fill="#0D0D0D"/>
+            <path d="M26 16 L44 48 H8 Z" fill="#0D0D0D"/>
+            <circle cx="9" cy="18" r="4" fill="#6B6B6B"/>
+            <circle cx="43" cy="18" r="4" fill="#6B6B6B"/>
           </svg>
-          Proyectos
-        </button>
-        <div className="ev-nav-title">
-          {loading ? 'Cargando evaluación…' : `Evaluar: ${project?.title ?? ''}`}
+          Big Family
+        </a>
+        <div className="cpj-school">
+          {loading ? <Sk w={160} h={13} r={6} /> : coord?.school_name}
+        </div>
+        <div className="cpj-right">
+          <span className="cpj-badge">Coordinador</span>
+          <button className="cpj-btn" onClick={() => router.push('/coordinator')}>Panel principal</button>
+          <button className="cpj-btn cpj-btn--active">Proyectos</button>
+          <button className="cpj-btn" onClick={() => router.push('/coordinator/modules')}>Módulos</button>
+          <button className="cpj-btn" onClick={() => router.push('/coordinator/news')}>Noticias</button>
+          <button className="cpj-btn" onClick={() => router.push('/dashboard')}>Dashboard</button>
+          <button className="cpj-btn--ghost" onClick={handleLogout}>Cerrar sesión</button>
         </div>
       </nav>
 
-      <div className="ev-layout">
-        {/* ── LEFT: Project viewer ── */}
-        <motion.div
-          className="ev-left"
-          initial={pref ? false : { opacity: 0, x: -16 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ type: 'spring', stiffness: 140, damping: 20 }}
-        >
-          {/* Breadcrumb */}
-          <nav className="ev-breadcrumb" aria-label="Migas de pan">
-            <a onClick={() => router.push('/coordinator')}>Coordinador</a>
-            <span className="ev-breadcrumb-sep">›</span>
-            <a onClick={() => router.push('/coordinator/projects')}>Proyectos</a>
-            <span className="ev-breadcrumb-sep">›</span>
-            <span style={{ color: 'rgba(13,13,13,.7)', fontWeight: 500 }}>
-              {loading ? '…' : `Evaluar: ${project?.title ?? ''}`}
-            </span>
-          </nav>
+      <m.main
+        className="cpj-main"
+        initial={pref ? false : { opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {/* Header */}
+        <div className="cpj-header">
+          <h1>Proyectos de Liderazgo</h1>
+          <p>Revisa y aprueba proyectos para la certificación The Big Leader · {coord?.school_name}</p>
+        </div>
 
-          <div className="ev-card">
-            {loading ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <Sk w="60%" h={28} />
-                <Sk w="80%" h={18} />
-                <Sk h={14} />
-                <Sk w="40%" h={14} />
-              </div>
-            ) : project && student ? (
-              <>
-                <div className="ev-student-row">
-                  <div className="ev-student-name">{student.full_name}</div>
-                  <div className="ev-student-meta">
-                    <span>{student.school_name}</span>
-                    <span>·</span>
-                    <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: project.track === 'senior' ? 'rgba(192,57,43,.1)' : '#FEF3C7', color: project.track === 'senior' ? '#C0392B' : '#92400E' }}>
-                      {project.track === 'senior' ? 'Senior' : 'Junior'} Leader
-                    </span>
-                    {project.submitted_at && (
-                      <span>Enviado el {new Date(project.submitted_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                    )}
-                  </div>
-                </div>
-
-                <h1 className="ev-project-title">{project.title}</h1>
-                {project.subtitle && (
-                  <p style={{ fontSize: 15, color: '#6B6B6B', marginBottom: 24, lineHeight: 1.6 }}>{project.subtitle}</p>
-                )}
-
-                {/* IDEMR sections — markdown rendered */}
-                {IDEMR_FIELDS.map((field, idx) => (
-                  <motion.div
-                    key={field.key}
-                    className="ev-section"
-                    initial={pref ? false : { opacity: 0, y: 16 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ type: 'spring', stiffness: 140, damping: 20, delay: idx * 0.08 }}
-                  >
-                    <div className="ev-section-eyebrow">{field.label}</div>
-                    {field.pilar && <div className="ev-section-pilar">{field.pilar}</div>}
-                    {project[field.key]
-                      ? <div
-                          className="ev-section-body ev-md"
-                          dangerouslySetInnerHTML={{ __html: renderMarkdown(project[field.key] as string) }}
-                        />
-                      : <p className="ev-section-empty">Sin contenido</p>
-                    }
-                  </motion.div>
-                ))}
-
-                {/* Photo gallery */}
-                {images.length > 0 && (
-                  <div className="ev-section">
-                    <div className="ev-section-eyebrow">Evidencia fotográfica</div>
-                    <div className="ev-photos">
-                      {images.map((url, i) => (
-                        <div key={i} className="ev-photo">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={url} alt="" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Video embed */}
-                {project.video_url && (() => {
-                  const embedUrl = getVideoEmbedUrl(project.video_url)
-                  if (!embedUrl) return null
-                  return (
-                    <div className="ev-section">
-                      <div className="ev-section-eyebrow">Video del proyecto</div>
-                      <div style={{ borderRadius: 10, overflow: 'hidden', aspectRatio: '16/9', marginTop: 8 }}>
-                        <iframe
-                          src={embedUrl}
-                          style={{ width: '100%', height: '100%', border: 'none' }}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          title="Video del proyecto"
-                        />
-                      </div>
-                    </div>
-                  )
-                })()}
-              </>
-            ) : null}
+        {/* Stats */}
+        {loading ? (
+          <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
+            {[1,2,3,4].map(i => <div key={i} style={{ height: 70, width: 120, borderRadius: 12, background: 'rgba(13,13,13,.05)' }} />)}
           </div>
-        </motion.div>
+        ) : (
+          <div className="cpj-stats">
+            {([
+              { num: counts.total,    label: 'Total proyectos', color: undefined    },
+              { num: counts.draft,    label: 'Borradores',      color: '#444441'    },
+              { num: counts.pending,  label: 'En revisión',     color: '#92400E'    },
+              { num: counts.approved, label: 'Aprobados',       color: '#065F46'    },
+              { num: counts.rejected, label: 'Rechazados',      color: '#991B1B'    },
+            ] as { num: number; label: string; color: string | undefined }[]).map((s, i) => (
+              <m.div
+                key={s.label}
+                className="cpj-stat"
+                initial={pref ? false : { opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: i * 0.07 }}
+              >
+                <div className="cpj-stat__num" style={{ color: s.color }}>{s.num}</div>
+                <div className="cpj-stat__label">{s.label}</div>
+              </m.div>
+            ))}
+          </div>
+        )}
 
-        {/* ── RIGHT: Rubric evaluation form ── */}
-        <motion.div
-          className="ev-right"
-          initial={pref ? false : { opacity: 0, x: 16 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ type: 'spring', stiffness: 140, damping: 20 }}
-        >
-          <div className="ev-card">
-            {submitted ? (
-              <div className="ev-submitted">
-                <div style={{ fontSize: 40, marginBottom: 12 }}>✓</div>
-                <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 18, marginBottom: 6 }}>Evaluación enviada</div>
-                <div style={{ fontSize: 13, color: '#9a9690' }}>Redirigiendo a proyectos…</div>
-              </div>
-            ) : (
-              <>
-                <div className="rub-title">Rúbrica de Certificación</div>
-                <div className="rub-subtitle">Big Leader Model · 7 criterios · Escala 1–4</div>
+        {/* Filters */}
+        <div className="cpj-filters">
+          {FILTER_TABS.map(tab => (
+            <button
+              key={tab.value}
+              className={`cpj-tab${filterStatus === tab.value ? ' active' : ''}`}
+              onClick={() => setFilterStatus(tab.value)}
+            >
+              {tab.label}
+              {tab.value !== 'all' && counts[tab.value] > 0 && (
+                <span style={{ marginLeft: 6, padding: '1px 6px', borderRadius: 999, background: filterStatus === tab.value ? 'rgba(255,255,255,.2)' : 'rgba(13,13,13,.08)', fontSize: 11 }}>
+                  {counts[tab.value]}
+                </span>
+              )}
+            </button>
+          ))}
 
-                {/* Live resultado */}
-                <AnimatePresence>
-                  {resultado && (
-                    <motion.div
-                      className="resultado-box"
-                      key={resultado}
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      style={{ background: RESULTADO_META[resultado].bg, overflow: 'hidden' }}
-                      transition={{ type: 'spring', stiffness: 140, damping: 20 }}
-                    >
-                      <span style={{ fontSize: 20 }}>{RESULTADO_META[resultado].emoji}</span>
-                      <div>
-                        <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 13.5, color: RESULTADO_META[resultado].color }}>
-                          {RESULTADO_META[resultado].label}
-                        </div>
-                        <div style={{ fontSize: 11.5, color: RESULTADO_META[resultado].color, opacity: .75, marginTop: 1 }}>
-                          Resultado provisional — se confirma al enviar
-                        </div>
+          <select
+            className="cpj-select"
+            value={filterCategory}
+            onChange={e => setFilterCategory(e.target.value)}
+          >
+            <option value="">Todas las categorías</option>
+            <option value="liderazgo-comunitario">Liderazgo comunitario</option>
+            <option value="innovacion-social">Innovación social</option>
+            <option value="medio-ambiente">Medio ambiente</option>
+            <option value="educacion">Educación</option>
+            <option value="salud-bienestar">Salud y bienestar</option>
+            <option value="emprendimiento">Emprendimiento</option>
+          </select>
+
+          <div className="cpj-search-wrap">
+            <svg className="cpj-search-icon" width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.4"/>
+              <path d="M9.5 9.5L13 13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+            <input
+              className="cpj-search"
+              type="text"
+              placeholder="Buscar por estudiante o título…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Feed */}
+        {loading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {[1,2].map(i => <div key={i} style={{ height: 400, borderRadius: 20, background: 'rgba(13,13,13,.04)' }} />)}
+          </div>
+        ) : (
+          <>
+            <div className="cpj-feed">
+              {filtered.length === 0 ? (
+                <div className="cpj-empty">
+                  {projects.length === 0 ? (
+                    <>
+                      <div className="cpj-empty-icon">📋</div>
+                      <div className="cpj-empty-title">Aún no hay proyectos de tu colegio</div>
+                      <div className="cpj-empty-sub">
+                        Cuando tus estudiantes suban sus proyectos de liderazgo, aparecerán aquí para que puedas revisarlos y aprobarlos.
                       </div>
-                    </motion.div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="cpj-empty-icon">🔍</div>
+                      <div className="cpj-empty-title">Sin resultados</div>
+                      <div className="cpj-empty-sub">No hay proyectos que coincidan con los filtros seleccionados.</div>
+                    </>
                   )}
-                </AnimatePresence>
-
-                {!allFilled && !resultado && (
-                  <div style={{ fontSize: 12.5, color: '#9a9690', marginBottom: 16, padding: '10px 12px', background: 'rgba(13,13,13,.04)', borderRadius: 8 }}>
-                    Califica los {CRITERIA.length} criterios para ver el resultado
-                  </div>
-                )}
-
-                {/* Criteria */}
-                {CRITERIA.map(criterion => (
-                  <div key={criterion.id} className="rub-criterion">
-                    <div className="rub-crit-label">{criterion.label}</div>
-                    <div className="rub-scores">
-                      {([4, 3, 2, 1] as const).map(score => (
-                        <motion.div
-                          key={score}
-                          className={`rub-score-row${scores[criterion.id] === score ? ' selected' : ''}`}
-                          onClick={() => setScore(criterion.id, score)}
-                          animate={!pref && justSelected?.criterionId === criterion.id && justSelected.score === score ? { scale: [1, 1.02, 1] } : {}}
-                          transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-                        >
-                          <div className="rub-score-num">{score}</div>
-                          <div className="rub-score-text">{criterion.levels[score]}</div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-
-                {/* Feedback */}
-                <div style={{ marginTop: 4 }}>
-                  <div className="rub-feedback-label">Retroalimentación para el estudiante *</div>
-                  <textarea
-                    className="rub-feedback"
-                    placeholder="Escribe una retroalimentación específica y constructiva para el estudiante…"
-                    value={feedback}
-                    onChange={e => setFeedback(e.target.value)}
-                  />
                 </div>
+              ) : (
+                pagedFiltered.map((project, i) => (
+                  <m.div
+                    key={project.id}
+                    initial={pref ? false : { opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 140, damping: 20, delay: pref ? 0 : i * 0.06 }}
+                  >
+                    <ProjectCard
+                      project={project}
+                      mode="coordinator"
+                      coordinatorId={coord?.user_id}
+                      initialComments={project.comments}
+                      onApprove={handleApprove}
+                      onReject={handleReject}
+                      onEvaluate={id => router.push(`/coordinator/projects/${id}/evaluate`)}
+                      resultado={project.resultado}
+                    />
+                  </m.div>
+                ))
+              )}
+            </div>
 
-                {/* Score summary */}
-                {allFilled && (
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 12 }}>
-                    {CRITERIA.map(c => (
-                      <div key={c.id} style={{ padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, background: scores[c.id] >= 3 ? '#D1FAE5' : scores[c.id] === 2 ? '#FEF3C7' : '#FEE2E2', color: scores[c.id] >= 3 ? '#065F46' : scores[c.id] === 2 ? '#92400E' : '#991B1B' }}>
-                        {scores[c.id]}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <motion.button
-                  className="btn-submit"
-                  disabled={!canSubmit || submitting}
-                  onClick={handleSubmit}
-                  animate={pulseSub ? { scale: [1, 1.03, 1] } : {}}
-                  transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                >
-                  {submitting ? 'Enviando evaluación…' : 'Enviar evaluación →'}
-                </motion.button>
-
-                {!canSubmit && (
-                  <p style={{ fontSize: 11.5, color: '#9a9690', marginTop: 8, textAlign: 'center', lineHeight: 1.4 }}>
-                    {!allFilled ? 'Califica todos los criterios.' : 'Escribe la retroalimentación.'}
-                  </p>
-                )}
-              </>
+            {filtered.length > PROJ_PAGE_SIZE && (
+              <div className="cpj-pagination">
+                <span className="cpj-page-info">
+                  Página {projPage + 1} de {totalProjPages} · {filtered.length} proyectos
+                </span>
+                <div className="cpj-page-btns">
+                  <button className="cpj-page-btn" disabled={projPage === 0} onClick={() => { setProjPage(p => p - 1); window.scrollTo(0, 0) }}>← Anterior</button>
+                  <button className="cpj-page-btn" disabled={projPage >= totalProjPages - 1} onClick={() => { setProjPage(p => p + 1); window.scrollTo(0, 0) }}>Siguiente →</button>
+                </div>
+              </div>
             )}
-          </div>
-        </motion.div>
-      </div>
+          </>
+        )}
+      </m.main>
     </>
   )
 }

@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import * as topojson from 'topojson-client'
 import DashboardSidebar from '@/components/DashboardSidebar'
 
@@ -317,7 +317,7 @@ export default function GlobalMapPage() {
                     const path = arcPath(ca, cb)
                     return (
                       <g key={i}>
-                        <motion.path
+                        <m.path
                           d={path}
                           fill="none"
                           stroke="rgba(192,57,43,0.3)"
@@ -349,7 +349,7 @@ export default function GlobalMapPage() {
                         style={{ cursor: 'pointer' }}
                         onClick={e => openTooltip(country, e)}
                       >
-                        <motion.circle
+                        <m.circle
                           cx={country.x}
                           cy={country.y}
                           r={r}
@@ -393,7 +393,7 @@ export default function GlobalMapPage() {
                   <div className="gm-lb__info">
                     <div className="gm-lb__name">{country.name}</div>
                     <div className="gm-lb__bar">
-                      <motion.div
+                      <m.div
                         style={{
                           height: '100%',
                           borderRadius: 999,
@@ -413,7 +413,7 @@ export default function GlobalMapPage() {
             </div>
 
             {/* Personal card */}
-            <motion.div
+            <m.div
               className="gm-card"
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
@@ -440,14 +440,14 @@ export default function GlobalMapPage() {
                 <span>{Math.round(co.xp / MAX_XP * 100)}%</span>
               </div>
               <div className="gm-card__prog">
-                <motion.div
+                <m.div
                   style={{ height: '100%', borderRadius: 999, background: '#C0392B' }}
                   initial={{ width: 0 }}
                   animate={{ width: `${co.xp / MAX_XP * 100}%` }}
                   transition={{ duration: 1.2, delay: 0.5, ease: 'easeOut' }}
                 />
               </div>
-            </motion.div>
+            </m.div>
 
           </div>
         </main>
@@ -456,7 +456,7 @@ export default function GlobalMapPage() {
       {/* ── Tooltip ── */}
       <AnimatePresence>
         {tooltip && (
-          <motion.div
+          <m.div
             className="gm-tip"
             style={{
               left: tooltip.x,
@@ -488,7 +488,7 @@ export default function GlobalMapPage() {
                 style={{ width: `${tooltip.country.xp / MAX_XP * 100}%` }}
               />
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>

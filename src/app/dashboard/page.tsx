@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import DashboardSidebar from '@/components/DashboardSidebar'
-import { motion, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { fadeUp } from '@/lib/animations'
 
 interface Module {
@@ -430,7 +430,7 @@ export default function DashboardPage() {
         />
 
         {/* ── CENTER CONTENT ── */}
-        <motion.main
+        <m.main
           className="content"
           initial={pref ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -550,7 +550,7 @@ export default function DashboardPage() {
                 <span>{loading ? '…' : `${visionPct}%`}</span>
               </div>
               <div className="prog-track">
-                <motion.div
+                <m.div
                   className="prog-bar"
                   initial={{ width: '0%' }}
                   whileInView={{ width: loading ? '0%' : `${visionPct}%` }}
@@ -570,7 +570,7 @@ export default function DashboardPage() {
                 <span>{loading ? '…' : '0%'}</span>
               </div>
               <div className="prog-track">
-                <motion.div
+                <m.div
                   className="prog-bar"
                   initial={{ width: '0%' }}
                   whileInView={{ width: '0%' }}
@@ -608,7 +608,7 @@ export default function DashboardPage() {
                       <span>{completedCount} / {totalModules}</span>
                     </div>
                     <div className="prog-track">
-                      <motion.div
+                      <m.div
                         className="prog-bar"
                         initial={{ width: '0%' }}
                         whileInView={{ width: `${visionPct}%` }}
@@ -621,21 +621,21 @@ export default function DashboardPage() {
             }
 
             <div className="prog-actions">
-              <motion.button
+              <m.button
                 className="btn-ghost"
                 onClick={() => router.push('/dashboard/leadership-path')}
                 whileHover={pref ? undefined : { scale: 1.02 }}
                 whileTap={pref ? undefined : { scale: 0.97 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-              >Ver programa completo</motion.button>
+              >Ver programa completo</m.button>
               {nextModule && (
-                <motion.button
+                <m.button
                   className="btn-solid"
                   onClick={() => router.push('/dashboard/leadership-path')}
                   whileHover={pref ? undefined : { scale: 1.02 }}
                   whileTap={pref ? undefined : { scale: 0.97 }}
                   transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                >Siguiente módulo →</motion.button>
+                >Siguiente módulo →</m.button>
               )}
             </div>
           </div>
@@ -652,7 +652,7 @@ export default function DashboardPage() {
                 <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, color: '#15803d' }}>¡Capstone desbloqueado!</div>
                 <div style={{ fontSize: 12.5, color: '#166534', marginTop: 2 }}>Completaste los {totalModules} módulos. Ya puedes subir tu proyecto Capstone.</div>
               </div>
-              <motion.button
+              <m.button
                 style={{ marginLeft: 'auto', padding: '9px 18px', background: '#16a34a', border: 'none', borderRadius: 10, fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 13, color: '#fff', cursor: 'pointer', flexShrink: 0 }}
                 onClick={() => router.push('/dashboard/projects/new')}
                 whileHover={pref ? undefined : { scale: 1.02 }}
@@ -660,7 +660,7 @@ export default function DashboardPage() {
                 transition={{ type: 'spring', stiffness: 200, damping: 22 }}
               >
                 Comenzar Capstone →
-              </motion.button>
+              </m.button>
             </div>
           )}
 
@@ -701,7 +701,7 @@ export default function DashboardPage() {
                     0 de 3 proyectos aprobados para obtener la certificación.
                   </div>
                   {diploma ? (
-                    <motion.button
+                    <m.button
                       className="btn-upload"
                       onClick={() => router.push(`/certificacion/${diploma.projectId}`)}
                       whileHover={pref ? undefined : { scale: 1.02 }}
@@ -710,9 +710,9 @@ export default function DashboardPage() {
                       style={{ background: '#16a34a' }}
                     >
                       🎓 Ver mi diploma →
-                    </motion.button>
+                    </m.button>
                   ) : (
-                    <motion.button
+                    <m.button
                       className="btn-upload"
                       onClick={() => router.push('/dashboard/projects/new')}
                       whileHover={pref ? undefined : { scale: 1.02 }}
@@ -720,7 +720,7 @@ export default function DashboardPage() {
                       transition={{ type: 'spring', stiffness: 200, damping: 22 }}
                     >
                       Subir proyecto
-                    </motion.button>
+                    </m.button>
                   )}
                 </>
               )}
@@ -747,7 +747,7 @@ export default function DashboardPage() {
                       </svg>
                       {nextModule.xp_reward ?? 100} XP
                     </div>
-                    <motion.button
+                    <m.button
                       className="btn-continue"
                       onClick={() => router.push('/dashboard/leadership-path')}
                       whileHover={pref ? undefined : { scale: 1.02 }}
@@ -755,7 +755,7 @@ export default function DashboardPage() {
                       transition={{ type: 'spring', stiffness: 200, damping: 22 }}
                     >
                       Continuar →
-                    </motion.button>
+                    </m.button>
                   </>
                 ) : (
                   <div style={{ fontSize: 13, color: 'var(--mute)', textAlign: 'center', padding: '20px 0', lineHeight: 1.6 }}>
@@ -822,7 +822,7 @@ export default function DashboardPage() {
                   </div>
                 )
                 : (
-                  <motion.div
+                  <m.div
                     className="mods-grid"
                     initial={pref ? false : 'hidden'}
                     whileInView="visible"
@@ -833,7 +833,7 @@ export default function DashboardPage() {
                       const isDone   = completedIds.has(mod.id)
                       const isLocked = lockedIds.has(mod.id)
                       return (
-                        <motion.div
+                        <m.div
                           key={mod.id}
                           variants={fadeUp}
                           className={`mod-card ${isDone ? 'done' : ''} ${isLocked ? 'locked' : ''}`}
@@ -879,7 +879,7 @@ export default function DashboardPage() {
                               Bloqueado
                             </div>
                           ) : (
-                            <motion.button
+                            <m.button
                               className="btn-start"
                               onClick={e => { e.stopPropagation(); router.push(`/dashboard/modules/${mod.id}`) }}
                               whileHover={pref ? undefined : { scale: 1.02 }}
@@ -887,17 +887,17 @@ export default function DashboardPage() {
                               transition={{ type: 'spring', stiffness: 200, damping: 22 }}
                             >
                               Empezar
-                            </motion.button>
+                            </m.button>
                           )}
-                        </motion.div>
+                        </m.div>
                       )
                     })}
-                  </motion.div>
+                  </m.div>
                 )
             }
           </div>
 
-        </motion.main>
+        </m.main>
 
       </div>
     </>

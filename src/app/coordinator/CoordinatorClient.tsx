@@ -7,7 +7,7 @@ import {
   Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
 import { createClient } from '@/lib/supabase'
-import { motion, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 
 interface CoordProfile {
   full_name:   string
@@ -321,7 +321,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
         </div>
       </nav>
 
-      <motion.main
+      <m.main
         className="main"
         initial={pref ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -342,28 +342,28 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
               </div>
             ))
           ) : (<>
-            <motion.div className="mcard" initial={pref ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: 0 }}>
+            <m.div className="mcard" initial={pref ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: 0 }}>
               <div className="mcard__label">Estudiantes</div>
               <div className="mcard__num">{metrics.total}</div>
               <div className="mcard__sub">registrados en el colegio</div>
-            </motion.div>
-            <motion.div className="mcard" initial={pref ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: 0.07 }}>
+            </m.div>
+            <m.div className="mcard" initial={pref ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: 0.07 }}>
               <div className="mcard__label">Promedio XP</div>
               <div className="mcard__num">{metrics.avgXp.toLocaleString()}</div>
               <div className="mcard__sub">puntos por estudiante</div>
-            </motion.div>
-            <motion.div className="mcard" initial={pref ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: 0.14 }}>
+            </m.div>
+            <m.div className="mcard" initial={pref ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: 0.14 }}>
               <div className="mcard__label">Módulos completados</div>
               <div className="mcard__num">{metrics.totalMods}</div>
               <div className="mcard__sub">en total por el grupo</div>
-            </motion.div>
-            <motion.div className="mcard" initial={pref ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: 0.21 }}>
+            </m.div>
+            <m.div className="mcard" initial={pref ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: 0.21 }}>
               <div className="mcard__label">Activos esta semana</div>
               <div className={`mcard__num ${metrics.activeCount > 0 ? 'accent' : ''}`}>
                 {metrics.activeCount}
               </div>
               <div className="mcard__sub">de {metrics.total} estudiantes</div>
-            </motion.div>
+            </m.div>
           </>)}
         </div>
 
@@ -519,7 +519,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
             </>
           )}
         </div>
-      </motion.main>
+      </m.main>
     </>
   )
 }

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { showToast } from '@/components/Toast'
 
@@ -326,19 +326,19 @@ function Section({ num, label, open, done, onToggle, children }: {
             </span>
           )}
         </div>
-        <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ type: 'spring', stiffness: 260, damping: 24 }} style={{ flexShrink: 0 }}>
+        <m.div animate={{ rotate: open ? 180 : 0 }} transition={{ type: 'spring', stiffness: 260, damping: 24 }} style={{ flexShrink: 0 }}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M4 6l4 4 4-4" stroke="var(--mute)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-        </motion.div>
+        </m.div>
       </div>
       <AnimatePresence initial={false}>
         {open && (
-          <motion.div key="body" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+          <m.div key="body" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 28 }}
             style={{ overflow: 'hidden' }}>
             <div style={{ paddingBottom: 24 }}>{children}</div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>
@@ -1035,12 +1035,12 @@ export default function ProjectEditor({
       {/* Submit modal */}
       <AnimatePresence>
         {submitModal && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
             onClick={() => { if (!submitting) setSubmitModal(false) }}
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.92, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.92, opacity: 0, y: 16 }}
               transition={{ type: 'spring', stiffness: 280, damping: 26 }}
@@ -1063,8 +1063,8 @@ export default function ProjectEditor({
                   {submitting ? 'Enviando…' : 'Confirmar envío'}
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>

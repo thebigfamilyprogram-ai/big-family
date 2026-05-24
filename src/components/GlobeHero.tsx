@@ -1,8 +1,8 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { motion, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
+import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
 import * as THREE from 'three'
 import CoordinatorButton from '@/components/CoordinatorButton'
 import TimelineSection from '@/components/TimelineSection'
@@ -309,7 +309,7 @@ export default function GlobeHero() {
     const onScroll = () => nav?.classList.toggle('scrolled', window.scrollY > 10)
     window.addEventListener('scroll', onScroll)
 
-    initGlobe().catch(console.error)
+    const globeInitTimeout = setTimeout(() => { initGlobe().catch(console.error) }, 0)
 
     let renderer: any
     let sceneObserver: IntersectionObserver | undefined
@@ -993,6 +993,7 @@ export default function GlobeHero() {
     }
 
     return () => {
+      clearTimeout(globeInitTimeout)
       window.removeEventListener('scroll', onScroll)
       sceneObserver?.disconnect()
       earthMatClosure?.map?.dispose()
@@ -1237,7 +1238,7 @@ export default function GlobeHero() {
       {/* Post-event banner */}
       <AnimatePresence>
         {!bannerDismissed && (
-          <motion.div
+          <m.div
             className="dl-banner"
             initial={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0, overflow: 'hidden' }}
@@ -1249,7 +1250,7 @@ export default function GlobeHero() {
               aria-label="Cerrar"
               onClick={() => { setBannerDismissed(true); localStorage.setItem('dlg-banner-dismissed', '1') }}
             >×</button>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
@@ -1269,14 +1270,14 @@ export default function GlobeHero() {
         </div>
         <div className="nav__cta">
           <CoordinatorButton />
-          <motion.div
+          <m.div
             style={{ display: 'inline-flex' }}
             whileHover={{ scale: 1.03, y: -1 }}
             whileTap={{ scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
           >
             <Link href="/login" className="btn btn--solid">Ingresar</Link>
-          </motion.div>
+          </m.div>
         </div>
       </nav>
 
@@ -1287,7 +1288,7 @@ export default function GlobeHero() {
         </div>
 
         <div className="left">
-          <motion.div
+          <m.div
             className="brand"
             initial={prefersReduced ? false : { opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1306,24 +1307,24 @@ export default function GlobeHero() {
               <span className="word">THE BIG FAMILY</span>
               <span>MMXX</span>
             </div>
-          </motion.div>
-          <motion.h1
+          </m.div>
+          <m.h1
             className="headline"
             initial={prefersReduced ? false : { opacity: 0, y: 32 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
           >
             Liderazgo juvenil<br/>que <em>transforma</em><br/>comunidades<span className="dot-end">.</span>
-          </motion.h1>
-          <motion.p
+          </m.h1>
+          <m.p
             className="lede"
             initial={prefersReduced ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1], delay: 0.18 }}
           >
             Un programa global que conecta a una generación decidida a cambiar el rumbo de sus ciudades — con módulos, mentorías y una comunidad que trasciende fronteras.
-          </motion.p>
-          <motion.div
+          </m.p>
+          <m.div
             className="cta-row"
             initial={prefersReduced ? false : { opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -1331,8 +1332,8 @@ export default function GlobeHero() {
           >
             <Link href="/submit" className="btn btn--solid">Soy estudiante →</Link>
             <button className="btn btn--ghost" onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}>Conocer el programa</button>
-          </motion.div>
-          <motion.div
+          </m.div>
+          <m.div
             className="stats"
             initial={prefersReduced ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1350,10 +1351,10 @@ export default function GlobeHero() {
               <div className="stat__num"><span className="count" data-to="10">0</span></div>
               <div className="stat__label">Países</div>
             </div>
-          </motion.div>
+          </m.div>
         </div>
 
-        <motion.div
+        <m.div
           className="right"
           initial={prefersReduced ? false : { opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -1377,7 +1378,7 @@ export default function GlobeHero() {
               <span>Cohorte activa</span>
             </div>
           </div>
-        </motion.div>
+        </m.div>
 
         <div
           className="scroll-ind"
@@ -1397,17 +1398,17 @@ export default function GlobeHero() {
         <div className="mision__inner">
 
           {/* Eyebrow pill */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 120, damping: 18 }}
           >
             <span className="mision__eyebrow-pill">NUESTRA MISIÓN</span>
-          </motion.div>
+          </m.div>
 
           {/* Título en 3 líneas — stagger con blur */}
-          <motion.h2
+          <m.h2
             className="mision__title"
             initial="hidden"
             whileInView="visible"
@@ -1419,19 +1420,19 @@ export default function GlobeHero() {
               { text: 'el mundo a través',  accent: false },
               { text: 'del liderazgo.',     accent: true  },
             ] as const).map((line, i) => (
-              <motion.span
+              <m.span
                 key={i}
                 className={`mision__title-line${line.accent ? ' mision__title-line--accent' : ''}`}
                 variants={{
                   hidden:   { opacity: 0, y: 50, filter: 'blur(8px)' },
                   visible:  { opacity: 1, y: 0,  filter: 'blur(0px)', transition: { type: 'spring', stiffness: 100, damping: 20 } },
                 }}
-              >{line.text}</motion.span>
+              >{line.text}</m.span>
             ))}
-          </motion.h2>
+          </m.h2>
 
           {/* Subtítulo */}
-          <motion.p
+          <m.p
             className="mision__sub"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -1439,12 +1440,12 @@ export default function GlobeHero() {
             transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.5 }}
           >
             Formando individuos capacitados en habilidades intra e interpersonales capaces de generar impacto real y construir comunidades más unidas.
-          </motion.p>
+          </m.p>
 
         </div>
 
         {/* Stats — 4 columnas */}
-        <motion.div
+        <m.div
           className="mision__stats"
           initial="hidden"
           whileInView="visible"
@@ -1452,7 +1453,7 @@ export default function GlobeHero() {
           variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
         >
           {misionStats.map((s) => (
-            <motion.div
+            <m.div
               key={s.label}
               className="mision__stat"
               variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }}
@@ -1461,9 +1462,9 @@ export default function GlobeHero() {
                 <CountNumber to={s.to} />{s.suffix && <em>{s.suffix}</em>}
               </div>
               <div className="mision__stat-label">{s.label}</div>
-            </motion.div>
+            </m.div>
           ))}
-        </motion.div>
+        </m.div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════
@@ -1472,7 +1473,7 @@ export default function GlobeHero() {
       <section className="vision">
 
         {/* "2036" watermark — fades in very last */}
-        <motion.div
+        <m.div
           className="vision__watermark"
           aria-hidden="true"
           initial={prefersReduced ? false : { opacity: 0 }}
@@ -1481,13 +1482,13 @@ export default function GlobeHero() {
           transition={{ duration: 3, ease: 'easeOut', delay: 1 }}
         >
           2036
-        </motion.div>
+        </m.div>
 
         <div className="vision__inner">
 
           {/* Row 1 — Eyebrow + animated red line */}
           <div className="vision__row1">
-            <motion.p
+            <m.p
               className="vision__eyebrow"
               initial={prefersReduced ? false : { opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -1495,8 +1496,8 @@ export default function GlobeHero() {
               transition={{ duration: 0.35, ease: 'easeOut' }}
             >
               VISIÓN 2036
-            </motion.p>
-            <motion.div
+            </m.p>
+            <m.div
               className="vision__eyebrow-line"
               initial={prefersReduced ? false : { scaleX: 0 }}
               whileInView={{ scaleX: 1 }}
@@ -1507,7 +1508,7 @@ export default function GlobeHero() {
 
           {/* Row 2 — Title with word-level stagger */}
           <h2 className="vision__title">
-            <motion.span
+            <m.span
               style={{ display: 'block' }}
               initial={prefersReduced ? false : 'hidden'}
               whileInView="visible"
@@ -1515,19 +1516,19 @@ export default function GlobeHero() {
               variants={visionStaggerV}
             >
               {VISION_WORDS.map((word, i) => (
-                <motion.span
+                <m.span
                   key={i}
                   variants={visionWordV}
                   style={{ display: 'inline-block', marginRight: '0.28em' }}
                 >
                   {word.italic ? <em>{word.text}</em> : word.text}
-                </motion.span>
+                </m.span>
               ))}
-            </motion.span>
+            </m.span>
           </h2>
 
           {/* Row 3 — Two text columns, appear after title stagger completes */}
-          <motion.div
+          <m.div
             className="vision__cols"
             initial={prefersReduced ? false : { opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -1540,10 +1541,10 @@ export default function GlobeHero() {
             <p className="vision__para">
               Buscamos que la certificación The Big Leader sea una señal clara y confiable de habilidades reales — que una empresa u organización la vea y entienda inmediatamente el valor de la persona: su capacidad de liderar, trabajar en equipo, tomar decisiones y generar impacto.
             </p>
-          </motion.div>
+          </m.div>
 
           {/* The Big Leader Card */}
-          <motion.div
+          <m.div
             className="big-leader"
             initial={{ opacity: 0, y: 40, scale: 0.97 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -1605,7 +1606,7 @@ export default function GlobeHero() {
 
               </div>
             </div>
-          </motion.div>
+          </m.div>
 
         </div>
       </section>
@@ -1635,15 +1636,15 @@ export default function GlobeHero() {
           <div className="historia__header">
             <div>
               {/* EDITAR: eyebrow */}
-              <motion.p
+              <m.p
                 className="historia__eyebrow"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ type: 'spring', stiffness: 120, damping: 18 }}
-              >NUESTRA HISTORIA</motion.p>
+              >NUESTRA HISTORIA</m.p>
               {/* EDITAR: título principal */}
-              <motion.h2
+              <m.h2
                 className="historia__title"
                 initial="hidden"
                 whileInView="visible"
@@ -1651,36 +1652,36 @@ export default function GlobeHero() {
                 variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.05 } } }}
               >
                 {(['Cuatro', 'años'] as const).map((w, i) => (
-                  <motion.span
+                  <m.span
                     key={i}
                     variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 18 } } }}
                     style={{ display: 'inline-block', marginRight: '0.22em' }}
-                  >{w}</motion.span>
+                  >{w}</m.span>
                 ))}
                 <br />
-                <motion.span
+                <m.span
                   variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 18 } } }}
                   style={{ display: 'inline-block', marginRight: '0.22em' }}
-                >construyendo</motion.span>
-                <motion.em
+                >construyendo</m.span>
+                <m.em
                   variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 18 } } }}
                   style={{ display: 'inline-block' }}
-                >líderes</motion.em>
-                <motion.span
+                >líderes</m.em>
+                <m.span
                   variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 18 } } }}
                   style={{ display: 'inline-block' }}
-                >.</motion.span>
-              </motion.h2>
+                >.</m.span>
+              </m.h2>
             </div>
 
             {/* EDITAR: subtítulo derecha */}
-            <motion.p
+            <m.p
               className="historia__sub"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ type: 'spring', stiffness: 120, damping: 18, delay: 0.2 }}
-            >[PLACEHOLDER — descripción breve de la historia]</motion.p>
+            >[PLACEHOLDER — descripción breve de la historia]</m.p>
           </div>
 
           {/* Timeline — live data from timeline_events table */}
@@ -1702,14 +1703,14 @@ export default function GlobeHero() {
           {/* Columna izquierda — foto con parallax 3D */}
           <div className="about-dark__photo-wrap">
             <div className="about-dark__photo-perspective">
-              <motion.div
+              <m.div
                 className="about-dark__photo"
                 style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
               >
                 <div className="about-dark__photo-dots" />
                 {/* EDITAR: reemplazar con <img> cuando haya foto real */}
                 <span className="about-dark__photo-label">[FOTO DEL PROGRAMA]</span>
-              </motion.div>
+              </m.div>
             </div>
             {/* Badge flotante */}
             <div className="about-dark__badge">
@@ -1721,38 +1722,38 @@ export default function GlobeHero() {
 
           {/* Columna derecha — texto con stagger */}
           <div className="about-dark__text">
-            <motion.p
+            <m.p
               className="about-dark__eyebrow"
               initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0 }}
-            >SOBRE NOSOTROS</motion.p>
+            >SOBRE NOSOTROS</m.p>
 
             {/* EDITAR: título about */}
-            <motion.h2
+            <m.h2
               className="about-dark__title"
               initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.08 }}
-            >[PLACEHOLDER — TÍTULO ABOUT]</motion.h2>
+            >[PLACEHOLDER — TÍTULO ABOUT]</m.h2>
 
             {/* EDITAR: párrafo 1 */}
-            <motion.p
+            <m.p
               className="about-dark__para"
               initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.16 }}
-            >[PLACEHOLDER — PÁRRAFO 1]</motion.p>
+            >[PLACEHOLDER — PÁRRAFO 1]</m.p>
 
             {/* EDITAR: párrafo 2 */}
-            <motion.p
+            <m.p
               className="about-dark__para"
               initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.24 }}
-            >[PLACEHOLDER — PÁRRAFO 2]</motion.p>
+            >[PLACEHOLDER — PÁRRAFO 2]</m.p>
 
-            <motion.div
+            <m.div
               className="about-dark__divider"
               initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-80px' }}
@@ -1760,7 +1761,7 @@ export default function GlobeHero() {
             />
 
             {/* EDITAR: estadísticas */}
-            <motion.div
+            <m.div
               className="about-dark__stats"
               initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-80px' }}
@@ -1774,14 +1775,14 @@ export default function GlobeHero() {
                   <div className="about-dark__stat-label">{s.label}</div>
                 </div>,
               ])}
-            </motion.div>
+            </m.div>
 
-            <motion.button
+            <m.button
               className="about-dark__cta"
               initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.48 }}
-            >Conocer el programa →</motion.button>
+            >Conocer el programa →</m.button>
           </div>
 
         </div>
@@ -1791,7 +1792,7 @@ export default function GlobeHero() {
         <div className="dl-landing__inner">
 
           {/* Left: copy + buttons */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: '-80px' }}
@@ -1806,10 +1807,10 @@ export default function GlobeHero() {
               <a href="/dia-de-liderazgo" className="dl-landing__btn-g">Ver más →</a>
               <a href="/submit" className="dl-landing__btn-p">Subir mi proyecto →</a>
             </div>
-          </motion.div>
+          </m.div>
 
           {/* Right: countdown */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: '-80px' }}
@@ -1832,7 +1833,7 @@ export default function GlobeHero() {
                 ))}
               </div>
             )}
-          </motion.div>
+          </m.div>
 
         </div>
       </section>
@@ -1843,7 +1844,7 @@ export default function GlobeHero() {
       {featuredStories.length > 0 && (
         <section style={{ padding: '100px 40px', background: 'var(--bg,#F5F3EF)' }}>
           <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -1853,9 +1854,9 @@ export default function GlobeHero() {
               <div style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: '.2em', textTransform: 'uppercase', color: '#C0392B', marginBottom: 14 }}>Comunidad Big Family</div>
               <h2 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 900, fontSize: 'clamp(28px,4vw,44px)', letterSpacing: '-.025em', color: 'var(--ink,#0D0D0D)', marginBottom: 12 }}>Historias de Éxito</h2>
               <p style={{ fontSize: 15, color: 'var(--mute,#6B6B6B)', maxWidth: 480, margin: '0 auto', lineHeight: 1.6 }}>Estudiantes que transformaron sus comunidades a través del liderazgo.</p>
-            </motion.div>
+            </m.div>
 
-            <motion.div
+            <m.div
               style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 20 }}
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -1863,7 +1864,7 @@ export default function GlobeHero() {
               transition={{ type: 'spring', stiffness: 140, damping: 20, staggerChildren: 0.08 }}
             >
               {featuredStories.map((s, i) => (
-                <motion.a
+                <m.a
                   key={s.id}
                   href={`/success-stories/${s.id}`}
                   initial={{ opacity: 0, y: 20 }}
@@ -1887,9 +1888,9 @@ export default function GlobeHero() {
                       {s.school_name && <span style={{ marginLeft: 6 }}>· {s.school_name}</span>}
                     </div>
                   </div>
-                </motion.a>
+                </m.a>
               ))}
-            </motion.div>
+            </m.div>
 
             <div style={{ textAlign: 'center', marginTop: 32 }}>
               <a href="/success-stories" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '11px 24px', border: '1.5px solid rgba(13,13,13,.14)', borderRadius: 999, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, color: 'var(--ink,#0D0D0D)', textDecoration: 'none', transition: 'all .2s' }}>
@@ -1907,7 +1908,7 @@ export default function GlobeHero() {
         <div className="equipo__inner">
 
           {/* Header */}
-          <motion.div
+          <m.div
             className="equipo__header"
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -1922,12 +1923,12 @@ export default function GlobeHero() {
             </div>
             {/* EDITAR AQUÍ — descripción del equipo */}
             <p className="equipo__desc">Un equipo multidisciplinario unido por una misma convicción: que el liderazgo se aprende, se practica y se mide en impacto real.</p>
-          </motion.div>
+          </m.div>
 
           {/* Grid de cards */}
           <div className="equipo__grid">
             {founders.map((f, i) => (
-              <motion.div
+              <m.div
                 key={f.name}
                 className="equipo__card"
                 initial={{ opacity: 0, y: 24 }}
@@ -1953,7 +1954,7 @@ export default function GlobeHero() {
                     <span key={t} className="equipo__tag">{t}</span>
                   ))}
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
 

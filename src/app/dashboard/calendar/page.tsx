@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import DashboardSidebar from '@/components/DashboardSidebar'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
 
 interface CalendarEvent {
@@ -113,7 +113,7 @@ export default function CalendarPage() {
       <div className="layout">
         <DashboardSidebar activePage="calendar" userName={userName} userInitial={userInit} />
 
-        <motion.main
+        <m.main
           className="content"
           initial={pref ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -190,7 +190,7 @@ export default function CalendarPage() {
           {/* Event detail slide-in */}
           <AnimatePresence>
             {selected && (
-              <motion.div
+              <m.div
                 key={selected.id}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -213,11 +213,11 @@ export default function CalendarPage() {
                     🔗 Unirse a la reunión
                   </a>
                 )}
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
 
-        </motion.main>
+        </m.main>
       </div>
     </>
   )

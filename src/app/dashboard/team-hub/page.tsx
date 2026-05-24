@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import DashboardSidebar from '@/components/DashboardSidebar'
 import { showToast } from '@/components/Toast'
 
@@ -517,16 +517,16 @@ export default function TeamHubPage() {
 
               {/* ── TAB 1: TU EQUIPO ── */}
               {activeTab === 'team' && (
-                <motion.div key="team" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
+                <m.div key="team" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
                   {teamMembers.length === 0
                     ? <div className="th-empty">No hay compañeros en tu colegio aún.</div>
                     : (
                       <div className="th-team-grid">
-                        {teamMembers.map((m, i) => {
-                          const lvl = LEVEL_COLORS[m.school_level] ?? LEVEL_COLORS.junior
+                        {teamMembers.map((member, i) => {
+                          const lvl = LEVEL_COLORS[member.school_level] ?? LEVEL_COLORS.junior
                           return (
-                            <motion.div
-                              key={m.id}
+                            <m.div
+                              key={member.id}
                               className="th-card"
                               initial={{ opacity: 0, y: 20 }}
                               animate={{ opacity: 1, y: 0 }}
@@ -534,31 +534,31 @@ export default function TeamHubPage() {
                             >
                               <div className="th-avatar-wrap">
                                 <div className="th-avatar">
-                                  {m.avatar_url ? <img src={m.avatar_url} alt={m.full_name} /> : getInitials(m.full_name)}
+                                  {member.avatar_url ? <img src={member.avatar_url} alt={member.full_name} /> : getInitials(member.full_name)}
                                 </div>
                                 <div className="th-lvl-badge" style={{ background: lvl.bg, color: lvl.text }}>{lvl.label}</div>
                               </div>
                               <div className="th-member-name">
-                                {m.full_name}
-                                {m.id === userId && <span style={{ color: '#6B6B6B', fontWeight: 400, fontSize: 13 }}> (Tú)</span>}
+                                {member.full_name}
+                                {member.id === userId && <span style={{ color: '#6B6B6B', fontWeight: 400, fontSize: 13 }}> (Tú)</span>}
                               </div>
-                              <div className="th-member-stats">⭐ {m.total_xp} XP · 📚 {m.modules_completed} módulos</div>
+                              <div className="th-member-stats">⭐ {member.total_xp} XP · 📚 {member.modules_completed} módulos</div>
                               <div className="th-xp-bar">
-                                <div className="th-xp-fill" style={{ width: `${Math.round((m.total_xp / maxXp) * 100)}%` }} />
+                                <div className="th-xp-fill" style={{ width: `${Math.round((member.total_xp / maxXp) * 100)}%` }} />
                               </div>
-                              <button className="th-profile-btn" onClick={() => router.push(`/dashboard/students/${m.id}`)}>Ver perfil</button>
-                            </motion.div>
+                              <button className="th-profile-btn" onClick={() => router.push(`/dashboard/students/${member.id}`)}>Ver perfil</button>
+                            </m.div>
                           )
                         })}
                       </div>
                     )
                   }
-                </motion.div>
+                </m.div>
               )}
 
               {/* ── TAB 2: RANKING ── */}
               {activeTab === 'ranking' && (
-                <motion.div key="ranking" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
+                <m.div key="ranking" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
 
                   {/* Sub-tab bar + Refresh */}
                   <div className="th-rank-header">
@@ -597,7 +597,7 @@ export default function TeamHubPage() {
                           const isMe = s.id === userId
                           const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : null
                           return (
-                            <motion.div
+                            <m.div
                               key={s.id}
                               className={`th-rank-row${isMe ? ' th-rank-me' : ''}${pos === 1 ? ' th-rank-top' : ''}`}
                               initial={{ opacity: 0, x: -24 }}
@@ -620,7 +620,7 @@ export default function TeamHubPage() {
                               <span className="th-rank-hide-sm" style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{s.modules}</span>
                               <span className="th-rank-hide-sm" style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{s.projects}</span>
                               <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 800, fontSize: 15, color: isMe ? '#C0392B' : 'var(--ink)' }}>{s.score.toLocaleString('es-CO')}</span>
-                            </motion.div>
+                            </m.div>
                           )
                         })}
                       </div>
@@ -638,7 +638,7 @@ export default function TeamHubPage() {
                           const pos   = i + 1
                           const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : null
                           return (
-                            <motion.div
+                            <m.div
                               key={sc.id}
                               className={`th-rank-row th-rank-school-row${pos === 1 ? ' th-rank-top' : ''}`}
                               initial={{ opacity: 0, x: -24 }}
@@ -653,18 +653,18 @@ export default function TeamHubPage() {
                               <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 800, fontSize: 15, color: 'var(--ink)' }}>{sc.total_score.toLocaleString('es-CO')}</span>
                               <span className="th-rank-hide-sm" style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{sc.student_count} estudiantes</span>
                               <span className="th-rank-hide-sm" style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{sc.project_count} proyectos</span>
-                            </motion.div>
+                            </m.div>
                           )
                         })}
                       </div>
                     )
                   )}
-                </motion.div>
+                </m.div>
               )}
 
               {/* ── TAB 3: CHAT ── */}
               {activeTab === 'chat' && (
-                <motion.div key="chat" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
+                <m.div key="chat" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
                   <div className="th-chat-wrap">
                     <div className="th-chat-msgs">
                       {messages.length === 0 && (
@@ -679,15 +679,15 @@ export default function TeamHubPage() {
                         const senderName = msg.profiles?.full_name ?? 'Usuario'
 
                         if (isOwn) return (
-                          <motion.div key={msg.id} className="th-msg-group th-msg-own"
+                          <m.div key={msg.id} className="th-msg-group th-msg-own"
                             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.15 }}>
                             <div className="th-bubble-own">{msg.content}</div>
                             <div className="th-time-own">{fmtTime(msg.created_at)}</div>
-                          </motion.div>
+                          </m.div>
                         )
 
                         return (
-                          <motion.div key={msg.id} className="th-msg-group th-msg-other"
+                          <m.div key={msg.id} className="th-msg-group th-msg-other"
                             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.15 }}>
                             {isFirstInGroup && <div className="th-msg-sender">{senderName}</div>}
                             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 0 }}>
@@ -700,7 +700,7 @@ export default function TeamHubPage() {
                                 <div className="th-time-other">{fmtTime(msg.created_at)}</div>
                               </div>
                             </div>
-                          </motion.div>
+                          </m.div>
                         )
                       })}
                       <div ref={bottomRef} />
@@ -722,12 +722,12 @@ export default function TeamHubPage() {
                       </button>
                     </div>
                   </div>
-                </motion.div>
+                </m.div>
               )}
 
               {/* ── TAB 4: PROYECTOS ── */}
               {activeTab === 'projects' && (
-                <motion.div key="projects" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
+                <m.div key="projects" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
                     <button className="th-new-btn" onClick={() => setShowModal(true)}>+ Nuevo proyecto en equipo</button>
                   </div>
@@ -740,7 +740,7 @@ export default function TeamHubPage() {
                           const shown = p.member_names.slice(0, 4)
                           const extra = p.member_count > 4 ? p.member_count - 4 : 0
                           return (
-                            <motion.div key={p.id} className="th-proj-card"
+                            <m.div key={p.id} className="th-proj-card"
                               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                               transition={{ delay: i * 0.05, type: 'spring', stiffness: 300, damping: 24 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
@@ -762,13 +762,13 @@ export default function TeamHubPage() {
                                 ? <button className="th-view-btn" onClick={() => showToast('info', 'Próximamente')}>Ver proyecto</button>
                                 : <button className="th-join-btn" onClick={() => joinProject(p.id)}>Unirse</button>
                               }
-                            </motion.div>
+                            </m.div>
                           )
                         })}
                       </div>
                     )
                   }
-                </motion.div>
+                </m.div>
               )}
 
             </AnimatePresence>
@@ -779,10 +779,10 @@ export default function TeamHubPage() {
       {/* ── MODAL NUEVO PROYECTO ── */}
       <AnimatePresence>
         {showModal && (
-          <motion.div className="th-modal-bg"
+          <m.div className="th-modal-bg"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={e => { if (e.target === e.currentTarget) setShowModal(false) }}>
-            <motion.div className="th-modal"
+            <m.div className="th-modal"
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
               <h2 className="th-modal-title">Nuevo proyecto en equipo</h2>
@@ -794,8 +794,8 @@ export default function TeamHubPage() {
               <button className="th-create-btn" onClick={createProject} disabled={!newTitle.trim() || creating}>
                 {creating ? 'Creando…' : 'Crear proyecto'}
               </button>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>

@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 
 interface School {
   id: string
@@ -206,13 +206,13 @@ export default function AdminReportPage() {
         </div>
       </nav>
 
-      <motion.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}>
+      <m.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
           <div>
             <h1 style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 4 }}>Reporte Global</h1>
             <p style={{ fontSize: 13, color: 'var(--mute)' }}>{displayed.length} estudiante{displayed.length !== 1 ? 's' : ''} · {selectedSchoolName}</p>
           </div>
-          <motion.button
+          <m.button
             className="btn-export"
             onClick={handleExport}
             disabled={loading || exporting || displayed.length === 0}
@@ -222,7 +222,7 @@ export default function AdminReportPage() {
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
           >
             {exporting ? 'Generando PDF…' : '↓ Exportar Reporte PDF'}
-          </motion.button>
+          </m.button>
         </div>
 
         {/* School filter */}
@@ -281,7 +281,7 @@ export default function AdminReportPage() {
             </table>
           )}
         </div>
-      </motion.div>
+      </m.div>
     </>
   )
 }

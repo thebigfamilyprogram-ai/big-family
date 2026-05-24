@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 
 function Progress({ step }: { step: 1 | 2 | 3 }) {
@@ -118,18 +118,18 @@ export default function SubmitConfirmationPage() {
         <Progress step={3} />
 
         {/* Animated checkmark */}
-        <motion.div
+        <m.div
           className="sc-check"
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 200, damping: 18, delay: 0.1 }}
         >
-          <motion.svg
+          <m.svg
             width="32" height="32" viewBox="0 0 32 32" fill="none"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
           >
-            <motion.path
+            <m.path
               d="M6 16l7 7 13-13"
               stroke="#fff"
               strokeWidth="2.8"
@@ -139,20 +139,20 @@ export default function SubmitConfirmationPage() {
               animate={{ pathLength: 1 }}
               transition={{ duration: 0.5, delay: 0.35, ease: 'easeOut' }}
             />
-          </motion.svg>
-        </motion.div>
+          </m.svg>
+        </m.div>
 
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.5 }}
         >
           <h1 className="sc-title">¡Proyecto enviado exitosamente!</h1>
           <p className="sc-sub">Tu coordinador revisará tu proyecto pronto y te dará retroalimentación.</p>
-        </motion.div>
+        </m.div>
 
         {loading ? null : summary && (
-          <motion.div
+          <m.div
             style={{ width: '100%', maxWidth: 400, margin: '0 auto' }}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -185,7 +185,7 @@ export default function SubmitConfirmationPage() {
                 Cerrar sesión
               </button>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </div>
     </>
