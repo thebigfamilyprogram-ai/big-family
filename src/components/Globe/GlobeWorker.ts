@@ -496,7 +496,7 @@ async function initGlobe(canvas: OffscreenCanvas, w: number, h: number, mobile: 
         .then(tex => {
           if (!tex) return
           earthMat.emissiveMap      = tex
-          earthMat.emissiveIntensity = 0.85
+          earthMat.emissiveIntensity = 0.15
           earthMat.needsUpdate      = true
         })
         .catch((err: any) => console.error('[GlobeWorker] earth-night load failed:', err))
