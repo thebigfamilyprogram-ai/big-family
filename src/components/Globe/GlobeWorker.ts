@@ -398,8 +398,11 @@ async function initGlobe(canvas: OffscreenCanvas, w: number, h: number, mobile: 
       const res = await fetch('/textures/earth-day.jpg')
       if (!res.ok) throw new Error('HTTP ' + res.status)
       const blob = await res.blob()
-      const bitmap = await createImageBitmap(blob)
+      // imageOrientation:'flipY' pre-flips the bitmap so THREE.js flipY=false
+      // matches TextureLoader behaviour in the main thread.
+      const bitmap = await createImageBitmap(blob, { imageOrientation: 'flipY', premultiplyAlpha: 'none', colorSpaceConversion: 'none' })
       dayTex = new T.Texture(bitmap)
+      dayTex.flipY = false
       dayTex.colorSpace = T.SRGBColorSpace
       dayTex.anisotropy = 16
       dayTex.needsUpdate = true
@@ -435,9 +438,10 @@ async function initGlobe(canvas: OffscreenCanvas, w: number, h: number, mobile: 
     setTimeout(() => {
       fetch('/textures/earth-night.jpg')
         .then(r => r.blob())
-        .then(b => createImageBitmap(b))
+        .then(b => createImageBitmap(b, { imageOrientation: 'flipY', premultiplyAlpha: 'none', colorSpaceConversion: 'none' }))
         .then(bitmap => {
           const tex = new T.Texture(bitmap)
+          tex.flipY = false
           tex.colorSpace = T.SRGBColorSpace
           tex.anisotropy = 8
           tex.needsUpdate = true
@@ -616,7 +620,7 @@ async function initGlobe(canvas: OffscreenCanvas, w: number, h: number, mobile: 
 
     // ── START ───────────────────────────────────────────────────────────────
     globe.rotation.x = 0.3
-    globe.rotation.y = -0.2
+    globe.rotation.y = Math.PI * 0.55
     clock = new T.Clock()
     camFwd = new T.Vector3(0, 0, 1)
 
