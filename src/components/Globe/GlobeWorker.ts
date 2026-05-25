@@ -318,7 +318,9 @@ async function loadTex(paths: string[]): Promise<any> {
       tex.generateMipmaps   = true
       tex.needsUpdate       = true
       return tex
-    } catch { /* try next path */ }
+    } catch (err) {
+      postMessage({ type: 'error', message: `[GlobeWorker] loadTex error (${path}): ${err}` })
+    }
   }
   return null
 }
