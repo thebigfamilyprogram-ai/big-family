@@ -2,102 +2,78 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
 import CoordinatorButton from '@/components/CoordinatorButton'
-import GlobeCanvas from '@/components/Globe/GlobeCanvas'
 import TimelineSection from '@/components/TimelineSection'
+
+const WorldMap = dynamic(() => import('@/components/WorldMap'), { ssr: false })
 import { createClient } from '@/lib/supabase'
 import AnimatedNumber from '@/components/AnimatedNumber'
 import { useRealtimeStats } from '@/hooks/useRealtimeStats'
 
-const countries = [
-  { name: 'Canadá',          code: 'ca', lat: 45.42,  lon: -75.69, students: 8,  coordLabel: 'N 45°25′ · W 75°41′ · Ottawa' },
-  { name: 'Estados Unidos',  code: 'us', lat: 38.89,  lon: -77.03, students: 18, coordLabel: 'N 38°53′ · W 77°01′ · Washington' },
-  { name: 'México',          code: 'mx', lat: 19.43,  lon: -99.13, students: 6,  coordLabel: 'N 19°25′ · W 99°07′ · Ciudad de México' },
-  { name: 'Guatemala',       code: 'gt', lat: 14.64,  lon: -90.51, students: 6,  coordLabel: 'N 14°38′ · W 90°30′ · Guatemala' },
-  { name: 'Nicaragua',       code: 'ni', lat: 12.13,  lon: -86.29, students: 4,  coordLabel: 'N 12°07′ · W 86°17′ · Managua' },
-  { name: 'Costa Rica',      code: 'cr', lat:  9.93,  lon: -84.08, students: 5,  coordLabel: 'N 09°55′ · W 84°04′ · San José' },
-  { name: 'Colombia',        code: 'co', lat:  4.71,  lon: -74.07, students: 24, coordLabel: 'N 04°42′ · W 74°04′ · Bogotá' },
-  { name: 'Paraguay',        code: 'py', lat: -25.28, lon: -57.63, students: 9,  coordLabel: 'S 25°16′ · W 57°37′ · Asunción' },
-  { name: 'Francia',         code: 'fr', lat: 48.85,  lon:  2.35,  students: 7,  coordLabel: 'N 48°51′ · E 02°21′ · París' },
-  { name: 'Alemania',        code: 'de', lat: 52.52,  lon: 13.40,  students: 6,  coordLabel: 'N 52°31′ · E 13°24′ · Berlín' },
-  { name: 'España',          code: 'es', lat: 40.41,  lon: -3.70,  students: 10, coordLabel: 'N 40°24′ · W 03°42′ · Madrid' },
-  { name: 'Emiratos Árabes', code: 'ae', lat: 25.20,  lon: 55.27,  students: 5,  coordLabel: 'N 25°12′ · E 55°16′ · Dubái' },
+// ── Country scramble — cycles through connected countries with text scramble ──
+const SCRAMBLE_WORDS = [
+  'COLOMBIA','ESTADOS UNIDOS','MÉXICO','GUATEMALA','NICARAGUA',
+  'COSTA RICA','PARAGUAY','FRANCIA','ALEMANIA','ESPAÑA','EMIRATOS','CANADÁ',
 ]
+const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
-// Index map after adding México at 2:
-//  0 Canadá  1 US  2 México  3 Guatemala  4 Nicaragua  5 Costa Rica
-//  6 Colombia  7 Paraguay  8 Francia  9 Alemania  10 España  11 UAE
-const arcPairs = [
-  [6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5],
-  [1, 2], [1, 8], [1, 9], [1, 10],
-  [6, 8], [6, 10],
-  [8, 11], [10, 11],
-  [7, 6], [7, 1],
-]
+function CountryScramble() {
+  const [text, setText] = useState(SCRAMBLE_WORDS[0])
+  const idxRef = useRef(0)
 
-// 8 La Guajira schools participating in Día de Liderazgo
-const SCHOOLS_GUAJIRA = [
-  { lat: 11.544, lon: -72.907 }, // Riohacha
-  { lat: 11.373, lon: -72.244 }, // Maicao
-  { lat: 11.713, lon: -72.268 }, // Uribia
-  { lat: 11.773, lon: -72.441 }, // Manaure
-  { lat: 10.770, lon: -73.000 }, // San Juan del Cesar
-  { lat: 10.613, lon: -72.982 }, // Villanueva
-  { lat: 11.142, lon: -72.613 }, // Albania
-  { lat: 10.963, lon: -72.790 }, // Barrancas
-]
-const SCHOOL_ARC_PAIRS = [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,0],[0,4],[2,6]]
+  useEffect(() => {
+    let resolveTimer: ReturnType<typeof setTimeout>
+    let scrambleTimer: ReturnType<typeof setInterval>
 
-// Fallback continent polygons used if world-atlas CDN is unavailable
-const FALLBACK_CONTINENTS: number[][][] = [
-  [[-168,66],[-160,70],[-140,71],[-125,72],[-110,74],[-95,75],[-82,73],[-75,70],[-62,60],[-55,52],[-60,48],[-67,45],[-70,42],[-76,38],[-80,32],[-85,30],[-93,29],[-97,26],[-100,24],[-107,23],[-115,28],[-118,32],[-122,37],[-125,42],[-128,50],[-135,55],[-145,58],[-155,60],[-162,62],[-168,66]],
-  [[-92,18],[-88,17],[-83,15],[-79,11],[-77,8],[-82,8],[-88,13],[-92,18]],
-  [[-80,12],[-75,11],[-70,12],[-62,10],[-54,6],[-48,2],[-42,-3],[-38,-8],[-36,-12],[-38,-20],[-44,-24],[-52,-30],[-58,-35],[-64,-40],[-70,-44],[-73,-50],[-72,-54],[-68,-53],[-66,-46],[-68,-38],[-72,-30],[-74,-20],[-78,-12],[-80,-5],[-80,3],[-80,12]],
-  [[-10,36],[-2,37],[5,37],[12,38],[20,38],[28,40],[35,38],[40,42],[45,48],[42,54],[35,58],[25,62],[15,64],[5,60],[-4,56],[-8,52],[-10,44],[-10,36]],
-  [[-17,16],[-14,22],[-10,28],[-5,32],[5,33],[10,32],[18,30],[24,30],[30,30],[34,28],[38,22],[42,15],[45,10],[48,4],[46,-5],[40,-14],[35,-20],[32,-26],[28,-32],[22,-34],[18,-34],[15,-28],[12,-22],[10,-12],[8,-5],[5,1],[0,4],[-5,8],[-12,10],[-17,16]],
-  [[40,60],[50,65],[60,70],[75,72],[90,74],[105,74],[125,73],[140,70],[150,62],[155,55],[150,48],[140,42],[132,38],[128,34],[122,30],[115,24],[108,18],[100,12],[90,8],[80,8],[70,12],[58,18],[48,22],[42,30],[40,40],[38,48],[40,60]],
-  [[68,28],[74,32],[82,32],[89,27],[92,23],[90,18],[85,12],[80,8],[75,9],[70,15],[68,22],[68,28]],
-  [[95,4],[100,6],[108,4],[115,2],[122,0],[130,-2],[135,-4],[130,-8],[120,-9],[110,-8],[100,-2],[95,4]],
-  [[113,-12],[122,-12],[132,-12],[140,-15],[146,-19],[152,-25],[153,-32],[146,-38],[138,-37],[128,-33],[118,-32],[114,-25],[113,-18],[113,-12]],
-  [[144,-41],[148,-41],[148,-43],[145,-43],[144,-41]],
-  [[170,-36],[175,-38],[177,-42],[173,-46],[168,-46],[166,-42],[170,-36]],
-  [[-55,60],[-40,60],[-25,65],[-15,72],[-25,80],[-45,82],[-58,78],[-62,70],[-55,60]],
-  [[-8,50],[-3,50],[0,54],[-2,58],[-6,58],[-8,54],[-8,50]],
-  [[-10,52],[-6,53],[-6,55],[-10,55],[-10,52]],
-  [[131,32],[136,34],[140,37],[143,42],[145,45],[142,43],[138,39],[133,35],[131,32]],
-  [[43,-13],[49,-15],[50,-22],[46,-25],[43,-20],[43,-13]],
-  [[5,58],[12,60],[20,63],[28,68],[30,71],[22,70],[12,66],[6,62],[5,58]],
-  [[120,7],[125,10],[124,14],[121,17],[119,14],[120,7]],
-  [[-9,37],[-6,36],[-2,36],[2,38],[3,42],[-2,43],[-8,43],[-9,37]],
-  [[35,30],[42,29],[48,25],[55,22],[58,18],[55,12],[48,13],[42,16],[38,20],[35,25],[35,30]],
-]
+    function scrambleTo(target: string) {
+      let frame = 0
+      const frames = 10
+      scrambleTimer = setInterval(() => {
+        frame++
+        const progress = frame / frames
+        setText(
+          target.split('').map((ch, i) => {
+            if (ch === ' ') return ' '
+            if (i / target.length < progress) return ch
+            return CHARS[Math.floor(Math.random() * CHARS.length)]
+          }).join(''),
+        )
+        if (frame >= frames) {
+          clearInterval(scrambleTimer)
+          setText(target)
+          resolveTimer = setTimeout(nextWord, 1500)
+        }
+      }, 40)
+    }
 
-// ── Pulse arc shaders ──────────────────────────────────────────────────────
-const PULSE_VERT = `
-  attribute float aT;
-  varying float vT;
-  void main(){
-    vT = aT;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }`
+    function nextWord() {
+      idxRef.current = (idxRef.current + 1) % SCRAMBLE_WORDS.length
+      scrambleTo(SCRAMBLE_WORDS[idxRef.current])
+    }
 
-const PULSE_FRAG = `
-  uniform float uH1;
-  uniform float uH2;
-  uniform float uLen;
-  uniform float uVis;
-  uniform float uMaxA;
-  varying float vT;
-  float pulse(float head, float t, float len){
-    float d = mod(head - t + 2.0, 1.0);
-    if(d > len) return 0.0;
-    return sin((d / len) * 3.14159265);
-  }
-  void main(){
-    float a = max(pulse(uH1, vT, uLen), pulse(uH2, vT, uLen)) * uVis * uMaxA;
-    gl_FragColor = vec4(1.0, 1.0, 1.0, a);
-  }`
+    resolveTimer = setTimeout(nextWord, 1500)
+    return () => { clearTimeout(resolveTimer); clearInterval(scrambleTimer) }
+  }, [])
+
+  return (
+    <div style={{
+      fontFamily: 'var(--font-mono,"JetBrains Mono",monospace)',
+      fontSize: 12,
+      letterSpacing: '0.15em',
+      color: 'var(--mute,#6B6B6B)',
+      textTransform: 'uppercase',
+      marginTop: 20,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 8,
+    }}>
+      <span style={{ opacity: 0.5 }}>→ CONECTANDO CON</span>
+      <span style={{ color: 'var(--accent,#C0392B)', minWidth: '12ch', display: 'inline-block' }}>{text}</span>
+    </div>
+  )
+}
 
 // ── CountNumber helper ────────────────────────────────────────────────────────
 function CountNumber({ to, suffix = '' }: { to: number; suffix?: string }) {
@@ -209,8 +185,6 @@ function useCountdown(target: Date) {
 }
 
 export default function GlobeHero() {
-  const coordRef   = useRef<HTMLSpanElement>(null)
-
   const mouseX  = useMotionValue(0)
   const mouseY  = useMotionValue(0)
   const springX = useSpring(mouseX, { stiffness: 100, damping: 25 })
@@ -221,7 +195,6 @@ export default function GlobeHero() {
   const prefersReduced      = useReducedMotion()
   const [bannerDismissed,   setBannerDismissed]   = useState(false)
   const [scrollHintVisible, setScrollHintVisible] = useState(true)
-  const [globeReady,        setGlobeReady]        = useState(false)
   const dlCd = useCountdown(DL_TARGET)
 
   const { stats: liveStats, loading: statsLoading } = useRealtimeStats()
@@ -330,28 +303,7 @@ export default function GlobeHero() {
         .stat__num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:40px;letter-spacing:-0.03em;color:var(--ink);line-height:1;display:flex;align-items:baseline;gap:2px;}
         .stat__num .plus{font-family:"Instrument Serif",serif;font-weight:400;font-style:italic;color:var(--accent);font-size:28px;}
         .stat__label{margin-top:10px;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);}
-        .right{position:relative;height:clamp(560px,80vh,820px);z-index:2;display:flex;align-items:center;justify-content:center;}
-        .globe-wrap{position:relative;width:100%;max-width:600px;aspect-ratio:1;flex-shrink:0;opacity:0;transform:scale(.92);transition:opacity 1.6s ease,transform 1.6s cubic-bezier(.2,.7,.2,1);cursor:grab;}
-        .globe-wrap.in{opacity:1;transform:scale(1);}
-        @media(prefers-reduced-motion:no-preference){
-          .globe-wrap.globe-dragging{transform:scale(0.98) !important;transition:transform 0.3s cubic-bezier(0.16,1,0.3,1) !important;cursor:grabbing;}
-        }
-        .globe-wrap canvas{display:block;width:100% !important;height:100% !important;}
-        .tip{position:absolute;pointer-events:none;z-index:20;padding:10px 14px 12px;background:rgba(255,255,255,.62);backdrop-filter:blur(14px) saturate(160%);border:1px solid rgba(255,255,255,.9);box-shadow:0 20px 50px -20px rgba(13,13,13,.25);border-radius:10px;font-family:"Satoshi",sans-serif;opacity:0;transform:translate(-50%,-110%) translateY(6px);transition:opacity .18s ease,transform .18s ease;min-width:170px;}
-        .tip.show{opacity:1;transform:translate(-50%,-110%) translateY(0);}
-        .tip__country{font-size:13px;font-weight:600;color:var(--ink);}
-        .tip__meta{font-size:11px;color:var(--mute);margin-top:4px;display:flex;align-items:center;gap:8px;}
-        .tip__meta .sep{width:3px;height:3px;background:var(--mute);border-radius:50%;}
-        .tip__dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-right:6px;box-shadow:0 0 10px var(--accent);vertical-align:middle;}
-        .orbit{position:absolute;inset:6%;border-radius:50%;border:1px dashed rgba(13,13,13,.08);pointer-events:none;}
-        .orbit::before{content:"";position:absolute;width:6px;height:6px;border-radius:50%;background:var(--accent);top:6%;left:50%;transform:translateX(-50%);box-shadow:0 0 14px var(--accent);}
-        @keyframes globePulse{0%,100%{transform:translate(-50%,-50%) scale(0.97)}50%{transform:translate(-50%,-50%) scale(1.03)}}
-        .annot{position:absolute;font-family:"JetBrains Mono","Courier New",monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:rgba(13,13,13,0.45);z-index:4;}
-        .annot::before{content:"";display:inline-block;width:24px;height:1px;background:rgba(13,13,13,0.2);vertical-align:middle;margin-right:8px;}
-        .flags-layer{position:absolute;inset:0;pointer-events:none;z-index:15;overflow:visible;}
-        .flag-pin{position:absolute;left:0;top:0;pointer-events:auto;opacity:0;transition:opacity .35s ease;cursor:pointer;}
-        .flag-pin__img{width:22px;height:22px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);box-shadow:0 2px 8px rgba(0,0,0,0.4);background:#fff;object-fit:cover;display:block;transition:transform .2s ease;}
-        .flag-pin:hover .flag-pin__img{transform:scale(1.2);}
+        .right{position:relative;height:clamp(480px,70vh,720px);z-index:2;display:flex;align-items:center;justify-content:center;}
         .conferencista{position:absolute;left:40px;right:40px;bottom:-60px;z-index:5;display:flex;align-items:center;background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.9);border-radius:18px;box-shadow:var(--shadow-lg);overflow:hidden;}
         .conf__person{display:flex;align-items:center;gap:14px;flex:1;padding:16px 20px;}
         .conf__sep{width:1px;align-self:stretch;background:rgba(13,13,13,.09);flex-shrink:0;}
@@ -372,7 +324,7 @@ export default function GlobeHero() {
         @media(prefers-reduced-motion:reduce){
           .meta .dot,.meta .dot::after,.conf__badge .pulse,.conf__badge .pulse::after,.scroll-ind .bar::after{animation:none !important;}
         }
-        @media(max-width:960px){.hero{grid-template-columns:1fr;padding:80px 24px 100px;}.nav{padding:14px 20px;}.nav__links{display:none;}.right{order:-1;height:50vh;min-height:320px;}.left{order:1;}.conferencista{left:20px;right:20px;flex-direction:column;align-items:stretch;}.conf__person{flex:none;}.conf__sep{width:auto;height:1px;align-self:auto;}.conf__badge{border-left:none;border-top:1px solid rgba(13,13,13,.09);justify-content:center;}.meta{left:20px;right:20px;}}
+        @media(max-width:960px){.hero{grid-template-columns:1fr;padding:80px 24px 100px;}.nav{padding:14px 20px;}.nav__links{display:none;}.right{order:-1;height:300px;}.left{order:1;}.conferencista{left:20px;right:20px;flex-direction:column;align-items:stretch;}.conf__person{flex:none;}.conf__sep{width:auto;height:1px;align-self:auto;}.conf__badge{border-left:none;border-top:1px solid rgba(13,13,13,.09);justify-content:center;}.meta{left:20px;right:20px;}}
         /* ── MISIÓN ──────────────────────────────────────────────────────────── */
         .mision{background:#080808;padding:160px 40px;}
         .mision__inner{max-width:900px;margin:0 auto;text-align:center;}
@@ -555,7 +507,7 @@ export default function GlobeHero() {
       <section className="hero" id="hero">
         <div className="meta">
           <span><span className="dot"></span>Programa activo · Cohorte 2026</span>
-          <span ref={coordRef} style={{ transition: 'opacity .3s ease' }}>N 04°42′ · W 74°04′ · Bogotá</span>
+          <span>N 04°42′ · W 74°04′ · Bogotá</span>
         </div>
 
         <div className="left">
@@ -595,6 +547,8 @@ export default function GlobeHero() {
           >
             Un programa global que conecta a una generación decidida a cambiar el rumbo de sus ciudades — con módulos, mentorías y una comunidad que trasciende fronteras.
           </m.p>
+          <CountryScramble />
+
           <m.div
             className="cta-row"
             initial={prefersReduced ? false : { opacity: 0, scale: 0.94 }}
@@ -638,23 +592,7 @@ export default function GlobeHero() {
           style={{ y: prefersReduced ? undefined : globeY }}
           transition={{ type: 'spring', stiffness: 80, damping: 18, delay: 0.4 }}
         >
-          <div className="annot" style={{ top: '14%', left: '-2%' }}>45°N · ATLÁNTICO</div>
-          <div className="annot" style={{ bottom: '18%', right: '-2%' }}>10°S · CARIBE</div>
-          <div className="orbit"></div>
-          {!globeReady && !prefersReduced && (
-            <div style={{ position: 'absolute', top: '50%', left: '50%', width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle,rgba(192,57,43,.08) 0%,transparent 70%)', animation: 'globePulse 2s ease-in-out infinite', pointerEvents: 'none', zIndex: 1 }} />
-          )}
-          <GlobeCanvas
-            onReady={() => setGlobeReady(true)}
-            onCoordChange={(label: string) => {
-              if (coordRef.current) {
-                coordRef.current.style.opacity = '0'
-                setTimeout(() => {
-                  if (coordRef.current) { coordRef.current.textContent = label; coordRef.current.style.opacity = '1' }
-                }, 180)
-              }
-            }}
-          />
+          <WorldMap />
         </m.div>
 
         <div
