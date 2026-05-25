@@ -11,11 +11,14 @@ export interface RealtimeStats {
 }
 
 export function useRealtimeStats() {
-  const sbRef = useRef<ReturnType<typeof createClient> | null>(null)
+  const sbRef        = useRef<ReturnType<typeof createClient> | null>(null)
+  const subscribedRef = useRef(false)
   const [stats, setStats] = useState<RealtimeStats>({ students: 0, schools: 0, badges: 0, xpTotal: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (subscribedRef.current) return
+    subscribedRef.current = true
     if (!sbRef.current) sbRef.current = createClient()
     const sb = sbRef.current
     if (!sb) { setLoading(false); return }
