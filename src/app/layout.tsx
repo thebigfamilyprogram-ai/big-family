@@ -69,6 +69,7 @@ export default function RootLayout({
         <style dangerouslySetInnerHTML={{ __html: CSS_VARS }} />
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script dangerouslySetInnerHTML={{ __html: ANTI_FLASH }} />
+        <link rel="preload" href="/fonts/satoshi-400.woff2" as="font" type="font/woff2" crossOrigin="" />
         <link rel="preload" href="/fonts/satoshi-900.woff2" as="font" type="font/woff2" crossOrigin="" />
       </head>
       <body className="antialiased">

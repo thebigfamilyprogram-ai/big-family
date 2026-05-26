@@ -681,7 +681,7 @@ export default function SettingsPage() {
               value={deleteInput}
               onChange={e => setDeleteInput(e.target.value)}
               placeholder="ELIMINAR"
-              style={{ fontFamily: 'monospace', letterSpacing: '.08em' }}
+              style={{ fontFamily: 'var(--font-mono),monospace', letterSpacing: '.08em' }}
             />
             <div className="modal-actions">
               <button className="btn-secondary" onClick={() => { setDeleteModal(false); setDeleteInput('') }}>

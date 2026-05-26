@@ -774,7 +774,7 @@ export default function DashboardPage() {
                 })()
                 return (
                   <div style={{ background: 'rgba(192,57,43,0.04)', border: '1px solid rgba(192,57,43,0.12)', borderRadius: 16, padding: 20, position: 'relative', overflow: 'hidden' }}>
-                    <span style={{ position: 'absolute', top: 4, left: 12, fontFamily: 'Georgia, serif', fontSize: 28, color: 'rgba(192,57,43,0.2)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none' }}>&ldquo;</span>
+                    <span style={{ position: 'absolute', top: 4, left: 12, fontFamily: "'Instrument Serif',serif", fontSize: 28, color: 'rgba(192,57,43,0.2)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none' }}>&ldquo;</span>
                     <div style={{ paddingLeft: 4 }}>
                       <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: accent, marginBottom: 8 }}>{q.category} · Frase del día</div>
                       <p style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 13, fontStyle: 'italic', color: 'var(--ink-2)', lineHeight: 1.6, margin: '0 0 14px 0', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{q.quote}</p>

@@ -1,19 +1,18 @@
 /* ── Local font faces — served from /public/fonts/ ───────────────────────── */
 
-/* Non-LCP weights: optional = skip swap event entirely, use system-ui if not cached */
 @font-face {
   font-family: 'Satoshi';
   src: url('/fonts/satoshi-400.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
 }
 @font-face {
   font-family: 'Satoshi';
   src: url('/fonts/satoshi-500.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
-  font-display: optional;
+  font-display: swap;
 }
 
 /* Heading weight: swap so all section headings get Satoshi */

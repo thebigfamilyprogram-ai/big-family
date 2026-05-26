@@ -404,7 +404,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
 
             <div className="ne-toolbar" style={{ marginTop: 20 }}>
               <button className="ne-tb-btn" onMouseDown={e => { e.preventDefault(); execCmd('bold') }}><b>N</b></button>
-              <button className="ne-tb-btn" onMouseDown={e => { e.preventDefault(); execCmd('italic') }}><em style={{ fontFamily:'Georgia,serif' }}>I</em></button>
+              <button className="ne-tb-btn" onMouseDown={e => { e.preventDefault(); execCmd('italic') }}><em style={{ fontFamily:"'Instrument Serif',serif" }}>I</em></button>
               <div className="ne-tb-sep" />
               <button className="ne-tb-btn" onMouseDown={e => { e.preventDefault(); execCmd('formatBlock','h2') }} style={{ fontFamily:'Satoshi,sans-serif', fontWeight:700, fontSize:13 }}>H2</button>
               <button className="ne-tb-btn" onMouseDown={e => { e.preventDefault(); execCmd('formatBlock','h3') }} style={{ fontFamily:'Satoshi,sans-serif', fontWeight:700, fontSize:12 }}>H3</button>

@@ -101,7 +101,7 @@ function CodeBadge({ code }: { code: string }) {
       title="Copiar código"
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
-        fontFamily: 'monospace', fontSize: 11,
+        fontFamily: 'var(--font-mono),monospace', fontSize: 11,
         background: 'var(--bg-2,#EFECE6)', borderRadius: 6,
         padding: '4px 8px', marginTop: 10, border: 'none', cursor: 'pointer',
         color: copied ? '#065F46' : 'var(--mute,#6B6B6B)',

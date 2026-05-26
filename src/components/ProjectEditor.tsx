@@ -218,7 +218,7 @@ function RichTextarea({
         <div className="pe-toolbar" role="toolbar" aria-label="Formato">
           {/* Formatting */}
           {tb('Negrita (**texto**)',    () => wrap('**', '**', 'texto'),     <strong style={{ fontSize: 13, fontFamily: 'Satoshi,sans-serif' }}>B</strong>)}
-          {tb('Cursiva (*texto*)',      () => wrap('*',  '*',  'texto'),     <em style={{ fontSize: 13, fontStyle: 'italic', fontFamily: 'Georgia,serif' }}>I</em>)}
+          {tb('Cursiva (*texto*)',      () => wrap('*',  '*',  'texto'),     <em style={{ fontSize: 13, fontStyle: 'italic', fontFamily: "'Instrument Serif',serif" }}>I</em>)}
           {tb('Subrayado (<u>texto</u>)', () => wrap('<u>', '</u>', 'texto'), <span style={{ fontSize: 12, fontWeight: 700, textDecoration: 'underline' }}>U</span>)}
           {tb('Tachado (~~texto~~)',    () => wrap('~~', '~~', 'texto'),     <span style={{ fontSize: 12, fontWeight: 700, textDecoration: 'line-through' }}>S</span>)}
           {tb('Resaltado (==texto==)',  () => wrap('==', '==', 'texto'),     <span style={{ fontSize: 10, fontWeight: 800, background: '#FDE68A', color: '#92400E', padding: '1px 3px', borderRadius: 2, lineHeight: 1 }}>HL</span>)}
