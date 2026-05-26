@@ -30,6 +30,11 @@ const CSS_VARS = `
     --line-soft: rgba(13,13,13,0.06);
     --accent: #C0392B;
     --accent-hover: #a93226;
+    --success-bg: #D1FAE5;
+    --success-text: #065F46;
+    --success-border: #A7F3D0;
+    --content-max-width: 1280px;
+    --dashboard-padding: 32px;
   }
   html.dark {
     --bg: #0D0D0D;
@@ -43,6 +48,11 @@ const CSS_VARS = `
     --line-soft: rgba(255,255,255,0.04);
     --accent: #C0392B;
     --accent-hover: #E05247;
+    --success-bg: #D1FAE5;
+    --success-text: #065F46;
+    --success-border: #A7F3D0;
+    --content-max-width: 1280px;
+    --dashboard-padding: 32px;
   }
 `;
 

@@ -183,7 +183,7 @@ export default function AppSidebar({
         .app-sb__new:hover{background:var(--accent,#C0392B);color:#fff;border-color:var(--accent,#C0392B);}
         .app-sb__bottom{padding:12px 8px;border-top:1px solid var(--card-border,rgba(13,13,13,.07));display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
         .app-sb__user{display:flex;align-items:center;gap:10px;padding:4px 6px;}
-        .app-sb__avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#C0392B,#922b21);color:#fff;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+        .app-sb__avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent,#C0392B),#922b21);color:#fff;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
         .app-sb__username{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
         .app-sb__role-label{font-size:10px;color:var(--mute);letter-spacing:.06em;text-transform:uppercase;margin-top:1px;}
         .app-sb__links{display:flex;align-items:center;gap:6px;padding:0 6px;flex-wrap:wrap;}
