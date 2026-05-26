@@ -339,7 +339,7 @@ export default function AdminPage() {
   if (booting) {
     return (
       <>
-        <style>{`@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}`}</style>
+        <style>{``}</style>
         <div style={{ minHeight: '100vh', background: 'var(--bg,#F5F3EF)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B6B6B', fontSize: 14 }}>
           Verificando acceso…
         </div>
@@ -350,7 +350,7 @@ export default function AdminPage() {
   return (
     <>
       <style>{`
-                @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+                
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;color:var(--ink);}
 
