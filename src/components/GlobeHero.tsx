@@ -3,7 +3,7 @@
 import { memo, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
-import CoordinatorButton from '@/components/CoordinatorButton'
+
 import TimelineSection from '@/components/TimelineSection'
 import { createClient } from '@/lib/supabase'
 import AnimatedNumber from '@/components/AnimatedNumber'
@@ -115,6 +115,13 @@ const aboutStats = [
   { num: '8',    label: 'Colegios participantes' },
   { num: '200+', label: 'Estudiantes activos'    },
   { num: '2026', label: 'Primera generación'     },
+]
+
+const NAV_LINKS = [
+  { href: '#como-funciona', label: 'Cómo funciona' },
+  { href: '#paises',        label: 'Países'         },
+  { href: '/news',          label: 'Noticias'       },
+  { href: '#equipo',        label: 'Equipo'         },
 ]
 
 const particles = [
@@ -237,6 +244,10 @@ export default function GlobeHero() {
   const prefersReduced      = useReducedMotion()
   const [bannerDismissed,   setBannerDismissed]   = useState(false)
   const [scrollHintVisible, setScrollHintVisible] = useState(true)
+  const [navScrolled,       setNavScrolled]       = useState(false)
+  const [navMounted,        setNavMounted]        = useState(false)
+  const [activeSection,     setActiveSection]     = useState('')
+  const [mobileNavOpen,     setMobileNavOpen]     = useState(false)
 
   const { stats: liveStats, loading: statsLoading } = useRealtimeStats()
 
@@ -290,11 +301,34 @@ export default function GlobeHero() {
     mouseY.set(0)
   }
 
+  function handleNavLink(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
+    if (!href.startsWith('#')) return
+    e.preventDefault()
+    document.getElementById(href.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    setMobileNavOpen(false)
+  }
+
+  useEffect(() => { setNavMounted(true) }, [])
+
   useEffect(() => {
-    const nav = document.getElementById('nav')
-    const onScroll = () => nav?.classList.toggle('scrolled', window.scrollY > 10)
-    window.addEventListener('scroll', onScroll)
-    return () => { window.removeEventListener('scroll', onScroll) }
+    const unsub = scrollY.on('change', v => setNavScrolled(v > 80))
+    return unsub
+  }, [scrollY])
+
+  useEffect(() => {
+    const ids = ['como-funciona', 'historia', 'paises', 'equipo']
+    const observers: IntersectionObserver[] = []
+    ids.forEach(id => {
+      const el = document.getElementById(id)
+      if (!el) return
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActiveSection(id) },
+        { rootMargin: '-30% 0px -60% 0px' }
+      )
+      obs.observe(el)
+      observers.push(obs)
+    })
+    return () => observers.forEach(o => o.disconnect())
   }, [])
 
 
@@ -306,16 +340,26 @@ export default function GlobeHero() {
         html,body{background:var(--bg);color:var(--ink);font-family:"Satoshi",sans-serif;-webkit-font-smoothing:antialiased;}
         body{min-height:100dvh;overflow-x:hidden;}
         body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");opacity:.55;mix-blend-mode:multiply;}
-        .nav{position:sticky;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;padding:18px 40px;transition:background .3s ease,border-color .3s ease;border-bottom:1px solid transparent;}
-        .nav.scrolled{background:rgba(245,243,239,.78);backdrop-filter:saturate(140%) blur(14px);border-bottom-color:var(--line-soft);}
-        .nav__brand{flex:1;display:flex;align-items:center;gap:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;}
-        .nav__spacer{flex:1;}
-        .nav__links{display:flex;gap:34px;font-size:13.5px;color:var(--ink-2);}
-        .nav__links a{color:inherit;text-decoration:none;position:relative;padding:4px 0;}
-        .nav__links a:hover{color:var(--ink);}
-        .nav__links a::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:1px;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform .3s cubic-bezier(0.22,1,0.36,1);}
-        .nav__links a:hover::after{transform:scaleX(1);}
-        .nav__cta{display:flex;gap:10px;align-items:center;}
+        .pill-nav-wrap{position:fixed;top:0;left:0;right:0;z-index:100;pointer-events:none;display:flex;justify-content:center;padding:16px 20px;}
+        .pill-nav{pointer-events:all;display:flex;align-items:center;background:rgba(245,243,239,0.85);backdrop-filter:blur(12px) saturate(180%);border:1px solid var(--line);border-radius:999px;padding:6px 6px 6px 16px;transition:background 0.3s cubic-bezier(0.22,1,0.36,1),box-shadow 0.3s cubic-bezier(0.22,1,0.36,1);box-shadow:var(--shadow-raised);}
+        .pill-nav--scrolled{background:rgba(245,243,239,0.96);box-shadow:0 8px 32px rgba(13,13,13,.12),0 2px 8px rgba(13,13,13,.06);}
+        .pill-nav__brand{display:flex;align-items:center;gap:8px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;color:var(--ink);text-decoration:none;margin-right:20px;flex-shrink:0;}
+        .pill-nav__links{display:flex;gap:2px;align-items:center;}
+        .pill-nav__link{font-family:"Satoshi",sans-serif;font-size:13.5px;color:var(--ink-2);text-decoration:none;padding:7px 12px;border-radius:999px;transition:color 0.2s cubic-bezier(0.22,1,0.36,1),background 0.2s cubic-bezier(0.22,1,0.36,1);}
+        .pill-nav__link:hover{color:var(--ink);background:rgba(13,13,13,0.06);}
+        .pill-nav__link--active{color:var(--ink);background:rgba(13,13,13,0.07);}
+        .pill-nav__cta{margin-left:8px;padding:8px 16px;background:var(--ink);color:var(--bg,#F5F3EF);font-family:"Satoshi",sans-serif;font-size:13px;font-weight:600;border-radius:999px;text-decoration:none;border:none;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;transition:background 0.2s cubic-bezier(0.22,1,0.36,1);}
+        .pill-nav__cta:hover{background:var(--accent,#C0392B);}
+        .pill-nav__cta:active{transform:scale(0.97);}
+        .pill-nav__cta-arrow{display:inline-block;transition:transform 0.2s cubic-bezier(0.22,1,0.36,1);}
+        .pill-nav__cta:hover .pill-nav__cta-arrow{transform:translateX(3px);}
+        .pill-nav__hamburger{display:none;background:none;border:none;cursor:pointer;padding:6px;color:var(--ink);margin-left:6px;border-radius:999px;transition:background 0.15s;}
+        .pill-nav__hamburger:hover{background:rgba(13,13,13,0.06);}
+        @media(max-width:760px){.pill-nav__links{display:none;}.pill-nav__hamburger{display:flex;align-items:center;justify-content:center;}}
+        .pill-nav-overlay{position:fixed;inset:0;background:rgba(13,13,13,0.5);z-index:99;}
+        .pill-nav-drawer{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--bg,#F5F3EF);border-bottom:1px solid var(--line);padding:72px 24px 28px;display:flex;flex-direction:column;gap:4px;}
+        .pill-nav-drawer__link{font-family:"Satoshi",sans-serif;font-size:18px;font-weight:500;color:var(--ink);text-decoration:none;padding:12px 0;border-bottom:1px solid rgba(13,13,13,0.06);}
+        .pill-nav-drawer__cta{margin-top:16px;padding:14px 24px;background:var(--ink);color:var(--bg,#F5F3EF);font-family:"Satoshi",sans-serif;font-size:15px;font-weight:600;border-radius:999px;text-decoration:none;text-align:center;}
         .btn{font-family:"Satoshi",sans-serif;font-size:13px;font-weight:500;padding:10px 16px;border-radius:999px;border:1px solid transparent;cursor:pointer;transition:all .25s ease;}
         .btn--ghost{background:transparent;color:var(--ink);border-color:var(--line);}
         .btn--ghost:hover{border-color:var(--ink-2);background:rgba(13,13,13,.04);}
@@ -367,7 +411,7 @@ export default function GlobeHero() {
         @media(prefers-reduced-motion:reduce){
           .meta .dot,.meta .dot::after,.conf__badge .pulse,.conf__badge .pulse::after,.scroll-ind .bar::after{animation:none !important;}
         }
-        @media(max-width:960px){.hero{grid-template-columns:1fr;padding:80px 24px 100px;}.nav{padding:14px 20px;}.nav__links{display:none;}.right{order:-1;height:280px;}.left{order:1;}.conferencista{left:20px;right:20px;flex-direction:column;align-items:stretch;}.conf__person{flex:none;}.conf__sep{width:auto;height:1px;align-self:auto;}.conf__badge{border-left:none;border-top:1px solid rgba(13,13,13,.09);justify-content:center;}.meta{left:20px;right:20px;}}
+        @media(max-width:960px){.hero{grid-template-columns:1fr;padding:80px 24px 100px;}.right{order:-1;height:280px;}.left{order:1;}.conferencista{left:20px;right:20px;flex-direction:column;align-items:stretch;}.conf__person{flex:none;}.conf__sep{width:auto;height:1px;align-self:auto;}.conf__badge{border-left:none;border-top:1px solid rgba(13,13,13,.09);justify-content:center;}.meta{left:20px;right:20px;}}
         /* ── MISIÓN ──────────────────────────────────────────────────────────── */
         .mision{background:#080808;padding:136px 40px;}
         .mision__inner{max-width:900px;margin:0 auto;text-align:center;}
@@ -529,32 +573,102 @@ export default function GlobeHero() {
         )}
       </AnimatePresence>
 
-      <nav className="nav" id="nav">
-        <div className="nav__brand">
-          <span aria-hidden="true" style={{ width: 22, height: 22, display: 'inline-block' }}>
-            <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="5" r="2.4" fill="#0D0D0D"/><path d="M12 7.5 L20 22 H4 Z" fill="#0D0D0D"/></svg>
-          </span>
-          <span>Big Family</span>
-        </div>
-        <div className="nav__links">
-          <a href="#como-funciona">Cómo funciona</a>
-          <a href="#about">Países</a>
-          <a href="#equipo">Equipo</a>
-          <a href="/news">Noticias</a>
-          <a href="/dia-de-liderazgo">Día de Liderazgo</a>
-        </div>
-        <div className="nav__cta">
-          <CoordinatorButton />
+      {/* ── Floating Pill Nav ── */}
+      <AnimatePresence>
+        {navMounted && (
           <m.div
-            style={{ display: 'inline-flex' }}
-            whileHover={{ scale: 1.03, y: -1 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+            className="pill-nav-wrap"
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 28, delay: 0.3 }}
           >
-            <Link href="/login" className="btn btn--solid">Ingresar</Link>
+            <nav className={`pill-nav${navScrolled ? ' pill-nav--scrolled' : ''}`}>
+              <Link href="/" className="pill-nav__brand">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                  <circle cx="12" cy="5" r="2.4" fill="currentColor"/>
+                  <path d="M12 7.5 L20 22 H4 Z" fill="currentColor"/>
+                </svg>
+                Big Family
+              </Link>
+              <div className="pill-nav__links">
+                {NAV_LINKS.map(link => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className={`pill-nav__link${link.href === `#${activeSection}` ? ' pill-nav__link--active' : ''}`}
+                    onClick={e => handleNavLink(e, link.href)}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+              <Link href="/login" className="pill-nav__cta">
+                Ingresar <span className="pill-nav__cta-arrow" aria-hidden="true">→</span>
+              </Link>
+              <button
+                className="pill-nav__hamburger"
+                aria-label={mobileNavOpen ? 'Cerrar menú' : 'Abrir menú'}
+                onClick={() => setMobileNavOpen(o => !o)}
+              >
+                <AnimatePresence mode="wait">
+                  {mobileNavOpen ? (
+                    <m.svg
+                      key="x"
+                      width="20" height="20" viewBox="0 0 20 20" fill="none"
+                      initial={{ rotate: -45, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 45, opacity: 0 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                    >
+                      <path d="M4 4L16 16M16 4L4 16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                    </m.svg>
+                  ) : (
+                    <m.svg
+                      key="menu"
+                      width="20" height="20" viewBox="0 0 20 20" fill="none"
+                      initial={{ rotate: 45, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -45, opacity: 0 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                    >
+                      <path d="M3 5H17M3 10H17M3 15H17" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                    </m.svg>
+                  )}
+                </AnimatePresence>
+              </button>
+            </nav>
           </m.div>
-        </div>
-      </nav>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile nav drawer */}
+      <AnimatePresence>
+        {mobileNavOpen && (
+          <>
+            <m.div
+              className="pill-nav-overlay"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setMobileNavOpen(false)}
+            />
+            <m.div
+              className="pill-nav-drawer"
+              initial={{ y: '-100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '-100%', opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            >
+              {NAV_LINKS.map(link => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="pill-nav-drawer__link"
+                  onClick={e => handleNavLink(e, link.href)}
+                >
+                  {link.label}
+                </a>
+              ))}
+              <Link href="/login" className="pill-nav-drawer__cta">Ingresar →</Link>
+            </m.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <section className="hero" id="hero">
         <div className="meta">
@@ -958,7 +1072,7 @@ export default function GlobeHero() {
           SECCIÓN 3 — ABOUT (Parallax 3D)
       ══════════════════════════════════════════════════════════════════ */}
       <section
-        id="about"
+        id="paises"
         className="about-dark"
         onMouseMove={handleAboutMouseMove}
         onMouseLeave={handleAboutMouseLeave}
