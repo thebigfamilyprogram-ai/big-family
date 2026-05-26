@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { m, useInView, useReducedMotion } from 'framer-motion'
-import { geoNaturalEarth1, geoPath } from 'd3-geo'
+import { geoNaturalEarth1, geoPath, geoCentroid } from 'd3-geo'
 import { feature } from 'topojson-client'
 import AnimatedNumber from './AnimatedNumber'
 import { useRealtimeStats } from '@/hooks/useRealtimeStats'
@@ -57,7 +57,9 @@ export default function WorldMap() {
   const map = useMemo<MapData | null>(() => {
     if (!geo) return null
 
-    const proj = geoNaturalEarth1().scale(153).translate([W / 2, H / 2])
+    const proj = geoNaturalEarth1()
+      .scale(W / 6.5)
+      .translate([W / 2, H / 2])
     const pg   = geoPath(proj)
 
     const { features } = feature(geo, geo.objects.countries) as any
@@ -74,9 +76,10 @@ export default function WorldMap() {
       if (!d) continue
 
       if (code) {
-        const c = pg.centroid(f)
-        if (isNaN(c[0]) || isNaN(c[1])) continue
-        hits.push({ code, path: d, cx: c[0], cy: c[1] })
+        // geoCentroid gives the spherical centroid; project it for screen coords
+        const geo2d = proj(geoCentroid(f) as [number, number])
+        if (!geo2d || isNaN(geo2d[0]) || isNaN(geo2d[1])) continue
+        hits.push({ code, path: d, cx: geo2d[0], cy: geo2d[1] })
       } else {
         base.push(d)
       }
@@ -132,11 +135,12 @@ export default function WorldMap() {
       `}</style>
 
       {/* ── SVG map ───────────────────────────────────────────────────────────── */}
-      <div style={{ flex: 1, overflow: 'hidden' }}>
+      <div style={{ flex: 1, overflow: 'visible' }}>
         <svg
           viewBox={`0 0 ${W} ${H}`}
           width="100%" height="100%"
-          style={{ display: 'block' }}
+          preserveAspectRatio="xMidYMid meet"
+          style={{ display: 'block', overflow: 'visible' }}
           aria-label="Mapa mundial — países conectados a Big Family"
         >
           {/* Arc path definitions for mpath reference */}
