@@ -8,6 +8,9 @@ import { createClient } from '@/lib/supabase'
 import { showToast, ToastContainer } from '@/components/Toast'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import AppSidebar from '@/components/AppSidebar'
+import Badge from '@/components/shared/Badge'
+import Skeleton from '@/components/shared/Skeleton'
+import StatCard from '@/components/shared/StatCard'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type Tab = 'stats' | 'users' | 'projects' | 'evaluations' | 'goals'
@@ -70,29 +73,7 @@ const ROLE_META: Record<string, { label: string; color: string; bg: string }> = 
   student:     { label: 'Estudiante',  color: '#0D0D0D', bg: 'rgba(13,13,13,.07)' },
   coordinator: { label: 'Coordinador', color: '#4C1D95', bg: '#EDE9FE'            },
   expositor:   { label: 'Expositor',   color: '#065F46', bg: '#D1FAE5'            },
-  admin:       { label: 'Admin',       color: '#fff',    bg: '#C0392B'            },
-}
-
-// ── Sub-components ────────────────────────────────────────────────────────────
-function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?: number }) {
-  return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
-}
-
-function Badge({ label, color, bg }: { label: string; color: string; bg: string }) {
-  return (
-    <span style={{ padding: '3px 10px', borderRadius: 999, fontSize: 11.5, fontWeight: 700, color, background: bg, fontFamily: 'Satoshi,sans-serif', whiteSpace: 'nowrap' }}>
-      {label}
-    </span>
-  )
-}
-
-function StatCard({ num, label, accent = false }: { num: number; label: string; accent?: boolean }) {
-  return (
-    <div style={{ background: 'var(--card-bg,#fff)', border: '1px solid var(--card-border,rgba(13,13,13,.07))', borderRadius: 16, padding: '24px 28px', boxShadow: '0 2px 12px -4px rgba(13,13,13,.07)' }}>
-      <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 900, fontSize: 40, letterSpacing: '-.03em', lineHeight: 1, color: accent ? '#C0392B' : 'var(--ink,#0D0D0D)' }}>{num.toLocaleString('es-CO')}</div>
-      <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 8, textTransform: 'uppercase', letterSpacing: '.08em', fontWeight: 500 }}>{label}</div>
-    </div>
-  )
+  admin:       { label: 'Admin',       color: '#fff',    bg: 'var(--accent,#C0392B)' },
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -374,7 +355,7 @@ export default function AdminPage() {
         html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;color:var(--ink);}
 
         /* Layout */
-        .adm-main{flex:1;min-width:0;padding:44px 40px 80px;}
+        .adm-main{flex:1;min-width:0;padding:44px var(--dashboard-padding,32px) 80px;}
         .adm-header{margin-bottom:32px;}
         .adm-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:28px;letter-spacing:-.022em;}
         .adm-header p{margin-top:5px;font-size:13.5px;color:#6B6B6B;}
@@ -393,7 +374,7 @@ export default function AdminPage() {
 
         /* Filter controls */
         .adm-search{width:100%;max-width:340px;padding:10px 16px;border:1.5px solid rgba(13,13,13,.12);border-radius:10px;font-size:13.5px;font-family:inherit;outline:none;background:var(--card-bg,#fff);color:var(--ink,#0D0D0D);margin-bottom:20px;display:block;}
-        .adm-search:focus{border-color:#C0392B;}
+        .adm-search:focus{border-color:var(--accent,#C0392B);}
         .adm-filter-row{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;}
         .adm-filter-btn{padding:6px 16px;border-radius:999px;border:1.5px solid rgba(13,13,13,.12);font-family:"Satoshi",sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;background:none;color:#6B6B6B;}
         .adm-filter-btn:hover{border-color:var(--ink,#0D0D0D);color:var(--ink,#0D0D0D);}
@@ -471,8 +452,8 @@ export default function AdminPage() {
             ) : (
               [...Array(5)].map((_, i) => (
                 <div key={i} style={{ background: 'var(--card-bg,#fff)', border: '1px solid var(--card-border,rgba(13,13,13,.07))', borderRadius: 16, padding: '24px 28px' }}>
-                  <Sk w={64} h={40} r={8} />
-                  <div style={{ marginTop: 12 }}><Sk w={80} h={12} r={4} /></div>
+                  <Skeleton w={64} h={40} r={8} />
+                  <div style={{ marginTop: 12 }}><Skeleton w={80} h={12} r={4} /></div>
                 </div>
               ))
             )}
@@ -492,7 +473,7 @@ export default function AdminPage() {
               <div className="adm-table-wrap">
                 {loadingUsers ? (
                   <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    {[...Array(6)].map((_, i) => <Sk key={i} h={18} r={6} />)}
+                    {[...Array(6)].map((_, i) => <Skeleton key={i} h={18} r={6} />)}
                   </div>
                 ) : filteredUsers.length === 0 ? (
                   <div className="adm-empty">No hay usuarios que coincidan</div>
@@ -559,7 +540,7 @@ export default function AdminPage() {
               <div className="adm-table-wrap">
                 {loadingProjects ? (
                   <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    {[...Array(6)].map((_, i) => <Sk key={i} h={18} r={6} />)}
+                    {[...Array(6)].map((_, i) => <Skeleton key={i} h={18} r={6} />)}
                   </div>
                 ) : filteredProjects.length === 0 ? (
                   <div className="adm-empty">No hay proyectos con este filtro</div>
@@ -616,8 +597,8 @@ export default function AdminPage() {
             <div className="adm-eval-list">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="adm-eval-card">
-                  <Sk w="50%" h={20} r={6} />
-                  <div style={{ marginTop: 10 }}><Sk w="70%" h={14} r={5} /></div>
+                  <Skeleton w="50%" h={20} r={6} />
+                  <div style={{ marginTop: 10 }}><Skeleton w="70%" h={14} r={5} /></div>
                 </div>
               ))}
             </div>
@@ -692,7 +673,7 @@ export default function AdminPage() {
               <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Plantillas de metas del programa</div>
               {loadingGoals ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {[1,2,3].map(i => <Sk key={i} h={52} r={10} />)}
+                  {[1,2,3].map(i => <Skeleton key={i} h={52} r={10} />)}
                 </div>
               ) : goalTemplates.length === 0 ? (
                 <div className="adm-empty">Sin plantillas todavía. Crea la primera →</div>
