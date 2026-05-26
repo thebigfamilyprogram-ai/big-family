@@ -280,14 +280,14 @@ export default function GlobeHero() {
         .btn--ghost:hover{border-color:var(--ink-2);background:rgba(13,13,13,.04);}
         .btn--solid{background:var(--ink);color:#fff;border-color:var(--ink);}
         .btn--solid:hover{background:var(--accent);border-color:var(--accent);transform:translateY(-1px);box-shadow:0 10px 24px -8px rgba(192,57,43,.45);}
-        .hero{position:relative;min-height:100dvh;padding:120px 40px 140px;display:grid;grid-template-columns:60fr 40fr;gap:40px;align-items:center;overflow:visible;}
+        .hero{position:relative;min-height:100dvh;padding:120px 0 140px;display:grid;grid-template-columns:1fr 1fr;width:100%;overflow:visible;}
         .hero::before{content:"";position:absolute;left:40px;right:40px;top:90px;height:1px;background:var(--line-soft);}
         .meta{position:absolute;left:40px;right:40px;top:100px;display:flex;justify-content:space-between;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);z-index:2;}
         .meta .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:8px;vertical-align:middle;position:relative;box-shadow:0 0 8px rgba(192,57,43,.6);animation:blink 1.6s ease-in-out infinite;}
         .meta .dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid var(--accent);opacity:.6;animation:pp 2s ease-out infinite;}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:.55}}
         @keyframes pp{0%{transform:scale(.6);opacity:.8}100%{transform:scale(2.2);opacity:0}}
-        .left{position:relative;z-index:3;padding-top:20px;}
+        .left{position:relative;z-index:3;padding:20px 24px 0 40px;align-self:center;}
         .brand{display:flex;flex-direction:column;align-items:flex-start;gap:14px;margin-bottom:44px;}
         .brand__logo{width:88px;height:88px;display:flex;align-items:center;justify-content:center;}
         .brand__word{font-size:10.5px;letter-spacing:.56em;text-transform:uppercase;color:var(--mute);border-top:1px solid var(--line);padding-top:12px;width:240px;display:flex;justify-content:space-between;align-items:center;}
@@ -303,7 +303,7 @@ export default function GlobeHero() {
         .stat__num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:40px;letter-spacing:-0.03em;color:var(--ink);line-height:1;display:flex;align-items:baseline;gap:2px;}
         .stat__num .plus{font-family:"Instrument Serif",serif;font-weight:400;font-style:italic;color:var(--accent);font-size:28px;}
         .stat__label{margin-top:10px;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);}
-        .right{position:relative;height:clamp(480px,70vh,720px);z-index:2;overflow:hidden;}
+        .right{position:relative;width:100%;z-index:2;overflow:hidden;}
         .conferencista{position:absolute;left:40px;right:40px;bottom:-60px;z-index:5;display:flex;align-items:center;background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.9);border-radius:18px;box-shadow:var(--shadow-lg);overflow:hidden;}
         .conf__person{display:flex;align-items:center;gap:14px;flex:1;padding:16px 20px;}
         .conf__sep{width:1px;align-self:stretch;background:rgba(13,13,13,.09);flex-shrink:0;}
@@ -592,7 +592,9 @@ export default function GlobeHero() {
           style={{ y: prefersReduced ? undefined : globeY }}
           transition={{ type: 'spring', stiffness: 80, damping: 18, delay: 0.4 }}
         >
-          <WorldMap />
+          <div style={{ position: 'absolute', inset: 0 }}>
+            <WorldMap />
+          </div>
         </m.div>
 
         <div
