@@ -119,3 +119,25 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
   .globe-skeleton::after { animation: none; }
 }
+
+@keyframes global-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(1.15); }
+}
+
+.map-country-target {
+  animation: global-pulse 4s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+.map-country-hub {
+  animation: global-pulse 4s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+  animation-delay: -0.2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-country-target, .map-country-hub { animation: none !important; }
+}

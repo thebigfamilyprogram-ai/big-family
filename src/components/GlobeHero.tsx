@@ -478,7 +478,7 @@ export default function GlobeHero() {
       <nav className="nav" id="nav">
         <div className="nav__brand">
           <span aria-hidden="true" style={{ width: 22, height: 22, display: 'inline-block' }}>
-            <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="5" r="2.4" fill="#0D0D0D"/><path d="M12 7.5 L20 22 H4 Z" fill="#0D0D0D"/><circle cx="5" cy="8" r="1.6" fill="#6B6B6B"/><circle cx="19" cy="8" r="1.6" fill="#6B6B6B"/></svg>
+            <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="5" r="2.4" fill="#0D0D0D"/><path d="M12 7.5 L20 22 H4 Z" fill="#0D0D0D"/></svg>
           </span>
           <span>Big Family</span>
         </div>
@@ -519,8 +519,6 @@ export default function GlobeHero() {
               <svg viewBox="0 0 24 24" width="88" height="88" aria-label="Big Family" role="img">
                 <circle cx="12" cy="5" r="2.4" fill="#0D0D0D"/>
                 <path d="M12 7.5 L20 22 H4 Z" fill="#0D0D0D"/>
-                <circle cx="5" cy="8" r="1.6" fill="#6B6B6B"/>
-                <circle cx="19" cy="8" r="1.6" fill="#6B6B6B"/>
               </svg>
             </div>
             <div className="brand__word">

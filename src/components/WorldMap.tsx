@@ -21,7 +21,6 @@ const COLOR: Record<string, string> = {
   es: '#059669', fr: '#059669', de: '#059669', ae: '#059669',
 }
 
-// No flag field — emoji-free per project policy
 const INFO: Record<string, { name: string; region: string }> = {
   co: { name: 'Colombia',        region: 'Sudamérica'    },
   py: { name: 'Paraguay',        region: 'Sudamérica'    },
@@ -89,9 +88,9 @@ export default function WorldMap() {
 
     const { features: all } = feature(geo, geo.objects.countries) as any
 
-    // fitExtent with 20px margin on each side, then zoom 1.2× for larger presence
+    // 40px left margin vs 20px right — visually centers the Americas+Europe focus zone
     const proj = geoNaturalEarth1()
-      .fitExtent([[20, 20], [dims.w - 20, dims.h - 20]], { type: 'FeatureCollection', features: all } as any)
+      .fitExtent([[40, 20], [dims.w - 20, dims.h - 20]], { type: 'FeatureCollection', features: all } as any)
     proj.scale(proj.scale() * 1.2)
 
     const pg = geoPath(proj)
@@ -161,7 +160,6 @@ export default function WorldMap() {
         }
       `}</style>
 
-      {/* Map container — overflow clips anything that escapes the 1.2× zoom */}
       <div
         ref={containerRef}
         style={{ flex: 1, position: 'relative', minHeight: 0, overflow: 'hidden' }}
@@ -175,13 +173,13 @@ export default function WorldMap() {
             aria-label="Mapa mundial — países conectados a Big Family"
           >
             <defs>
-              {/* Ocean: radial gradient that fades to landing bg at edges */}
+              {/* Ocean gradient: radial fade to landing bg */}
               <radialGradient id="ocean-fade" cx="50%" cy="50%" r="70%">
                 <stop offset="0%"   stopColor="#E8F0F5" stopOpacity="1"/>
                 <stop offset="100%" stopColor="#F5F3EF" stopOpacity="0"/>
               </radialGradient>
 
-              {/* Glow blur filters — one per accent color */}
+              {/* Glow blur filters */}
               {GLOW_IDS.map(id => (
                 <filter key={id} id={id} x="-30%" y="-30%" width="160%" height="160%">
                   <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
@@ -192,7 +190,7 @@ export default function WorldMap() {
                 </filter>
               ))}
 
-              {/* Gradient per arc: Colombia-red → region-color */}
+              {/* Arc gradients */}
               {map.arcs.map(a => (
                 <linearGradient
                   key={`grad-${a.code}`} id={`grad-${a.code}`}
@@ -203,9 +201,14 @@ export default function WorldMap() {
                   <stop offset="100%" stopColor={a.color}  stopOpacity={0.6}/>
                 </linearGradient>
               ))}
+
+              {/* Hidden arc paths — referenced by animateMotion mpath */}
+              {map.arcs.map(a => (
+                <path key={`line-def-${a.code}`} id={`line-${a.code}`} d={a.d}/>
+              ))}
             </defs>
 
-            {/* Step 1 — ocean: radial gradient fades seamlessly to --bg */}
+            {/* Ocean */}
             <m.rect
               width={map.w} height={map.h} fill="url(#ocean-fade)"
               initial={reduced ? false : { opacity: 0 }}
@@ -213,7 +216,7 @@ export default function WorldMap() {
               transition={{ duration: 0.4 }}
             />
 
-            {/* Step 1 — base countries: subtle relief */}
+            {/* Base countries */}
             <m.g
               initial={reduced ? false : { opacity: 0 }}
               animate={inView ? { opacity: 1 } : {}}
@@ -224,16 +227,12 @@ export default function WorldMap() {
               ))}
             </m.g>
 
-            {/* Halos — colored circles behind each target, make small countries visible */}
+            {/* Halos — make small countries visible */}
             {map.targets.map(t => (
-              <circle
-                key={`halo-${t.code}`}
-                cx={t.cx} cy={t.cy} r={12}
-                fill={COLOR[t.code]} opacity={0.2}
-              />
+              <circle key={`halo-${t.code}`} cx={t.cx} cy={t.cy} r={12} fill={COLOR[t.code]} opacity={0.2}/>
             ))}
 
-            {/* Step 2 — target countries with glow, Colombia first */}
+            {/* Target countries — entrance animation + tooltip + global-pulse class */}
             {map.targets.map(t => {
               const color = COLOR[t.code]
               const isHub = t.code === 'co'
@@ -246,6 +245,7 @@ export default function WorldMap() {
                   stroke="#fff"
                   strokeWidth={isHub ? 1.5 : 1}
                   filter={`url(#${colorToGlowId(color)})`}
+                  className={isHub ? 'map-country-hub' : 'map-country-target'}
                   style={{ cursor: 'pointer', transformBox: 'fill-box', transformOrigin: '50% 50%' }}
                   initial={reduced ? false : { opacity: 0, scale: 0.5 }}
                   animate={inView ? { opacity: 1, scale: 1 } : {}}
@@ -265,7 +265,7 @@ export default function WorldMap() {
               )
             })}
 
-            {/* Step 3 — thin solid arcs, no dash, elegant gradient */}
+            {/* Connection arcs — thin solid gradient lines */}
             {map.arcs.map(a => (
               <m.path
                 key={a.code}
@@ -277,6 +277,35 @@ export default function WorldMap() {
                 animate={inView ? { opacity: 0.5 } : {}}
                 transition={{ delay: a.delay, duration: 0.6 }}
               />
+            ))}
+
+            {/* Data packets — SVG animateMotion, zero JS loop */}
+            {!reduced && inView && map.arcs.map((a, i) => (
+              <g key={`pkt-${a.code}`}>
+                {/* Outgoing packet — white (from hub) */}
+                <circle r={3} fill="white" opacity={0.9}>
+                  <animateMotion
+                    dur={`${2.5 + i * 0.4}s`}
+                    repeatCount="indefinite"
+                    rotate="auto"
+                  >
+                    {/* @ts-ignore — xlinkHref is valid on mpath */}
+                    <mpath xlinkHref={`#line-${a.code}`}/>
+                  </animateMotion>
+                </circle>
+                {/* Return packet — region color, offset by 1.2s */}
+                <circle r={2.5} fill={a.color} opacity={0.8}>
+                  <animateMotion
+                    dur={`${2.5 + i * 0.4}s`}
+                    begin="1.2s"
+                    repeatCount="indefinite"
+                    rotate="auto"
+                  >
+                    {/* @ts-ignore — xlinkHref is valid on mpath */}
+                    <mpath xlinkHref={`#line-${a.code}`}/>
+                  </animateMotion>
+                </circle>
+              </g>
             ))}
 
             {/* Colombia hub label */}
@@ -296,7 +325,7 @@ export default function WorldMap() {
               </text>
             ))}
 
-            {/* Step 4 — radar rings + solid dots */}
+            {/* Radar rings + solid dots */}
             {map.targets.map(t => {
               const color = COLOR[t.code]
               const isHub = t.code === 'co'
@@ -306,7 +335,6 @@ export default function WorldMap() {
 
               return (
                 <g key={`dot-${t.code}`}>
-                  {/* SVG animate radar rings */}
                   {!reduced && Array.from({ length: rings }).map((_, ri) => (
                     <circle
                       key={ri}
@@ -317,20 +345,19 @@ export default function WorldMap() {
                       <animate
                         attributeName="r"
                         from={String(r)} to={isHub ? '24' : '18'}
-                        dur={isHub ? '2.5s' : '2s'}
+                        dur={isHub ? '4s' : '2s'}
                         begin={`${delay + ri * 0.8}s`}
                         repeatCount="indefinite"
                       />
                       <animate
                         attributeName="opacity"
                         from="0.6" to="0"
-                        dur={isHub ? '2.5s' : '2s'}
+                        dur={isHub ? '4s' : '2s'}
                         begin={`${delay + ri * 0.8}s`}
                         repeatCount="indefinite"
                       />
                     </circle>
                   ))}
-                  {/* Solid dot — spring pop, Colombia gets white border */}
                   <m.circle
                     cx={t.cx} cy={t.cy}
                     fill={color}
@@ -346,7 +373,7 @@ export default function WorldMap() {
           </svg>
         )}
 
-        {/* Tooltip — dark, compact, country name only */}
+        {/* Tooltip — dark, compact */}
         {tooltip && (() => {
           const info = INFO[tooltip.code]
           if (!info) return null
