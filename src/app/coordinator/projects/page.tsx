@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { m, useReducedMotion } from 'framer-motion'
 import ProjectCard, { type Project, type ProjectComment } from '@/components/ProjectCard'
+import CoordinatorSidebar from '@/components/CoordinatorSidebar'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -200,23 +201,21 @@ export default function CoordinatorProjectsPage() {
   ]
 
   return (
-    <>
+    <div className="cpj-layout">
+      <CoordinatorSidebar
+        userName={coord?.full_name ?? '…'}
+        userInitial={(coord?.full_name?.charAt(0) ?? 'C').toUpperCase()}
+        schoolName={coord?.school_name}
+      />
+      <div className="cpj-scroll">
       <style>{`
                 
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;color:#0D0D0D;}
 
-        /* Nav */
-        .cpj-nav{position:sticky;top:0;z-index:30;background:rgba(245,243,239,.88);backdrop-filter:saturate(150%) blur(16px);border-bottom:1px solid rgba(13,13,13,.08);height:62px;display:flex;align-items:center;padding:0 40px;gap:24px;}
-        .cpj-brand{display:flex;align-items:center;gap:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;text-decoration:none;color:#0D0D0D;flex-shrink:0;}
-        .cpj-school{flex:1;text-align:center;font-size:13.5px;font-weight:600;color:#2D2D2D;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-        .cpj-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
-        .cpj-badge{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;background:#FFF4E6;color:#7A4A00;border:1px solid #FFD699;border-radius:999px;padding:3px 10px;font-weight:700;}
-        .cpj-btn{background:transparent;border:1px solid rgba(13,13,13,.12);border-radius:999px;padding:8px 16px;font-size:13px;color:#0D0D0D;cursor:pointer;transition:border-color .2s,background .2s;white-space:nowrap;font-family:inherit;}
-        .cpj-btn:hover{border-color:#0D0D0D;background:rgba(13,13,13,.04);}
-        .cpj-btn--active{background:#0D0D0D !important;color:#fff !important;border-color:#0D0D0D !important;}
-        .cpj-btn--ghost{background:none;border:1px solid rgba(13,13,13,.14);border-radius:999px;padding:7px 14px;font-size:12px;color:#6B6B6B;cursor:pointer;transition:all .2s;white-space:nowrap;}
-        .cpj-btn--ghost:hover{border-color:#0D0D0D;color:#0D0D0D;}
+        /* Layout */
+        .cpj-layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
+        .cpj-scroll{flex:1;overflow-y:auto;min-width:0;}
 
         /* Main */
         .cpj-main{max-width:860px;margin:0 auto;padding:44px 40px 80px;}
@@ -263,35 +262,8 @@ export default function CoordinatorProjectsPage() {
 
         @media(max-width:860px){
           .cpj-main{padding:28px 20px 60px;}
-          .cpj-nav{padding:0 20px;}
-          .cpj-school{display:none;}
         }
       `}</style>
-
-      {/* Nav */}
-      <nav className="cpj-nav">
-        <a className="cpj-brand" href="/">
-          <svg width="20" height="20" viewBox="0 0 52 52" fill="none">
-            <circle cx="26" cy="10" r="6" fill="#0D0D0D"/>
-            <path d="M26 16 L44 48 H8 Z" fill="#0D0D0D"/>
-            <circle cx="9" cy="18" r="4" fill="#6B6B6B"/>
-            <circle cx="43" cy="18" r="4" fill="#6B6B6B"/>
-          </svg>
-          Big Family
-        </a>
-        <div className="cpj-school">
-          {loading ? <Sk w={160} h={13} r={6} /> : coord?.school_name}
-        </div>
-        <div className="cpj-right">
-          <span className="cpj-badge">Coordinador</span>
-          <button className="cpj-btn" onClick={() => router.push('/coordinator')}>Panel principal</button>
-          <button className="cpj-btn cpj-btn--active">Proyectos</button>
-          <button className="cpj-btn" onClick={() => router.push('/coordinator/modules')}>Módulos</button>
-          <button className="cpj-btn" onClick={() => router.push('/coordinator/news')}>Noticias</button>
-          <button className="cpj-btn" onClick={() => router.push('/dashboard')}>Dashboard</button>
-          <button className="cpj-btn--ghost" onClick={handleLogout}>Cerrar sesión</button>
-        </div>
-      </nav>
 
       <m.main
         className="cpj-main"
@@ -442,6 +414,7 @@ export default function CoordinatorProjectsPage() {
           </>
         )}
       </m.main>
-    </>
+      </div>
+    </div>
   )
 }

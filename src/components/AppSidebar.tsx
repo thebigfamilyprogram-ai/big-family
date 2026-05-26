@@ -65,6 +65,7 @@ function getNav(role: 'student' | 'coordinator' | 'admin', unread: number): Sect
     {
       key: 'comunidad', label: 'Comunidad', items: [
         { label: 'Feed',      href: '/coordinator/feed',            icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="3" cy="13" r="1" fill="currentColor"/><path d="M2 9C5.5 9 7 11 7 14M2 5c5 0 9 4 9 9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg> },
+        { label: 'Noticias',  href: '/coordinator/news',            icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 6h6M5 9h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg> },
         { label: 'Historias', href: '/coordinator/success-stories', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2l1.6 4.4H14l-3.6 2.6 1.4 4.4L8 11l-3.8 2.4 1.4-4.4L2 6.4h4.4L8 2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg> },
         { label: 'Anuncios',  href: '/coordinator/announcements',   icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 6h10l1 5H2L3 6z" stroke="currentColor" strokeWidth="1.4"/><path d="M6 11v2M10 11v2M5 6V4a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg> },
       ],

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { m, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { showToast, ToastContainer } from '@/components/Toast'
+import CoordinatorSidebar from '@/components/CoordinatorSidebar'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface RetryRequest {
@@ -399,21 +400,19 @@ export default function CoordinatorModulesPage() {
   const currentList = tab === 'pending' ? pending : tab === 'published' ? published : []
 
   return (
-    <>
+    <div className="cm-layout">
+      <CoordinatorSidebar
+        userName={coordName}
+        userInitial={(coordName?.charAt(0) ?? 'C').toUpperCase()}
+        schoolName={schoolName}
+      />
+      <div className="cm-scroll">
       <style>{`
                 
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;color:#0D0D0D;}
-        .cm-nav{position:sticky;top:0;z-index:30;background:rgba(245,243,239,.88);backdrop-filter:saturate(150%) blur(16px);border-bottom:1px solid rgba(13,13,13,.08);height:62px;display:flex;align-items:center;padding:0 40px;gap:24px;}
-        .cm-brand{display:flex;align-items:center;gap:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;text-decoration:none;color:#0D0D0D;flex-shrink:0;}
-        .cm-school{flex:1;text-align:center;font-size:13.5px;font-weight:600;color:#2D2D2D;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-        .cm-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
-        .cm-badge{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;background:#FFF4E6;color:#7A4A00;border:1px solid #FFD699;border-radius:999px;padding:3px 10px;font-weight:700;}
-        .cm-btn{background:transparent;border:1px solid rgba(13,13,13,.12);border-radius:999px;padding:8px 16px;font-size:13px;color:#0D0D0D;cursor:pointer;transition:border-color .2s,background .2s;white-space:nowrap;font-family:inherit;}
-        .cm-btn:hover{border-color:#0D0D0D;background:rgba(13,13,13,.04);}
-        .cm-btn--active{background:#0D0D0D;color:#fff;border-color:#0D0D0D;}
-        .cm-btn--ghost{background:none;border:1px solid rgba(13,13,13,.14);border-radius:999px;padding:7px 14px;font-size:12px;color:#6B6B6B;cursor:pointer;transition:all .2s;white-space:nowrap;}
-        .cm-btn--ghost:hover{border-color:#0D0D0D;color:#0D0D0D;}
+        .cm-layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
+        .cm-scroll{flex:1;overflow-y:auto;min-width:0;}
         .cm-main{max-width:860px;margin:0 auto;padding:44px 40px 80px;}
         .cm-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;}
         .cm-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:28px;letter-spacing:-.022em;color:#0D0D0D;}
@@ -424,31 +423,8 @@ export default function CoordinatorModulesPage() {
         .cm-tab.active{background:#0D0D0D;color:#fff;}
         .cm-feed{display:flex;flex-direction:column;gap:18px;}
         .cm-empty{background:#fff;border:1px dashed rgba(13,13,13,.15);border-radius:20px;padding:56px 40px;text-align:center;color:#9a9690;}
-        @media(max-width:860px){.cm-main{padding:28px 20px 60px;}.cm-nav{padding:0 20px;}.cm-school{display:none;}}
+        @media(max-width:860px){.cm-main{padding:28px 20px 60px;}}
       `}</style>
-
-      {/* Nav */}
-      <nav className="cm-nav">
-        <a className="cm-brand" href="/">
-          <svg width="20" height="20" viewBox="0 0 52 52" fill="none">
-            <circle cx="26" cy="10" r="6" fill="#0D0D0D"/>
-            <path d="M26 16 L44 48 H8 Z" fill="#0D0D0D"/>
-            <circle cx="9" cy="18" r="4" fill="#6B6B6B"/>
-            <circle cx="43" cy="18" r="4" fill="#6B6B6B"/>
-          </svg>
-          Big Family
-        </a>
-        <div className="cm-school">{loading ? <Sk w={160} h={13} r={6} /> : schoolName}</div>
-        <div className="cm-right">
-          <span className="cm-badge">Coordinador</span>
-          <button className="cm-btn" onClick={() => router.push('/coordinator')}>Panel principal</button>
-          <button className="cm-btn" onClick={() => router.push('/coordinator/projects')}>Proyectos</button>
-          <button className="cm-btn cm-btn--active">Módulos</button>
-          <button className="cm-btn" onClick={() => router.push('/coordinator/news')}>Noticias</button>
-          <button className="cm-btn" onClick={() => router.push('/dashboard')}>Dashboard</button>
-          <button className="cm-btn--ghost" onClick={handleLogout}>Cerrar sesión</button>
-        </div>
-      </nav>
 
       <main className="cm-main">
         {/* Header */}
@@ -620,6 +596,7 @@ export default function CoordinatorModulesPage() {
       </AnimatePresence>
 
       <ToastContainer />
-    </>
+      </div>
+    </div>
   )
 }
