@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { m, useInView, useReducedMotion, useMotionValue } from 'framer-motion'
 import { geoNaturalEarth1, geoPath, geoCentroid } from 'd3-geo'
 import { feature } from 'topojson-client'
@@ -16,9 +16,17 @@ const ISO_NUM: Record<string, number> = {
 
 const COLOR: Record<string, string> = {
   co: '#C0392B', py: '#C0392B',
-  us: '#2563EB', ca: '#2563EB', mx: '#2563EB',
-  cr: '#F59E0B', gt: '#F59E0B', ni: '#F59E0B',
-  es: '#059669', fr: '#059669', de: '#059669', ae: '#059669',
+  us: '#1D4ED8', ca: '#1D4ED8', mx: '#1D4ED8',
+  cr: '#D97706', gt: '#D97706', ni: '#D97706',
+  es: '#047857', fr: '#047857', de: '#047857', ae: '#047857',
+}
+
+// CSS drop-shadow per color — replaces SVG feGaussianBlur filters
+const GLOW: Record<string, string> = {
+  '#C0392B': 'drop-shadow(0 0 8px rgba(192,57,43,0.5))',
+  '#1D4ED8': 'drop-shadow(0 0 8px rgba(29,78,216,0.5))',
+  '#D97706': 'drop-shadow(0 0 8px rgba(217,119,6,0.5))',
+  '#047857': 'drop-shadow(0 0 8px rgba(4,120,87,0.5))',
 }
 
 const INFO: Record<string, { name: string; region: string }> = {
@@ -38,14 +46,38 @@ const INFO: Record<string, { name: string; region: string }> = {
 
 const ORDER = ['co', 'ca', 'us', 'mx', 'gt', 'ni', 'cr', 'py', 'fr', 'de', 'es', 'ae']
 
-const GLOW_IDS = ['glow-red', 'glow-blue', 'glow-yellow', 'glow-green'] as const
+// ── ShockWave — concentric rings expanding from Colombia every 4s ──────────────
 
-function colorToGlowId(color: string) {
-  if (color === '#C0392B') return 'glow-red'
-  if (color === '#2563EB') return 'glow-blue'
-  if (color === '#F59E0B') return 'glow-yellow'
-  return 'glow-green'
-}
+interface ShockWaveProps { cx: number; cy: number; inView: boolean; reduced: boolean }
+
+const ShockWave = memo(function ShockWave({ cx, cy, inView, reduced }: ShockWaveProps) {
+  if (reduced || !inView) return null
+  return (
+    <>
+      {[0, 1, 2].map(i => (
+        <m.circle
+          key={i}
+          cx={cx}
+          cy={cy}
+          r={8}
+          fill="none"
+          stroke="#C0392B"
+          strokeWidth={1.5}
+          initial={{ scale: 0, opacity: 0.8 }}
+          animate={{ scale: 12, opacity: 0 }}
+          transition={{
+            duration: 2.5,
+            delay: i * 0.8,
+            repeat: Infinity,
+            repeatDelay: 1.5,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+          style={{ transformBox: 'fill-box', transformOrigin: '50% 50%' }}
+        />
+      ))}
+    </>
+  )
+})
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -65,7 +97,7 @@ export default function WorldMap() {
   const [geo,  setGeo]  = useState<any>(null)
   const [dims, setDims] = useState({ w: 0, h: 0 })
 
-  // Tooltip position via motion values — position updates bypass React render cycle entirely.
+  // Tooltip position via motion values — position updates bypass React render cycle.
   // Only setTipCode (on country enter/leave, infrequent) causes a re-render.
   const tipX = useMotionValue(-999)
   const tipY = useMotionValue(-999)
@@ -92,11 +124,13 @@ export default function WorldMap() {
     if (!geo || dims.w === 0 || dims.h === 0) return null
 
     const { features: all } = feature(geo, geo.objects.countries) as any
+    const worldGeoJSON = { type: 'FeatureCollection', features: all } as any
 
-    // 40px left margin vs 20px right — visually centers the Americas+Europe focus zone
+    // rotate([30,0,0]) centers the projection on 30°W (mid-Atlantic),
+    // placing the Americas left and Europe/Africa right.
     const proj = geoNaturalEarth1()
-      .fitExtent([[40, 20], [dims.w - 20, dims.h - 20]], { type: 'FeatureCollection', features: all } as any)
-    proj.scale(proj.scale() * 1.2)
+      .rotate([30, 0, 0])
+      .fitExtent([[20, 10], [dims.w - 20, dims.h - 10]], worldGeoJSON)
 
     const pg = geoPath(proj)
 
@@ -180,22 +214,11 @@ export default function WorldMap() {
             aria-label="Mapa mundial — países conectados a Big Family"
           >
             <defs>
-              {/* Ocean gradient */}
+              {/* Ocean gradient — radial fade from #C8DCE8 center to transparent */}
               <radialGradient id="ocean-fade" cx="50%" cy="50%" r="70%">
-                <stop offset="0%"   stopColor="#E8F0F5" stopOpacity="1"/>
-                <stop offset="100%" stopColor="#F5F3EF" stopOpacity="0"/>
+                <stop offset="0%"   stopColor="#C8DCE8" stopOpacity="1"/>
+                <stop offset="100%" stopColor="#C8DCE8" stopOpacity="0"/>
               </radialGradient>
-
-              {/* Glow blur filters */}
-              {GLOW_IDS.map(id => (
-                <filter key={id} id={id} x="-30%" y="-30%" width="160%" height="160%">
-                  <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
-                  <feMerge>
-                    <feMergeNode in="blur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-                </filter>
-              ))}
 
               {/* Arc gradients */}
               {map.arcs.map(a => (
@@ -230,7 +253,7 @@ export default function WorldMap() {
               transition={{ duration: 0.4 }}
             >
               {map.base.map((d, i) => (
-                <path key={i} d={d} fill="#E8E4DC" stroke="#F5F3EF" strokeWidth={0.8}/>
+                <path key={i} d={d} fill="#D4CFC6" stroke="#F5F3EF" strokeWidth={0.8}/>
               ))}
             </m.g>
 
@@ -239,33 +262,30 @@ export default function WorldMap() {
               <circle key={`halo-${t.code}`} cx={t.cx} cy={t.cy} r={12} fill={COLOR[t.code]} opacity={0.2}/>
             ))}
 
-            {/* Target countries:
-                CSS global-pulse lives on <g> (transform-box: fill-box centers correctly).
-                Framer spring entrance lives on <m.path> (child element).
-                Different elements = no @keyframes vs inline-style transform conflict. */}
+            {/* Target countries — Framer spring entrance, CSS drop-shadow glow */}
             {map.targets.map(t => {
               const color = COLOR[t.code]
               const isHub = t.code === 'co'
               const delay = ORDER.indexOf(t.code) * 0.1 + 0.3
               return (
-                <g
+                <m.path
                   key={t.code}
-                  className={isHub ? 'map-country-hub' : 'map-country-target'}
-                >
-                  <m.path
-                    d={t.path}
-                    fill={color}
-                    stroke="#fff"
-                    strokeWidth={isHub ? 1.5 : 1}
-                    filter={`url(#${colorToGlowId(color)})`}
-                    style={{ cursor: 'pointer', transformBox: 'fill-box', transformOrigin: '50% 50%' }}
-                    initial={reduced ? false : { opacity: 0, scale: 0.5 }}
-                    animate={inView ? { opacity: 1, scale: 1 } : {}}
-                    transition={{ delay, type: 'spring', stiffness: 300, damping: 25 }}
-                    onMouseEnter={() => setTipCode(t.code)}
-                    onMouseLeave={() => setTipCode(null)}
-                  />
-                </g>
+                  d={t.path}
+                  fill={color}
+                  stroke="#fff"
+                  strokeWidth={isHub ? 1.5 : 1}
+                  style={{
+                    cursor: 'pointer',
+                    transformBox: 'fill-box',
+                    transformOrigin: '50% 50%',
+                    filter: GLOW[color],
+                  }}
+                  initial={reduced ? false : { opacity: 0, scale: 0.5 }}
+                  animate={inView ? { opacity: 1, scale: 1 } : {}}
+                  transition={{ delay, type: 'spring', stiffness: 300, damping: 25 }}
+                  onMouseEnter={() => setTipCode(t.code)}
+                  onMouseLeave={() => setTipCode(null)}
+                />
               )
             })}
 
@@ -318,6 +338,17 @@ export default function WorldMap() {
               </text>
             ))}
 
+            {/* ShockWave — concentric rings expanding from Colombia, isolated in memo */}
+            {map.targets.filter(t => t.code === 'co').map(co => (
+              <ShockWave
+                key="sw"
+                cx={co.cx}
+                cy={co.cy}
+                inView={inView}
+                reduced={!!reduced}
+              />
+            ))}
+
             {/* Radar rings + solid dots */}
             {map.targets.map(t => {
               const color = COLOR[t.code]
@@ -366,8 +397,7 @@ export default function WorldMap() {
           </svg>
         )}
 
-        {/* Tooltip — always in DOM, position via motion values (zero re-renders on mouse move).
-            Re-renders only when tipCode changes (country enter/leave). */}
+        {/* Tooltip — always in DOM, position via motion values (zero re-renders on mouse move) */}
         <m.div
           aria-hidden="true"
           initial={{ opacity: 0 }}
@@ -394,7 +424,7 @@ export default function WorldMap() {
             letterSpacing: '0.03em',
             whiteSpace: 'nowrap',
           }}>
-            {tipCode ? (INFO[tipCode]?.name ?? '') : ' '}
+            {tipCode ? (INFO[tipCode]?.name ?? '') : ' '}
           </div>
         </m.div>
       </div>
