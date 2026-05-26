@@ -7,8 +7,6 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { useTheme, type Theme } from '@/contexts/ThemeContext'
 import { showToast } from '@/components/Toast'
-import DashboardSidebar from '@/components/DashboardSidebar'
-
 type Section = 'profile' | 'appearance' | 'account' | 'notifications'
 
 const SECTIONS: { id: Section; label: string; icon: React.ReactNode }[] = [
@@ -247,12 +245,9 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)' }}>
-        <DashboardSidebar activePage="settings" />
-        <div style={{ flex: 1, padding: 40, overflow: 'auto' }}>
-          <div style={{ height: 36, width: 200, borderRadius: 8, background: 'rgba(13,13,13,.07)', marginBottom: 32 }} />
-          <div style={{ height: 480, borderRadius: 16, background: 'rgba(13,13,13,.05)' }} />
-        </div>
+      <div style={{ flex: 1, padding: 40, overflow: 'auto' }}>
+        <div style={{ height: 36, width: 200, borderRadius: 8, background: 'rgba(13,13,13,.07)', marginBottom: 32 }} />
+        <div style={{ height: 480, borderRadius: 16, background: 'rgba(13,13,13,.05)' }} />
       </div>
     )
   }
@@ -342,10 +337,7 @@ export default function SettingsPage() {
         }
       `}</style>
 
-      <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', width: '100%', background: 'var(--bg)' }}>
-        <DashboardSidebar activePage="settings" userName={userName} userInitial={userInitial} />
-
-        <main style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
+      <main style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
           <div className="st-header">
             <div className="st-eyebrow">THE BIG LEADER</div>
             <h1 className="st-title">Configuración</h1>
@@ -664,7 +656,6 @@ export default function SettingsPage() {
             </div>
           </div>
         </main>
-      </div>
 
       {/* Delete account modal */}
       {deleteModal && (

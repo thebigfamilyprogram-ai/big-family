@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import DashboardSidebar from '@/components/DashboardSidebar'
 import { m, useReducedMotion } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
 
@@ -83,7 +82,6 @@ export default function AnnouncementsPage() {
     <>
       <style>{`
         
-        .layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
         .content{flex:1;min-width:0;overflow-y:auto;padding:32px 28px;display:flex;flex-direction:column;gap:20px;}
         .page-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:26px;letter-spacing:-0.02em;color:var(--ink);}
         .ann-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:20px 22px;box-shadow:0 2px 12px -6px rgba(13,13,13,.07);cursor:pointer;transition:box-shadow .2s;}
@@ -96,10 +94,7 @@ export default function AnnouncementsPage() {
         .ann-meta{font-size:11.5px;color:var(--mute);margin-top:8px;}
       `}</style>
 
-      <div className="layout">
-        <DashboardSidebar activePage="announcements" userName={userName} userInitial={userInit} unreadAnnouncements={unread} />
-
-        <m.main
+      <m.main
           className="content"
           initial={pref ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -152,8 +147,7 @@ export default function AnnouncementsPage() {
               })}
             </m.div>
           )}
-        </m.main>
-      </div>
+      </m.main>
     </>
   )
 }

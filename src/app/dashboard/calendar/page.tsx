@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import DashboardSidebar from '@/components/DashboardSidebar'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
 
@@ -83,7 +82,6 @@ export default function CalendarPage() {
     <>
       <style>{`
         
-        .layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
         .content{flex:1;min-width:0;overflow-y:auto;padding:32px 28px;display:flex;flex-direction:column;gap:20px;}
         .page-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:26px;letter-spacing:-0.02em;color:var(--ink);}
         .card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:24px;box-shadow:0 2px 16px -6px rgba(13,13,13,.08);}
@@ -110,10 +108,7 @@ export default function CalendarPage() {
         @media(max-width:768px){.cal-cell{aspect-ratio:auto;min-height:36px;}.cal-num{font-size:11px;}}
       `}</style>
 
-      <div className="layout">
-        <DashboardSidebar activePage="calendar" userName={userName} userInitial={userInit} />
-
-        <m.main
+      <m.main
           className="content"
           initial={pref ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -217,8 +212,7 @@ export default function CalendarPage() {
             )}
           </AnimatePresence>
 
-        </m.main>
-      </div>
+      </m.main>
     </>
   )
 }

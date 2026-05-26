@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import DashboardSidebar from '@/components/DashboardSidebar'
 
 interface ProfileData {
   id:           string
@@ -125,7 +124,6 @@ export default function StudentProfilePage() {
       <style>{`
                 @keyframes
         *{box-sizing:border-box;margin:0;padding:0;}
-        .sp-layout{display:flex;height:100dvh;overflow:hidden;width:100%;background:var(--bg);}
         .sp-main{flex:1;overflow:auto;min-width:0;}
         .sp-inner{max-width:760px;margin:0 auto;padding:36px 40px 80px;}
         .sp-crumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mute);margin-bottom:28px;}
@@ -150,10 +148,7 @@ export default function StudentProfilePage() {
         }
       `}</style>
 
-      <div className="sp-layout">
-        <DashboardSidebar activePage="team-hub" userName={viewerName} userInitial={viewerInit} />
-
-        <main className="sp-main">
+      <main className="sp-main">
           <div className="sp-inner">
             {/* Breadcrumb */}
             <nav className="sp-crumb" aria-label="Breadcrumb">
@@ -251,8 +246,7 @@ export default function StudentProfilePage() {
               </>
             ) : null}
           </div>
-        </main>
-      </div>
+      </main>
     </>
   )
 }

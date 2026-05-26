@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import DashboardSidebar from '@/components/DashboardSidebar'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { springNatural, springSnappy } from '@/lib/animations'
 
@@ -174,7 +173,6 @@ export default function GoalsPage() {
     <>
       <style>{`
         
-        .layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
         .content{flex:1;min-width:0;overflow-y:auto;padding:32px 28px;display:flex;flex-direction:column;gap:20px;}
         .page-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:26px;letter-spacing:-0.02em;color:var(--ink);}
         .page-sub{font-size:13.5px;color:var(--mute);margin-top:4px;}
@@ -198,10 +196,7 @@ export default function GoalsPage() {
         .tmpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
       `}</style>
 
-      <div className="layout">
-        <DashboardSidebar activePage="goals" userName={userName} userInitial={userInitial} />
-
-        <m.main
+      <m.main
           className="content"
           initial={pref ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -396,8 +391,7 @@ export default function GoalsPage() {
             </div>
           )}
 
-        </m.main>
-      </div>
+      </m.main>
     </>
   )
 }

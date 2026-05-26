@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import DashboardSidebar from '@/components/DashboardSidebar'
 import { m, useReducedMotion } from 'framer-motion'
 import { fadeUp } from '@/lib/animations'
 import {
@@ -354,9 +353,6 @@ export default function DashboardPage() {
       <style>{`
         
 
-        /* ── Layout ── */
-        .layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
-
         /* ── Center content ── */
         .content{flex:1;min-width:0;overflow-y:auto;padding:32px 28px;display:flex;flex-direction:column;gap:20px;}
 
@@ -496,19 +492,7 @@ export default function DashboardPage() {
         }
       `}</style>
 
-      <div className="layout">
-
-        {/* ── SIDEBAR ── */}
-        <DashboardSidebar
-          activePage="dashboard"
-          userName={loading ? '…' : displayName}
-          userInitial={loading ? 'L' : avatarLetter}
-          unreadAnnouncements={unreadAnnCount}
-          userRole={user?.role ?? undefined}
-        />
-
-        {/* ── CENTER CONTENT ── */}
-        <m.main
+      <m.main
           className="content"
           initial={pref ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1121,8 +1105,6 @@ export default function DashboardPage() {
           </div>
 
         </m.main>
-
-      </div>
     </>
   )
 }

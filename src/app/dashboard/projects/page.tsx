@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { m, AnimatePresence } from 'framer-motion'
-import DashboardSidebar from '@/components/DashboardSidebar'
 import ProjectCard, { type Project } from '@/components/ProjectCard'
 import { showToast } from '@/components/Toast'
 
@@ -126,13 +125,10 @@ export default function ProjectsPage() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)' }}>
-        <DashboardSidebar activePage="projects" />
-        <div style={{ flex: 1, padding: 40, overflow: 'auto' }}>
-          <div style={{ height: 36, width: 200, borderRadius: 8, background: 'rgba(13,13,13,.07)', marginBottom: 28 }} />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-            {[1, 2, 3, 4].map(i => <div key={i} style={{ height: 280, borderRadius: 16, background: 'rgba(13,13,13,.05)' }} />)}
-          </div>
+      <div style={{ flex: 1, padding: 40, overflow: 'auto' }}>
+        <div style={{ height: 36, width: 200, borderRadius: 8, background: 'rgba(13,13,13,.07)', marginBottom: 28 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          {[1, 2, 3, 4].map(i => <div key={i} style={{ height: 280, borderRadius: 16, background: 'rgba(13,13,13,.05)' }} />)}
         </div>
       </div>
     )
@@ -177,10 +173,7 @@ export default function ProjectsPage() {
         }
       `}</style>
 
-      <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', width: '100%', background: 'var(--bg)' }}>
-        <DashboardSidebar activePage="projects" userName={userName} userInitial={initial} />
-
-        <main style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
+      <main style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
           <div className="pj-header">
             <div className="pj-header__left">
               <div className="pj-eyebrow">The Big Leader</div>
@@ -267,7 +260,6 @@ export default function ProjectsPage() {
             )}
           </div>
         </main>
-      </div>
 
       {/* Nominate modal */}
       <AnimatePresence>

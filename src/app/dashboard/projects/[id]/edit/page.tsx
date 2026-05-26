@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import DashboardSidebar from '@/components/DashboardSidebar'
 import ProjectEditor, { type ProjectEditorData } from '@/components/ProjectEditor'
 
 function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?: number }) {
@@ -119,14 +118,11 @@ export default function EditProjectPage() {
     return (
       <>
         <style>{`@keyframes`}</style>
-        <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)' }}>
-          <DashboardSidebar activePage="projects" />
-          <div style={{ flex: 1, padding: '40px 48px', overflow: 'auto' }}>
-            <div style={{ maxWidth: 900, margin: '0 auto' }}>
-              <div style={{ marginBottom: 24 }}><Sk w={160} h={14} r={6} /></div>
-              <Sk w="100%" h={320} r={16} />
-              <div style={{ marginTop: 20 }}><Sk w="100%" h={180} r={16} /></div>
-            </div>
+        <div style={{ flex: 1, padding: '40px 48px', overflow: 'auto' }}>
+          <div style={{ maxWidth: 900, margin: '0 auto' }}>
+            <div style={{ marginBottom: 24 }}><Sk w={160} h={14} r={6} /></div>
+            <Sk w="100%" h={320} r={16} />
+            <div style={{ marginTop: 20 }}><Sk w="100%" h={180} r={16} /></div>
           </div>
         </div>
       </>
@@ -135,43 +131,37 @@ export default function EditProjectPage() {
 
   if (notFound) {
     return (
-      <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)' }}>
-        <DashboardSidebar activePage="projects" userName={userName} userInitial={userInitial} />
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 22, color: 'var(--ink)', marginBottom: 10 }}>
-              Proyecto no encontrado
-            </div>
-            <p style={{ fontSize: 14, color: 'var(--mute)', marginBottom: 20 }}>
-              Este proyecto no existe o no tienes acceso.
-            </p>
-            <button
-              onClick={() => router.push('/dashboard/projects')}
-              style={{ padding: '10px 22px', borderRadius: 999, background: '#C0392B', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 14 }}
-            >
-              Ver mis proyectos
-            </button>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 22, color: 'var(--ink)', marginBottom: 10 }}>
+            Proyecto no encontrado
           </div>
+          <p style={{ fontSize: 14, color: 'var(--mute)', marginBottom: 20 }}>
+            Este proyecto no existe o no tienes acceso.
+          </p>
+          <button
+            onClick={() => router.push('/dashboard/projects')}
+            style={{ padding: '10px 22px', borderRadius: 999, background: '#C0392B', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 14 }}
+          >
+            Ver mis proyectos
+          </button>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', width: '100%', background: 'var(--bg)' }}>
-      <DashboardSidebar activePage="projects" userName={userName} userInitial={userInitial} />
-      <main style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
-        {projectData && (
-          <ProjectEditor
-            projectId={projectId}
-            userId={userId}
-            userFullName={userFullName}
-            schoolName={schoolName}
-            initialData={projectData}
-            onSubmit={() => router.push('/dashboard/projects')}
-          />
-        )}
-      </main>
-    </div>
+    <main style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
+      {projectData && (
+        <ProjectEditor
+          projectId={projectId}
+          userId={userId}
+          userFullName={userFullName}
+          schoolName={schoolName}
+          initialData={projectData}
+          onSubmit={() => router.push('/dashboard/projects')}
+        />
+      )}
+    </main>
   )
 }

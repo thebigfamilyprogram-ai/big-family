@@ -6,7 +6,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
-import DashboardSidebar from '@/components/DashboardSidebar'
 
 interface Module {
   id: string
@@ -321,7 +320,6 @@ export default function LeadershipPathPage() {
         @keyframes confettiPhase{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(var(--tx),80px) rotate(var(--rot));opacity:0}}
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Satoshi",sans-serif;color:var(--ink);}
-        .lp-layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
         .lp-main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
         .lp-header{position:sticky;top:0;z-index:10;background:var(--bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:20px 40px;display:flex;align-items:center;justify-content:space-between;}
         .lp-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:22px;letter-spacing:-.02em;color:var(--ink);}
@@ -342,10 +340,7 @@ export default function LeadershipPathPage() {
         }
       `}</style>
 
-      <div className="lp-layout">
-        <DashboardSidebar activePage="leadership-path" userName={userName} userInitial={userInitial} />
-
-        <div className="lp-main">
+      <div className="lp-main">
           {/* Header */}
           <div className="lp-header">
             <div>
@@ -657,7 +652,6 @@ export default function LeadershipPathPage() {
             )}
           </div>
         </div>
-      </div>
 
       {/* ── Side panel ── */}
       <AnimatePresence>

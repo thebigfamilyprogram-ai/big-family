@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { m, AnimatePresence } from 'framer-motion'
 import * as topojson from 'topojson-client'
-import DashboardSidebar from '@/components/DashboardSidebar'
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -162,12 +161,9 @@ export default function GlobalMapPage() {
   // Full-page auth skeleton
   if (authLoading) {
     return (
-      <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)' }}>
-        <DashboardSidebar activePage="global-map" />
-        <div style={{ flex: 1, padding: '40px', overflow: 'auto' }}>
-          <div style={{ height: 36, width: 280, borderRadius: 8, background: 'rgba(13,13,13,.07)', marginBottom: 28 }} />
-          <div style={{ height: 380, borderRadius: 16, background: 'rgba(13,13,13,.05)' }} />
-        </div>
+      <div style={{ flex: 1, padding: '40px', overflow: 'auto' }}>
+        <div style={{ height: 36, width: 280, borderRadius: 8, background: 'rgba(13,13,13,.07)', marginBottom: 28 }} />
+        <div style={{ height: 380, borderRadius: 16, background: 'rgba(13,13,13,.05)' }} />
       </div>
     )
   }
@@ -245,10 +241,7 @@ export default function GlobalMapPage() {
         }
       `}</style>
 
-      <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', width: '100%', background: 'var(--bg)' }} onClick={() => setTooltip(null)}>
-        <DashboardSidebar activePage="global-map" userName={userName} userInitial={initial} />
-
-        <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', minWidth: 0 }} onClick={() => setTooltip(null)}>
 
           {/* ── Header ── */}
           <div className="gm-header">
@@ -451,7 +444,6 @@ export default function GlobalMapPage() {
 
           </div>
         </main>
-      </div>
 
       {/* ── Tooltip ── */}
       <AnimatePresence>

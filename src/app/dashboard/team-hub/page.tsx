@@ -6,7 +6,6 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { m, AnimatePresence } from 'framer-motion'
-import DashboardSidebar from '@/components/DashboardSidebar'
 import { showToast } from '@/components/Toast'
 
 type Tab = 'team' | 'ranking' | 'chat' | 'projects'
@@ -356,19 +355,15 @@ export default function TeamHubPage() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', width: '100%', background: 'var(--bg)' }}>
-        <DashboardSidebar activePage="team-hub" />
-        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ color: 'var(--mute)', fontFamily: 'Satoshi,sans-serif', fontSize: 14 }}>Cargando Team Hub…</div>
-        </main>
-      </div>
+      <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: 'var(--mute)', fontFamily: 'Satoshi,sans-serif', fontSize: 14 }}>Cargando Team Hub…</div>
+      </main>
     )
   }
 
   return (
     <>
       <style>{`
-        .th-layout{display:flex;height:100dvh;overflow:hidden;width:100%;background:var(--bg);}
         .th-main{flex:1;overflow:auto;min-width:0;}
         .th-header{padding:40px 48px 0;}
         .th-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:28px;color:var(--ink);margin:0 0 4px;}
@@ -492,10 +487,7 @@ export default function TeamHubPage() {
         }
       `}</style>
 
-      <div className="th-layout">
-        <DashboardSidebar activePage="team-hub" userName={userName} userInitial={userInitial} />
-
-        <main className="th-main">
+      <main className="th-main">
           <div className="th-header">
             <h1 className="th-title">Team Hub</h1>
             <p className="th-sub">Tu comunidad en {schoolName}</p>
@@ -773,8 +765,7 @@ export default function TeamHubPage() {
 
             </AnimatePresence>
           </div>
-        </main>
-      </div>
+      </main>
 
       {/* ── MODAL NUEVO PROYECTO ── */}
       <AnimatePresence>
