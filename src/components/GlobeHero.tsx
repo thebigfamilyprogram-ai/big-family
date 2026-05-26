@@ -112,9 +112,9 @@ const founders = [
 
 /* EDITAR AQUÍ — estadísticas del About */
 const aboutStats = [
-  { num: '[00]', label: '[PLACEHOLDER LABEL]' },
-  { num: '[00]', label: '[PLACEHOLDER LABEL]' },
-  { num: '[00]', label: '[PLACEHOLDER LABEL]' },
+  { num: '8',    label: 'Colegios participantes' },
+  { num: '200+', label: 'Estudiantes activos'    },
+  { num: '2026', label: 'Primera generación'     },
 ]
 
 const particles = [
@@ -313,7 +313,7 @@ export default function GlobeHero() {
         .nav__links{display:flex;gap:34px;font-size:13.5px;color:var(--ink-2);}
         .nav__links a{color:inherit;text-decoration:none;position:relative;padding:4px 0;}
         .nav__links a:hover{color:var(--ink);}
-        .nav__links a::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:1px;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform .3s ease;}
+        .nav__links a::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:1px;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform .3s cubic-bezier(0.22,1,0.36,1);}
         .nav__links a:hover::after{transform:scaleX(1);}
         .nav__cta{display:flex;gap:10px;align-items:center;}
         .btn{font-family:"Satoshi",sans-serif;font-size:13px;font-weight:500;padding:10px 16px;border-radius:999px;border:1px solid transparent;cursor:pointer;transition:all .25s ease;}
@@ -422,7 +422,8 @@ export default function GlobeHero() {
         .historia__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:#C0392B;}
         .historia__sub{font-family:"Satoshi",sans-serif;font-size:16px;color:rgba(255,255,255,0.5);line-height:1.65;max-width:420px;}
         .bento{display:grid;grid-template-columns:1.4fr 1fr 1fr;grid-template-rows:auto auto;gap:16px;}
-        .bento__cell{position:relative;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 24px 48px rgba(0,0,0,0.4);border-radius:20px;padding:32px;overflow:hidden;will-change:transform;transition:border-color 0.3s ease,box-shadow 0.3s ease;}
+        .bento__cell{position:relative;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 24px 48px rgba(0,0,0,0.4);border-radius:20px;padding:32px;overflow:hidden;will-change:transform;transition:border-color 0.3s cubic-bezier(0.22,1,0.36,1),box-shadow 0.3s cubic-bezier(0.22,1,0.36,1),transform 0.3s cubic-bezier(0.22,1,0.36,1);}
+        .bento__cell:hover{transform:translateY(-2px);}
         .bento__cell:hover{border-color:rgba(255,255,255,0.14);box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 32px 64px rgba(0,0,0,0.5);}
         .bento__cell::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(192,57,43,0.6),transparent);opacity:0;transition:opacity 0.4s ease;}
         .bento__cell:hover::before{opacity:1;}
@@ -456,8 +457,9 @@ export default function GlobeHero() {
         .about-dark__stat-num{font-family:"Satoshi",sans-serif;font-weight:700;font-size:28px;color:#fff;}
         .about-dark__stat-label{font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;letter-spacing:0.05em;}
         .about-dark__stat-sep{width:1px;height:40px;background:rgba(255,255,255,0.08);flex-shrink:0;}
-        .about-dark__cta{margin-top:32px;padding:12px 24px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:999px;font-size:14px;font-family:"Satoshi",sans-serif;font-weight:500;cursor:pointer;transition:all 0.3s cubic-bezier(0.16,1,0.3,1);width:fit-content;}
+        .about-dark__cta{margin-top:32px;padding:12px 24px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:999px;font-size:14px;font-family:"Satoshi",sans-serif;font-weight:500;cursor:pointer;transition:all 0.3s cubic-bezier(0.22,1,0.36,1);width:fit-content;}
         .about-dark__cta:hover{background:#C0392B;border-color:#C0392B;}
+        .about-dark__cta:active{transform:scale(0.98);}
         /* ── EQUIPO ──────────────────────────────────────────────────────────── */
         .equipo{background:#F5F3EF;border-top:1px solid rgba(13,13,13,.06);padding:88px 40px;}
         .equipo__inner{max-width:1200px;margin:0 auto;}
@@ -467,8 +469,9 @@ export default function GlobeHero() {
         .equipo__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:#C0392B;}
         .equipo__desc{font-family:"Satoshi",sans-serif;font-size:16px;color:#6B6B6B;line-height:1.65;}
         .equipo__grid{display:grid;grid-template-columns:1.8fr 1fr 1fr;grid-template-rows:auto auto;gap:2px;background:rgba(13,13,13,.06);border:1px solid rgba(13,13,13,.06);border-radius:20px;overflow:hidden;}
-        .equipo__card{background:#F5F3EF;padding:40px 36px;display:flex;flex-direction:column;border:1px solid transparent;transition:box-shadow .2s,transform .2s,border-color .2s;}
+        .equipo__card{background:#F5F3EF;padding:40px 36px;display:flex;flex-direction:column;border:1px solid transparent;transition:box-shadow .3s cubic-bezier(0.22,1,0.36,1),transform .3s cubic-bezier(0.22,1,0.36,1),border-color .3s cubic-bezier(0.22,1,0.36,1);}
         .equipo__card:hover{transform:translateY(-4px);box-shadow:0 16px 40px -8px rgba(13,13,13,.18),inset 0 2px 0 #C0392B;border-color:rgba(192,57,43,.3);}
+        .equipo__card:active{transform:scale(0.99) translateY(-2px);}
         .equipo__card--featured{grid-row:1/span 2;grid-column:1;}
         .equipo__card--wide{grid-column:2/span 2;flex-direction:row;gap:28px;align-items:flex-start;}
         .equipo__card--wide .equipo__avatar{margin-bottom:0;flex-shrink:0;}
@@ -501,7 +504,7 @@ export default function GlobeHero() {
         .dl-cd{display:grid;grid-template-columns:repeat(4,1fr);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;overflow:hidden;}
         .dl-cd-unit{padding:22px 10px;text-align:center;border-right:1px solid rgba(255,255,255,.07);}
         .dl-cd-unit:last-child{border-right:none;}
-        .dl-cd-num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(32px,4vw,48px);color:#fff;line-height:1;letter-spacing:-.04em;}
+        .dl-cd-num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(32px,4vw,48px);color:#fff;line-height:1;letter-spacing:-.04em;font-variant-numeric:tabular-nums;}
         .dl-cd-label{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.32);margin-top:8px;}
         @media(max-width:960px){.mision{padding:80px 24px;}.mision__stats{grid-template-columns:1fr 1fr;}.mision__stat{border-right:none;border-bottom:1px solid rgba(255,255,255,0.06);}.vision{padding:80px 24px;}.vision__cols{grid-template-columns:1fr;gap:36px;}.vision__watermark{font-size:80px;}.big-leader__inner{grid-template-columns:1fr;}.historia{padding:80px 24px;}.historia__header{grid-template-columns:1fr;gap:24px;}.bento{grid-template-columns:1fr;}.bento__cell--tall,.bento__cell--wide{grid-row:auto;grid-column:auto;}.about-dark{padding:80px 24px;}.about-dark__inner{grid-template-columns:1fr;gap:48px;}.equipo{padding:80px 24px;}.equipo__header{grid-template-columns:1fr;}.equipo__grid{grid-template-columns:1fr;grid-template-rows:auto;}.equipo__card--featured,.equipo__card--wide{grid-row:auto;grid-column:auto;flex-direction:column;}.equipo__card--wide .equipo__avatar{margin-bottom:28px;flex-shrink:0;}.dl-landing{padding:80px 24px;}.dl-landing__inner{grid-template-columns:1fr;gap:48px;}}
       `}</style>
@@ -937,14 +940,13 @@ export default function GlobeHero() {
               </m.h2>
             </div>
 
-            {/* EDITAR: subtítulo derecha */}
             <m.p
               className="historia__sub"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ type: 'spring', stiffness: 120, damping: 18, delay: 0.2 }}
-            >[PLACEHOLDER — descripción breve de la historia]</m.p>
+            >Cómo nació Big Family</m.p>
           </div>
 
           {/* Timeline — live data from timeline_events table */}
@@ -992,29 +994,26 @@ export default function GlobeHero() {
               transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0 }}
             >SOBRE NOSOTROS</m.p>
 
-            {/* EDITAR: título about */}
             <m.h2
               className="about-dark__title"
               initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.08 }}
-            >[PLACEHOLDER — TÍTULO ABOUT]</m.h2>
+            >Líderes que transforman La Guajira</m.h2>
 
-            {/* EDITAR: párrafo 1 */}
             <m.p
               className="about-dark__para"
               initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.16 }}
-            >[PLACEHOLDER — PÁRRAFO 1]</m.p>
+            >Big Family es un programa de liderazgo juvenil que acompaña a estudiantes de 8 colegios en La Guajira, Colombia, en su camino hacia convertirse en agentes de cambio en sus comunidades.</m.p>
 
-            {/* EDITAR: párrafo 2 */}
             <m.p
               className="about-dark__para"
               initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.24 }}
-            >[PLACEHOLDER — PÁRRAFO 2]</m.p>
+            >A través de módulos, proyectos reales y mentoría, los jóvenes desarrollan las habilidades y la visión que necesitan para liderar el futuro de su región.</m.p>
 
             <m.div
               className="about-dark__divider"

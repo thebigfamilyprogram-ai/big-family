@@ -148,7 +148,7 @@ const QUOTES = [
 const CATEGORY_COLORS: Record<string, string> = {
   'Liderazgo':    '#C0392B',
   'Educación':    '#1a5c8a',
-  'Perseverancia':'#7c3e9e',
+  'Perseverancia':'#D4821A',
   'Comunidad':    '#27500A',
   'Innovación':   '#b25a00',
 }
@@ -174,12 +174,33 @@ function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?
   )
 }
 
+function AnimatedKPI({ value, locale = 'es-CO' }: { value: number; locale?: string }) {
+  const [displayed, setDisplayed] = useState(0)
+  const rafRef = useRef<number | null>(null)
+  useEffect(() => {
+    const start = performance.now()
+    const dur = 900
+    function tick(now: number) {
+      const p = Math.min((now - start) / dur, 1)
+      const e = 1 - Math.pow(1 - p, 3)
+      setDisplayed(Math.round(value * e))
+      if (p < 1) rafRef.current = requestAnimationFrame(tick)
+    }
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
+    rafRef.current = requestAnimationFrame(tick)
+    return () => { if (rafRef.current !== null) cancelAnimationFrame(rafRef.current) }
+  }, [value])
+  return <>{displayed.toLocaleString(locale)}</>
+}
+
 export default function DashboardPage() {
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const pref        = useReducedMotion()
 
   const [loading,      setLoading]      = useState(true)
+  const [loadError,    setLoadError]    = useState(false)
+  const [retryKey,     setRetryKey]     = useState(0)
   const [user,         setUser]         = useState<UserData | null>(null)
   const [modules,      setModules]      = useState<Module[]>([])
   const [progressRows, setProgressRows] = useState<ProgressRow[]>([])
@@ -196,18 +217,29 @@ export default function DashboardPage() {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
     if (!supabase) return
+    setLoading(true)
     async function load() {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (!authUser) { router.replace('/login'); return }
+      setLoadError(false)
+      const { data: { user: authUser }, error: authErr } = await supabase.auth.getUser()
+      if (authErr || !authUser) {
+        if (!authUser) { router.replace('/login'); return }
+        setLoadError(true); setLoading(false); return
+      }
       setUserId(authUser.id)
 
-      const [{ data: profile }, { data: xpRows }, { data: mods }, { data: prog }, { data: userProjects }] = await Promise.all([
+      const [profileRes, xpRes, modsRes, progRes, projRes] = await Promise.all([
         supabase.from('profiles').select('full_name, role, school_level, school_id').eq('id', authUser.id).maybeSingle(),
         supabase.from('xp_log').select('amount').eq('user_id', authUser.id),
         supabase.from('modules').select('*').eq('status', 'published').order('order_index'),
         supabase.from('progress').select('module_id, completed').eq('user_id', authUser.id),
         supabase.from('projects').select('id, status').eq('user_id', authUser.id).in('status', ['approved']),
       ])
+      if (modsRes.error || xpRes.error) { setLoadError(true); setLoading(false); return }
+      const profile      = profileRes.data
+      const xpRows       = xpRes.data
+      const mods         = modsRes.data
+      const prog         = progRes.data
+      const userProjects = projRes.data
 
       // Fetch announcements for this user's school (or all)
       try {
@@ -314,7 +346,7 @@ export default function DashboardPage() {
       setLoading(false)
     }
     load()
-  }, [])
+  }, [retryKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const displayName    = user?.full_name ?? 'Líder Big Family'
   const avatarLetter   = displayName[0]?.toUpperCase() ?? 'L'
@@ -348,13 +380,42 @@ export default function DashboardPage() {
     setUnreadAnnCount(c => Math.max(0, c - 1))
   }
 
+  if (loadError) {
+    return (
+      <div className="content">
+        <div className="load-error">
+          <div className="load-error__icon">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <circle cx="11" cy="11" r="9" stroke="#C0392B" strokeWidth="1.5"/>
+              <path d="M11 7v5M11 15v.5" stroke="#C0392B" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <div className="load-error__title">No se pudieron cargar los datos</div>
+          <div className="load-error__sub">Verifica tu conexión e intenta de nuevo.</div>
+          <button className="load-error__btn" onClick={() => { setLoadError(false); setRetryKey(k => k + 1) }}>
+            Reintentar
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
       <style>{`
-        
+
 
         /* ── Center content ── */
         .content{flex:1;min-width:0;overflow-y:auto;padding:32px 28px;display:flex;flex-direction:column;gap:20px;}
+
+        /* ── Error state ── */
+        .load-error{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:16px;padding:60px 24px;text-align:center;}
+        .load-error__icon{width:48px;height:48px;border-radius:12px;background:rgba(192,57,43,.08);display:flex;align-items:center;justify-content:center;}
+        .load-error__title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:var(--ink);}
+        .load-error__sub{font-size:13px;color:var(--mute);max-width:280px;line-height:1.55;}
+        .load-error__btn{padding:10px 22px;background:#C0392B;border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .2s cubic-bezier(0.22,1,0.36,1);}
+        .load-error__btn:hover{background:#a93226;}
+        .load-error__btn:active{transform:scale(0.98);}
 
         /* ── Announcement banner ── */
         .ann-banner{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;background:rgba(192,57,43,.07);border:1px solid rgba(192,57,43,.2);border-radius:14px;}
@@ -397,7 +458,7 @@ export default function DashboardPage() {
 
         /* ── Progress card ── */
         .prog-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
-        .prog-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:var(--ink);}
+        .prog-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:18px;color:var(--ink);}
         .prog-badge{padding:4px 12px;background:rgba(192,57,43,.08);color:#C0392B;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.04em;}
         .prog-row{margin-bottom:16px;}
         .prog-row:last-of-type{margin-bottom:0;}
@@ -407,10 +468,12 @@ export default function DashboardPage() {
         .prog-bar{height:100%;background:#C0392B;border-radius:999px;transition:width .6s cubic-bezier(.4,0,.2,1);}
         .prog-hint{font-size:11px;color:var(--mute);margin-top:5px;}
         .prog-actions{display:flex;gap:10px;margin-top:22px;}
-        .btn-ghost{padding:10px 18px;background:none;border:1px solid var(--line);border-radius:10px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;transition:all .2s;font-family:"Satoshi",sans-serif;}
+        .btn-ghost{padding:10px 18px;background:none;border:1px solid var(--line);border-radius:10px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;transition:border-color .2s cubic-bezier(0.22,1,0.36,1),background .2s cubic-bezier(0.22,1,0.36,1);font-family:"Satoshi",sans-serif;}
         .btn-ghost:hover{border-color:var(--ink);}
-        .btn-solid{padding:10px 18px;background:#C0392B;border:none;border-radius:10px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;transition:background .2s;font-family:"Satoshi",sans-serif;}
+        .btn-ghost:active{transform:scale(0.98);}
+        .btn-solid{padding:10px 18px;background:#C0392B;border:none;border-radius:10px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;transition:background .2s cubic-bezier(0.22,1,0.36,1);font-family:"Satoshi",sans-serif;}
         .btn-solid:hover{background:#a93226;}
+        .btn-solid:active{transform:scale(0.98);}
 
         /* ── Motivational block ── */
         .motiv{display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 12px 4px;gap:8px;}
@@ -422,29 +485,54 @@ export default function DashboardPage() {
 
         /* ── Modules section ── */
         .mods-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-        .mods-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:var(--ink);}
+        .mods-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:18px;color:var(--ink);}
         .mods-count{padding:3px 10px;background:var(--line);color:var(--mute);border-radius:999px;font-size:11px;font-weight:600;}
-        .mods-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
-        .mod-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:20px;box-shadow:0 2px 12px -6px rgba(13,13,13,.07);display:flex;flex-direction:column;gap:10px;transition:box-shadow .2s;}
-        .mod-card:hover{box-shadow:0 6px 24px -8px rgba(13,13,13,.14);}
-        .mod-card.done{background:var(--bg-2);}
-        @media(prefers-reduced-motion:no-preference){
-          @keyframes modDonePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.005)}}
-          .mod-card.done{animation:modDonePulse 3s ease-in-out infinite;}
-        }
+
+        /* ── Next module — featured card ── */
+        .mod-next{background:var(--card-bg);border:1px solid var(--card-border);border-left:3px solid var(--accent,#C0392B);border-radius:14px;padding:24px 28px;box-shadow:var(--shadow-raised);display:flex;gap:28px;align-items:flex-start;margin-bottom:16px;cursor:pointer;transition:box-shadow .25s cubic-bezier(0.22,1,0.36,1),transform .25s cubic-bezier(0.22,1,0.36,1);}
+        .mod-next:hover{box-shadow:0 8px 32px -8px rgba(13,13,13,.16);transform:translateY(-1px);}
+        .mod-next:active{transform:scale(0.99);}
+        .mod-next__icon{width:52px;height:52px;border-radius:12px;background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+        .mod-next__body{flex:1;min-width:0;}
+        .mod-next__eyebrow{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#C0392B);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+        .mod-next__title{font-family:"Satoshi",sans-serif;font-weight:600;font-size:18px;color:var(--ink);line-height:1.3;margin-bottom:10px;}
+        .mod-next__desc{font-size:13.5px;color:var(--mute);line-height:1.6;margin-bottom:16px;}
+        .mod-next__footer{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+        .mod-next__xp{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(192,57,43,.08);color:#C0392B;border-radius:999px;font-size:11px;font-weight:700;}
+        .mod-next__cta{padding:10px 22px;background:#C0392B;border:none;border-radius:9px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .2s cubic-bezier(0.22,1,0.36,1);white-space:nowrap;}
+        .mod-next__cta:hover{background:#a93226;}
+        .mod-next__cta:active{transform:scale(0.98);}
+
+        /* ── Standard module grid ── */
+        .mods-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+        .mod-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:20px;box-shadow:var(--shadow-card);display:flex;flex-direction:column;gap:10px;transition:box-shadow .25s cubic-bezier(0.22,1,0.36,1),transform .25s cubic-bezier(0.22,1,0.36,1);}
+        .mod-card:hover{box-shadow:0 6px 24px -8px rgba(13,13,13,.14);transform:translateY(-1px);}
+        .mod-card:active{transform:scale(0.99);}
+        .mod-card.done{background:var(--bg-2);opacity:0.72;}
+        .mod-card.locked{opacity:.45;cursor:default;pointer-events:none;}
         .mod-num{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#C0392B;}
         .mod-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;color:var(--ink);line-height:1.35;}
         .mod-desc{font-size:12px;color:var(--mute);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
         .mod-xp{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:rgba(192,57,43,.08);color:#C0392B;border-radius:999px;font-size:11px;font-weight:700;width:fit-content;}
-        .mod-prog-track{height:5px;background:var(--line);border-radius:999px;overflow:hidden;}
-        .mod-prog-bar{height:100%;background:#C0392B;border-radius:999px;transition:width .5s;}
+        .mod-prog-track{height:4px;background:var(--line);border-radius:999px;overflow:hidden;}
+        .mod-prog-bar{height:100%;background:#C0392B;border-radius:999px;transition:width .5s cubic-bezier(0.22,1,0.36,1);}
         .mod-prog-bar.green{background:#22c55e;}
-        .btn-start{padding:9px 14px;background:var(--ink);border:none;border-radius:9px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:12px;color:var(--bg);cursor:pointer;transition:background .2s;width:100%;margin-top:2px;}
+        .btn-start{padding:9px 14px;background:var(--ink);border:none;border-radius:9px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:12px;color:var(--bg);cursor:pointer;transition:background .2s cubic-bezier(0.22,1,0.36,1);width:100%;margin-top:2px;}
         .btn-start:hover{background:#C0392B;}
+        .btn-start:active{transform:scale(0.98);}
+
+        /* ── Done badge with animated check ── */
         .done-badge{display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;background:rgba(34,197,94,.1);border-radius:9px;font-size:12px;font-weight:700;color:#16a34a;margin-top:2px;}
+        .done-check-svg{overflow:visible;}
+        .done-check-path{stroke-dasharray:20;stroke-dashoffset:20;animation:drawCheck .4s cubic-bezier(0.22,1,0.36,1) forwards;}
+        @keyframes drawCheck{to{stroke-dashoffset:0}}
+        @media(prefers-reduced-motion:no-preference){
+          .mod-card.done .done-check-path{animation:drawCheck .4s cubic-bezier(0.22,1,0.36,1) forwards;}
+        }
+        @media(prefers-reduced-motion:reduce){
+          .done-check-path{stroke-dashoffset:0;animation:none;}
+        }
         .lock-badge{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;background:var(--line);border-radius:9px;font-size:12px;font-weight:600;color:var(--mute);margin-top:2px;}
-        .mod-card.locked{opacity:.5;cursor:default;}
-        .mod-card.locked .btn-start{display:none;}
         .mods-empty{padding:32px 20px;text-align:center;color:var(--mute);font-size:13px;border:1px dashed var(--line);border-radius:14px;}
         .capstone-banner{display:flex;align-items:center;gap:14px;padding:18px 22px;background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(34,197,94,.04));border:1px solid rgba(34,197,94,.25);border-radius:14px;}
         .btn-upload:disabled{opacity:.4;cursor:not-allowed;background:#9a9690 !important;}
@@ -459,7 +547,7 @@ export default function DashboardPage() {
         .kpi-label{font-size:10.5px;color:var(--mute);margin-top:9px;text-transform:uppercase;letter-spacing:.1em;font-weight:600;}
 
         /* ── Charts bento ── */
-        .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+        .charts-row{display:grid;grid-template-columns:8fr 4fr;gap:16px;}
         @media(max-width:860px){.charts-row{grid-template-columns:1fr;}}
 
         /* ── Side-by-side cards row ── */
@@ -471,15 +559,17 @@ export default function DashboardPage() {
         .cert-prog-label{display:flex;justify-content:space-between;font-size:12px;color:var(--mute);margin-bottom:7px;}
         .cert-prog-label span:last-child{color:#C0392B;font-weight:700;}
         .cert-text{font-size:14px;color:var(--mute);line-height:1.55;margin-bottom:20px;margin-top:12px;}
-        .btn-upload{width:100%;padding:12px;background:#C0392B;border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .2s;}
+        .btn-upload{width:100%;padding:12px;background:#C0392B;border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .2s cubic-bezier(0.22,1,0.36,1);}
         .btn-upload:hover{background:#a93226;}
+        .btn-upload:active{transform:scale(0.98);}
 
         /* ── Next module card ── */
         .next-eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);font-weight:600;font-family:"Satoshi",sans-serif;margin-bottom:12px;}
         .next-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:18px;color:var(--ink);margin-bottom:12px;line-height:1.3;}
         .next-xp{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(192,57,43,.1);color:#C0392B;border-radius:999px;font-size:11px;font-weight:700;margin-bottom:20px;}
-        .btn-continue{width:100%;padding:12px;background:var(--ink);border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:var(--bg);cursor:pointer;transition:background .2s;}
+        .btn-continue{width:100%;padding:12px;background:var(--ink);border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:var(--bg);cursor:pointer;transition:background .2s cubic-bezier(0.22,1,0.36,1);}
         .btn-continue:hover{background:#C0392B;}
+        .btn-continue:active{transform:scale(0.98);}
 
         /* ── Coordinator button ── */
         .btn-coordinator{padding:8px 16px;background:transparent;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;transition:border-color .2s,color .2s;white-space:nowrap;flex-shrink:0;}
@@ -606,13 +696,11 @@ export default function DashboardPage() {
             variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
           >
             {([
-              { label: 'XP Total',       val: loading ? null : (user?.total_xp ?? 0), color: 'var(--accent-amber,#D4821A)', border: 'var(--accent-amber,#D4821A)' },
-              { label: 'Módulos',        val: loading ? null : completedCount,         color: 'var(--accent-teal,#0F7B6C)',  border: 'var(--accent-teal,#0F7B6C)'  },
-              { label: 'Racha de días',  val: loading ? null : streak,                 color: 'var(--ink)',                  border: 'var(--line-strong)'            },
-              { label: 'Ranking colegio', val: loading ? null : (rankPos ?? 0), color: 'var(--accent,#C0392B)', border: 'var(--accent,#C0392B)', isRank: true as const },
-            ] as const).map(({ label, val, color, border, ...rest }) => {
-              const isRank = 'isRank' in rest && rest.isRank
-              return (
+              { label: 'XP Total',        val: loading ? null : (user?.total_xp ?? 0), color: 'var(--accent-amber,#D4821A)', border: 'var(--accent-amber,#D4821A)', isRank: false },
+              { label: 'Módulos',         val: loading ? null : completedCount,         color: 'var(--accent-teal,#0F7B6C)',  border: 'var(--accent-teal,#0F7B6C)',  isRank: false },
+              { label: 'Racha de días',   val: loading ? null : streak,                 color: 'var(--ink)',                  border: 'var(--line-strong)',            isRank: false },
+              { label: 'Ranking colegio', val: loading ? null : (rankPos ?? 0),         color: 'var(--accent,#C0392B)',       border: 'var(--accent,#C0392B)',        isRank: true  },
+            ]).map(({ label, val, color, border, isRank }) => (
               <m.div
                 key={label}
                 className="kpi-card"
@@ -625,14 +713,13 @@ export default function DashboardPage() {
                       <div className="kpi-num" style={{ color }}>
                         {isRank
                           ? (val === 0 ? '—' : `#${val}`)
-                          : Number(val).toLocaleString('es-CO')}
+                          : <AnimatedKPI value={val} />}
                       </div>
                       <div className="kpi-label">{label}</div>
                     </>
                 }
               </m.div>
-              )
-            })}
+            ))}
           </m.div>
 
           {/* ── Charts bento ── */}
@@ -984,7 +1071,7 @@ export default function DashboardPage() {
                     <span style={{ position: 'absolute', top: 4, left: 12, fontFamily: "'Instrument Serif',serif", fontSize: 28, color: 'rgba(192,57,43,0.2)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none' }}>&ldquo;</span>
                     <div style={{ paddingLeft: 4 }}>
                       <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: accent, marginBottom: 8 }}>{q.category} · Frase del día</div>
-                      <p style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 13, fontStyle: 'italic', color: 'var(--ink-2)', lineHeight: 1.6, margin: '0 0 14px 0', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{q.quote}</p>
+                      <p style={{ fontFamily: "'Instrument Serif', serif", fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-2)', lineHeight: 1.65, margin: '0 0 14px 0', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{q.quote}</p>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{ width: 22, height: 22, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #0D0D0D)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: '#fff', fontFamily: '"Satoshi", sans-serif', flexShrink: 0 }}>{qInitials}</div>
                         <span style={{ fontSize: 12, fontFamily: '"Satoshi", sans-serif', fontWeight: 600, color: '#C0392B' }}>— {q.author}</span>
@@ -1006,102 +1093,172 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {loading
-              ? (
+            {loading ? (
+              <>
+                {/* Next module skeleton */}
+                <div className="mod-next" style={{ cursor: 'default', marginBottom: 16 }}>
+                  <Sk w={52} h={52} r={12} />
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <Sk w="30%" h={10} r={4} />
+                    <Sk w="65%" h={18} r={6} />
+                    <Sk w="100%" h={13} r={5} />
+                    <Sk w="100%" h={13} r={5} />
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <Sk w={60} h={22} r={999} />
+                      <Sk w={120} h={36} r={9} />
+                    </div>
+                  </div>
+                </div>
+                {/* Grid skeletons */}
                 <div className="mods-grid">
-                  {[1, 2, 3, 4].map(i => (
+                  {[1, 2, 3].map(i => (
                     <div key={i} className="mod-card" style={{ gap: 12 }}>
                       <Sk w="40%" h={10} r={5} />
-                      <Sk w="70%" h={16} r={6} />
-                      <Sk w="100%" h={11} r={5} />
-                      <Sk w="100%" h={11} r={5} />
-                      <Sk w="60px" h={22} r={999} />
-                      <Sk w="100%" h={5} r={999} />
-                      <Sk w="100%" h={36} r={9} />
+                      <Sk w="70%" h={14} r={6} />
+                      <Sk w="100%" h={10} r={5} />
+                      <Sk w="60px" h={20} r={999} />
+                      <Sk w="100%" h={4} r={999} />
+                      <Sk w="100%" h={34} r={9} />
                     </div>
                   ))}
                 </div>
-              )
-              : totalModules === 0
-                ? (
-                  <div className="mods-empty">
-                    No hay módulos disponibles aún. ¡Vuelve pronto!
-                  </div>
-                )
-                : (
+              </>
+            ) : totalModules === 0 ? (
+              <div className="mods-empty">
+                No hay módulos disponibles aún. ¡Vuelve pronto!
+              </div>
+            ) : (
+              <>
+                {/* ── Featured: next module ── */}
+                {nextModule && (
+                  <m.div
+                    className="mod-next"
+                    initial={pref ? false : { opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+                    onClick={() => router.push(`/dashboard/modules/${nextModule.id}`)}
+                  >
+                    <div className="mod-next__icon" aria-hidden="true">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 3l14 9-14 9V3Z" fill="var(--accent,#C0392B)"/>
+                      </svg>
+                    </div>
+                    <div className="mod-next__body">
+                      <div className="mod-next__eyebrow">
+                        <span>Siguiente módulo</span>
+                        <span style={{ opacity: .45 }}>·</span>
+                        <span style={{ color: 'var(--mute)', fontWeight: 500 }}>
+                          {String(nextModule.order_index).padStart(2, '0')}
+                        </span>
+                      </div>
+                      <div className="mod-next__title">{nextModule.title}</div>
+                      <div className="mod-next__desc">{nextModule.description}</div>
+                      <div className="mod-next__footer">
+                        <span className="mod-next__xp">
+                          <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                            <path d="M5 0L6.2 3.8H10L6.9 6.1L8.1 10L5 7.6L1.9 10L3.1 6.1L0 3.8H3.8L5 0Z"/>
+                          </svg>
+                          {nextModule.xp_reward ?? 100} XP
+                        </span>
+                        <m.button
+                          className="mod-next__cta"
+                          onClick={e => { e.stopPropagation(); router.push(`/dashboard/modules/${nextModule.id}`) }}
+                          whileHover={pref ? undefined : { scale: 1.02 }}
+                          whileTap={pref ? undefined : { scale: 0.97 }}
+                          transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                        >
+                          Comenzar ahora →
+                        </m.button>
+                      </div>
+                    </div>
+                  </m.div>
+                )}
+
+                {/* ── Standard grid: all other modules ── */}
+                {sortedModules.filter(m => m.id !== nextModule?.id).length > 0 && (
                   <m.div
                     className="mods-grid"
                     initial={pref ? false : 'hidden'}
                     whileInView="visible"
                     viewport={{ once: true, margin: '-80px' }}
-                    variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.07 } } }}
+                    variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
                   >
-                    {sortedModules.map((mod) => {
-                      const isDone   = completedIds.has(mod.id)
-                      const isLocked = lockedIds.has(mod.id)
-                      return (
-                        <m.div
-                          key={mod.id}
-                          variants={fadeUp}
-                          className={`mod-card ${isDone ? 'done' : ''} ${isLocked ? 'locked' : ''}`}
-                          onClick={!isLocked && !isDone ? () => router.push(`/dashboard/modules/${mod.id}`) : undefined}
-                          style={!isLocked && !isDone ? { cursor: 'pointer' } : undefined}
-                        >
-                          <div className="mod-num" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            {String(mod.order_index).padStart(2, '0')}
-                            {isLocked && (
-                              <svg width="11" height="11" viewBox="0 0 14 14" fill="none" style={{ opacity: .5 }}>
-                                <rect x="2" y="6" width="10" height="7" rx="2" stroke="currentColor" strokeWidth="1.4"/>
-                                <path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                    {sortedModules
+                      .filter(mod => mod.id !== nextModule?.id)
+                      .map((mod) => {
+                        const isDone   = completedIds.has(mod.id)
+                        const isLocked = lockedIds.has(mod.id)
+                        return (
+                          <m.div
+                            key={mod.id}
+                            variants={fadeUp}
+                            className={`mod-card ${isDone ? 'done' : ''} ${isLocked ? 'locked' : ''}`}
+                            onClick={!isLocked && !isDone ? () => router.push(`/dashboard/modules/${mod.id}`) : undefined}
+                            style={!isLocked && !isDone ? { cursor: 'pointer' } : undefined}
+                          >
+                            <div className="mod-num" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              {String(mod.order_index).padStart(2, '0')}
+                              {isLocked && (
+                                <svg width="11" height="11" viewBox="0 0 14 14" fill="none" style={{ opacity: .4 }}>
+                                  <rect x="2" y="6" width="10" height="7" rx="2" stroke="currentColor" strokeWidth="1.4"/>
+                                  <path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                                </svg>
+                              )}
+                            </div>
+                            <div className="mod-name">{mod.title}</div>
+                            <div className="mod-desc">{mod.description}</div>
+                            <div className="mod-xp">
+                              <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                                <path d="M5 0L6.2 3.8H10L6.9 6.1L8.1 10L5 7.6L1.9 10L3.1 6.1L0 3.8H3.8L5 0Z"/>
                               </svg>
+                              {mod.xp_reward ?? 100} XP
+                            </div>
+                            <div className="mod-prog-track">
+                              <div
+                                className={`mod-prog-bar ${isDone ? 'green' : ''}`}
+                                style={{ width: isDone ? '100%' : '0%' }}
+                              />
+                            </div>
+                            {isDone ? (
+                              <div className="done-badge">
+                                <svg className="done-check-svg" width="13" height="13" viewBox="0 0 13 13" fill="none">
+                                  <path
+                                    className="done-check-path"
+                                    d="M2 7l3 3 6-6"
+                                    stroke="#16a34a"
+                                    strokeWidth="1.8"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                                Completado
+                              </div>
+                            ) : isLocked ? (
+                              <div className="lock-badge">
+                                <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                                  <rect x="2" y="6" width="10" height="7" rx="2" stroke="currentColor" strokeWidth="1.4"/>
+                                  <path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                                </svg>
+                                Bloqueado
+                              </div>
+                            ) : (
+                              <m.button
+                                className="btn-start"
+                                onClick={e => { e.stopPropagation(); router.push(`/dashboard/modules/${mod.id}`) }}
+                                whileHover={pref ? undefined : { scale: 1.02 }}
+                                whileTap={pref ? undefined : { scale: 0.97 }}
+                                transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                              >
+                                Empezar
+                              </m.button>
                             )}
-                          </div>
-                          <div className="mod-name">{mod.title}</div>
-                          <div className="mod-desc">{mod.description}</div>
-                          <div className="mod-xp">
-                            <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
-                              <path d="M5 0L6.2 3.8H10L6.9 6.1L8.1 10L5 7.6L1.9 10L3.1 6.1L0 3.8H3.8L5 0Z"/>
-                            </svg>
-                            {mod.xp_reward ?? 100} XP
-                          </div>
-                          <div className="mod-prog-track">
-                            <div
-                              className={`mod-prog-bar ${isDone ? 'green' : ''}`}
-                              style={{ width: isDone ? '100%' : '0%' }}
-                            />
-                          </div>
-                          {isDone ? (
-                            <div className="done-badge">
-                              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                                <path d="M2 7l3 3 6-6" stroke="#16a34a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                              Completado
-                            </div>
-                          ) : isLocked ? (
-                            <div className="lock-badge">
-                              <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                                <rect x="2" y="6" width="10" height="7" rx="2" stroke="currentColor" strokeWidth="1.4"/>
-                                <path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-                              </svg>
-                              Bloqueado
-                            </div>
-                          ) : (
-                            <m.button
-                              className="btn-start"
-                              onClick={e => { e.stopPropagation(); router.push(`/dashboard/modules/${mod.id}`) }}
-                              whileHover={pref ? undefined : { scale: 1.02 }}
-                              whileTap={pref ? undefined : { scale: 0.97 }}
-                              transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                            >
-                              Empezar
-                            </m.button>
-                          )}
-                        </m.div>
-                      )
-                    })}
+                          </m.div>
+                        )
+                      })}
                   </m.div>
-                )
-            }
+                )}
+              </>
+            )}
           </div>
 
         </m.main>

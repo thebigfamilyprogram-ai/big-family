@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { m, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { useTheme } from '@/contexts/ThemeContext'
 
@@ -177,10 +178,11 @@ export default function AppSidebar({
         .app-sb__section-hd:hover{background:var(--bg-2);}
         .app-sb__section:first-child .app-sb__section-hd{margin-top:4px;}
         .app-sb__section-label{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);}
-        .app-sb__items{overflow:hidden;transition:max-height .25s cubic-bezier(0.22,1,0.36,1);display:flex;flex-direction:column;gap:1px;}
-        .app-sb__item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;border:none;border-left:2px solid transparent;background:none;cursor:pointer;width:100%;text-align:left;font-family:"Satoshi",sans-serif;font-size:12.5px;color:var(--mute);transition:color .15s,background .15s,border-left-color .15s;min-height:36px;}
+        .app-sb__items{overflow:hidden;display:flex;flex-direction:column;gap:1px;}
+        .app-sb__item{position:relative;display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;border:none;background:none;cursor:pointer;width:100%;text-align:left;font-family:"Satoshi",sans-serif;font-size:12.5px;color:var(--mute);transition:color .2s cubic-bezier(0.22,1,0.36,1),background .2s cubic-bezier(0.22,1,0.36,1);min-height:36px;}
         .app-sb__item:hover{color:var(--ink);background:var(--bg-2);}
-        .app-sb__item--active{color:var(--ink);background:rgba(192,57,43,.07);border-left-color:var(--accent,#C0392B);font-weight:600;}
+        .app-sb__item:active{transform:scale(0.98);}
+        .app-sb__item--active{color:var(--ink);background:rgba(192,57,43,.07);font-weight:600;}
         .app-sb__item span{flex:1;text-align:left;}
         .app-sb__badge{background:var(--accent,#C0392B);color:#fff;border-radius:999px;font-size:9.5px;font-weight:700;min-width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;flex-shrink:0;}
         .app-sb__new{margin:10px 0 4px;padding:11px 12px;background:rgba(192,57,43,.07);color:var(--accent,#C0392B);border:1px solid rgba(192,57,43,.18);border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:12.5px;cursor:pointer;transition:background .2s,color .2s,border-color .2s;text-align:left;width:100%;}
@@ -198,7 +200,7 @@ export default function AppSidebar({
         .app-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:30;backdrop-filter:blur(2px);}
         @media(max-width:768px){
           .app-hamburger{display:flex;}
-          .app-sb{position:fixed;top:0;left:0;height:100vh;z-index:40;transform:translateX(-100%);transition:transform .25s ease;box-shadow:4px 0 20px rgba(0,0,0,.12);}
+          .app-sb{position:fixed;top:0;left:0;height:100vh;z-index:40;transform:translateX(-100%);transition:transform .3s cubic-bezier(0.22,1,0.36,1);box-shadow:4px 0 20px rgba(0,0,0,.12);}
           .app-sb.open{transform:translateX(0);}
           .app-overlay.open{display:block;}
         }
@@ -241,25 +243,48 @@ export default function AppSidebar({
                   </svg>
                 </div>
               )}
-              <div
-                className="app-sb__items"
-                style={{ maxHeight: openSec[section.key] !== false ? `${section.items.length * 44}px` : '0px' }}
-              >
-                {section.items.map((item, idx) => (
-                  <button
-                    key={idx}
-                    className={`app-sb__item${isActive(item) ? ' app-sb__item--active' : ''}`}
-                    onClick={() => handleItemClick(item)}
-                    type="button"
+              <AnimatePresence initial={false}>
+                {openSec[section.key] !== false && (
+                  <m.div
+                    className="app-sb__items"
+                    key={section.key + '-items'}
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 32, opacity: { duration: 0.15 } }}
+                    style={{ overflow: 'hidden' }}
                   >
-                    {item.icon}
-                    <span>{item.label}</span>
-                    {!!item.badge && (
-                      <span className="app-sb__badge">{item.badge > 9 ? '9+' : item.badge}</span>
-                    )}
-                  </button>
-                ))}
-              </div>
+                    {section.items.map((item, idx) => {
+                      const active = isActive(item)
+                      return (
+                        <button
+                          key={idx}
+                          className={`app-sb__item${active ? ' app-sb__item--active' : ''}`}
+                          onClick={() => handleItemClick(item)}
+                          type="button"
+                        >
+                          {active && (
+                            <m.span
+                              layoutId="sidebar-indicator"
+                              style={{
+                                position: 'absolute', left: 0, top: 4, bottom: 4,
+                                width: 2, borderRadius: 999,
+                                background: 'var(--accent,#C0392B)',
+                              }}
+                              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                            />
+                          )}
+                          {item.icon}
+                          <span>{item.label}</span>
+                          {!!item.badge && (
+                            <span className="app-sb__badge">{item.badge > 9 ? '9+' : item.badge}</span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </m.div>
+                )}
+              </AnimatePresence>
             </div>
           ))}
 
