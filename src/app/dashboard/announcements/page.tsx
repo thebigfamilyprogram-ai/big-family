@@ -83,8 +83,8 @@ export default function AnnouncementsPage() {
     <>
       <style>{`
         
-        .layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh;max-width:1280px;margin:0 auto;}
-        .content{padding:32px 28px;display:flex;flex-direction:column;gap:20px;min-width:0;}
+        .layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
+        .content{flex:1;min-width:0;overflow-y:auto;padding:32px 28px;display:flex;flex-direction:column;gap:20px;}
         .page-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:26px;letter-spacing:-0.02em;color:var(--ink);}
         .ann-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:20px 22px;box-shadow:0 2px 12px -6px rgba(13,13,13,.07);cursor:pointer;transition:box-shadow .2s;}
         .ann-card:hover{box-shadow:0 6px 24px -8px rgba(13,13,13,.12);}
@@ -94,7 +94,6 @@ export default function AnnouncementsPage() {
         .ann-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:15px;color:var(--ink);}
         .ann-content{font-size:13.5px;color:var(--ink-2);line-height:1.6;}
         .ann-meta{font-size:11.5px;color:var(--mute);margin-top:8px;}
-        @media(max-width:860px){.layout{grid-template-columns:1fr;}}
       `}</style>
 
       <div className="layout">

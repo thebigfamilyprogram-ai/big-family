@@ -177,7 +177,7 @@ export default function ProjectsPage() {
         }
       `}</style>
 
-      <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
+      <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', width: '100%', background: 'var(--bg)' }}>
         <DashboardSidebar activePage="projects" userName={userName} userInitial={initial} />
 
         <main style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>

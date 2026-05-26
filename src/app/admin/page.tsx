@@ -355,7 +355,7 @@ export default function AdminPage() {
         html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;color:var(--ink);}
 
         /* Layout */
-        .adm-main{flex:1;min-width:0;padding:44px var(--dashboard-padding,32px) 80px;}
+        .adm-main{flex:1;min-width:0;overflow-y:auto;padding:44px var(--dashboard-padding,32px) 80px;}
         .adm-header{margin-bottom:32px;}
         .adm-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:28px;letter-spacing:-.022em;}
         .adm-header p{margin-top:5px;font-size:13.5px;color:#6B6B6B;}
@@ -410,7 +410,7 @@ export default function AdminPage() {
         }
       `}</style>
 
-      <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
+      <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', width: '100%', background: 'var(--bg)' }}>
       <AppSidebar
         role="admin"
         userName={adminName}

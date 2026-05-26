@@ -198,8 +198,8 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
         @keyframes spin{to{transform:rotate(360deg)}}
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;color:var(--ink);}
-        .coord-layout{display:flex;min-height:100vh;}
-        .main{flex:1;min-width:0;max-width:1000px;padding:44px 40px 80px;}
+        .coord-layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
+        .main{flex:1;min-width:0;overflow-y:auto;max-width:1000px;padding:44px 40px 80px;}
         .page-header{margin-bottom:36px;}
         .page-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:28px;letter-spacing:-0.022em;color:var(--ink);}
         .page-header p{margin-top:5px;font-size:13.5px;color:var(--mute);}

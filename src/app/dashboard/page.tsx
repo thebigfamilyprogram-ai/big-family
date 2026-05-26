@@ -286,10 +286,10 @@ export default function DashboardPage() {
         
 
         /* ── Layout ── */
-        .layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh;max-width:1280px;margin:0 auto;}
+        .layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
 
         /* ── Center content ── */
-        .content{padding:32px 28px;display:flex;flex-direction:column;gap:20px;min-width:0;}
+        .content{flex:1;min-width:0;overflow-y:auto;padding:32px 28px;display:flex;flex-direction:column;gap:20px;}
 
         /* ── Announcement banner ── */
         .ann-banner{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;background:rgba(192,57,43,.07);border:1px solid rgba(192,57,43,.2);border-radius:14px;}
@@ -409,11 +409,6 @@ export default function DashboardPage() {
 
         @media(max-width:1200px){.mods-grid{grid-template-columns:repeat(2,1fr);}}
         @media(max-width:860px){
-          .layout{grid-template-columns:1fr;}
-          .sidebar{position:relative;height:auto;flex-direction:row;flex-wrap:wrap;padding:16px;border-right:none;border-bottom:1px solid var(--line);}
-          .sb-nav{flex-direction:row;flex:none;}
-          .sb-divider{display:none;}
-          .sb-user,.sb-links,.sb-btn-new{display:none;}
           .cards-row{grid-template-columns:1fr;}
           .mods-grid{grid-template-columns:1fr;}
         }

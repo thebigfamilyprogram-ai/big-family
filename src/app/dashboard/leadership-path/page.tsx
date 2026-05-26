@@ -321,8 +321,8 @@ export default function LeadershipPathPage() {
         @keyframes confettiPhase{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(var(--tx),80px) rotate(var(--rot));opacity:0}}
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Satoshi",sans-serif;color:var(--ink);}
-        .lp-layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh;max-width:1280px;margin:0 auto;}
-        .lp-main{display:flex;flex-direction:column;min-width:0;overflow:hidden;}
+        .lp-layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
+        .lp-main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
         .lp-header{position:sticky;top:0;z-index:10;background:var(--bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:20px 40px;display:flex;align-items:center;justify-content:space-between;}
         .lp-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:22px;letter-spacing:-.02em;color:var(--ink);}
         .lp-header p{font-size:13px;color:var(--mute);margin-top:3px;}
@@ -338,8 +338,6 @@ export default function LeadershipPathPage() {
         .sk{border-radius:8px;background:linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;}
         .phase-confetti-dot{position:absolute;width:7px;height:7px;border-radius:2px;top:50%;left:50%;animation:confettiPhase .8s ease-out forwards;pointer-events:none;}
         @media(max-width:860px){
-          .lp-layout{grid-template-columns:1fr;}
-          .sidebar{display:none;}
           .lp-header{padding:16px 20px;}
         }
       `}</style>

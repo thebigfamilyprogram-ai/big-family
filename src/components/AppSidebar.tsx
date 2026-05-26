@@ -164,7 +164,7 @@ export default function AppSidebar({
   return (
     <>
       <style>{`
-        .app-sb{width:${width}px;min-width:${width}px;height:100vh;position:sticky;top:0;display:flex;flex-direction:column;background:var(--card-bg);border-right:1px solid var(--card-border,rgba(13,13,13,.07));overflow-y:auto;overflow-x:hidden;z-index:20;flex-shrink:0;font-family:"Satoshi",sans-serif;}
+        .app-sb{width:${width}px;min-width:${width}px;height:100dvh;position:sticky;top:0;display:flex;flex-direction:column;background:var(--card-bg);border-right:1px solid var(--card-border,rgba(13,13,13,.07));overflow-y:auto;overflow-x:hidden;z-index:20;flex-shrink:0;font-family:"Satoshi",sans-serif;}
         .app-sb__brand{display:flex;align-items:center;gap:10px;padding:20px 16px 16px;font-weight:700;font-size:15px;color:var(--ink);border-bottom:1px solid var(--card-border,rgba(13,13,13,.07));flex-shrink:0;}
         .app-sb__school{font-size:11px;font-weight:500;color:var(--mute);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
         .app-sb__nav{flex:1;padding:8px;display:flex;flex-direction:column;gap:1px;overflow-y:auto;}

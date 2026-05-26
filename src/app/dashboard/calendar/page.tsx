@@ -83,8 +83,8 @@ export default function CalendarPage() {
     <>
       <style>{`
         
-        .layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh;max-width:1280px;margin:0 auto;}
-        .content{padding:32px 28px;display:flex;flex-direction:column;gap:20px;min-width:0;}
+        .layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
+        .content{flex:1;min-width:0;overflow-y:auto;padding:32px 28px;display:flex;flex-direction:column;gap:20px;}
         .page-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:26px;letter-spacing:-0.02em;color:var(--ink);}
         .card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:24px;box-shadow:0 2px 16px -6px rgba(13,13,13,.08);}
         .cal-layout{display:grid;grid-template-columns:1fr 280px;gap:20px;}
@@ -106,7 +106,7 @@ export default function CalendarPage() {
         .ev-date{font-size:10.5px;font-weight:700;color:#C0392B;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;}
         .ev-title{font-family:"Satoshi",sans-serif;font-weight:600;font-size:13.5px;color:var(--ink);}
         .ev-loc{font-size:12px;color:var(--mute);margin-top:2px;}
-        @media(max-width:960px){.cal-layout{grid-template-columns:1fr;}.layout{grid-template-columns:1fr;}}
+        @media(max-width:960px){.cal-layout{grid-template-columns:1fr;}}
         @media(max-width:768px){.cal-cell{aspect-ratio:auto;min-height:36px;}.cal-num{font-size:11px;}}
       `}</style>
 

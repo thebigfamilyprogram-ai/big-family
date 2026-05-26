@@ -174,8 +174,8 @@ export default function GoalsPage() {
     <>
       <style>{`
         
-        .layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh;max-width:1280px;margin:0 auto;}
-        .content{padding:32px 28px;display:flex;flex-direction:column;gap:20px;min-width:0;}
+        .layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
+        .content{flex:1;min-width:0;overflow-y:auto;padding:32px 28px;display:flex;flex-direction:column;gap:20px;}
         .page-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:26px;letter-spacing:-0.02em;color:var(--ink);}
         .page-sub{font-size:13.5px;color:var(--mute);margin-top:4px;}
         .card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:24px;box-shadow:0 2px 16px -6px rgba(13,13,13,.08);}
@@ -196,7 +196,6 @@ export default function GoalsPage() {
         .tmpl-card:hover{border-color:#C0392B;background:rgba(192,57,43,.03);}
         .tmpl-card.adopted{cursor:default;}
         .tmpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
-        @media(max-width:860px){.layout{grid-template-columns:1fr;}.sidebar{position:relative;height:auto;}}
       `}</style>
 
       <div className="layout">

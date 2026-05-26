@@ -158,7 +158,7 @@ export default function EditProjectPage() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', width: '100%', background: 'var(--bg)' }}>
       <DashboardSidebar activePage="projects" userName={userName} userInitial={userInitial} />
       <main style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
         {projectData && (

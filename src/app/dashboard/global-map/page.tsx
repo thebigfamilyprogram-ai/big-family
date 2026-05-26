@@ -245,7 +245,7 @@ export default function GlobalMapPage() {
         }
       `}</style>
 
-      <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }} onClick={() => setTooltip(null)}>
+      <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', width: '100%', background: 'var(--bg)' }} onClick={() => setTooltip(null)}>
         <DashboardSidebar activePage="global-map" userName={userName} userInitial={initial} />
 
         <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', minWidth: 0 }}>

@@ -356,7 +356,7 @@ export default function TeamHubPage() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
+      <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', width: '100%', background: 'var(--bg)' }}>
         <DashboardSidebar activePage="team-hub" />
         <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ color: 'var(--mute)', fontFamily: 'Satoshi,sans-serif', fontSize: 14 }}>Cargando Team Hub…</div>
@@ -368,7 +368,7 @@ export default function TeamHubPage() {
   return (
     <>
       <style>{`
-        .th-layout{display:flex;min-height:100vh;background:var(--bg);}
+        .th-layout{display:flex;height:100dvh;overflow:hidden;width:100%;background:var(--bg);}
         .th-main{flex:1;overflow:auto;min-width:0;}
         .th-header{padding:40px 48px 0;}
         .th-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:28px;color:var(--ink);margin:0 0 4px;}

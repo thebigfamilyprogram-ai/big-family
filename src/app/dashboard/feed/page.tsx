@@ -169,8 +169,8 @@ export default function FeedPage() {
     <>
       <style>{`
         
-        .layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh;max-width:1280px;margin:0 auto;}
-        .content{padding:32px 28px;display:flex;flex-direction:column;gap:20px;min-width:0;}
+        .layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
+        .content{flex:1;min-width:0;overflow-y:auto;padding:32px 28px;display:flex;flex-direction:column;gap:20px;}
         .page-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:26px;letter-spacing:-0.02em;color:var(--ink);}
         .filter-row{display:flex;gap:8px;flex-wrap:wrap;}
         .filter-btn{padding:6px 14px;border-radius:999px;border:1.5px solid var(--line);font-size:12.5px;font-weight:600;cursor:pointer;background:none;color:var(--mute);transition:all .15s;}
@@ -185,7 +185,6 @@ export default function FeedPage() {
         .feed-meta{font-size:11.5px;color:var(--mute);margin-top:4px;}
         .scroll-top{position:fixed;bottom:32px;right:32px;width:44px;height:44px;border-radius:50%;background:var(--ink);color:var(--bg);border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px -4px rgba(0,0,0,.3);z-index:50;transition:background .2s;}
         .scroll-top:hover{background:#C0392B;}
-        @media(max-width:860px){.layout{grid-template-columns:1fr;}}
       `}</style>
 
       <div className="layout">
