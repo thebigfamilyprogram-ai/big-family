@@ -2,12 +2,9 @@
 
 import { memo, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
 import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
 import CoordinatorButton from '@/components/CoordinatorButton'
 import TimelineSection from '@/components/TimelineSection'
-
-const WorldMap = dynamic(() => import('@/components/WorldMap'), { ssr: false })
 import { createClient } from '@/lib/supabase'
 import AnimatedNumber from '@/components/AnimatedNumber'
 import { useRealtimeStats } from '@/hooks/useRealtimeStats'
@@ -642,8 +639,19 @@ export default function GlobeHero() {
           style={{ y: prefersReduced ? undefined : globeY }}
           transition={{ type: 'spring', stiffness: 80, damping: 18, delay: 0.4 }}
         >
-          <div style={{ position: 'absolute', inset: 0 }}>
-            <WorldMap />
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              minHeight: '500px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'var(--bg-2)',
+              borderRadius: '12px',
+            }}
+          >
+            {/* Hero visual placeholder */}
           </div>
         </m.div>
 
