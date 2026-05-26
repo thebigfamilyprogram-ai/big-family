@@ -17,8 +17,6 @@ const SCRAMBLE_WORDS = [
   'COLOMBIA','ESTADOS UNIDOS','MÉXICO','GUATEMALA','NICARAGUA',
   'COSTA RICA','PARAGUAY','FRANCIA','ALEMANIA','ESPAÑA','EMIRATOS','CANADÁ',
 ]
-const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-
 function CountryScramble() {
   const [text, setText] = useState(SCRAMBLE_WORDS[0])
   const idxRef = useRef(0)
@@ -27,22 +25,22 @@ function CountryScramble() {
     let resolveTimer: ReturnType<typeof setTimeout>
     let scrambleTimer: ReturnType<typeof setInterval>
 
+    function scramble(target: string, progress: number): string {
+      return target.split('').map((ch, i) => {
+        if (ch === ' ') return ' '
+        if (i < progress) return ch
+        return String.fromCharCode(65 + Math.floor(Math.random() * 26))
+      }).join('')
+    }
+
     function scrambleTo(target: string) {
-      let frame = 0
-      const frames = 10
+      let progress = 0
+      setText(scramble(target, 0))
       scrambleTimer = setInterval(() => {
-        frame++
-        const progress = frame / frames
-        setText(
-          target.split('').map((ch, i) => {
-            if (ch === ' ') return ' '
-            if (i / target.length < progress) return ch
-            return CHARS[Math.floor(Math.random() * CHARS.length)]
-          }).join(''),
-        )
-        if (frame >= frames) {
+        progress++
+        setText(scramble(target, progress))
+        if (progress >= target.length) {
           clearInterval(scrambleTimer)
-          setText(target)
           resolveTimer = setTimeout(nextWord, 1500)
         }
       }, 40)
