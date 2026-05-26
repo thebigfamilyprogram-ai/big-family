@@ -431,7 +431,7 @@ export default function GlobeHero() {
         .bento__cell:hover::before{opacity:1;}
         .bento__cell--tall{grid-row:1/span 2;grid-column:1;}
         .bento__cell--wide{grid-row:2;grid-column:2/span 2;}
-        .bento__year{font-family:"Courier New",monospace;font-size:13px;letter-spacing:0.15em;color:#C0392B;margin-bottom:16px;}
+        .bento__year{font-family:var(--font-mono),monospace;font-size:13px;letter-spacing:0.15em;color:#C0392B;margin-bottom:16px;}
         .bento__title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:20px;color:rgba(255,255,255,0.92);margin-bottom:12px;line-height:1.25;}
         .bento__desc{font-family:"Satoshi",sans-serif;font-size:14px;color:rgba(255,255,255,0.45);line-height:1.65;}
         .bento__tag{display:inline-block;margin-top:20px;border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.35);font-size:11px;letter-spacing:0.15em;border-radius:999px;padding:4px 12px;}

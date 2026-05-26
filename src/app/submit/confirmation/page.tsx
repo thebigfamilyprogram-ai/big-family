@@ -86,7 +86,7 @@ export default function SubmitConfirmationPage() {
     <>
       <style>{`
                 *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;min-height:100vh;}
+        html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;}
         .sc-page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;}
         .sc-logo{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:36px;}
         .sc-logo-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:15px;color:#0D0D0D;}

@@ -134,7 +134,7 @@ export default function QuizQuestion({ question, onChange }: Props) {
               padding: '14px 16px',
               border: '1.5px solid rgba(13,13,13,0.12)',
               borderRadius: 12,
-              fontSize: 15, fontFamily: 'Inter,sans-serif',
+              fontSize: 15, fontFamily: 'Satoshi,sans-serif',
               resize: 'vertical', outline: 'none', lineHeight: 1.65,
               color: 'var(--ink)', background: 'var(--bg-2)',
               transition: 'border-color .2s',

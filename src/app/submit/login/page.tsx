@@ -51,7 +51,7 @@ export default function SubmitLoginPage() {
     <>
       <style>{`
                 *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;min-height:100vh;}
+        html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;}
         .sl-page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;}
         .sl-card{background:#fff;border:1px solid rgba(13,13,13,.09);border-radius:20px;box-shadow:0 8px 40px -12px rgba(13,13,13,.12);padding:36px 32px;width:100%;max-width:400px;}
         .sl-heading{font-family:"Satoshi",sans-serif;font-weight:900;font-size:24px;color:#0D0D0D;margin-bottom:6px;}

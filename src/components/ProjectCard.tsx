@@ -374,7 +374,7 @@ export default function ProjectCard({
             <div style={{ flex: 1, height: 5, background: 'rgba(13,13,13,.08)', borderRadius: 999, overflow: 'hidden' }}>
               <div style={{ height: '100%', borderRadius: 999, background: '#C0392B', width: `${project.completion_percentage ?? 0}%`, transition: 'width .4s ease' }} />
             </div>
-            <span style={{ fontSize: 12, color: '#9a9690', whiteSpace: 'nowrap', fontFamily: 'Inter,sans-serif' }}>
+            <span style={{ fontSize: 12, color: '#9a9690', whiteSpace: 'nowrap', fontFamily: 'Satoshi,sans-serif' }}>
               {project.completion_percentage ?? 0}% completado · Editando
             </span>
           </div>

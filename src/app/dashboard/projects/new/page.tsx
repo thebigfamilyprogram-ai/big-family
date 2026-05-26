@@ -72,7 +72,7 @@ export default function NewProjectPage() {
   return (
     <div style={{
       display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center',
-      background: 'var(--bg)', fontFamily: 'Inter, sans-serif', color: 'var(--mute)',
+      background: 'var(--bg)', fontFamily: 'Satoshi,sans-serif', color: 'var(--mute)',
       flexDirection: 'column', gap: 14,
     }}>
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ animation: 'spin 1s linear infinite' }}>

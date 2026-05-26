@@ -61,7 +61,7 @@ export function ToastContainer() {
                 borderRadius: 12,
                 padding: '12px 18px',
                 fontSize: 13.5,
-                fontFamily: 'Inter, sans-serif',
+                fontFamily: 'Satoshi,sans-serif',
                 fontWeight: 500,
                 maxWidth: 320,
                 backdropFilter: 'blur(8px)',

@@ -190,7 +190,7 @@ export default function DiaLiderazgoPage() {
     <>
       <style>{`
                 *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+        html,body{font-family:"Satoshi",sans-serif;-webkit-font-smoothing:antialiased;}
         body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");opacity:.6;mix-blend-mode:multiply;}
 
         /* ── Topnav ── */
@@ -242,11 +242,11 @@ export default function DiaLiderazgoPage() {
         .dl-about__right{padding-left:60px;}
         .dl-about-eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:#C0392B;margin-bottom:16px;}
         .dl-about-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:clamp(28px,4vw,44px);letter-spacing:-.02em;color:var(--ink,#0D0D0D);line-height:1.15;margin-bottom:20px;}
-        .dl-about-text{font-family:"Inter",sans-serif;font-size:16px;line-height:1.7;color:var(--mute,#6B6B6B);margin-bottom:32px;}
+        .dl-about-text{font-family:"Satoshi",sans-serif;font-size:16px;line-height:1.7;color:var(--mute,#6B6B6B);margin-bottom:32px;}
         .dl-stats-col{display:flex;flex-direction:column;gap:14px;}
         .dl-stat-card{background:var(--card-bg,#fff);border:1px solid var(--card-border,rgba(13,13,13,.08));border-radius:16px;padding:24px;text-align:center;}
         .dl-stat-num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(32px,4vw,48px);color:#C0392B;line-height:1;letter-spacing:-.03em;}
-        .dl-stat-label{font-family:"Inter",sans-serif;font-weight:500;font-size:12px;color:var(--mute,#6B6B6B);text-transform:uppercase;letter-spacing:.1em;margin-top:8px;}
+        .dl-stat-label{font-family:"Satoshi",sans-serif;font-weight:500;font-size:12px;color:var(--mute,#6B6B6B);text-transform:uppercase;letter-spacing:.1em;margin-top:8px;}
 
         /* ── Final CTA ── */
         .dl-final{background:#0D0D0D;padding:100px 40px;text-align:center;position:relative;overflow:hidden;}

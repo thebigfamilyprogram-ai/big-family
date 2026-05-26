@@ -342,7 +342,7 @@ export default function DashboardPage() {
         .prog-bar{height:100%;background:#C0392B;border-radius:999px;transition:width .6s cubic-bezier(.4,0,.2,1);}
         .prog-hint{font-size:11px;color:var(--mute);margin-top:5px;}
         .prog-actions{display:flex;gap:10px;margin-top:22px;}
-        .btn-ghost{padding:10px 18px;background:none;border:1px solid var(--line);border-radius:10px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;transition:all .2s;font-family:"Inter",sans-serif;}
+        .btn-ghost{padding:10px 18px;background:none;border:1px solid var(--line);border-radius:10px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;transition:all .2s;font-family:"Satoshi",sans-serif;}
         .btn-ghost:hover{border-color:var(--ink);}
         .btn-solid{padding:10px 18px;background:#C0392B;border:none;border-radius:10px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;transition:background .2s;font-family:"Satoshi",sans-serif;}
         .btn-solid:hover{background:#a93226;}
@@ -777,7 +777,7 @@ export default function DashboardPage() {
                     <span style={{ position: 'absolute', top: 4, left: 12, fontFamily: 'Georgia, serif', fontSize: 28, color: 'rgba(192,57,43,0.2)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none' }}>&ldquo;</span>
                     <div style={{ paddingLeft: 4 }}>
                       <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: accent, marginBottom: 8 }}>{q.category} · Frase del día</div>
-                      <p style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, fontStyle: 'italic', color: 'var(--ink-2)', lineHeight: 1.6, margin: '0 0 14px 0', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{q.quote}</p>
+                      <p style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 13, fontStyle: 'italic', color: 'var(--ink-2)', lineHeight: 1.6, margin: '0 0 14px 0', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{q.quote}</p>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{ width: 22, height: 22, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #0D0D0D)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: '#fff', fontFamily: '"Satoshi", sans-serif', flexShrink: 0 }}>{qInitials}</div>
                         <span style={{ fontSize: 12, fontFamily: '"Satoshi", sans-serif', fontWeight: 600, color: '#C0392B' }}>— {q.author}</span>

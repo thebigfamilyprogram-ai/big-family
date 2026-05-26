@@ -121,7 +121,7 @@ export default function ExpositorPage() {
       <style>{`
                 
         *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;color:var(--ink);}
+        html,body{background:var(--bg);font-family:"Satoshi",sans-serif;color:var(--ink);}
         .exp-content{flex:1;overflow:auto;padding:40px 48px 80px;min-width:0;}
         .exp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;gap:16px;flex-wrap:wrap;}
         .exp-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:28px;letter-spacing:-.022em;color:var(--ink);}

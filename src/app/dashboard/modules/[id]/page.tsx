@@ -320,7 +320,7 @@ export default function LeadershipPathPage() {
         @keyframes pulseGlow{0%,100%{filter:drop-shadow(0 0 2px rgba(192,57,43,.4))}50%{filter:drop-shadow(0 0 8px rgba(192,57,43,.8))}}
         @keyframes confettiPhase{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(var(--tx),80px) rotate(var(--rot));opacity:0}}
         *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;color:var(--ink);}
+        html,body{background:var(--bg);font-family:"Satoshi",sans-serif;color:var(--ink);}
         .lp-layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh;max-width:1280px;margin:0 auto;}
         .lp-main{display:flex;flex-direction:column;min-width:0;overflow:hidden;}
         .lp-header{position:sticky;top:0;z-index:10;background:var(--bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:20px 40px;display:flex;align-items:center;justify-content:space-between;}
@@ -643,7 +643,7 @@ export default function LeadershipPathPage() {
                         transform: 'translateX(-50%)',
                         fontSize: 13,
                         fontWeight: 500,
-                        fontFamily: 'Inter,sans-serif',
+                        fontFamily: 'Satoshi,sans-serif',
                         color: isLocked ? 'var(--mute)' : '#0D0D0D',
                         textAlign: 'center',
                         maxWidth: 120,

@@ -209,7 +209,7 @@ export default function RegisterPage() {
     <>
       <style>{`
                 *{box-sizing:border-box;margin:0;padding:0;}
-        body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;min-height:100vh;
+        body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;
           background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");}
         .page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
         .logo-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:32px;}

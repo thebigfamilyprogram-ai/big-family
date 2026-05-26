@@ -71,7 +71,7 @@ function SaveIndicator({ saveStatus, savedAt }: { saveStatus: SaveStatus; savedA
     `Guardado ✓  ${savedAt ? savedAt.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : ''}`
   const color = saveStatus === 'error' ? '#C0392B' : '#6B6B6B'
   return (
-    <div style={{ position: 'fixed', top: 16, right: 24, zIndex: 50, fontSize: 12, color, fontFamily: 'Inter,sans-serif', background: 'var(--card-bg)', border: '1px solid var(--line)', borderRadius: 8, padding: '4px 10px', boxShadow: '0 2px 8px -2px rgba(0,0,0,.1)' }}>
+    <div style={{ position: 'fixed', top: 16, right: 24, zIndex: 50, fontSize: 12, color, fontFamily: 'Satoshi,sans-serif', background: 'var(--card-bg)', border: '1px solid var(--line)', borderRadius: 8, padding: '4px 10px', boxShadow: '0 2px 8px -2px rgba(0,0,0,.1)' }}>
       {text}
     </div>
   )

@@ -183,7 +183,7 @@ export default function GlobalMapPage() {
         .gm-header{padding:36px 40px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap;}
         .gm-eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;color:#C0392B;text-transform:uppercase;font-weight:700;margin-bottom:12px;}
         .gm-title{font-family:"Instrument Serif",serif;font-style:italic;font-size:clamp(40px,5vw,64px);color:var(--ink);letter-spacing:-.03em;line-height:1.05;margin-bottom:8px;}
-        .gm-sub{font-family:Inter,sans-serif;font-size:14px;color:var(--mute);}
+        .gm-sub{font-family:"Satoshi",sans-serif;font-size:14px;color:var(--mute);}
         .gm-pills{display:flex;gap:10px;flex-wrap:wrap;align-self:center;}
         .gm-pill{padding:8px 18px;border-radius:999px;background:var(--card-bg);border:1px solid var(--card-border);font-size:12px;color:var(--ink);display:flex;align-items:center;gap:8px;font-family:"Satoshi",sans-serif;}
         .gm-pill b{color:var(--ink);font-weight:700;}
@@ -278,7 +278,7 @@ export default function GlobalMapPage() {
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
               <path d="M8 1.5A6.5 6.5 0 1 0 8 14.5 6.5 6.5 0 0 0 8 1.5ZM8 5v3M8 10h.01" stroke="#C0392B" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
-            <span style={{ fontSize: 12.5, color: '#C0392B', fontFamily: 'Inter,sans-serif' }}>
+            <span style={{ fontSize: 12.5, color: '#C0392B', fontFamily: 'Satoshi,sans-serif' }}>
               <strong>Visión 2036:</strong> Los datos mostrados representan metas proyectadas del programa, no cifras reales actuales.
             </span>
           </div>

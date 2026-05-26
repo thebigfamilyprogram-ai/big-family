@@ -350,7 +350,7 @@ function SubField({ label, value, onChange, disabled }: {
 }) {
   return (
     <div style={{ marginBottom: 20 }}>
-      <div style={{ fontFamily: '"Inter",sans-serif', fontWeight: 500, fontSize: 13, color: 'var(--ink-2)', marginBottom: 8, lineHeight: 1.5 }}>
+      <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 500, fontSize: 13, color: 'var(--ink-2)', marginBottom: 8, lineHeight: 1.5 }}>
         {label}
       </div>
       <RichTextarea value={value} onChange={onChange} disabled={disabled} minHeight={100} rows={4} />
@@ -366,7 +366,7 @@ function SaveIndicator({ saveStatus, savedAt }: { saveStatus: 'idle'|'saving'|'s
     `Guardado ✓  ${savedAt ? savedAt.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : ''}`
   const color = saveStatus === 'error' ? '#C0392B' : '#6B6B6B'
   return (
-    <div style={{ position: 'fixed', top: 16, right: 24, zIndex: 50, fontSize: 12, color, fontFamily: 'Inter,sans-serif', background: 'var(--card-bg)', border: '1px solid var(--line)', borderRadius: 8, padding: '4px 10px', boxShadow: '0 2px 8px -2px rgba(0,0,0,.1)' }}>
+    <div style={{ position: 'fixed', top: 16, right: 24, zIndex: 50, fontSize: 12, color, fontFamily: 'Satoshi,sans-serif', background: 'var(--card-bg)', border: '1px solid var(--line)', borderRadius: 8, padding: '4px 10px', boxShadow: '0 2px 8px -2px rgba(0,0,0,.1)' }}>
       {text}
     </div>
   )
@@ -627,10 +627,10 @@ export default function ProjectEditor({
         .pe-cover-title{width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.2);color:#fff;font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(26px,4vw,44px);line-height:1.1;padding:8px 0;outline:none;transition:border-color .2s;letter-spacing:-.02em;}
         .pe-cover-title::placeholder{color:rgba(255,255,255,.25);}
         .pe-cover-title:focus{border-bottom-color:#C0392B;}
-        .pe-cover-subtitle{width:100%;background:transparent;border:none;color:rgba(255,255,255,.6);font-family:"Inter",sans-serif;font-size:16px;padding:10px 0;outline:none;border-bottom:1px solid rgba(255,255,255,.1);margin-top:12px;transition:border-color .2s;}
+        .pe-cover-subtitle{width:100%;background:transparent;border:none;color:rgba(255,255,255,.6);font-family:"Satoshi",sans-serif;font-size:16px;padding:10px 0;outline:none;border-bottom:1px solid rgba(255,255,255,.1);margin-top:12px;transition:border-color .2s;}
         .pe-cover-subtitle::placeholder{color:rgba(255,255,255,.2);}
         .pe-cover-subtitle:focus{border-bottom-color:rgba(255,255,255,.4);}
-        .pe-cover-footer{display:flex;flex-wrap:wrap;gap:12px 24px;margin-top:28px;font-size:13px;color:rgba(255,255,255,.4);font-family:"Inter",sans-serif;}
+        .pe-cover-footer{display:flex;flex-wrap:wrap;gap:12px 24px;margin-top:28px;font-size:13px;color:rgba(255,255,255,.4);font-family:"Satoshi",sans-serif;}
         .pe-cover-footer span::before{content:"· ";margin-right:4px;}
         .pe-cover-footer span:first-child::before{content:"";}
         .pe-cat-row{margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid rgba(13,13,13,.08);}
@@ -684,7 +684,7 @@ export default function ProjectEditor({
         .pe-tb-btn:disabled{opacity:.28;cursor:default;}
         .pe-rtw-ta{border:none !important;border-radius:0 !important;outline:none !important;box-shadow:none !important;}
         .pe-rtw-ta:focus{border-color:transparent !important;outline:none !important;}
-        .pe-rtw-wc{position:absolute;bottom:5px;right:8px;font-size:10.5px;color:var(--mute,#9a9690);pointer-events:none;font-family:"Inter",sans-serif;}
+        .pe-rtw-wc{position:absolute;bottom:5px;right:8px;font-size:10.5px;color:var(--mute,#9a9690);pointer-events:none;font-family:"Satoshi",sans-serif;}
         @media(max-width:900px){
           .pe-wrap{flex-direction:column;padding:24px 16px 80px;}
           .pe-sidebar{position:static;flex:none;width:100%;}

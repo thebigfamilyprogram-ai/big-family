@@ -9,7 +9,7 @@ export default function SubmitLanding() {
     <>
       <style>{`
                 *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;min-height:100vh;}
+        html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;}
         .sl-page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;text-align:center;}
         .sl-logo{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:40px;}
         .sl-logo-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:#0D0D0D;letter-spacing:.04em;}

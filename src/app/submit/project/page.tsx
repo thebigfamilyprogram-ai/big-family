@@ -33,7 +33,7 @@ function Progress({ step }: { step: 1 | 2 | 3 }) {
 
 function Spinner() {
   return (
-    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'#F5F3EF', gap:14, fontFamily:'Inter,sans-serif', color:'#6B6B6B' }}>
+    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'#F5F3EF', gap:14, fontFamily:'Satoshi,sans-serif', color:'#6B6B6B' }}>
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ animation:'spin 1s linear infinite' }}>
         <circle cx="12" cy="12" r="10" stroke="rgba(13,13,13,.12)" strokeWidth="3"/>
         <path d="M12 2a10 10 0 0 1 10 10" stroke="#C0392B" strokeWidth="3" strokeLinecap="round"/>
@@ -201,7 +201,7 @@ export default function SubmitProjectPage() {
     <>
       <style>{`
                 *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;}
+        html,body{background:var(--bg);font-family:"Satoshi",sans-serif;}
         .sp-header{background:#0D0D0D;padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:40;}
         .sp-brand{display:flex;align-items:center;gap:8px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;color:#fff;flex-shrink:0;}
         .sp-user{font-size:13px;color:rgba(255,255,255,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}

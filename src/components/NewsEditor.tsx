@@ -265,14 +265,14 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
         .ne-title::placeholder{color:var(--mute,#6B6B6B);opacity:.5;}
         .ne-slug-row{display:flex;align-items:center;gap:8px;}
         .ne-slug-prefix{font-size:12.5px;color:var(--mute,#6B6B6B);}
-        .ne-slug{flex:1;background:transparent;border:none;border-bottom:1px dashed rgba(13,13,13,.2);font-size:12.5px;color:#C0392B;outline:none;padding:2px 0;font-family:"Inter",monospace;}
+        .ne-slug{flex:1;background:transparent;border:none;border-bottom:1px dashed rgba(13,13,13,.2);font-size:12.5px;color:#C0392B;outline:none;padding:2px 0;font-family:var(--font-mono),monospace;}
         .ne-slug:focus{border-bottom-color:#C0392B;}
         .ne-toolbar{display:flex;gap:4px;padding:10px 12px;background:var(--line,rgba(13,13,13,.08));border-radius:10px;margin-bottom:12px;flex-wrap:wrap;}
         .ne-tb-btn{padding:5px 10px;border-radius:6px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--ink,#0D0D0D);transition:background .15s;font-family:inherit;font-weight:500;}
         .ne-tb-btn:hover{background:var(--card-bg,#fff);}
         .ne-tb-btn b{font-weight:800;}
         .ne-tb-sep{width:1px;background:var(--card-border,rgba(13,13,13,.1));margin:0 4px;align-self:stretch;}
-        .ne-editor{min-height:280px;font-size:16px;line-height:1.75;color:var(--ink,#0D0D0D);outline:none;font-family:"Inter",sans-serif;}
+        .ne-editor{min-height:280px;font-size:16px;line-height:1.75;color:var(--ink,#0D0D0D);outline:none;font-family:"Satoshi",sans-serif;}
         .ne-editor:empty::before{content:attr(data-placeholder);color:var(--mute,#6B6B6B);opacity:.45;pointer-events:none;}
         .ne-editor h2{font-family:"Satoshi",sans-serif;font-size:22px;font-weight:700;margin:20px 0 8px;}
         .ne-editor h3{font-family:"Satoshi",sans-serif;font-size:18px;font-weight:700;margin:16px 0 6px;}
@@ -301,7 +301,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
         .ne-section-divider{height:1px;background:var(--line,rgba(13,13,13,.08));margin:20px 0;}
         .ne-extra-section{margin-top:16px;}
         .ne-extra-label{font-size:12.5px;font-weight:600;color:var(--ink,#0D0D0D);margin-bottom:8px;}
-        .ne-extra-textarea{width:100%;border:1px solid var(--card-border,rgba(13,13,13,.1));border-radius:10px;padding:10px 12px;font-family:"Inter",sans-serif;font-size:14px;color:var(--ink,#0D0D0D);background:var(--bg-2,#F9F7F4);outline:none;resize:vertical;line-height:1.6;min-height:80px;transition:border-color .15s;}
+        .ne-extra-textarea{width:100%;border:1px solid var(--card-border,rgba(13,13,13,.1));border-radius:10px;padding:10px 12px;font-family:"Satoshi",sans-serif;font-size:14px;color:var(--ink,#0D0D0D);background:var(--bg-2,#F9F7F4);outline:none;resize:vertical;line-height:1.6;min-height:80px;transition:border-color .15s;}
         .ne-extra-textarea:focus{border-color:#C0392B;}
         .ne-extra-textarea::placeholder{color:var(--mute,#6B6B6B);opacity:.6;}
         .ne-color-swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;outline:2px solid transparent;outline-offset:2px;transition:transform .15s,outline-color .15s;}
@@ -329,7 +329,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
         .ne-chrome{background:#EDEBE8;padding:8px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(13,13,13,.08);flex-shrink:0;}
         .ne-chrome-dots{display:flex;gap:5px;flex-shrink:0;}
         .ne-chrome-dot{width:10px;height:10px;border-radius:50%;}
-        .ne-chrome-url{flex:1;background:rgba(255,255,255,.8);border-radius:5px;font-size:10.5px;color:#9a9690;padding:3px 9px;font-family:"Inter",monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .ne-chrome-url{flex:1;background:rgba(255,255,255,.8);border-radius:5px;font-size:10.5px;color:#9a9690;padding:3px 9px;font-family:var(--font-mono),monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
         .ne-pv-scroll{overflow-y:auto;background:#F5F3EF;max-height:calc(100vh - 320px);}
         .ne-pv-empty{text-align:center;color:#9a9690;font-size:13px;padding:40px 20px;font-style:italic;}
         .ne-pv-cover-full{width:100%;aspect-ratio:16/9;overflow:hidden;background:linear-gradient(135deg,#e8e4df,#ddd9d3);}
@@ -365,7 +365,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
 
       {/* Save indicator */}
       {saveStatus !== 'idle' && (
-        <div style={{ position:'fixed', top:16, right:24, zIndex:50, fontSize:12, color: saveStatus==='error'?'#C0392B':'#6B6B6B', fontFamily:'Inter,sans-serif', background:'var(--card-bg,#fff)', border:'1px solid var(--line,rgba(13,13,13,.1))', borderRadius:8, padding:'4px 10px', boxShadow:'0 2px 8px -2px rgba(0,0,0,.1)' }}>
+        <div style={{ position:'fixed', top:16, right:24, zIndex:50, fontSize:12, color: saveStatus==='error'?'#C0392B':'#6B6B6B', fontFamily:'Satoshi,sans-serif', background:'var(--card-bg,#fff)', border:'1px solid var(--line,rgba(13,13,13,.1))', borderRadius:8, padding:'4px 10px', boxShadow:'0 2px 8px -2px rgba(0,0,0,.1)' }}>
           {saveStatus==='saving' ? 'Guardando…' : saveStatus==='error' ? '⚠ Error al guardar' : `Guardado ✓  ${savedAt ? savedAt.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}) : ''}`}
         </div>
       )}
@@ -549,7 +549,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
                     title={color}
                   />
                 ))}
-                <span style={{ fontSize:11.5, color:'var(--mute,#6B6B6B)', marginLeft:4, fontFamily:'Inter,monospace' }}>{accentColor}</span>
+                <span style={{ fontSize:11.5, color:'var(--mute,#6B6B6B)', marginLeft:4, fontFamily:'var(--font-mono),monospace' }}>{accentColor}</span>
               </div>
             </div>
 

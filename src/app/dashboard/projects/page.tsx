@@ -145,7 +145,7 @@ export default function ProjectsPage() {
         .pj-header__left{}
         .pj-eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.18em;color:#C0392B;text-transform:uppercase;font-weight:700;margin-bottom:10px;}
         .pj-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:28px;color:var(--ink);letter-spacing:-.02em;margin-bottom:6px;}
-        .pj-sub{font-size:14px;color:var(--mute);font-family:Inter,sans-serif;}
+        .pj-sub{font-size:14px;color:var(--mute);font-family:"Satoshi",sans-serif;}
         .btn-new{padding:11px 22px;border-radius:999px;background:#C0392B;color:#fff;border:none;font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:background .2s;white-space:nowrap;align-self:center;}
         .btn-new:hover{background:#a93226;}
         .pj-content{padding:28px 40px 60px;}
@@ -157,7 +157,7 @@ export default function ProjectsPage() {
         .btn-empty{padding:12px 28px;border-radius:999px;background:#C0392B;color:#fff;border:none;font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:background .2s;}
         .btn-empty:hover{background:#a93226;}
         .pj-card-wrap{position:relative;}
-        .pj-delete-btn{position:absolute;top:12px;right:12px;display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:6px;border:none;background:transparent;color:#991B1B;font-family:Inter,sans-serif;font-size:12px;cursor:pointer;opacity:0;transition:opacity .15s,background .15s;}
+        .pj-delete-btn{position:absolute;top:12px;right:12px;display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:6px;border:none;background:transparent;color:#991B1B;font-family:"Satoshi",sans-serif;font-size:12px;cursor:pointer;opacity:0;transition:opacity .15s,background .15s;}
         .pj-card-wrap:hover .pj-delete-btn{opacity:1;}
         .pj-delete-btn:hover{background:rgba(153,27,27,0.08);}
         .pj-card-footer{padding:12px 16px;border-top:1px solid rgba(13,13,13,.06);display:flex;align-items:center;justify-content:space-between;gap:12px;}

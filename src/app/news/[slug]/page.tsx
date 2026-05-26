@@ -86,7 +86,7 @@ export default function NewsListPage() {
       <style>{`
                 @keyframes
         *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;color:#0D0D0D;}
+        html,body{background:var(--bg);font-family:"Satoshi",sans-serif;color:#0D0D0D;}
 
         /* ── Nav ── */
         .nl-nav{position:sticky;top:0;z-index:30;background:rgba(245,243,239,.88);backdrop-filter:saturate(150%) blur(16px);border-bottom:1px solid rgba(13,13,13,.08);height:60px;display:flex;align-items:center;padding:0 40px;gap:24px;}

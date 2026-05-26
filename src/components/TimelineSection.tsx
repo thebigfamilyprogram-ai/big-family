@@ -78,7 +78,7 @@ function EventCard({ ev, index, isDark }: { ev: TimelineEvent; index: number; is
       style={{ background: bg, border: `1px solid ${border}`, borderRadius: 16, padding: '22px 24px', boxShadow: shadow, width: '100%', maxWidth: 400 }}
     >
       {/* Year count-up */}
-      <div style={{ fontFamily: '"Courier New",monospace', fontSize: 12, letterSpacing: '.15em', color: '#C0392B', marginBottom: 8 }}>
+      <div style={{ fontFamily: 'var(--font-mono),monospace', fontSize: 12, letterSpacing: '.15em', color: 'var(--accent,#C0392B)', marginBottom: 8 }}>
         <CountYear year={year} />
       </div>
 
@@ -108,12 +108,12 @@ function EventCard({ ev, index, isDark }: { ev: TimelineEvent; index: number; is
       )}
 
       {ev.description && (
-        <p style={{ fontFamily: 'Inter,sans-serif', fontSize: 13.5, color: mute, lineHeight: 1.65, marginBottom: 10 }}>
+        <p style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 13.5, color: mute, lineHeight: 1.65, marginBottom: 10 }}>
           {ev.description}
         </p>
       )}
 
-      <div style={{ fontFamily: 'Inter,sans-serif', fontSize: 11, color: mute, opacity: .6, textTransform: 'capitalize' }}>
+      <div style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 11, color: mute, opacity: .6, textTransform: 'capitalize' }}>
         {month}
       </div>
     </m.div>
@@ -164,7 +164,7 @@ export default function TimelineSection({
 
   if (events.length === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: '60px 0', color: isDark ? 'rgba(255,255,255,.35)' : '#9a9690', fontFamily: 'Inter,sans-serif', fontSize: 14 }}>
+      <div style={{ textAlign: 'center', padding: '60px 0', color: isDark ? 'rgba(255,255,255,.35)' : '#9a9690', fontFamily: 'Satoshi,sans-serif', fontSize: 14 }}>
         No hay hitos en la historia aún
       </div>
     )

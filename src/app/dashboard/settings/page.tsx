@@ -274,10 +274,10 @@ export default function SettingsPage() {
         .st-card-sub{font-size:13px;color:var(--mute);margin-bottom:24px;}
         .st-field{margin-bottom:20px;}
         .st-label{display:block;font-size:12px;font-weight:600;color:var(--mute);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;}
-        .st-input{width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:14px;font-family:Inter,sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s;}
+        .st-input{width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:14px;font-family:"Satoshi",sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s;}
         .st-input:focus{border-color:#C0392B;}
         .st-input:disabled{opacity:.5;cursor:not-allowed;}
-        .st-textarea{width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:14px;font-family:Inter,sans-serif;outline:none;box-sizing:border-box;resize:vertical;min-height:90px;transition:border-color .2s;}
+        .st-textarea{width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:14px;font-family:"Satoshi",sans-serif;outline:none;box-sizing:border-box;resize:vertical;min-height:90px;transition:border-color .2s;}
         .st-textarea:focus{border-color:#C0392B;}
         .st-char{font-size:11px;color:var(--mute);text-align:right;margin-top:4px;}
         .st-badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:11.5px;font-weight:600;background:rgba(192,57,43,.1);color:#C0392B;margin-right:6px;margin-bottom:6px;}

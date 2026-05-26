@@ -359,7 +359,7 @@ export default function TeamHubPage() {
       <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
         <DashboardSidebar activePage="team-hub" />
         <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ color: 'var(--mute)', fontFamily: 'Inter, sans-serif', fontSize: 14 }}>Cargando Team Hub…</div>
+          <div style={{ color: 'var(--mute)', fontFamily: 'Satoshi,sans-serif', fontSize: 14 }}>Cargando Team Hub…</div>
         </main>
       </div>
     )
@@ -372,7 +372,7 @@ export default function TeamHubPage() {
         .th-main{flex:1;overflow:auto;min-width:0;}
         .th-header{padding:40px 48px 0;}
         .th-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:28px;color:var(--ink);margin:0 0 4px;}
-        .th-sub{font-family:Inter,sans-serif;font-size:14px;color:#6B6B6B;margin:0;}
+        .th-sub{font-family:"Satoshi",sans-serif;font-size:14px;color:#6B6B6B;margin:0;}
         .th-tabs{display:flex;border-bottom:1px solid var(--line);padding:0 48px;margin-top:28px;overflow-x:auto;}
         .th-tab{padding:12px 20px;font-family:"Satoshi",sans-serif;font-weight:600;font-size:14px;color:#6B6B6B;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:color .15s;white-space:nowrap;margin-bottom:-1px;}
         .th-tab:hover{color:#0D0D0D;}
@@ -387,7 +387,7 @@ export default function TeamHubPage() {
         .th-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
         .th-lvl-badge{position:absolute;top:-4px;right:-4px;border-radius:999px;padding:2px 7px;font-size:9px;font-weight:700;font-family:"Satoshi",sans-serif;letter-spacing:.06em;border:1.5px solid var(--card-bg);}
         .th-member-name{font-family:"Satoshi",sans-serif;font-weight:600;font-size:15px;color:var(--ink);margin:0 0 4px;}
-        .th-member-stats{font-family:Inter,sans-serif;font-size:12px;color:#6B6B6B;margin-bottom:10px;}
+        .th-member-stats{font-family:"Satoshi",sans-serif;font-size:12px;color:#6B6B6B;margin-bottom:10px;}
         .th-xp-bar{height:3px;border-radius:999px;background:#f0ede8;overflow:hidden;margin-bottom:14px;}
         .th-xp-fill{height:100%;border-radius:999px;background:#C0392B;}
         .th-profile-btn{width:100%;padding:7px 0;border:1px solid rgba(13,13,13,0.1);border-radius:999px;font-size:12px;font-family:"Satoshi",sans-serif;font-weight:600;color:var(--mute);background:none;cursor:pointer;transition:border-color .15s,color .15s;}
@@ -406,7 +406,7 @@ export default function TeamHubPage() {
         .th-chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 280px);min-height:400px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;overflow:hidden;}
         .th-chat-msgs{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:4px;}
         .th-chat-input-row{display:flex;align-items:center;gap:10px;padding:14px 16px;border-top:1px solid var(--line);}
-        .th-chat-input{flex:1;border:1px solid rgba(13,13,13,0.12);border-radius:999px;padding:11px 20px;font-size:14px;font-family:Inter,sans-serif;background:var(--bg);color:var(--ink);outline:none;transition:border-color .15s;}
+        .th-chat-input{flex:1;border:1px solid rgba(13,13,13,0.12);border-radius:999px;padding:11px 20px;font-size:14px;font-family:"Satoshi",sans-serif;background:var(--bg);color:var(--ink);outline:none;transition:border-color .15s;}
         .th-chat-input:focus{border-color:#C0392B;}
         .th-send-btn{width:40px;height:40px;border-radius:50%;background:#C0392B;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;}
         .th-send-btn:hover{background:#a93226;}
@@ -414,8 +414,8 @@ export default function TeamHubPage() {
         .th-msg-group{margin-bottom:8px;}
         .th-msg-own{display:flex;flex-direction:column;align-items:flex-end;}
         .th-msg-other{display:flex;flex-direction:column;align-items:flex-start;}
-        .th-bubble-own{background:#C0392B;color:#fff;border-radius:18px 18px 4px 18px;padding:10px 14px;max-width:70%;font-size:14px;font-family:Inter,sans-serif;line-height:1.5;}
-        .th-bubble-other{background:var(--bg);color:var(--ink);border:1px solid rgba(13,13,13,0.08);border-radius:18px 18px 18px 4px;padding:10px 14px;max-width:70%;font-size:14px;font-family:Inter,sans-serif;line-height:1.5;}
+        .th-bubble-own{background:#C0392B;color:#fff;border-radius:18px 18px 4px 18px;padding:10px 14px;max-width:70%;font-size:14px;font-family:"Satoshi",sans-serif;line-height:1.5;}
+        .th-bubble-other{background:var(--bg);color:var(--ink);border:1px solid rgba(13,13,13,0.08);border-radius:18px 18px 18px 4px;padding:10px 14px;max-width:70%;font-size:14px;font-family:"Satoshi",sans-serif;line-height:1.5;}
         .th-time-own{font-size:10px;color:rgba(255,255,255,0.7);margin-top:3px;}
         .th-time-other{font-size:10px;color:#aaa;margin-top:3px;}
         .th-msg-sender{font-family:"Satoshi",sans-serif;font-weight:600;font-size:11px;color:#C0392B;margin-bottom:3px;margin-left:40px;}
@@ -428,11 +428,11 @@ export default function TeamHubPage() {
         .th-s-active{background:rgba(16,185,129,0.1);color:#065F46;}
         .th-s-done{background:rgba(107,114,128,0.1);color:#374151;}
         .th-proj-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:18px;color:var(--ink);margin:12px 0 8px;}
-        .th-proj-desc{font-family:Inter,sans-serif;font-size:14px;color:#6B6B6B;margin:0 0 16px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+        .th-proj-desc{font-family:"Satoshi",sans-serif;font-size:14px;color:#6B6B6B;margin:0 0 16px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
         .th-overlap-avatars{display:flex;margin-bottom:8px;}
         .th-mini-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#C0392B,#8B1A1A);color:#fff;font-size:10px;font-weight:700;font-family:"Satoshi",sans-serif;display:flex;align-items:center;justify-content:center;border:2px solid var(--card-bg);margin-left:-8px;}
         .th-mini-av:first-child{margin-left:0;}
-        .th-proj-meta{font-family:Inter,sans-serif;font-size:12px;color:#aaa;margin-bottom:16px;}
+        .th-proj-meta{font-family:"Satoshi",sans-serif;font-size:12px;color:#aaa;margin-bottom:16px;}
         .th-join-btn{padding:8px 20px;background:#C0392B;color:#fff;border:none;border-radius:999px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:background .15s;}
         .th-join-btn:hover{background:#a93226;}
         .th-view-btn{padding:8px 20px;background:none;color:#C0392B;border:1px solid #C0392B;border-radius:999px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:background .15s;}
@@ -443,15 +443,15 @@ export default function TeamHubPage() {
         .th-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;display:flex;align-items:flex-end;justify-content:center;}
         .th-modal{background:var(--card-bg);border-radius:24px 24px 0 0;padding:32px 32px 40px;width:100%;max-width:640px;}
         .th-modal-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:22px;color:var(--ink);margin:0 0 24px;}
-        .th-input{width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:Inter,sans-serif;background:var(--bg);color:var(--ink);margin-bottom:14px;outline:none;transition:border-color .15s;box-sizing:border-box;}
+        .th-input{width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:"Satoshi",sans-serif;background:var(--bg);color:var(--ink);margin-bottom:14px;outline:none;transition:border-color .15s;box-sizing:border-box;}
         .th-input:focus{border-color:#C0392B;}
         .th-textarea{resize:vertical;min-height:80px;}
-        .th-select{width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:Inter,sans-serif;background:var(--bg);color:var(--ink);margin-bottom:20px;outline:none;cursor:pointer;}
+        .th-select{width:100%;padding:12px 16px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:"Satoshi",sans-serif;background:var(--bg);color:var(--ink);margin-bottom:20px;outline:none;cursor:pointer;}
         .th-create-btn{width:100%;padding:14px;background:#C0392B;color:#fff;border:none;border-radius:12px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:background .15s;}
         .th-create-btn:hover{background:#a93226;}
         .th-create-btn:disabled{opacity:.6;cursor:default;}
 
-        .th-empty{text-align:center;padding:60px 0;color:var(--mute);font-family:Inter,sans-serif;font-size:14px;}
+        .th-empty{text-align:center;padding:60px 0;color:var(--mute);font-family:"Satoshi",sans-serif;font-size:14px;}
 
         /* ── Real ranking ── */
         .th-rank-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
@@ -616,9 +616,9 @@ export default function TeamHubPage() {
                                 </div>
                               </span>
                               <span className="th-rank-hide-sm" style={{ fontSize: 12.5, color: 'var(--mute)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.school_name ?? '—'}</span>
-                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{s.xp.toLocaleString('es-CO')}</span>
-                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{s.modules}</span>
-                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{s.projects}</span>
+                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{s.xp.toLocaleString('es-CO')}</span>
+                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{s.modules}</span>
+                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{s.projects}</span>
                               <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 800, fontSize: 15, color: isMe ? '#C0392B' : 'var(--ink)' }}>{s.score.toLocaleString('es-CO')}</span>
                             </m.div>
                           )
@@ -651,8 +651,8 @@ export default function TeamHubPage() {
                               </span>
                               <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 15, color: 'var(--ink)' }}>{sc.name}</span>
                               <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 800, fontSize: 15, color: 'var(--ink)' }}>{sc.total_score.toLocaleString('es-CO')}</span>
-                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{sc.student_count} estudiantes</span>
-                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Inter,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{sc.project_count} proyectos</span>
+                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{sc.student_count} estudiantes</span>
+                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{sc.project_count} proyectos</span>
                             </m.div>
                           )
                         })}
@@ -668,7 +668,7 @@ export default function TeamHubPage() {
                   <div className="th-chat-wrap">
                     <div className="th-chat-msgs">
                       {messages.length === 0 && (
-                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--mute)', fontFamily: 'Inter,sans-serif', fontSize: 14 }}>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--mute)', fontFamily: 'Satoshi,sans-serif', fontSize: 14 }}>
                           Sé el primero en escribir algo 👋
                         </div>
                       )}

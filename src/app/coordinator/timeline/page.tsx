@@ -185,7 +185,7 @@ export default function CoordinatorTimelinePage() {
   // ── Render ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg,#F5F3EF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter,sans-serif', color: '#6B6B6B', fontSize: 14 }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg,#F5F3EF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Satoshi,sans-serif', color: '#6B6B6B', fontSize: 14 }}>
         Verificando acceso…
       </div>
     )
@@ -195,7 +195,7 @@ export default function CoordinatorTimelinePage() {
     <>
       <style>{`
                 *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;min-height:100vh;color:var(--ink);}
+        html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;color:var(--ink);}
         .ct-nav{position:sticky;top:0;z-index:30;background:rgba(245,243,239,.88);backdrop-filter:saturate(150%) blur(16px);border-bottom:1px solid rgba(13,13,13,.08);height:62px;display:flex;align-items:center;padding:0 40px;gap:16px;}
         .ct-brand{display:flex;align-items:center;gap:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;text-decoration:none;color:var(--ink,#0D0D0D);}
         .ct-spacer{flex:1;}
@@ -224,7 +224,7 @@ export default function CoordinatorTimelinePage() {
         .ct-list{display:flex;flex-direction:column;gap:14px;}
         .ct-event-card{background:var(--card-bg,#fff);border:1px solid var(--card-border,rgba(13,13,13,.07));border-radius:14px;padding:20px 24px;box-shadow:0 2px 8px -4px rgba(13,13,13,.07);display:flex;align-items:center;gap:20px;transition:box-shadow .2s;}
         .ct-event-card:hover{box-shadow:0 4px 20px -6px rgba(13,13,13,.12);}
-        .ct-event-year{font-family:"Courier New",monospace;font-size:11px;letter-spacing:.14em;color:#C0392B;margin-bottom:4px;flex-shrink:0;}
+        .ct-event-year{font-family:var(--font-mono),monospace;font-size:11px;letter-spacing:.14em;color:#C0392B;margin-bottom:4px;flex-shrink:0;}
         .ct-event-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:15px;color:var(--ink,#0D0D0D);}
         .ct-event-desc{font-size:12.5px;color:#6B6B6B;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px;}
         .ct-event-img{width:56px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0;}
