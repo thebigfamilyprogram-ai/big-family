@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase'
 
 export interface RealtimeStats {
@@ -11,14 +12,18 @@ export interface RealtimeStats {
 }
 
 export function useRealtimeStats() {
-  const sbRef        = useRef<ReturnType<typeof createClient> | null>(null)
+  const sbRef         = useRef<ReturnType<typeof createClient> | null>(null)
+  const channelRef    = useRef<RealtimeChannel | null>(null)
   const subscribedRef = useRef(false)
   const [stats, setStats] = useState<RealtimeStats>({ students: 0, schools: 0, badges: 0, xpTotal: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Guard: prevents double-subscribe in React StrictMode (refs persist across
+    // the mount→cleanup→mount cycle without full component destruction)
     if (subscribedRef.current) return
     subscribedRef.current = true
+
     if (!sbRef.current) sbRef.current = createClient()
     const sb = sbRef.current
     if (!sb) { setLoading(false); return }
@@ -43,8 +48,8 @@ export function useRealtimeStats() {
       const xpTotal = (xpRows ?? []).reduce((s: number, r: { amount: number | null }) => s + (r.amount ?? 0), 0)
       setStats({
         students: studentCount ?? 0,
-        schools: schoolCount ?? 0,
-        badges: badgeCount ?? 0,
+        schools:  schoolCount  ?? 0,
+        badges:   badgeCount   ?? 0,
         xpTotal,
       })
       setLoading(false)
@@ -52,7 +57,8 @@ export function useRealtimeStats() {
 
     fetchInitial()
 
-    const channel = sb
+    // All .on() listeners MUST be chained before .subscribe()
+    channelRef.current = sb
       .channel('global-stats')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profiles' }, () => {
         setStats(prev => ({ ...prev, students: prev.students + 1 }))
@@ -64,7 +70,10 @@ export function useRealtimeStats() {
 
     return () => {
       cancelled = true
-      sb.removeChannel(channel)
+      if (channelRef.current && sbRef.current) {
+        sbRef.current.removeChannel(channelRef.current)
+        channelRef.current = null
+      }
     }
   }, [])
 
