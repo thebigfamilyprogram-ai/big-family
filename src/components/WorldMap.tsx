@@ -301,14 +301,14 @@ export default function WorldMap() {
         <span style={{ opacity: 0.3 }}>·</span>
         <span>
           <strong style={{ color: 'var(--ink,#0D0D0D)', fontWeight: 700 }}>
-            <AnimatedNumber value={statsLoading ? 0 : stats.students} loading={statsLoading} />
+            <AnimatedNumber value={statsLoading ? 0 : stats.totalStudents} loading={statsLoading} />
           </strong>
           {' '}Estudiantes
         </span>
         <span style={{ opacity: 0.3 }}>·</span>
         <span>
           <strong style={{ color: 'var(--ink,#0D0D0D)', fontWeight: 700 }}>
-            <AnimatedNumber value={statsLoading ? 0 : stats.badges} loading={statsLoading} />
+            <AnimatedNumber value={statsLoading ? 0 : stats.totalBadges} loading={statsLoading} />
           </strong>
           {' '}Insignias
         </span>

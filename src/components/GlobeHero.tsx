@@ -566,19 +566,19 @@ export default function GlobeHero() {
           >
             <div className="stat">
               <div className="stat__num">
-                <AnimatedNumber value={liveStats.students} loading={statsLoading} suffix="+" skeletonWidth={48} />
+                <AnimatedNumber value={liveStats.totalStudents} loading={statsLoading} suffix="+" skeletonWidth={48} />
               </div>
               <div className="stat__label">Estudiantes</div>
             </div>
             <div className="stat">
               <div className="stat__num">
-                <AnimatedNumber value={liveStats.schools} loading={statsLoading} skeletonWidth={40} />
+                <AnimatedNumber value={liveStats.totalSchools} loading={statsLoading} skeletonWidth={40} />
               </div>
               <div className="stat__label">Colegios</div>
             </div>
             <div className="stat">
               <div className="stat__num">
-                <AnimatedNumber value={liveStats.badges} loading={statsLoading} skeletonWidth={40} />
+                <AnimatedNumber value={liveStats.totalBadges} loading={statsLoading} skeletonWidth={40} />
               </div>
               <div className="stat__label">Insignias</div>
             </div>
