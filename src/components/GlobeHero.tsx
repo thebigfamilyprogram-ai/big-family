@@ -303,7 +303,7 @@ export default function GlobeHero() {
         .stat__num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:40px;letter-spacing:-0.03em;color:var(--ink);line-height:1;display:flex;align-items:baseline;gap:2px;}
         .stat__num .plus{font-family:"Instrument Serif",serif;font-weight:400;font-style:italic;color:var(--accent);font-size:28px;}
         .stat__label{margin-top:10px;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);}
-        .right{position:relative;height:clamp(480px,70vh,720px);z-index:2;display:flex;align-items:center;justify-content:center;}
+        .right{position:relative;height:clamp(480px,70vh,720px);z-index:2;}
         .conferencista{position:absolute;left:40px;right:40px;bottom:-60px;z-index:5;display:flex;align-items:center;background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.9);border-radius:18px;box-shadow:var(--shadow-lg);overflow:hidden;}
         .conf__person{display:flex;align-items:center;gap:14px;flex:1;padding:16px 20px;}
         .conf__sep{width:1px;align-self:stretch;background:rgba(13,13,13,.09);flex-shrink:0;}
