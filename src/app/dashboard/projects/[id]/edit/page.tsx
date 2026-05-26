@@ -118,7 +118,7 @@ export default function EditProjectPage() {
   if (loading) {
     return (
       <>
-        <style>{`@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}`}</style>
+        <style>{`@keyframes`}</style>
         <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)' }}>
           <DashboardSidebar activePage="projects" />
           <div style={{ flex: 1, padding: '40px 48px', overflow: 'auto' }}>

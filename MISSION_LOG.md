@@ -262,3 +262,204 @@ No se encontraron bugs funcionales en este flujo.
 | T5C Stats live | ✅ | 1b048a7 |
 | T5D Hero asimétrico | ✅ | c2cc3bf |
 | T5E Tipografía | ✅ | 260df9a |
+
+---
+
+## TAREA 6 — Diagnóstico visual de los 3 dashboards
+
+**Fecha:** 2026-05-25  
+**Estado:** Solo diagnóstico — sin cambios realizados
+
+---
+
+### MAPA DE RUTAS
+
+#### `/dashboard` (Estudiantes) — 15 páginas
+```
+dashboard/
+├── page.tsx                        ← raíz (906 líneas)
+├── announcements/page.tsx
+├── calendar/page.tsx
+├── feed/page.tsx
+├── global-map/page.tsx
+├── goals/page.tsx
+├── leadership-path/page.tsx
+├── modules/[id]/page.tsx
+├── modules/[id]/quiz/page.tsx
+├── projects/page.tsx
+├── projects/new/page.tsx
+├── projects/[id]/edit/page.tsx
+├── settings/page.tsx
+├── students/[id]/page.tsx
+└── team-hub/page.tsx
+```
+
+#### `/coordinator` (Coordinadores) — 16 archivos
+```
+coordinator/
+├── page.tsx + CoordinatorClient.tsx  ← raíz, wrapper pattern
+├── announcements/page.tsx
+├── calendar/page.tsx
+├── goals/page.tsx
+├── modules/page.tsx
+├── news/page.tsx
+├── news/new/page.tsx
+├── news/[id]/edit/page.tsx
+├── projects/page.tsx
+├── projects/[id]/evaluate/page.tsx
+├── report/page.tsx
+├── students/[id]/page.tsx
+├── students/[id]/StudentProfileClient.tsx
+├── success-stories/page.tsx
+└── timeline/page.tsx
+```
+
+#### `/admin` (Administradores) — 2 páginas
+```
+admin/
+├── page.tsx    ← raíz (785 líneas), todo en un solo archivo
+└── report/page.tsx
+```
+
+---
+
+### COMPONENTES COMPARTIDOS
+
+| Componente | Dashboard | Coordinator | Admin |
+|---|---|---|---|
+| `DashboardSidebar.tsx` | ✓ (todas las rutas) | ✗ | ✗ |
+| `CoordinatorSidebar.tsx` | ✗ | ✓ (CoordinatorClient) | ✗ |
+| `Toast / ToastContainer` | ✓ | ✓ | ✓ |
+| `AnimatedNumber` | ✓ | ✗ | ✗ |
+| `Badge` | ✗ compartido (inline cada uno) | ✗ | ✗ |
+| `Sk` skeleton | ✗ compartido (inline cada uno) | ✗ | ✗ |
+| `StatCard` | ✗ | ✗ | ✓ local |
+| `ThemeContext / useTheme` | ✓ (via sidebar) | ✓ (via sidebar) | ✗ |
+
+---
+
+### ESTADO VISUAL POR DASHBOARD
+
+#### Dashboard (Estudiantes)
+- **Layout:** grid `260px + 1fr`, max-width 1280px, padding 32px 28px
+- **Fuente body:** `"Satoshi"` ✓
+- **Dark mode:** ✓ variables CSS en toda la estructura
+- **Colores hardcoded:** `#C0392B` 76+ veces, `#22c55e` verde éxito, `#FEF3C7` amarillo info, gradientes inline en quote card
+- **Componentes genéricos:** motivational icons con colores inline, quote card con gradiente hardcoded
+
+#### Coordinator
+- **Layout:** flex con sidebar 220px, max-width 1000px, padding 44px 40px 80px
+- **Fuente body:** `"Satoshi"` ✓
+- **Dark mode:** ✓ variables CSS
+- **Colores hardcoded:** `#C0392B` 50+ veces, `#27500A`/`#eaf3de` verde comunidad (diferente al del dashboard), `#FEE2E2` error, tooltip recharts con bg hardcoded
+
+#### Admin
+- **Layout:** nav top sticky + max-width 1100px, sin sidebar
+- **Fuente body:** `"Inter", system-ui` ⚠️ — diferente a los otros dos
+- **Dark mode:** ✓ variables CSS, ✗ no conecta ThemeContext
+- **Colores hardcoded:** `#4C1D95`/`#EDE9FE` purple coordinador, `#065F46`/`#D1FAE5` verde aprobado, `#991B1B`/`#FEE2E2` rojo rechazado
+
+---
+
+### 🔴 CRÍTICO — Roto o inconsistente
+
+**C1 — CoordinatorSidebar enlaza a rutas de estudiante**
+- `src/components/CoordinatorSidebar.tsx:30` → `href: '/dashboard/feed'` (debería ser `/coordinator/feed` o no existir)
+- `src/components/CoordinatorSidebar.tsx:63` → `href: '/dashboard/settings'` (debería ser `/coordinator/settings`)
+- Un coordinador que presiona "Feed" o "Configuración" aterriza en el dashboard de estudiante
+
+**C2 — Admin sin sidebar — patrón de navegación incompatible**
+- Dashboard y Coordinator: sidebars laterales persistentes (260px y 220px)
+- Admin: nav top horizontal + tabs
+- Tres roles del mismo sistema, tres paradigmas de navegación distintos
+
+**C3 — Widths de sidebar inconsistentes**
+- `DashboardSidebar.tsx:122` → `width: 260px`
+- `CoordinatorSidebar.tsx:122` → `width: 220px`
+- 40px de diferencia visible al comparar los dashboards
+
+**C4 — Admin usa fuente diferente al sistema**
+- `admin/page.tsx:373` → `font-family:"Inter",system-ui,sans-serif`
+- El resto del sistema: `"Satoshi"`. Una línea de diferencia, efecto visual notable.
+
+---
+
+### 🟠 IMPORTANTE — Mejorable
+
+**I1 — Verde de éxito con 3 valores distintos según dashboard**
+- Dashboard: `#22c55e` (green-500 Tailwind)
+- Coordinator: `#27500A` (verde oscuro custom)
+- Admin: `#065F46` (emerald-800 Tailwind)
+- No hay token `--color-success` en el sistema de CSS variables
+
+**I2 — Badge component triplicado localmente, sin compartir**
+- `admin/page.tsx:80` → `function Badge({ label, color, bg })` local
+- Dashboard y Coordinator usan spans inline con misma API
+- Misma implementación en tres lugares
+
+**I3 — Skeleton (Sk) triplicado**
+- `admin/page.tsx:76` → `function Sk({ w, h, r })`
+- Dashboard y Coordinator tienen equivalentes inline
+- El mismo gradiente shimmer copiado tres veces
+
+**I4 — max-width inconsistente**
+- Dashboard: 1280px / Coordinator: 1000px / Admin: 1100px
+
+**I5 — `#C0392B` hardcoded en lugar de `var(--accent)`**
+- 76+ instancias dashboard, 50+ coordinator — las variables ya existen
+
+**I6 — ThemeContext desconectado en Admin**
+- Sidebar del dashboard y coordinator tienen toggle dark/light
+- Admin no tiene ThemeContext → el usuario admin no puede cambiar el tema
+
+**I7 — Bloques `<style>` masivos en lugar de CSS modules**
+- `dashboard/page.tsx`: ~420 líneas de CSS inline
+- `coordinator/CoordinatorClient.tsx`: ~248 líneas
+- `admin/page.tsx`: 72 líneas + bloque duplicado (líneas 360 y 371)
+
+---
+
+### 🟡 MENOR — Pulido
+
+**M1 — `@keyframes shimmer` duplicado dentro del mismo admin/page.tsx**
+- Línea 360 (estado loading) y línea 371 (render principal) — idénticos
+
+**M2 — padding de contenido inconsistente**
+- Dashboard: `32px 28px` (menos aire)
+- Coordinator y Admin: `44px 40px 80px`
+
+**M3 — StatCard solo existe en Admin**
+- Dashboard y Coordinator usan patrones distintos para sus stats
+- Mismo concepto "número grande + label uppercase" implementado 3 veces diferente
+
+**M4 — ExpositorSidebar no sigue el patrón común**
+- `src/components/ExpositorSidebar.tsx` — 115 líneas, minimal
+- No comparte variables de ancho con DashboardSidebar o CoordinatorSidebar
+
+---
+
+### Tabla de estado visual
+
+```
+┌──────────────────────────┬──────────────┬──────────────┬──────────────┐
+│ Característica           │ Dashboard    │ Coordinator  │ Admin        │
+├──────────────────────────┼──────────────┼──────────────┼──────────────┤
+│ Sidebar presente         │ ✓ 260px      │ ✓ 220px      │ ✗            │
+│ Fuente body              │ Satoshi      │ Satoshi      │ Inter ⚠️     │
+│ Dark mode funcional      │ ✓            │ ✓            │ Parcial      │
+│ Rutas correctas en nav   │ ✓            │ ✗ 2 rotas    │ —            │
+│ Verde éxito              │ #22c55e      │ #27500A      │ #065F46      │
+│ Badge component shared   │ ✗            │ ✗            │ ✗            │
+│ Max-width                │ 1280px       │ 1000px       │ 1100px       │
+│ Content padding          │ 32px 28px    │ 44px 40px    │ 44px 40px    │
+│ ThemeContext conectado   │ ✓ (sidebar)  │ ✓ (sidebar)  │ ✗            │
+│ CSS en style block       │ ~420 líneas  │ ~248 líneas  │ ~72 líneas   │
+└──────────────────────────┴──────────────┴──────────────┴──────────────┘
+```
+
+**Prioridad de acción sugerida (cuando se decida intervenir):**
+1. **C1** — Corregir rutas rotas en CoordinatorSidebar (2 líneas, 5 min)
+2. **C4** — Unificar fuente a Satoshi en Admin (1 línea)
+3. **I2 + I3** — Crear `src/components/Badge.tsx` y `src/components/Skeleton.tsx` compartidos
+4. **C2 + C3** — Decidir patrón de nav para Admin y estandarizar sidebar width
+5. **I1** — Añadir `--color-success` / `--color-error` al sistema de tokens CSS

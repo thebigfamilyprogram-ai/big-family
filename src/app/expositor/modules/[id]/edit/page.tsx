@@ -86,7 +86,7 @@ export default function EditModulePage() {
   if (loading) {
     return (
       <>
-        <style>{`@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}`}</style>
+        <style>{`@keyframes`}</style>
         <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
           <ExpositorSidebar activePage="modules" />
           <div style={{ flex: 1, padding: '40px 48px', overflow: 'auto' }}>

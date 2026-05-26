@@ -68,7 +68,7 @@ export default function EditNewsPage() {
   if (loading) {
     return (
       <>
-        <style>{`@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}`}</style>
+        <style>{`@keyframes`}</style>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px' }}>
           <Sk w={120} h={13} r={6} />
           <div style={{ display: 'flex', gap: 24, marginTop: 24, alignItems: 'flex-start' }}>

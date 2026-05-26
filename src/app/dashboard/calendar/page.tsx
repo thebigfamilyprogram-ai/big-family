@@ -82,7 +82,7 @@ export default function CalendarPage() {
   return (
     <>
       <style>{`
-        @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+        
         .layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh;max-width:1280px;margin:0 auto;}
         .content{padding:32px 28px;display:flex;flex-direction:column;gap:20px;min-width:0;}
         .page-title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:26px;letter-spacing:-0.02em;color:var(--ink);}

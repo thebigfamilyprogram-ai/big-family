@@ -194,7 +194,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
   return (
     <>
       <style>{`
-                @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+                
         @keyframes spin{to{transform:rotate(360deg)}}
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;color:var(--ink);}

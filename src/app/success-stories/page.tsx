@@ -62,7 +62,7 @@ export default function SuccessStoriesPage() {
   return (
     <>
       <style>{`
-        @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+        
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);color:var(--ink);}
         .nav{height:62px;border-bottom:1px solid var(--card-border);display:flex;align-items:center;padding:0 40px;background:var(--card-bg);position:sticky;top:0;z-index:20;}

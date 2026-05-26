@@ -175,7 +175,7 @@ export default function TimelineSection({
   return (
     <div ref={containerRef} className="tl-root" style={{ position: 'relative', paddingBottom: 60 }}>
       <style>{`
-        @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+        
         .tl-root .tl-row{display:grid;grid-template-columns:1fr 48px 1fr;align-items:center;gap:0 16px;margin-bottom:56px;}
         .tl-root .tl-row:last-child{margin-bottom:0;}
         .tl-root .tl-col-l{display:flex;justify-content:flex-end;}

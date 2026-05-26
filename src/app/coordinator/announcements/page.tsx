@@ -115,7 +115,7 @@ export default function CoordinatorAnnouncementsPage() {
   return (
     <>
       <style>{`
-        @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+        
         *{box-sizing:border-box;margin:0;padding:0;}
         .nav{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--line);height:62px;display:flex;align-items:center;padding:0 40px;gap:16px;}
         .btn-sm{padding:7px 14px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:500;color:var(--ink);cursor:pointer;background:none;transition:all .2s;}

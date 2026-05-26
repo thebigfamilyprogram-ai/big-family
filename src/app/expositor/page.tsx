@@ -119,7 +119,7 @@ export default function ExpositorPage() {
   return (
     <>
       <style>{`
-                @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+                
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;color:var(--ink);}
         .exp-content{flex:1;overflow:auto;padding:40px 48px 80px;min-width:0;}

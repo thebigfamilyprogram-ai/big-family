@@ -84,7 +84,7 @@ export default function NewsListPage() {
   return (
     <>
       <style>{`
-                @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+                @keyframes
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;color:#0D0D0D;}
 

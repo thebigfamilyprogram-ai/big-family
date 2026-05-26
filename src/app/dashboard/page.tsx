@@ -283,7 +283,7 @@ export default function DashboardPage() {
   return (
     <>
       <style>{`
-        @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+        
 
         /* ── Layout ── */
         .layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh;max-width:1280px;margin:0 auto;}

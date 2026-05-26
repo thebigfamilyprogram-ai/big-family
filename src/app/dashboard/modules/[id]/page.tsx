@@ -316,7 +316,7 @@ export default function LeadershipPathPage() {
   return (
     <>
       <style>{`
-                        @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+                        @keyframes
         @keyframes pulseGlow{0%,100%{filter:drop-shadow(0 0 2px rgba(192,57,43,.4))}50%{filter:drop-shadow(0 0 8px rgba(192,57,43,.8))}}
         @keyframes confettiPhase{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(var(--tx),80px) rotate(var(--rot));opacity:0}}
         *{box-sizing:border-box;margin:0;padding:0;}

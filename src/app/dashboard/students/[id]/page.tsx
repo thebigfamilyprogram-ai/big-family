@@ -123,7 +123,7 @@ export default function StudentProfilePage() {
   return (
     <>
       <style>{`
-                @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+                @keyframes
         *{box-sizing:border-box;margin:0;padding:0;}
         .sp-layout{display:flex;min-height:100vh;background:var(--bg);}
         .sp-main{flex:1;overflow:auto;min-width:0;}

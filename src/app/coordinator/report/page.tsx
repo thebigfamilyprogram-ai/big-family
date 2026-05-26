@@ -170,7 +170,7 @@ export default function CoordinatorReportPage() {
   return (
     <>
       <style>{`
-        @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+        
         *{box-sizing:border-box;margin:0;padding:0;}
         .nav{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--line);height:62px;display:flex;align-items:center;padding:0 40px;gap:16px;}
         .nav__brand{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:var(--ink);text-decoration:none;}
