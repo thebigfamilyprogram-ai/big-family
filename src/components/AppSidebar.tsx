@@ -9,6 +9,7 @@ import { useTheme } from '@/contexts/ThemeContext'
 
 export interface AppSidebarProps {
   role: 'student' | 'coordinator' | 'admin'
+  roleLabelOverride?: string
   width?: number
   userName?: string
   userInitial?: string
@@ -96,6 +97,7 @@ function getNav(role: 'student' | 'coordinator' | 'admin', unread: number): Sect
 
 export default function AppSidebar({
   role,
+  roleLabelOverride,
   width = 260,
   userName = '…',
   userInitial = 'U',
@@ -155,9 +157,10 @@ export default function AppSidebar({
     router.push('/login')
   }
 
-  const roleLabel =
+  const roleLabel = roleLabelOverride ?? (
     role === 'student' ? 'Estudiante' :
     role === 'coordinator' ? 'Coordinador' : 'Administrador'
+  )
 
   const multiSection = sections.length > 1
 

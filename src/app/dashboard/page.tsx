@@ -292,12 +292,17 @@ export default function DashboardPage() {
             const { data: schoolXP } = await supabase.from('xp_log').select('user_id, amount').in('user_id', sids)
             const xpByUser: Record<string, number> = {}
             schoolXP?.forEach((r: { user_id: string; amount: number }) => { xpByUser[r.user_id] = (xpByUser[r.user_id] ?? 0) + r.amount })
-            const myXP = total_xp
-            const rank = Object.values(xpByUser).filter(v => v > myXP).length + 1
+            const rank = Object.values(xpByUser).filter(v => v > total_xp).length + 1
             setRankPos(rank)
+          } else {
+            setRankPos(0) // no other students in school
           }
+        } else {
+          setRankPos(0) // no school assigned
         }
-      } catch { /* best-effort */ }
+      } catch {
+        setRankPos(0) // error fallback — never stay in skeleton
+      }
 
       setUser({
         full_name:    profile?.full_name ?? 'Líder Big Family',
@@ -449,8 +454,9 @@ export default function DashboardPage() {
         .btn-upload:disabled{opacity:.4;cursor:not-allowed;background:#9a9690 !important;}
 
         /* ── KPI bento ── */
-        .kpi-bento{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
-        @media(max-width:1100px){.kpi-bento{grid-template-columns:repeat(2,1fr);}}
+        .kpi-bento{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;}
+        @media(max-width:1100px){.kpi-bento{grid-template-columns:repeat(2,minmax(0,1fr));}}
+        @media(max-width:600px){.kpi-bento{grid-template-columns:1fr;}}
         .kpi-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-card);transition:transform .2s;}
         .kpi-card:hover{transform:translateY(-1px);}
         .kpi-num{font-family:var(--font-mono,"JetBrains Mono",monospace);font-variant-numeric:tabular-nums;font-weight:700;font-size:32px;letter-spacing:-.02em;line-height:1;}
@@ -498,6 +504,7 @@ export default function DashboardPage() {
           userName={loading ? '…' : displayName}
           userInitial={loading ? 'L' : avatarLetter}
           unreadAnnouncements={unreadAnnCount}
+          userRole={user?.role ?? undefined}
         />
 
         {/* ── CENTER CONTENT ── */}
@@ -618,8 +625,10 @@ export default function DashboardPage() {
               { label: 'XP Total',       val: loading ? null : (user?.total_xp ?? 0), color: 'var(--accent-amber,#D4821A)', border: 'var(--accent-amber,#D4821A)' },
               { label: 'Módulos',        val: loading ? null : completedCount,         color: 'var(--accent-teal,#0F7B6C)',  border: 'var(--accent-teal,#0F7B6C)'  },
               { label: 'Racha de días',  val: loading ? null : streak,                 color: 'var(--ink)',                  border: 'var(--line-strong)'            },
-              { label: 'Ranking colegio',val: loading ? null : rankPos,                color: 'var(--accent,#C0392B)',       border: 'var(--accent,#C0392B)'        },
-            ] as const).map(({ label, val, color, border }) => (
+              { label: 'Ranking colegio', val: loading ? null : (rankPos ?? 0), color: 'var(--accent,#C0392B)', border: 'var(--accent,#C0392B)', isRank: true as const },
+            ] as const).map(({ label, val, color, border, ...rest }) => {
+              const isRank = 'isRank' in rest && rest.isRank
+              return (
               <m.div
                 key={label}
                 className="kpi-card"
@@ -630,13 +639,16 @@ export default function DashboardPage() {
                   ? <><Sk w="50%" h={32} r={6} /><div style={{ marginTop: 9 }}><Sk w="70%" h={10} r={4} /></div></>
                   : <>
                       <div className="kpi-num" style={{ color }}>
-                        {val === null ? '…' : label === 'Ranking colegio' && rankPos !== null ? `#${val}` : Number(val).toLocaleString('es-CO')}
+                        {isRank
+                          ? (val === 0 ? '—' : `#${val}`)
+                          : Number(val).toLocaleString('es-CO')}
                       </div>
                       <div className="kpi-label">{label}</div>
                     </>
                 }
               </m.div>
-            ))}
+              )
+            })}
           </m.div>
 
           {/* ── Charts bento ── */}
@@ -687,12 +699,29 @@ export default function DashboardPage() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 140 }}><Sk w={120} h={120} r={999} /></div>
               ) : (() => {
                 const pillars = [
-                  { name: 'Visión',      fill: '#C0392B', value: visionPct },
-                  { name: 'Módulos',     fill: '#D4821A', value: totalModules > 0 ? Math.round(completedCount / totalModules * 100) : 0 },
-                  { name: 'Impacto',     fill: '#0F7B6C', value: diploma ? 100 : 0 },
-                  { name: 'Comunidad',   fill: '#8C7B6E', value: 0 },
-                  { name: 'Proyectos',   fill: '#6B6B6B', value: 0 },
+                  { name: 'Visión',    fill: '#C0392B', value: visionPct },
+                  { name: 'Módulos',   fill: '#D4821A', value: totalModules > 0 ? Math.round(completedCount / totalModules * 100) : 0 },
+                  { name: 'Impacto',   fill: '#0F7B6C', value: diploma ? 100 : 0 },
+                  { name: 'Comunidad', fill: '#8C7B6E', value: 0 },
+                  { name: 'Proyectos', fill: '#6B6B6B', value: 0 },
                 ]
+                const hasProgress = pillars.some(p => p.value > 0)
+
+                if (!hasProgress) {
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 140, gap: 10, padding: '0 12px' }}>
+                      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style={{ opacity: 0.3 }}>
+                        <circle cx="16" cy="16" r="13" stroke="var(--mute)" strokeWidth="2"/>
+                        <circle cx="16" cy="16" r="8" stroke="var(--mute)" strokeWidth="1.5" strokeDasharray="4 3"/>
+                        <circle cx="16" cy="16" r="2.5" fill="var(--mute)"/>
+                      </svg>
+                      <div style={{ fontSize: 12.5, color: 'var(--mute)', textAlign: 'center', lineHeight: 1.5, fontFamily: '"Satoshi",sans-serif' }}>
+                        Completa tu primer módulo para ver tu avance
+                      </div>
+                    </div>
+                  )
+                }
+
                 return (
                   <m.div
                     initial={pref ? false : { opacity: 0, y: 8 }}

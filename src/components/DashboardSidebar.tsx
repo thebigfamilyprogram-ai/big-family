@@ -12,12 +12,23 @@ interface Props {
   userName?: string
   userInitial?: string
   unreadAnnouncements?: number
+  userRole?: string | null
 }
 
-export default function DashboardSidebar({ userName, userInitial, unreadAnnouncements }: Props) {
+const ROLE_LABELS: Record<string, string> = {
+  student:     'Estudiante',
+  coordinator: 'Coordinador',
+  expositor:   'Expositor',
+  admin:       'Administrador',
+}
+
+export default function DashboardSidebar({ userName, userInitial, unreadAnnouncements, userRole }: Props) {
+  const roleLabelOverride = userRole ? (ROLE_LABELS[userRole] ?? userRole) : undefined
+
   return (
     <AppSidebar
       role="student"
+      roleLabelOverride={roleLabelOverride}
       userName={userName}
       userInitial={userInitial}
       unreadAnnouncements={unreadAnnouncements}
