@@ -90,7 +90,7 @@ html, body {
 }
 
 .globe-skeleton {
-  min-height: 100vh;
+  min-height: 100dvh;
   background: #F5F3EF;
   display: flex;
   align-items: center;

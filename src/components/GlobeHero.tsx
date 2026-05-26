@@ -106,10 +106,10 @@ const misionStats = [
 
 /* EDITAR AQUÍ — fundadores */
 const founders = [
-  { initials: 'JV', name: 'Juan Felipe Visbal', role: 'Director de Visión y Contenido',        bio: 'La cara y voz del programa. Lidera la estrategia de contenido y la comunicación del impacto de Big Family.',                                                    tags: ['Contenido', 'Comunicación', 'Liderazgo'] },
-  { initials: 'AG', name: 'Alejandro Garcia',   role: 'Director de Arquitectura y Operaciones', bio: 'Estructura y organización de todo el programa. Garantiza que cada pieza del sistema funcione con coherencia.',                                               tags: ['Operaciones', 'Estrategia', 'Estructura'] },
-  { initials: 'SG', name: 'Samuel Gomez',       role: 'Director de Tecnología',                 bio: 'Construye y mantiene la plataforma tecnológica que hace posible la certificación The Big Leader.',                                                           tags: ['Tecnología', 'Plataforma', 'Desarrollo'] },
-  { initials: 'LB', name: 'Luis Barrios',       role: 'Fundador y Mentor Estratégico',          bio: 'Fundador del programa y mentor del equipo. Su visión y liderazgo son la base institucional de Big Family.',                                                  tags: ['Fundador', 'Mentoría', 'Visión'] },
+  { initials: 'LB', name: 'Luis Barrios',       role: 'Fundador y Mentor Estratégico',          bio: 'Fundador del programa y mentor del equipo. Su visión y liderazgo son la base institucional de Big Family.',                                                  tags: ['Fundador', 'Mentoría', 'Visión'],           layout: 'featured' as const },
+  { initials: 'JV', name: 'Juan Felipe Visbal', role: 'Director de Visión y Contenido',          bio: 'La cara y voz del programa. Lidera la estrategia de contenido y la comunicación del impacto de Big Family.',                                                tags: ['Contenido', 'Comunicación', 'Liderazgo'] },
+  { initials: 'AG', name: 'Alejandro Garcia',   role: 'Director de Arquitectura y Operaciones',  bio: 'Estructura y organización de todo el programa. Garantiza que cada pieza del sistema funcione con coherencia.',                                             tags: ['Operaciones', 'Estrategia', 'Estructura'] },
+  { initials: 'SG', name: 'Samuel Gomez',       role: 'Director de Tecnología',                  bio: 'Construye y mantiene la plataforma tecnológica que hace posible la certificación The Big Leader.',                                                         tags: ['Tecnología', 'Plataforma', 'Desarrollo'],   layout: 'wide' as const },
 ]
 
 
@@ -324,7 +324,9 @@ export default function GlobeHero() {
         .btn--ghost:hover{border-color:var(--ink-2);background:rgba(13,13,13,.04);}
         .btn--solid{background:var(--ink);color:#fff;border-color:var(--ink);}
         .btn--solid:hover{background:var(--accent);border-color:var(--accent);transform:translateY(-1px);box-shadow:0 10px 24px -8px rgba(192,57,43,.45);}
-        .hero{position:relative;min-height:100dvh;padding:120px 0 140px;display:grid;grid-template-columns:1fr 1fr;width:100%;overflow:visible;}
+        .btn:active{transform:scale(0.98) !important;transition-duration:.08s !important;}
+        .btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:999px;}
+        .hero{position:relative;min-height:100dvh;padding:120px 0 140px;display:grid;grid-template-columns:57fr 43fr;width:100%;overflow:visible;}
         .hero::before{content:"";position:absolute;left:40px;right:40px;top:90px;height:1px;background:var(--line-soft);}
         .meta{position:absolute;left:40px;right:40px;top:100px;display:flex;justify-content:space-between;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);z-index:2;}
         .meta .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-right:8px;vertical-align:middle;position:relative;box-shadow:0 0 8px rgba(192,57,43,.6);animation:blink 1.6s ease-in-out infinite;}
@@ -370,7 +372,7 @@ export default function GlobeHero() {
         }
         @media(max-width:960px){.hero{grid-template-columns:1fr;padding:80px 24px 100px;}.nav{padding:14px 20px;}.nav__links{display:none;}.right{order:-1;height:280px;}.left{order:1;}.conferencista{left:20px;right:20px;flex-direction:column;align-items:stretch;}.conf__person{flex:none;}.conf__sep{width:auto;height:1px;align-self:auto;}.conf__badge{border-left:none;border-top:1px solid rgba(13,13,13,.09);justify-content:center;}.meta{left:20px;right:20px;}}
         /* ── MISIÓN ──────────────────────────────────────────────────────────── */
-        .mision{background:#080808;padding:160px 40px;}
+        .mision{background:#080808;padding:136px 40px;}
         .mision__inner{max-width:900px;margin:0 auto;text-align:center;}
         .mision__eyebrow-pill{display:inline-flex;align-items:center;border:1px solid rgba(192,57,43,0.3);background:rgba(192,57,43,0.08);color:#C0392B;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;border-radius:999px;padding:6px 16px;margin-bottom:40px;}
         .mision__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(52px,7vw,96px);line-height:1.0;letter-spacing:-0.04em;margin-top:0;}
@@ -384,7 +386,7 @@ export default function GlobeHero() {
         .mision__stat-num em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:#C0392B;font-size:48px;}
         .mision__stat-label{font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-top:8px;}
         /* ── VISIÓN ──────────────────────────────────────────────────────────── */
-        .vision{background:#0D0D0D;border-top:1px solid rgba(255,255,255,.06);padding:120px 40px;position:relative;overflow:hidden;}
+        .vision{background:#0D0D0D;border-top:1px solid rgba(255,255,255,.06);padding:96px 40px;position:relative;overflow:hidden;}
         .vision__watermark{position:absolute;bottom:-20px;right:-10px;font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(120px,15vw,220px);color:rgba(255,255,255,.03);line-height:1;letter-spacing:-.06em;pointer-events:none;user-select:none;z-index:0;}
         .vision__inner{max-width:1200px;margin:0 auto;position:relative;z-index:1;display:flex;flex-direction:column;gap:52px;}
         .vision__row1{display:flex;flex-direction:column;gap:14px;}
@@ -411,7 +413,7 @@ export default function GlobeHero() {
         .big-leader__skill-title{font-family:"Satoshi",sans-serif;font-weight:600;font-size:15px;color:#fff;}
         .big-leader__skill-sub{font-family:"Satoshi",sans-serif;font-size:13px;color:rgba(255,255,255,0.4);margin-top:3px;line-height:1.5;}
         /* ── NUESTRA HISTORIA ───────────────────────────────────────────────── */
-        .historia{position:relative;background:#080808;padding:140px 40px;overflow:hidden;}
+        .historia{position:relative;background:#070707;padding:112px 40px;overflow:hidden;}
         .historia__grain{position:absolute;inset:0;pointer-events:none;z-index:0;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");opacity:0.35;mix-blend-mode:overlay;}
         .historia__radial{position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 90% 60% at 50% -10%,rgba(192,57,43,0.14),transparent 70%);}
         .historia__particle{position:absolute;border-radius:50%;background:rgba(192,57,43,0.4);pointer-events:none;z-index:0;animation:particleFloat linear infinite;}
@@ -434,7 +436,7 @@ export default function GlobeHero() {
         .bento__desc{font-family:"Satoshi",sans-serif;font-size:14px;color:rgba(255,255,255,0.45);line-height:1.65;}
         .bento__tag{display:inline-block;margin-top:20px;border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.35);font-size:11px;letter-spacing:0.15em;border-radius:999px;padding:4px 12px;}
         /* ── ABOUT DARK ─────────────────────────────────────────────────────── */
-        .about-dark{background:#080808;padding:120px 40px;border-top:1px solid rgba(255,255,255,0.06);}
+        .about-dark{background:#080808;padding:80px 40px;border-top:1px solid rgba(255,255,255,0.06);}
         .about-dark__inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:center;}
         .about-dark__photo-wrap{position:relative;}
         .about-dark__photo-perspective{perspective:1200px;}
@@ -460,17 +462,22 @@ export default function GlobeHero() {
         .about-dark__cta{margin-top:32px;padding:12px 24px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:999px;font-size:14px;font-family:"Satoshi",sans-serif;font-weight:500;cursor:pointer;transition:all 0.3s cubic-bezier(0.16,1,0.3,1);width:fit-content;}
         .about-dark__cta:hover{background:#C0392B;border-color:#C0392B;}
         /* ── EQUIPO ──────────────────────────────────────────────────────────── */
-        .equipo{background:#F5F3EF;border-top:1px solid rgba(13,13,13,.06);padding:120px 40px;}
+        .equipo{background:#F5F3EF;border-top:1px solid rgba(13,13,13,.06);padding:88px 40px;}
         .equipo__inner{max-width:1200px;margin:0 auto;}
         .equipo__header{display:grid;grid-template-columns:60% 40%;gap:40px;align-items:end;margin-bottom:80px;}
         .equipo__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#6B6B6B;margin-bottom:20px;}
         .equipo__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(36px,4vw,56px);color:#0D0D0D;letter-spacing:-0.03em;line-height:1.1;}
         .equipo__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:#C0392B;}
         .equipo__desc{font-family:"Satoshi",sans-serif;font-size:16px;color:#6B6B6B;line-height:1.65;}
-        .equipo__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:rgba(13,13,13,.06);border:1px solid rgba(13,13,13,.06);border-radius:20px;overflow:hidden;}
+        .equipo__grid{display:grid;grid-template-columns:1.8fr 1fr 1fr;grid-template-rows:auto auto;gap:2px;background:rgba(13,13,13,.06);border:1px solid rgba(13,13,13,.06);border-radius:20px;overflow:hidden;}
         .equipo__card{background:#F5F3EF;padding:40px 36px;display:flex;flex-direction:column;border:1px solid transparent;transition:box-shadow .2s,transform .2s,border-color .2s;}
         .equipo__card:hover{transform:translateY(-4px);box-shadow:0 16px 40px -8px rgba(13,13,13,.18),inset 0 2px 0 #C0392B;border-color:rgba(192,57,43,.3);}
+        .equipo__card--featured{grid-row:1/span 2;grid-column:1;}
+        .equipo__card--wide{grid-column:2/span 2;flex-direction:row;gap:28px;align-items:flex-start;}
+        .equipo__card--wide .equipo__avatar{margin-bottom:0;flex-shrink:0;}
+        .equipo__card-content{display:flex;flex-direction:column;flex:1;}
         .equipo__avatar{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-weight:700;font-size:32px;color:#fff;margin-bottom:28px;flex-shrink:0;}
+        .equipo__avatar--lg{width:144px;height:144px;font-size:44px;margin-bottom:36px;}
         .equipo__card-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:20px;color:#0D0D0D;letter-spacing:-0.01em;margin-bottom:6px;}
         .equipo__card-role{font-family:"Satoshi",sans-serif;font-size:14px;color:#C0392B;margin-bottom:0;}
         .equipo__card-bio{font-family:"Satoshi",sans-serif;font-size:14px;color:#6B6B6B;line-height:1.6;flex:1;}
@@ -483,7 +490,7 @@ export default function GlobeHero() {
         .dl-banner-x{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,.65);font-size:20px;line-height:1;padding:0 4px;transition:color .15s;}
         .dl-banner-x:hover{color:#fff;}
         /* ── DL Landing Section ── */
-        .dl-landing{background:#080808;border-top:1px solid rgba(255,255,255,.06);padding:120px 40px;overflow:hidden;position:relative;}
+        .dl-landing{background:#0A0A0A;border-top:1px solid rgba(255,255,255,.06);padding:104px 40px;overflow:hidden;position:relative;}
         .dl-landing::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 110%,rgba(192,57,43,.14),transparent 70%);pointer-events:none;}
         .dl-landing__inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;position:relative;z-index:1;}
         .dl-landing__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#C0392B;margin-bottom:16px;}
@@ -499,7 +506,7 @@ export default function GlobeHero() {
         .dl-cd-unit:last-child{border-right:none;}
         .dl-cd-num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(32px,4vw,48px);color:#fff;line-height:1;letter-spacing:-.04em;}
         .dl-cd-label{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.32);margin-top:8px;}
-        @media(max-width:960px){.mision{padding:80px 24px;}.mision__stats{grid-template-columns:1fr 1fr;}.mision__stat{border-right:none;border-bottom:1px solid rgba(255,255,255,0.06);}.vision{padding:80px 24px;}.vision__cols{grid-template-columns:1fr;gap:36px;}.vision__watermark{font-size:80px;}.big-leader__inner{grid-template-columns:1fr;}.historia{padding:80px 24px;}.historia__header{grid-template-columns:1fr;gap:24px;}.bento{grid-template-columns:1fr;}.bento__cell--tall,.bento__cell--wide{grid-row:auto;grid-column:auto;}.about-dark{padding:80px 24px;}.about-dark__inner{grid-template-columns:1fr;gap:48px;}.equipo{padding:100px 24px;}.equipo__header{grid-template-columns:1fr;}.equipo__grid{grid-template-columns:1fr;}.dl-landing{padding:80px 24px;}.dl-landing__inner{grid-template-columns:1fr;gap:48px;}}
+        @media(max-width:960px){.mision{padding:80px 24px;}.mision__stats{grid-template-columns:1fr 1fr;}.mision__stat{border-right:none;border-bottom:1px solid rgba(255,255,255,0.06);}.vision{padding:80px 24px;}.vision__cols{grid-template-columns:1fr;gap:36px;}.vision__watermark{font-size:80px;}.big-leader__inner{grid-template-columns:1fr;}.historia{padding:80px 24px;}.historia__header{grid-template-columns:1fr;gap:24px;}.bento{grid-template-columns:1fr;}.bento__cell--tall,.bento__cell--wide{grid-row:auto;grid-column:auto;}.about-dark{padding:80px 24px;}.about-dark__inner{grid-template-columns:1fr;gap:48px;}.equipo{padding:80px 24px;}.equipo__header{grid-template-columns:1fr;}.equipo__grid{grid-template-columns:1fr;grid-template-rows:auto;}.equipo__card--featured,.equipo__card--wide{grid-row:auto;grid-column:auto;flex-direction:column;}.equipo__card--wide .equipo__avatar{margin-bottom:28px;flex-shrink:0;}.dl-landing{padding:80px 24px;}.dl-landing__inner{grid-template-columns:1fr;gap:48px;}}
       `}</style>
 
       {/* Post-event banner */}
@@ -1159,35 +1166,36 @@ export default function GlobeHero() {
 
           {/* Grid de cards */}
           <div className="equipo__grid">
-            {founders.map((f, i) => (
-              <m.div
-                key={f.name}
-                className="equipo__card"
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-80px' }}
-                transition={{ type: 'spring', stiffness: 180, damping: 22, delay: i * 0.12 }}
-              >
-                <div
-                  className="equipo__avatar"
-                  style={{ background: 'linear-gradient(135deg,#C0392B,#922b21)' }}
+            {founders.map((f, i) => {
+              const isFeatured = f.layout === 'featured'
+              const isWide     = f.layout === 'wide'
+              const cardClass  = `equipo__card${isFeatured ? ' equipo__card--featured' : ''}${isWide ? ' equipo__card--wide' : ''}`
+              const avatarClass = `equipo__avatar${isFeatured ? ' equipo__avatar--lg' : ''}`
+              const cardContent = (
+                <>
+                  <div className="equipo__card-name">{f.name}</div>
+                  <div className="equipo__card-role">{f.role}</div>
+                  <div className="equipo__card-divider" />
+                  <div className="equipo__card-bio">{f.bio}</div>
+                  <div className="equipo__tags">
+                    {f.tags.map(t => <span key={t} className="equipo__tag">{t}</span>)}
+                  </div>
+                </>
+              )
+              return (
+                <m.div
+                  key={f.name}
+                  className={cardClass}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-80px' }}
+                  transition={{ type: 'spring', stiffness: 180, damping: 22, delay: i * 0.12 }}
                 >
-                  {f.initials}
-                </div>
-                <div className="equipo__card-name">{f.name}</div>
-                {/* EDITAR AQUÍ — rol */}
-                <div className="equipo__card-role">{f.role}</div>
-                <div className="equipo__card-divider" />
-                {/* EDITAR AQUÍ — bio */}
-                <div className="equipo__card-bio">{f.bio}</div>
-                <div className="equipo__tags">
-                  {/* EDITAR AQUÍ — tags */}
-                  {f.tags.map(t => (
-                    <span key={t} className="equipo__tag">{t}</span>
-                  ))}
-                </div>
-              </m.div>
-            ))}
+                  <div className={avatarClass} style={{ background: 'linear-gradient(135deg,#C0392B,#922b21)' }}>{f.initials}</div>
+                  {isWide ? <div className="equipo__card-content">{cardContent}</div> : cardContent}
+                </m.div>
+              )
+            })}
           </div>
 
         </div>
