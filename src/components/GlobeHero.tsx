@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
@@ -75,7 +75,8 @@ function CountryScramble() {
 
 // ── CountNumber helper ────────────────────────────────────────────────────────
 function CountNumber({ to, suffix = '' }: { to: number; suffix?: string }) {
-  const ref = useRef<HTMLSpanElement>(null)
+  const ref    = useRef<HTMLSpanElement>(null)
+  const rafRef = useRef<number>(0)
   const inView = useInView(ref, { once: true, margin: '-80px' })
   const [val, setVal] = useState(0)
   useEffect(() => {
@@ -86,9 +87,10 @@ function CountNumber({ to, suffix = '' }: { to: number; suffix?: string }) {
       const p = Math.min((t - start) / dur, 1)
       const e = 1 - Math.pow(1 - p, 3)
       setVal(Math.round(to * e))
-      if (p < 1) requestAnimationFrame(tick)
+      if (p < 1) rafRef.current = requestAnimationFrame(tick)
     }
-    requestAnimationFrame(tick)
+    rafRef.current = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(rafRef.current)
   }, [inView, to])
   return <span ref={ref}>{val}{suffix}</span>
 }
@@ -162,6 +164,51 @@ const visionStaggerV = {
 // TEMP LAUNCH: Día de Liderazgo target — 2026-05-16 08:00 Colombia (UTC-5)
 const DL_TARGET = new Date('2026-05-16T13:00:00Z')
 
+// ── Isolated memoized components — infinite/frequent animations must not re-render parent ──
+
+const HistoriaParticles = memo(function HistoriaParticles() {
+  return (
+    <>
+      {particles.map((p, i) => (
+        <div
+          key={i}
+          className="historia__particle"
+          aria-hidden="true"
+          style={{
+            left: `${p.x}%`, top: `${p.y}%`,
+            width: p.size, height: p.size,
+            animationDuration: `${p.dur}s`,
+            animationDelay: `${p.delay}s`,
+          }}
+        />
+      ))}
+    </>
+  )
+})
+
+// useCountdown lives inside so its 1s setInterval re-renders are isolated here, not in GlobeHero
+const CountdownDisplay = memo(function CountdownDisplay() {
+  const cd = useCountdown(DL_TARGET)
+  if (cd.expired) {
+    return <p style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 22, color: '#C0392B' }}>¡El evento ha comenzado!</p>
+  }
+  return (
+    <div className="dl-cd">
+      {([
+        { val: cd.days,    label: 'Días'     },
+        { val: cd.hours,   label: 'Horas'    },
+        { val: cd.minutes, label: 'Minutos'  },
+        { val: cd.seconds, label: 'Segundos' },
+      ] as { val: number; label: string }[]).map(({ val, label }) => (
+        <div key={label} className="dl-cd-unit">
+          <div className="dl-cd-num">{String(val).padStart(2, '0')}</div>
+          <div className="dl-cd-label">{label}</div>
+        </div>
+      ))}
+    </div>
+  )
+})
+
 function useCountdown(target: Date) {
   const calc = () => {
     const diff = target.getTime() - Date.now()
@@ -193,7 +240,6 @@ export default function GlobeHero() {
   const prefersReduced      = useReducedMotion()
   const [bannerDismissed,   setBannerDismissed]   = useState(false)
   const [scrollHintVisible, setScrollHintVisible] = useState(true)
-  const dlCd = useCountdown(DL_TARGET)
 
   const { stats: liveStats, loading: statsLoading } = useRealtimeStats()
 
@@ -461,9 +507,10 @@ export default function GlobeHero() {
         {!bannerDismissed && (
           <m.div
             className="dl-banner"
-            initial={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0, overflow: 'hidden' }}
-            transition={{ duration: 0.2 }}
+            initial={{ scaleY: 1, opacity: 1 }}
+            exit={{ scaleY: 0, opacity: 0 }}
+            style={{ transformOrigin: 'top', overflow: 'hidden' }}
+            transition={{ duration: 0.18, ease: [0.4, 0, 1, 1] }}
           >
             <span>🎉 ¡Gracias a todos los participantes del Día de Liderazgo 2026!</span>
             <button
@@ -830,19 +877,7 @@ export default function GlobeHero() {
       <section id="historia" className="historia">
         <div className="historia__grain" aria-hidden="true" />
         <div className="historia__radial" aria-hidden="true" />
-        {particles.map((p, i) => (
-          <div
-            key={i}
-            className="historia__particle"
-            aria-hidden="true"
-            style={{
-              left: `${p.x}%`, top: `${p.y}%`,
-              width: p.size, height: p.size,
-              animationDuration: `${p.dur}s`,
-              animationDelay: `${p.delay}s`,
-            }}
-          />
-        ))}
+        <HistoriaParticles />
 
         <div className="historia__inner">
           {/* Header asimétrico */}
@@ -1029,23 +1064,7 @@ export default function GlobeHero() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 120, damping: 20, delay: 0.1 }}
           >
-            {dlCd.expired ? (
-              <p style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 22, color: '#C0392B' }}>¡El evento ha comenzado! 🎉</p>
-            ) : (
-              <div className="dl-cd">
-                {([
-                  { val: dlCd.days,    label: 'Días'     },
-                  { val: dlCd.hours,   label: 'Horas'    },
-                  { val: dlCd.minutes, label: 'Minutos'  },
-                  { val: dlCd.seconds, label: 'Segundos' },
-                ] as { val: number; label: string }[]).map(({ val, label }) => (
-                  <div key={label} className="dl-cd-unit">
-                    <div className="dl-cd-num">{String(val).padStart(2, '0')}</div>
-                    <div className="dl-cd-label">{label}</div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <CountdownDisplay />
           </m.div>
 
         </div>

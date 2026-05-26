@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { m, useInView, useReducedMotion } from 'framer-motion'
+import { m, useInView, useReducedMotion, useMotionValue } from 'framer-motion'
 import { geoNaturalEarth1, geoPath, geoCentroid } from 'd3-geo'
 import { feature } from 'topojson-client'
 import AnimatedNumber from './AnimatedNumber'
@@ -64,7 +64,12 @@ export default function WorldMap() {
 
   const [geo,  setGeo]  = useState<any>(null)
   const [dims, setDims] = useState({ w: 0, h: 0 })
-  const [tooltip, setTooltip] = useState<{ code: string; x: number; y: number } | null>(null)
+
+  // Tooltip position via motion values — position updates bypass React render cycle entirely.
+  // Only setTipCode (on country enter/leave, infrequent) causes a re-render.
+  const tipX = useMotionValue(-999)
+  const tipY = useMotionValue(-999)
+  const [tipCode, setTipCode] = useState<string | null>(null)
 
   useEffect(() => {
     import('world-atlas/countries-110m.json').then((mod: any) => {
@@ -148,10 +153,6 @@ export default function WorldMap() {
       style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}
     >
       <style>{`
-        @keyframes tipIn {
-          from { opacity: 0; transform: translate(-50%, calc(-100% - 12px)); }
-          to   { opacity: 1; transform: translate(-50%, calc(-100% - 8px));  }
-        }
         @media (prefers-reduced-motion: reduce) {
           .wm-radar { display: none !important; }
         }
@@ -163,7 +164,13 @@ export default function WorldMap() {
       <div
         ref={containerRef}
         style={{ flex: 1, position: 'relative', minHeight: 0, overflow: 'hidden' }}
-        onMouseLeave={() => setTooltip(null)}
+        onMouseMove={e => {
+          const rect = containerRef.current?.getBoundingClientRect()
+          if (!rect) return
+          tipX.set(e.clientX - rect.left)
+          tipY.set(e.clientY - rect.top)
+        }}
+        onMouseLeave={() => setTipCode(null)}
       >
         {map && (
           <svg
@@ -173,7 +180,7 @@ export default function WorldMap() {
             aria-label="Mapa mundial — países conectados a Big Family"
           >
             <defs>
-              {/* Ocean gradient: radial fade to landing bg */}
+              {/* Ocean gradient */}
               <radialGradient id="ocean-fade" cx="50%" cy="50%" r="70%">
                 <stop offset="0%"   stopColor="#E8F0F5" stopOpacity="1"/>
                 <stop offset="100%" stopColor="#F5F3EF" stopOpacity="0"/>
@@ -232,36 +239,33 @@ export default function WorldMap() {
               <circle key={`halo-${t.code}`} cx={t.cx} cy={t.cy} r={12} fill={COLOR[t.code]} opacity={0.2}/>
             ))}
 
-            {/* Target countries — entrance animation + tooltip + global-pulse class */}
+            {/* Target countries:
+                CSS global-pulse lives on <g> (transform-box: fill-box centers correctly).
+                Framer spring entrance lives on <m.path> (child element).
+                Different elements = no @keyframes vs inline-style transform conflict. */}
             {map.targets.map(t => {
               const color = COLOR[t.code]
               const isHub = t.code === 'co'
               const delay = ORDER.indexOf(t.code) * 0.1 + 0.3
               return (
-                <m.path
+                <g
                   key={t.code}
-                  d={t.path}
-                  fill={color}
-                  stroke="#fff"
-                  strokeWidth={isHub ? 1.5 : 1}
-                  filter={`url(#${colorToGlowId(color)})`}
                   className={isHub ? 'map-country-hub' : 'map-country-target'}
-                  style={{ cursor: 'pointer', transformBox: 'fill-box', transformOrigin: '50% 50%' }}
-                  initial={reduced ? false : { opacity: 0, scale: 0.5 }}
-                  animate={inView ? { opacity: 1, scale: 1 } : {}}
-                  transition={{ delay, type: 'spring', stiffness: 300, damping: 25 }}
-                  onMouseEnter={e => {
-                    const rect = containerRef.current?.getBoundingClientRect()
-                    if (!rect) return
-                    setTooltip({ code: t.code, x: e.clientX - rect.left, y: e.clientY - rect.top })
-                  }}
-                  onMouseMove={e => {
-                    const rect = containerRef.current?.getBoundingClientRect()
-                    if (!rect) return
-                    setTooltip({ code: t.code, x: e.clientX - rect.left, y: e.clientY - rect.top })
-                  }}
-                  onMouseLeave={() => setTooltip(null)}
-                />
+                >
+                  <m.path
+                    d={t.path}
+                    fill={color}
+                    stroke="#fff"
+                    strokeWidth={isHub ? 1.5 : 1}
+                    filter={`url(#${colorToGlowId(color)})`}
+                    style={{ cursor: 'pointer', transformBox: 'fill-box', transformOrigin: '50% 50%' }}
+                    initial={reduced ? false : { opacity: 0, scale: 0.5 }}
+                    animate={inView ? { opacity: 1, scale: 1 } : {}}
+                    transition={{ delay, type: 'spring', stiffness: 300, damping: 25 }}
+                    onMouseEnter={() => setTipCode(t.code)}
+                    onMouseLeave={() => setTipCode(null)}
+                  />
+                </g>
               )
             })}
 
@@ -282,26 +286,15 @@ export default function WorldMap() {
             {/* Data packets — SVG animateMotion, zero JS loop */}
             {!reduced && inView && map.arcs.map((a, i) => (
               <g key={`pkt-${a.code}`}>
-                {/* Outgoing packet — white (from hub) */}
                 <circle r={3} fill="white" opacity={0.9}>
-                  <animateMotion
-                    dur={`${2.5 + i * 0.4}s`}
-                    repeatCount="indefinite"
-                    rotate="auto"
-                  >
+                  <animateMotion dur={`${2.5 + i * 0.4}s`} repeatCount="indefinite" rotate="auto">
                     {/* @ts-ignore — xlinkHref is valid on mpath */}
                     <mpath xlinkHref={`#line-${a.code}`}/>
                   </animateMotion>
                 </circle>
-                {/* Return packet — region color, offset by 1.2s */}
                 <circle r={2.5} fill={a.color} opacity={0.8}>
-                  <animateMotion
-                    dur={`${2.5 + i * 0.4}s`}
-                    begin="1.2s"
-                    repeatCount="indefinite"
-                    rotate="auto"
-                  >
-                    {/* @ts-ignore — xlinkHref is valid on mpath */}
+                  <animateMotion dur={`${2.5 + i * 0.4}s`} begin="1.2s" repeatCount="indefinite" rotate="auto">
+                    {/* @ts-ignore */}
                     <mpath xlinkHref={`#line-${a.code}`}/>
                   </animateMotion>
                 </circle>
@@ -373,33 +366,37 @@ export default function WorldMap() {
           </svg>
         )}
 
-        {/* Tooltip — dark, compact */}
-        {tooltip && (() => {
-          const info = INFO[tooltip.code]
-          if (!info) return null
-          return (
-            <div style={{
-              position: 'absolute',
-              left: tooltip.x, top: tooltip.y,
-              transform: 'translate(-50%, calc(-100% - 8px))',
-              background: 'var(--ink,#0D0D0D)',
-              color: 'var(--bg,#F5F3EF)',
-              padding: '6px 10px',
-              borderRadius: 6,
-              boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
-              pointerEvents: 'none',
-              zIndex: 10,
-              fontFamily: '"Satoshi",sans-serif',
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: '0.03em',
-              whiteSpace: 'nowrap',
-              animation: 'tipIn 0.15s ease forwards',
-            }}>
-              {info.name}
-            </div>
-          )
-        })()}
+        {/* Tooltip — always in DOM, position via motion values (zero re-renders on mouse move).
+            Re-renders only when tipCode changes (country enter/leave). */}
+        <m.div
+          aria-hidden="true"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: tipCode ? 1 : 0 }}
+          transition={{ duration: 0.1 }}
+          style={{
+            position: 'absolute',
+            left: 0, top: 0,
+            x: tipX, y: tipY,
+            pointerEvents: 'none',
+            zIndex: 10,
+          }}
+        >
+          <div style={{
+            transform: 'translate(-50%, calc(-100% - 8px))',
+            background: 'var(--ink,#0D0D0D)',
+            color: 'var(--bg,#F5F3EF)',
+            padding: '6px 10px',
+            borderRadius: 6,
+            boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+            fontFamily: '"Satoshi",sans-serif',
+            fontSize: 11,
+            fontWeight: 500,
+            letterSpacing: '0.03em',
+            whiteSpace: 'nowrap',
+          }}>
+            {tipCode ? (INFO[tipCode]?.name ?? '') : ' '}
+          </div>
+        </m.div>
       </div>
 
       {/* Live stats bar */}
