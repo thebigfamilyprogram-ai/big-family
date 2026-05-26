@@ -164,19 +164,19 @@ export default function AppSidebar({
   return (
     <>
       <style>{`
-        .app-sb{width:${width}px;min-width:${width}px;height:100dvh;position:sticky;top:0;display:flex;flex-direction:column;background:var(--card-bg);border-right:1px solid var(--card-border,rgba(13,13,13,.07));overflow-y:auto;overflow-x:hidden;z-index:20;flex-shrink:0;font-family:"Satoshi",sans-serif;}
-        .app-sb__brand{display:flex;align-items:center;gap:10px;padding:20px 16px 16px;font-weight:700;font-size:15px;color:var(--ink);border-bottom:1px solid var(--card-border,rgba(13,13,13,.07));flex-shrink:0;}
+        .app-sb{width:${width}px;min-width:${width}px;height:100dvh;position:sticky;top:0;display:flex;flex-direction:column;background:var(--card-bg);border-right:1px solid var(--line-strong,rgba(13,13,13,.12));overflow-y:auto;overflow-x:hidden;z-index:20;flex-shrink:0;font-family:"Satoshi",sans-serif;}
+        .app-sb__brand{display:flex;align-items:center;gap:10px;padding:20px 16px 16px;font-weight:700;font-size:15px;color:var(--ink);border-bottom:1px solid var(--line,rgba(13,13,13,.10));flex-shrink:0;}
         .app-sb__school{font-size:11px;font-weight:500;color:var(--mute);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
         .app-sb__nav{flex:1;padding:8px;display:flex;flex-direction:column;gap:1px;overflow-y:auto;}
         .app-sb__section{display:flex;flex-direction:column;}
-        .app-sb__section-hd{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;cursor:pointer;border-radius:6px;user-select:none;margin-top:8px;transition:background .15s;}
+        .app-sb__section-hd{display:flex;align-items:center;justify-content:space-between;padding:8px 8px 4px;cursor:pointer;border-radius:6px;user-select:none;margin-top:10px;transition:background .15s;}
         .app-sb__section-hd:hover{background:var(--bg-2);}
-        .app-sb__section:first-child .app-sb__section-hd{margin-top:2px;}
-        .app-sb__section-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);}
-        .app-sb__items{overflow:hidden;transition:max-height .25s ease;display:flex;flex-direction:column;gap:1px;}
-        .app-sb__item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;border:none;border-left:2px solid transparent;background:none;cursor:pointer;width:100%;text-align:left;font-family:"Satoshi",sans-serif;font-size:13px;color:var(--mute);transition:color .15s,background .15s,border-left-color .15s;}
+        .app-sb__section:first-child .app-sb__section-hd{margin-top:4px;}
+        .app-sb__section-label{font-size:9.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);}
+        .app-sb__items{overflow:hidden;transition:max-height .25s cubic-bezier(0.22,1,0.36,1);display:flex;flex-direction:column;gap:1px;}
+        .app-sb__item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;border:none;border-left:2px solid transparent;background:none;cursor:pointer;width:100%;text-align:left;font-family:"Satoshi",sans-serif;font-size:12.5px;color:var(--mute);transition:color .15s,background .15s,border-left-color .15s;min-height:36px;}
         .app-sb__item:hover{color:var(--ink);background:var(--bg-2);}
-        .app-sb__item--active{color:var(--ink);background:rgba(192,57,43,.08);border-left-color:var(--accent,#C0392B);font-weight:600;}
+        .app-sb__item--active{color:var(--ink);background:rgba(192,57,43,.07);border-left-color:var(--accent,#C0392B);font-weight:600;}
         .app-sb__item span{flex:1;text-align:left;}
         .app-sb__badge{background:var(--accent,#C0392B);color:#fff;border-radius:999px;font-size:9.5px;font-weight:700;min-width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;flex-shrink:0;}
         .app-sb__new{margin:10px 0 4px;padding:11px 12px;background:rgba(192,57,43,.07);color:var(--accent,#C0392B);border:1px solid rgba(192,57,43,.18);border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:12.5px;cursor:pointer;transition:background .2s,color .2s,border-color .2s;text-align:left;width:100%;}

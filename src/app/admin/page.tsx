@@ -11,6 +11,10 @@ import AppSidebar from '@/components/AppSidebar'
 import Badge from '@/components/shared/Badge'
 import Skeleton from '@/components/shared/Skeleton'
 import StatCard from '@/components/shared/StatCard'
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Cell, LineChart, Line,
+} from 'recharts'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type Tab = 'stats' | 'users' | 'projects' | 'evaluations' | 'goals'
@@ -54,6 +58,17 @@ interface Stats {
   rejected:       number
 }
 
+interface SchoolXP {
+  name: string
+  avgXp: number
+  count: number
+}
+
+interface WeeklyUsers {
+  week: string
+  count: number
+}
+
 // ── Meta maps ─────────────────────────────────────────────────────────────────
 const RESULTADO_META: Record<string, { label: string; color: string; bg: string }> = {
   mencion_honor:     { label: 'Mención de Honor',  color: '#713F12', bg: '#FEF9C3' },
@@ -62,11 +77,11 @@ const RESULTADO_META: Record<string, { label: string; color: string; bg: string 
   no_certificado:    { label: 'No certificado',     color: '#991B1B', bg: '#FEE2E2' },
 }
 
-const STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
-  draft:    { label: 'Borrador',  color: '#6B6B6B', bg: 'rgba(13,13,13,.07)' },
-  pending:  { label: 'Pendiente', color: '#92400E', bg: '#FEF3C7'            },
-  approved: { label: 'Aprobado',  color: '#065F46', bg: '#D1FAE5'            },
-  rejected: { label: 'Rechazado', color: '#991B1B', bg: '#FEE2E2'            },
+const STATUS_META: Record<string, { label: string; variant: 'draft' | 'pending' | 'approved' | 'rejected' }> = {
+  draft:    { label: 'Borrador',  variant: 'draft'    },
+  pending:  { label: 'Pendiente', variant: 'pending'  },
+  approved: { label: 'Aprobado',  variant: 'approved' },
+  rejected: { label: 'Rechazado', variant: 'rejected' },
 }
 
 const ROLE_META: Record<string, { label: string; color: string; bg: string }> = {
@@ -86,10 +101,13 @@ export default function AdminPage() {
   const [booting,   setBooting]   = useState(true)
   const [adminName, setAdminName] = useState('Admin')
 
-  const [users,    setUsers]    = useState<UserRow[]>([])
-  const [projects, setProjects] = useState<ProjectRow[]>([])
-  const [evals,    setEvals]    = useState<EvalRow[]>([])
-  const [stats,    setStats]    = useState<Stats | null>(null)
+  const [users,       setUsers]       = useState<UserRow[]>([])
+  const [projects,    setProjects]    = useState<ProjectRow[]>([])
+  const [evals,       setEvals]       = useState<EvalRow[]>([])
+  const [stats,       setStats]       = useState<Stats | null>(null)
+  const [schoolXP,    setSchoolXP]    = useState<SchoolXP[]>([])
+  const [weeklyUsers, setWeeklyUsers] = useState<WeeklyUsers[]>([])
+  const [hovBarAdm,   setHovBarAdm]   = useState<number | null>(null)
 
   const [loadingUsers,    setLoadingUsers]    = useState(false)
   const [loadingProjects, setLoadingProjects] = useState(false)
@@ -155,6 +173,47 @@ export default function AdminPage() {
       sb.from('projects').select('id', { count: 'exact', head: true }).eq('status', 'rejected'),
     ])
     setStats({ students: students ?? 0, total_projects: total_projects ?? 0, submitted: submitted ?? 0, approved: approved ?? 0, rejected: rejected ?? 0 })
+
+    // ── School XP averages ──
+    try {
+      const { data: allSchools } = await sb.from('schools').select('id, name')
+      const { data: allProfiles } = await sb.from('profiles').select('id, school_id').eq('role', 'student')
+      const { data: allXP } = await sb.from('xp_log').select('user_id, amount')
+
+      if (allSchools && allProfiles && allXP) {
+        const xpByUser: Record<string, number> = {}
+        allXP.forEach((r: { user_id: string; amount: number }) => { xpByUser[r.user_id] = (xpByUser[r.user_id] ?? 0) + r.amount })
+
+        const schoolData: SchoolXP[] = allSchools
+          .map((s: { id: string; name: string }) => {
+            const studentIds = allProfiles
+              .filter((p: { school_id: string | null }) => p.school_id === s.id)
+              .map((p: { id: string }) => p.id)
+            const total = studentIds.reduce((sum: number, id: string) => sum + (xpByUser[id] ?? 0), 0)
+            const count = studentIds.length
+            return { name: s.name, avgXp: count > 0 ? Math.round(total / count) : 0, count }
+          })
+          .filter((s: SchoolXP) => s.count > 0)
+          .sort((a: SchoolXP, b: SchoolXP) => b.avgXp - a.avgXp)
+          .slice(0, 8)
+        setSchoolXP(schoolData)
+      }
+    } catch { /* best-effort */ }
+
+    // ── Weekly user growth (last 8 weeks) ──
+    try {
+      const since8w = new Date(Date.now() - 8 * 7 * 24 * 60 * 60 * 1000).toISOString()
+      const { data: newUsers } = await sb.from('profiles').select('created_at').gte('created_at', since8w).eq('role', 'student')
+      const wMap: Record<string, number> = {}
+      for (let i = 7; i >= 0; i--) wMap[`S${8 - i}`] = 0
+      newUsers?.forEach((u: { created_at: string }) => {
+        const daysAgo = Math.floor((Date.now() - new Date(u.created_at).getTime()) / 86400000)
+        const weekIdx = Math.min(7, Math.floor(daysAgo / 7))
+        const key = `S${8 - weekIdx}`
+        if (wMap[key] !== undefined) wMap[key]++
+      })
+      setWeeklyUsers(Object.entries(wMap).map(([week, count]) => ({ week, count })))
+    } catch { /* best-effort */ }
   }
 
   async function fetchUsers() {
@@ -361,7 +420,18 @@ export default function AdminPage() {
         .adm-header p{margin-top:5px;font-size:13.5px;color:#6B6B6B;}
 
         /* Stats grid */
-        .adm-stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;}
+        .adm-stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
+        /* Charts bento */
+        .adm-charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px;}
+        @media(max-width:900px){.adm-charts-row{grid-template-columns:1fr;}}
+        .adm-chart-panel{background:var(--card-bg,#fff);border:1px solid var(--card-border,rgba(13,13,13,.07));border-radius:16px;padding:22px 20px;box-shadow:var(--shadow-card);}
+        .adm-chart-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:13.5px;color:var(--ink);margin-bottom:16px;}
+        /* School ranking table */
+        .adm-rank-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:20px;}
+        .adm-rank-table th{text-align:left;padding:8px 14px;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:700;border-bottom:1px solid var(--line);white-space:nowrap;}
+        .adm-rank-table td{padding:10px 14px;border-bottom:1px solid var(--line-soft);color:var(--ink-2);vertical-align:middle;font-variant-numeric:tabular-nums;}
+        .adm-rank-table tr:last-child td{border-bottom:none;}
+        .adm-rank-table tbody tr:hover td{background:var(--surface-3,var(--bg-2));}
 
         /* Card + table */
         .adm-card{background:var(--card-bg,#fff);border:1px solid var(--card-border,rgba(13,13,13,.07));border-radius:16px;overflow:hidden;box-shadow:0 2px 12px -4px rgba(13,13,13,.07);}
@@ -428,36 +498,146 @@ export default function AdminPage() {
 
         {/* ── ESTADÍSTICAS ── */}
         {tab === 'stats' && (
-          <m.div
-            className="adm-stats-grid"
-            initial={pref ? false : 'hidden'}
-            animate="visible"
-            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
-          >
-            {stats ? (
-              ([
-                { num: stats.students,       label: 'Estudiantes',       accent: true  },
-                { num: stats.total_projects, label: 'Proyectos totales', accent: false },
-                { num: stats.submitted,      label: 'Enviados',          accent: false },
-                { num: stats.approved,       label: 'Aprobados',         accent: false },
-                { num: stats.rejected,       label: 'Rechazados',        accent: false },
-              ] as const).map(s => (
-                <m.div
-                  key={s.label}
-                  variants={{ hidden: { opacity: 0, scale: 0.96 }, visible: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 200, damping: 22 } } }}
-                >
-                  <StatCard num={s.num} label={s.label} accent={s.accent} />
-                </m.div>
-              ))
-            ) : (
-              [...Array(5)].map((_, i) => (
-                <div key={i} style={{ background: 'var(--card-bg,#fff)', border: '1px solid var(--card-border,rgba(13,13,13,.07))', borderRadius: 16, padding: '24px 28px' }}>
-                  <Skeleton w={64} h={40} r={8} />
-                  <div style={{ marginTop: 12 }}><Skeleton w={80} h={12} r={4} /></div>
+          <>
+            <m.div
+              className="adm-stats-grid"
+              initial={pref ? false : 'hidden'}
+              animate="visible"
+              variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
+            >
+              {stats ? (
+                ([
+                  { num: stats.students,       label: 'Estudiantes',       accentColor: 'var(--accent,#C0392B)' },
+                  { num: stats.total_projects, label: 'Proyectos totales', accentColor: 'var(--line-strong)'    },
+                  { num: stats.submitted,      label: 'Enviados',          accentColor: 'var(--accent-amber,#D4821A)' },
+                  { num: stats.approved,       label: 'Aprobados',         accentColor: 'var(--accent-teal,#0F7B6C)' },
+                  { num: stats.rejected,       label: 'Rechazados',        accentColor: 'var(--accent,#C0392B)'  },
+                ] as const).map(s => (
+                  <m.div
+                    key={s.label}
+                    variants={{ hidden: { opacity: 0, scale: 0.96 }, visible: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 200, damping: 22 } } }}
+                  >
+                    <StatCard num={s.num} label={s.label} accentColor={s.accentColor} />
+                  </m.div>
+                ))
+              ) : (
+                [...Array(5)].map((_, i) => (
+                  <div key={i} style={{ background: 'var(--card-bg,#fff)', border: '1px solid var(--card-border,rgba(13,13,13,.07))', borderLeft: '3px solid var(--line-strong)', borderRadius: 14, padding: '20px 22px', boxShadow: 'var(--shadow-card)' }}>
+                    <Skeleton w={64} h={34} r={6} />
+                    <div style={{ marginTop: 10 }}><Skeleton w={80} h={10} r={4} /></div>
+                  </div>
+                ))
+              )}
+            </m.div>
+
+            {/* ── Charts bento ── */}
+            <div className="adm-charts-row">
+              {/* XP por colegio */}
+              <div className="adm-chart-panel">
+                <div className="adm-chart-title">XP promedio por colegio</div>
+                {schoolXP.length === 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {[90, 70, 80, 60].map((w, i) => <Skeleton key={i} h={12} r={4} w={`${w}%`} />)}
+                  </div>
+                ) : (
+                  <m.div initial={pref ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>
+                    <ResponsiveContainer width="100%" height={Math.max(200, schoolXP.length * 38)}>
+                      <BarChart data={schoolXP} layout="vertical" margin={{ top: 0, right: 40, left: 0, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" strokeOpacity={0.5} horizontal={false} />
+                        <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--mute)', fontFamily: 'Satoshi,sans-serif' }} axisLine={false} tickLine={false} />
+                        <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 11, fill: 'var(--ink-2)', fontFamily: 'Satoshi,sans-serif' }} axisLine={false} tickLine={false} />
+                        <Tooltip
+                          cursor={{ fill: 'rgba(13,13,13,0.04)' }}
+                          content={({ active, payload }) => {
+                            if (!active || !payload?.[0]) return null
+                            const d = payload[0].payload as SchoolXP
+                            return (
+                              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 10, padding: '10px 14px', fontSize: 12, boxShadow: 'var(--shadow-raised)', fontFamily: '"Satoshi",sans-serif' }}>
+                                <div style={{ fontWeight: 700, color: 'var(--ink)', marginBottom: 3 }}>{d.name}</div>
+                                <div style={{ color: 'var(--accent-amber,#D4821A)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{d.avgXp.toLocaleString('es-CO')} XP avg</div>
+                                <div style={{ color: 'var(--mute)', fontSize: 11 }}>{d.count} estudiantes</div>
+                              </div>
+                            )
+                          }}
+                        />
+                        <Bar dataKey="avgXp" radius={[0, 4, 4, 0]} maxBarSize={22}
+                          onMouseEnter={(_, i) => setHovBarAdm(i)}
+                          onMouseLeave={() => setHovBarAdm(null)}
+                        >
+                          {schoolXP.map((_, i) => (
+                            <Cell key={i} fill={hovBarAdm === i ? 'var(--accent,#C0392B)' : 'var(--ink,#0D0D0D)'} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </m.div>
+                )}
+              </div>
+
+              {/* Crecimiento de usuarios */}
+              <div className="adm-chart-panel">
+                <div className="adm-chart-title">Nuevos estudiantes — últimas 8 semanas</div>
+                {weeklyUsers.length === 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {[60, 80, 50, 90].map((w, i) => <Skeleton key={i} h={10} r={4} w={`${w}%`} />)}
+                  </div>
+                ) : (
+                  <m.div initial={pref ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <LineChart data={weeklyUsers} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" strokeOpacity={0.5} vertical={false} />
+                        <XAxis dataKey="week" tick={{ fontSize: 10, fill: 'var(--mute)', fontFamily: 'Satoshi,sans-serif' }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fontSize: 10, fill: 'var(--mute)' }} axisLine={false} tickLine={false} />
+                        <Tooltip
+                          content={({ active, payload, label }) => {
+                            if (!active || !payload?.[0]) return null
+                            return (
+                              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 10, padding: '8px 12px', fontSize: 12, boxShadow: 'var(--shadow-raised)', fontFamily: '"Satoshi",sans-serif' }}>
+                                <div style={{ color: 'var(--mute)', fontSize: 10, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
+                                <span style={{ fontWeight: 700, color: 'var(--accent-teal,#0F7B6C)', fontVariantNumeric: 'tabular-nums' }}>+{payload[0].value} estudiantes</span>
+                              </div>
+                            )
+                          }}
+                        />
+                        <Line type="monotone" dataKey="count" stroke="var(--accent-teal,#0F7B6C)" strokeWidth={2} dot={{ r: 3, fill: 'var(--accent-teal,#0F7B6C)', strokeWidth: 0 }} activeDot={{ r: 5 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </m.div>
+                )}
+              </div>
+            </div>
+
+            {/* ── School ranking table ── */}
+            {schoolXP.length > 0 && (
+              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 16, padding: '20px', boxShadow: 'var(--shadow-card)', marginTop: 20 }}>
+                <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 13.5, color: 'var(--ink)', marginBottom: 14 }}>Ranking de colegios</div>
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="adm-rank-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Colegio</th>
+                        <th style={{ textAlign: 'right' }}>XP Promedio</th>
+                        <th style={{ textAlign: 'right' }}>Estudiantes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {schoolXP.map((s, i) => (
+                        <tr key={s.name}>
+                          <td style={{ fontWeight: 700, color: i === 0 ? 'var(--accent-amber,#D4821A)' : i === 1 ? 'var(--mute)' : i === 2 ? 'var(--accent-muted,#8C7B6E)' : 'var(--mute)', fontFamily: 'var(--font-mono)', fontSize: 13 }}>
+                            {i + 1}
+                          </td>
+                          <td style={{ fontWeight: 600, color: 'var(--ink)' }}>{s.name}</td>
+                          <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--accent-amber,#D4821A)' }}>{s.avgXp.toLocaleString('es-CO')}</td>
+                          <td style={{ textAlign: 'right', color: 'var(--mute)' }}>{s.count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              ))
+              </div>
             )}
-          </m.div>
+          </>
         )}
 
         {/* ── USUARIOS ── */}
@@ -557,13 +737,13 @@ export default function AdminPage() {
                     </thead>
                     <tbody>
                       {pagedProjects.map(p => {
-                        const sm = STATUS_META[p.status] ?? { label: p.status, color: '#6B6B6B', bg: 'rgba(13,13,13,.06)' }
+                        const sm = STATUS_META[p.status] ?? { label: p.status, variant: 'draft' as const }
                         return (
                           <tr key={p.id}>
                             <td style={{ fontWeight: 600, maxWidth: 280 }}>{p.title || '(Sin título)'}</td>
                             <td>{p.student_name ?? '—'}</td>
                             <td>{p.school_name ?? '—'}</td>
-                            <td><Badge label={sm.label} color={sm.color} bg={sm.bg} /></td>
+                            <td><Badge label={sm.label} variant={sm.variant} /></td>
                             <td style={{ color: '#9a9690', fontSize: 13 }}>
                               {p.submitted_at
                                 ? new Date(p.submitted_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })

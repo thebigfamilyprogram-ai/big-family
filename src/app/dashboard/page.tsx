@@ -8,6 +8,10 @@ import { createClient } from '@/lib/supabase'
 import DashboardSidebar from '@/components/DashboardSidebar'
 import { m, useReducedMotion } from 'framer-motion'
 import { fadeUp } from '@/lib/animations'
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, RadialBarChart, RadialBar,
+} from 'recharts'
 
 interface Module {
   id: string
@@ -32,6 +36,11 @@ interface UserData {
 interface DiplomaInfo {
   projectId: string
   resultado: string
+}
+
+interface WeeklyXP {
+  week: string
+  xp: number
 }
 
 const QUOTES = [
@@ -180,6 +189,9 @@ export default function DashboardPage() {
   const [annBannerDismissed, setAnnBannerDismissed] = useState(false)
   const [unreadAnnCount, setUnreadAnnCount] = useState(0)
   const [userId,       setUserId]       = useState('')
+  const [weeklyXP,     setWeeklyXP]     = useState<WeeklyXP[]>([])
+  const [streak,       setStreak]       = useState(0)
+  const [rankPos,      setRankPos]      = useState<number | null>(null)
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -234,6 +246,58 @@ export default function DashboardPage() {
       }
 
       const total_xp = xpRows?.reduce((s: number, r: { amount: number }) => s + r.amount, 0) ?? 0
+
+      // ── Weekly XP (last 4 weeks) ──
+      try {
+        const since4w = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString()
+        const { data: xpDated } = await supabase
+          .from('xp_log').select('amount, created_at').eq('user_id', authUser.id).gte('created_at', since4w)
+        const weekMap: Record<string, number> = {}
+        const now = new Date()
+        for (let i = 3; i >= 0; i--) {
+          const d = new Date(now); d.setDate(d.getDate() - i * 7)
+          const key = `S${4 - i}`
+          weekMap[key] = 0
+        }
+        xpDated?.forEach((r: { amount: number; created_at: string }) => {
+          const daysAgo = Math.floor((Date.now() - new Date(r.created_at).getTime()) / 86400000)
+          const weekIdx = Math.min(3, Math.floor(daysAgo / 7))
+          const key = `S${4 - weekIdx}`
+          if (weekMap[key] !== undefined) weekMap[key] += r.amount
+        })
+        setWeeklyXP(Object.entries(weekMap).map(([week, xp]) => ({ week, xp })))
+
+        // ── Streak (consecutive days active) ──
+        const { data: xpDays } = await supabase
+          .from('xp_log').select('created_at').eq('user_id', authUser.id).order('created_at', { ascending: false }).limit(60)
+        if (xpDays && xpDays.length > 0) {
+          const daySet = new Set(xpDays.map((r: { created_at: string }) =>
+            new Date(r.created_at).toISOString().slice(0, 10)
+          ))
+          let s = 0
+          const today = new Date()
+          for (let i = 0; i < 60; i++) {
+            const d = new Date(today); d.setDate(d.getDate() - i)
+            if (daySet.has(d.toISOString().slice(0, 10))) s++; else break
+          }
+          setStreak(s)
+        }
+
+        // ── Ranking in school ──
+        if (profile?.school_id) {
+          const { data: schoolStudents } = await supabase
+            .from('profiles').select('id').eq('school_id', profile.school_id).eq('role', 'student')
+          if (schoolStudents && schoolStudents.length > 0) {
+            const sids = schoolStudents.map((p: { id: string }) => p.id)
+            const { data: schoolXP } = await supabase.from('xp_log').select('user_id, amount').in('user_id', sids)
+            const xpByUser: Record<string, number> = {}
+            schoolXP?.forEach((r: { user_id: string; amount: number }) => { xpByUser[r.user_id] = (xpByUser[r.user_id] ?? 0) + r.amount })
+            const myXP = total_xp
+            const rank = Object.values(xpByUser).filter(v => v > myXP).length + 1
+            setRankPos(rank)
+          }
+        }
+      } catch { /* best-effort */ }
 
       setUser({
         full_name:    profile?.full_name ?? 'Líder Big Family',
@@ -384,6 +448,18 @@ export default function DashboardPage() {
         .capstone-banner{display:flex;align-items:center;gap:14px;padding:18px 22px;background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(34,197,94,.04));border:1px solid rgba(34,197,94,.25);border-radius:14px;}
         .btn-upload:disabled{opacity:.4;cursor:not-allowed;background:#9a9690 !important;}
 
+        /* ── KPI bento ── */
+        .kpi-bento{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+        @media(max-width:1100px){.kpi-bento{grid-template-columns:repeat(2,1fr);}}
+        .kpi-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-card);transition:transform .2s;}
+        .kpi-card:hover{transform:translateY(-1px);}
+        .kpi-num{font-family:var(--font-mono,"JetBrains Mono",monospace);font-variant-numeric:tabular-nums;font-weight:700;font-size:32px;letter-spacing:-.02em;line-height:1;}
+        .kpi-label{font-size:10.5px;color:var(--mute);margin-top:9px;text-transform:uppercase;letter-spacing:.1em;font-weight:600;}
+
+        /* ── Charts bento ── */
+        .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+        @media(max-width:860px){.charts-row{grid-template-columns:1fr;}}
+
         /* ── Side-by-side cards row ── */
         .cards-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 
@@ -529,6 +605,129 @@ export default function DashboardPage() {
               </svg>
               {unreadAnnCount > 0 && <span className="bell-badge" />}
             </button>
+          </div>
+
+          {/* ── KPI Bento ── */}
+          <m.div
+            className="kpi-bento"
+            initial={pref ? false : 'hidden'}
+            animate="visible"
+            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
+          >
+            {([
+              { label: 'XP Total',       val: loading ? null : (user?.total_xp ?? 0), color: 'var(--accent-amber,#D4821A)', border: 'var(--accent-amber,#D4821A)' },
+              { label: 'Módulos',        val: loading ? null : completedCount,         color: 'var(--accent-teal,#0F7B6C)',  border: 'var(--accent-teal,#0F7B6C)'  },
+              { label: 'Racha de días',  val: loading ? null : streak,                 color: 'var(--ink)',                  border: 'var(--line-strong)'            },
+              { label: 'Ranking colegio',val: loading ? null : rankPos,                color: 'var(--accent,#C0392B)',       border: 'var(--accent,#C0392B)'        },
+            ] as const).map(({ label, val, color, border }) => (
+              <m.div
+                key={label}
+                className="kpi-card"
+                style={{ borderLeft: `3px solid ${border}` }}
+                variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 200, damping: 22 } } }}
+              >
+                {val === null
+                  ? <><Sk w="50%" h={32} r={6} /><div style={{ marginTop: 9 }}><Sk w="70%" h={10} r={4} /></div></>
+                  : <>
+                      <div className="kpi-num" style={{ color }}>
+                        {val === null ? '…' : label === 'Ranking colegio' && rankPos !== null ? `#${val}` : Number(val).toLocaleString('es-CO')}
+                      </div>
+                      <div className="kpi-label">{label}</div>
+                    </>
+                }
+              </m.div>
+            ))}
+          </m.div>
+
+          {/* ── Charts bento ── */}
+          <div className="charts-row">
+            {/* XP Line Chart */}
+            <div className="card" style={{ padding: '22px 20px 16px' }}>
+              <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 16 }}>
+                Progreso XP — últimas 4 semanas
+              </div>
+              {loading || weeklyXP.length === 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[80, 60, 100, 70].map((w, i) => <Sk key={i} w={`${w}%`} h={10} r={4} />)}
+                </div>
+              ) : (
+                <m.div
+                  initial={pref ? false : { opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <ResponsiveContainer width="100%" height={140}>
+                    <LineChart data={weeklyXP} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" strokeOpacity={0.5} vertical={false} />
+                      <XAxis dataKey="week" tick={{ fontSize: 11, fill: 'var(--mute)', fontFamily: 'Satoshi,sans-serif' }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 10, fill: 'var(--mute)' }} axisLine={false} tickLine={false} />
+                      <Tooltip
+                        content={({ active, payload }) => {
+                          if (!active || !payload?.[0]) return null
+                          return (
+                            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 10, padding: '8px 12px', fontSize: 12, boxShadow: 'var(--shadow-raised)', fontFamily: '"Satoshi",sans-serif' }}>
+                              <span style={{ fontWeight: 700, color: 'var(--accent-amber,#D4821A)' }}>{payload[0].value?.toLocaleString('es-CO')} XP</span>
+                            </div>
+                          )
+                        }}
+                      />
+                      <Line type="monotone" dataKey="xp" stroke="var(--accent-amber,#D4821A)" strokeWidth={2} dot={{ r: 3, fill: 'var(--accent-amber,#D4821A)', strokeWidth: 0 }} activeDot={{ r: 5, fill: 'var(--accent-amber,#D4821A)' }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </m.div>
+              )}
+            </div>
+
+            {/* Leadership RadialBarChart */}
+            <div className="card" style={{ padding: '22px 20px 16px' }}>
+              <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 16 }}>
+                Leadership Path — avance general
+              </div>
+              {loading ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 140 }}><Sk w={120} h={120} r={999} /></div>
+              ) : (() => {
+                const pillars = [
+                  { name: 'Visión',      fill: '#C0392B', value: visionPct },
+                  { name: 'Módulos',     fill: '#D4821A', value: totalModules > 0 ? Math.round(completedCount / totalModules * 100) : 0 },
+                  { name: 'Impacto',     fill: '#0F7B6C', value: diploma ? 100 : 0 },
+                  { name: 'Comunidad',   fill: '#8C7B6E', value: 0 },
+                  { name: 'Proyectos',   fill: '#6B6B6B', value: 0 },
+                ]
+                return (
+                  <m.div
+                    initial={pref ? false : { opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+                  >
+                    <ResponsiveContainer width="100%" height={140}>
+                      <RadialBarChart cx="50%" cy="50%" innerRadius={20} outerRadius={68} data={pillars} startAngle={90} endAngle={-270}>
+                        <RadialBar dataKey="value" cornerRadius={4} background={{ fill: 'var(--line)' }} />
+                        <Tooltip
+                          content={({ active, payload }) => {
+                            if (!active || !payload?.[0]) return null
+                            const d = payload[0].payload
+                            return (
+                              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 10, padding: '8px 12px', fontSize: 12, boxShadow: 'var(--shadow-raised)', fontFamily: '"Satoshi",sans-serif' }}>
+                                <span style={{ fontWeight: 700, color: 'var(--ink)' }}>{d.name}: </span>
+                                <span style={{ color: d.fill }}>{d.value}%</span>
+                              </div>
+                            )
+                          }}
+                        />
+                      </RadialBarChart>
+                    </ResponsiveContainer>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px', marginTop: 4 }}>
+                      {pillars.map(p => (
+                        <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                          <div style={{ width: 7, height: 7, borderRadius: 2, background: p.fill, flexShrink: 0 }} />
+                          <span style={{ fontSize: 11, color: 'var(--mute)', fontFamily: '"Satoshi",sans-serif' }}>{p.name} {p.value}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </m.div>
+                )
+              })()}
+            </div>
           </div>
 
           {/* Leadership Progress */}
