@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { showToast, ToastContainer } from '@/components/Toast'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
+import AppSidebar from '@/components/AppSidebar'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type Tab = 'stats' | 'users' | 'projects' | 'evaluations' | 'goals'
@@ -358,7 +359,7 @@ export default function AdminPage() {
     return (
       <>
         <style>{`@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}`}</style>
-        <div style={{ minHeight: '100vh', background: 'var(--bg,#F5F3EF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter,sans-serif', color: '#6B6B6B', fontSize: 14 }}>
+        <div style={{ minHeight: '100vh', background: 'var(--bg,#F5F3EF)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B6B6B', fontSize: 14 }}>
           Verificando acceso…
         </div>
       </>
@@ -370,27 +371,13 @@ export default function AdminPage() {
       <style>{`
                 @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
         *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:var(--bg);font-family:"Inter",system-ui,sans-serif;min-height:100vh;color:var(--ink);}
-
-        /* Nav */
-        .adm-nav{position:sticky;top:0;z-index:30;background:rgba(245,243,239,.88);backdrop-filter:saturate(150%) blur(16px);border-bottom:1px solid rgba(13,13,13,.08);height:62px;display:flex;align-items:center;padding:0 40px;gap:16px;}
-        .adm-brand{display:flex;align-items:center;gap:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;text-decoration:none;color:var(--ink,#0D0D0D);}
-        .adm-spacer{flex:1;}
-        .adm-super-badge{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5;border-radius:999px;padding:3px 10px;font-weight:700;font-family:"Satoshi",sans-serif;}
-        .adm-ghost{background:none;border:1px solid rgba(13,13,13,.14);border-radius:999px;padding:7px 14px;font-size:12px;color:#6B6B6B;cursor:pointer;transition:all .2s;font-family:inherit;}
-        .adm-ghost:hover{border-color:var(--ink,#0D0D0D);color:var(--ink,#0D0D0D);}
+        html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;color:var(--ink);}
 
         /* Layout */
-        .adm-main{max-width:1100px;margin:0 auto;padding:44px 40px 80px;}
+        .adm-main{flex:1;min-width:0;padding:44px 40px 80px;}
         .adm-header{margin-bottom:32px;}
         .adm-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:28px;letter-spacing:-.022em;}
         .adm-header p{margin-top:5px;font-size:13.5px;color:#6B6B6B;}
-
-        /* Tabs */
-        .adm-tabs{display:flex;gap:8px;margin-bottom:32px;}
-        .adm-tab{padding:8px 22px;border-radius:999px;border:none;font-family:"Satoshi",sans-serif;font-weight:600;font-size:13.5px;cursor:pointer;transition:all .18s;background:rgba(13,13,13,.06);color:#6B6B6B;}
-        .adm-tab:hover{background:rgba(13,13,13,.1);color:var(--ink,#0D0D0D);}
-        .adm-tab.active{background:var(--ink,#0D0D0D);color:#fff;}
 
         /* Stats grid */
         .adm-stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;}
@@ -442,43 +429,20 @@ export default function AdminPage() {
         }
       `}</style>
 
-      {/* ── Nav ── */}
-      <nav className="adm-nav">
-        <a className="adm-brand" href="/">
-          <svg width="20" height="20" viewBox="0 0 52 52" fill="none">
-            <circle cx="26" cy="10" r="6" fill="#0D0D0D"/>
-            <path d="M26 16 L44 48 H8 Z" fill="#0D0D0D"/>
-            <circle cx="9" cy="18" r="4" fill="#6B6B6B"/>
-            <circle cx="43" cy="18" r="4" fill="#6B6B6B"/>
-          </svg>
-          Big Family
-        </a>
-        <div className="adm-spacer" />
-        <span className="adm-super-badge">Super Admin</span>
-        <span style={{ fontSize: 13, color: '#6B6B6B' }}>{adminName}</span>
-        <button className="adm-ghost" onClick={handleLogout}>Cerrar sesión</button>
-      </nav>
+      <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
+      <AppSidebar
+        role="admin"
+        userName={adminName}
+        userInitial={adminName[0]?.toUpperCase() ?? 'A'}
+        activeTab={tab}
+        onTabChange={(t) => setTab(t as Tab)}
+      />
 
       <main className="adm-main">
         {/* Header */}
         <div className="adm-header">
           <h1>Panel de Administración</h1>
           <p>Vista global del programa · Solo accesible para administradores</p>
-        </div>
-
-        {/* Tabs */}
-        <div className="adm-tabs">
-          {([
-            { key: 'stats',       label: 'Estadísticas' },
-            { key: 'users',       label: 'Usuarios'     },
-            { key: 'projects',    label: 'Proyectos'    },
-            { key: 'evaluations', label: 'Evaluaciones' },
-            { key: 'goals',       label: 'Metas'        },
-          ] as const).map(t => (
-            <button key={t.key} className={`adm-tab${tab === t.key ? ' active' : ''}`} onClick={() => setTab(t.key)}>
-              {t.label}
-            </button>
-          ))}
         </div>
 
         {/* ── ESTADÍSTICAS ── */}
@@ -778,6 +742,7 @@ export default function AdminPage() {
         )}
 
       </main>
+      </div>
 
       <ToastContainer />
     </>
