@@ -303,7 +303,7 @@ export default function GlobeHero() {
         .stat__num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:40px;letter-spacing:-0.03em;color:var(--ink);line-height:1;display:flex;align-items:baseline;gap:2px;}
         .stat__num .plus{font-family:"Instrument Serif",serif;font-weight:400;font-style:italic;color:var(--accent);font-size:28px;}
         .stat__label{margin-top:10px;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);}
-        .right{position:relative;height:clamp(480px,70vh,720px);z-index:2;}
+        .right{position:relative;height:clamp(480px,70vh,720px);z-index:2;overflow:hidden;}
         .conferencista{position:absolute;left:40px;right:40px;bottom:-60px;z-index:5;display:flex;align-items:center;background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.9);border-radius:18px;box-shadow:var(--shadow-lg);overflow:hidden;}
         .conf__person{display:flex;align-items:center;gap:14px;flex:1;padding:16px 20px;}
         .conf__sep{width:1px;align-self:stretch;background:rgba(13,13,13,.09);flex-shrink:0;}
@@ -324,7 +324,7 @@ export default function GlobeHero() {
         @media(prefers-reduced-motion:reduce){
           .meta .dot,.meta .dot::after,.conf__badge .pulse,.conf__badge .pulse::after,.scroll-ind .bar::after{animation:none !important;}
         }
-        @media(max-width:960px){.hero{grid-template-columns:1fr;padding:80px 24px 100px;}.nav{padding:14px 20px;}.nav__links{display:none;}.right{order:-1;height:300px;}.left{order:1;}.conferencista{left:20px;right:20px;flex-direction:column;align-items:stretch;}.conf__person{flex:none;}.conf__sep{width:auto;height:1px;align-self:auto;}.conf__badge{border-left:none;border-top:1px solid rgba(13,13,13,.09);justify-content:center;}.meta{left:20px;right:20px;}}
+        @media(max-width:960px){.hero{grid-template-columns:1fr;padding:80px 24px 100px;}.nav{padding:14px 20px;}.nav__links{display:none;}.right{order:-1;height:280px;}.left{order:1;}.conferencista{left:20px;right:20px;flex-direction:column;align-items:stretch;}.conf__person{flex:none;}.conf__sep{width:auto;height:1px;align-self:auto;}.conf__badge{border-left:none;border-top:1px solid rgba(13,13,13,.09);justify-content:center;}.meta{left:20px;right:20px;}}
         /* ── MISIÓN ──────────────────────────────────────────────────────────── */
         .mision{background:#080808;padding:160px 40px;}
         .mision__inner{max-width:900px;margin:0 auto;text-align:center;}
