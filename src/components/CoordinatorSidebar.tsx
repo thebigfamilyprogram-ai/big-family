@@ -27,7 +27,7 @@ const PRINCIPAL: NavItem[] = [
 const COMUNIDAD: NavItem[] = [
   {
     label: 'Feed',
-    href: '/dashboard/feed',
+    href: '/coordinator/feed',
     icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="3" cy="13" r="1"/><path d="M2 8.5C5.5 8.5 7.5 10.5 7.5 14"/><path d="M2 4C7 4 12 9 12 14"/></svg>,
   },
   {
@@ -60,7 +60,7 @@ const GESTION: NavItem[] = [
   },
   {
     label: 'Configuración',
-    href: '/dashboard/settings',
+    href: '/coordinator/settings',
     icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="8" r="2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/></svg>,
   },
 ]
