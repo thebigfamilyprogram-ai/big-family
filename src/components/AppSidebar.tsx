@@ -51,6 +51,7 @@ const I = {
   announce:  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 6h10l1 5H2L3 6z" stroke="currentColor" strokeWidth="1.4"/><path d="M6 11v2M10 11v2M5 6V4a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
   report:    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="1" width="10" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M6 5h4M6 8h4M6 11h2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
   checklist: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="1" width="10" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M6 5l1.5 1.5L10 4M6 9l1.5 1.5L10 8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  barChart:  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 13V8M6 13V4M10 13V6M14 13V10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
 }
 
 // ── Nav definitions per role ──────────────────────────────────────────────────
@@ -96,6 +97,7 @@ function getNav(role: 'student' | 'coordinator' | 'admin', unread: number): Sect
     },
     {
       key: 'gestion', label: 'Gestión', items: [
+        { label: 'Datos',         href: '/coordinator/datos',    icon: I.barChart },
         { label: 'Calendario',    href: '/coordinator/calendar', icon: I.calendar },
         { label: 'Reportes',      href: '/coordinator/report',   icon: I.report   },
         { label: 'Configuración', href: '/coordinator/settings', icon: I.settings },
@@ -112,6 +114,11 @@ function getNav(role: 'student' | 'coordinator' | 'admin', unread: number): Sect
         { label: 'Proyectos',    tab: 'projects',    icon: I.folder     },
         { label: 'Evaluaciones', tab: 'evaluations', icon: I.checklist  },
         { label: 'Metas',        tab: 'goals',       icon: I.target     },
+      ],
+    },
+    {
+      key: 'analitica', label: 'Analítica', items: [
+        { label: 'Datos', href: '/admin/datos', icon: I.barChart },
       ],
     },
   ]
