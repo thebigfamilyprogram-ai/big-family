@@ -760,7 +760,7 @@ export default function GlobeHero() {
           style={{ y: prefersReduced ? undefined : globeY }}
           transition={{ type: 'spring', stiffness: 80, damping: 18, delay: 0.4 }}
         >
-          <div style={{ width: '100%', height: '100%', minHeight: '500px', position: 'relative' }}>
+          <div style={{ width: '100%', height: '100%', minHeight: '500px', position: 'relative', overflow: 'visible', borderRadius: 0 }}>
             <HeroGlobe />
           </div>
         </m.div>
