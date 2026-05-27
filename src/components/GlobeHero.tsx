@@ -2,7 +2,6 @@
 
 import { memo, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
 import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
 
 import TimelineSection from '@/components/TimelineSection'
@@ -11,17 +10,6 @@ import WorldMapPublic from '@/components/WorldMapPublic'
 import { createClient } from '@/lib/supabase'
 import AnimatedNumber from '@/components/AnimatedNumber'
 import { useRealtimeStats } from '@/hooks/useRealtimeStats'
-
-const HeroGlobe = dynamic(() => import('@/components/HeroGlobe'), {
-  ssr: false,
-  loading: () => (
-    <div style={{
-      width: '100%', height: '100%',
-      background: 'radial-gradient(circle at 50% 50%, var(--bg-2) 0%, transparent 70%)',
-      borderRadius: '50%',
-    }} />
-  ),
-})
 
 // ── Country scramble — cycles through connected countries with text scramble ──
 const SCRAMBLE_WORDS = [
@@ -293,7 +281,6 @@ export default function GlobeHero() {
   }, [])
 
   const { scrollY } = useScroll()
-  const globeY = useTransform(scrollY, [0, 600], [0, 80])
 
   useEffect(() => {
     setBannerDismissed(localStorage.getItem('dlg-banner-dismissed') === '1')
@@ -406,7 +393,7 @@ export default function GlobeHero() {
         .stat__num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:40px;letter-spacing:-0.03em;color:var(--ink);line-height:1;display:flex;align-items:baseline;gap:2px;}
         .stat__num .plus{font-family:"Instrument Serif",serif;font-weight:400;font-style:italic;color:var(--accent);font-size:28px;}
         .stat__label{margin-top:10px;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);}
-        .right{position:relative;width:100%;z-index:2;overflow:hidden;}
+        .right{position:relative;width:100%;z-index:2;overflow:visible;}
         .scroll-ind{position:absolute;left:50%;bottom:-130px;transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);}
         .scroll-ind .bar{width:1px;height:40px;background:linear-gradient(var(--line),transparent);position:relative;overflow:hidden;}
         .scroll-ind .bar::after{content:"";position:absolute;top:0;left:0;right:0;height:10px;background:var(--ink);animation:drop 2.2s ease-in-out infinite;}
@@ -757,11 +744,19 @@ export default function GlobeHero() {
           className="right"
           initial={prefersReduced ? false : { opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
-          style={{ y: prefersReduced ? undefined : globeY }}
           transition={{ type: 'spring', stiffness: 80, damping: 18, delay: 0.4 }}
         >
-          <div style={{ width: '100%', height: '100%', minHeight: '500px', position: 'relative', overflow: 'visible', borderRadius: 0 }}>
-            <HeroGlobe />
+          <div style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            minHeight: '520px',
+            overflow: 'visible',
+            background: 'transparent',
+            borderRadius: 0,
+            clipPath: 'none',
+          }}>
+            {/* globo pendiente */}
           </div>
         </m.div>
 
