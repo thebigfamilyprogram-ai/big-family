@@ -2,6 +2,7 @@
 
 import { memo, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
 
 import TimelineSection from '@/components/TimelineSection'
@@ -10,6 +11,8 @@ import WorldMapPublic from '@/components/WorldMapPublic'
 import { createClient } from '@/lib/supabase'
 import AnimatedNumber from '@/components/AnimatedNumber'
 import { useRealtimeStats } from '@/hooks/useRealtimeStats'
+
+const HeroCollage = dynamic(() => import('@/components/HeroCollage'), { ssr: false })
 
 // ── Country scramble — cycles through connected countries with text scramble ──
 const SCRAMBLE_WORDS = [
@@ -750,13 +753,10 @@ export default function GlobeHero() {
             position: 'relative',
             width: '100%',
             height: '100%',
-            minHeight: '520px',
-            overflow: 'visible',
-            background: 'transparent',
-            borderRadius: 0,
-            clipPath: 'none',
+            minHeight: '580px',
+            overflow: 'hidden',
           }}>
-            {/* globo pendiente */}
+            <HeroCollage />
           </div>
         </m.div>
 
