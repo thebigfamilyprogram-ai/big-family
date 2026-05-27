@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import { m, useReducedMotion } from 'framer-motion'
 import { fadeUp } from '@/lib/animations'
 import {
@@ -220,6 +221,29 @@ export default function DashboardPage() {
     setLoading(true)
     async function load() {
       setLoadError(false)
+
+      if (MOCK_MODE) {
+        const u = MOCK.currentUser
+        const s = MOCK.students[0]
+        setUserId(u.id)
+        setUser({ full_name: u.name, total_xp: s.xp, role: 'student', school_level: 'senior' })
+        setModules(MOCK.modules.map(m => ({ id: m.id, title: m.title, description: '', xp_reward: m.xpReward, order_index: m.order })))
+        setProgressRows([
+          { module_id: 'm1', completed: true },
+          { module_id: 'm2', completed: true },
+          { module_id: 'm3', completed: true },
+          { module_id: 'm4', completed: true },
+          { module_id: 'm5', completed: true },
+        ])
+        setWeeklyXP(MOCK.currentStudentWeeklyXP)
+        setStreak(s.streak)
+        setRankPos(s.rank)
+        setAnnBanner({ id: MOCK.announcements[0].id, title: MOCK.announcements[0].title, content: MOCK.announcements[0].content, category: MOCK.announcements[0].category })
+        setUnreadAnnCount(MOCK.announcements.length)
+        setLoading(false)
+        return
+      }
+
       const { data: { user: authUser }, error: authErr } = await supabase.auth.getUser()
       if (authErr || !authUser) {
         if (!authUser) { router.replace('/login'); return }

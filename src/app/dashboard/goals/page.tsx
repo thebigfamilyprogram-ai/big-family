@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { springNatural, springSnappy } from '@/lib/animations'
 
@@ -106,6 +107,29 @@ export default function GoalsPage() {
     const sb = supabaseRef.current
     if (!sb) return
     async function load() {
+      if (MOCK_MODE) {
+        setUserId(MOCK.currentUser.id)
+        setUserName(MOCK.currentUser.name)
+        setUserInitial(MOCK.currentUser.name[0])
+        setGoals(MOCK.goals.map(g => ({
+          id:           g.id,
+          title:        g.title,
+          description:  null,
+          type:         'personal' as const,
+          status:       g.status as 'active' | 'completed' | 'expired',
+          due_date:     g.deadline,
+          xp_reward:    g.xpReward,
+          completed_at: g.status === 'completed' ? '2026-05-20T00:00:00' : null,
+          created_at:   '2026-01-15T00:00:00',
+        })))
+        setTemplates([
+          { id: 'tmpl1', title: 'Completar ruta de liderazgo',   description: 'Finalizar los 7 módulos del programa', xp_reward: 500 },
+          { id: 'tmpl2', title: 'Publicar proyecto comunitario',  description: 'Enviar y aprobar un proyecto de impacto', xp_reward: 300 },
+          { id: 'tmpl3', title: 'Racha de 30 días activos',      description: 'Mantener actividad diaria por un mes',  xp_reward: 250 },
+        ])
+        setLoading(false)
+        return
+      }
       const { data: { user: authUser } } = await sb!.auth.getUser()
       if (!authUser) { router.replace('/login'); return }
       setUserId(authUser.id)

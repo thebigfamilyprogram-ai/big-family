@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import { showToast, ToastContainer } from '@/components/Toast'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import AppSidebar from '@/components/AppSidebar'
@@ -133,6 +134,15 @@ export default function AdminPage() {
     const supabase = supabaseRef.current
     if (!supabase) return
     async function boot() {
+      if (MOCK_MODE) {
+        setAdminName('Samuel Gómez Mendoza')
+        const k = MOCK.analytics.kpis
+        setStats({ students: k.totalStudents, total_projects: k.projectsSubmitted, submitted: k.projectsSubmitted, approved: k.projectsApproved, rejected: k.projectsRejected })
+        setSchoolXP(MOCK.schools.map(s => ({ name: s.name, avgXp: s.avgXP, count: s.students })))
+        setWeeklyUsers(MOCK.analytics.weeklyGrowth.map(w => ({ week: w.week, count: w.students })))
+        setBooting(false)
+        return
+      }
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.replace('/login'); return }
 
@@ -217,6 +227,17 @@ export default function AdminPage() {
   }
 
   async function fetchUsers() {
+    if (MOCK_MODE) {
+      setUsers(MOCK.students.map(s => ({
+        id:          s.id,
+        full_name:   s.name,
+        email:       `${s.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'.')}@bigfamily.co`,
+        role:        'student',
+        created_at:  s.created_at,
+        school_name: MOCK.schools.find(sc => sc.id === s.school_id)?.name ?? null,
+      })))
+      return
+    }
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
     if (!supabase) return
@@ -248,6 +269,18 @@ export default function AdminPage() {
   }
 
   async function fetchProjects() {
+    if (MOCK_MODE) {
+      setProjects(MOCK.projects.map(p => ({
+        id:           p.id,
+        title:        p.title,
+        status:       p.status,
+        submitted_at: p.createdAt,
+        created_at:   p.createdAt,
+        student_name: p.student,
+        school_name:  MOCK.schools.find(s => s.id === p.school_id)?.name ?? null,
+      })))
+      return
+    }
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
     if (!supabase) return
@@ -285,6 +318,7 @@ export default function AdminPage() {
   }
 
   async function fetchEvals() {
+    if (MOCK_MODE) { setEvals([]); return }
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
     if (!supabase) return
@@ -337,6 +371,7 @@ export default function AdminPage() {
   }
 
   async function fetchGoalTemplates() {
+    if (MOCK_MODE) { setGoalTemplates([]); return }
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
     if (!supabase) return

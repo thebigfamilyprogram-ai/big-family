@@ -7,6 +7,7 @@ import {
   AreaChart, Area,
 } from 'recharts'
 import { createClient } from '@/lib/supabase'
+import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import { m, useReducedMotion } from 'framer-motion'
 import CoordinatorSidebar from '@/components/CoordinatorSidebar'
 
@@ -78,6 +79,25 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
     const supabase = supabaseRef.current
     if (!supabase) return
     async function load() {
+      if (MOCK_MODE) {
+        const mockSchool = MOCK.schools[0]
+        setCoord({ full_name: MOCK.currentCoordinator.name, school_id: mockSchool.id, school_name: mockSchool.name })
+        setStudents(MOCK.students.map(s => ({
+          id:                s.id,
+          full_name:         s.name,
+          email:             `${s.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'.')}@bigfamily.co`,
+          created_at:        s.created_at,
+          total_xp:          s.xp,
+          modules_completed: s.modules,
+          active_this_week:  s.status === 'active',
+          tab_switches:      0,
+        })))
+        setWeeklyData(MOCK.coordinatorWeeklyData)
+        setPrevActive(35)
+        setPrevMods(0)
+        setLoading(false)
+        return
+      }
       const schoolId = initialSchoolId
 
       const { data: schoolRow } = await supabase

@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
 
@@ -80,6 +81,30 @@ export default function FeedPage() {
   }, [])
 
   async function fetchItems(off: number, f: FeedFilter, reset: boolean) {
+    if (MOCK_MODE) {
+      const filtered = MOCK.feed.filter(item => f === 'all' || item.type === f)
+      const page = filtered.slice(off, off + PAGE_SIZE)
+      if (page.length < PAGE_SIZE) setHasMore(false)
+      const mapped: FeedItem[] = page.map(item => ({
+        id:         item.id,
+        user_id:    item.user,
+        type:       item.type,
+        metadata:   {
+          module_title:  item.type === 'module_completed'  ? item.content : '',
+          project_title: item.type.startsWith('project')   ? item.content : '',
+          badge_name:    item.type === 'badge_earned'       ? item.content : '',
+          goal_title:    item.type === 'goal_completed'     ? item.content : '',
+        },
+        created_at: item.createdAt,
+        full_name:  item.user,
+        school_name:item.school,
+        initials:   item.user.split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase(),
+      }))
+      if (reset) setItems(mapped)
+      else setItems(prev => [...prev, ...mapped])
+      return
+    }
+
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const sb = supabaseRef.current
     if (!sb) return
@@ -118,6 +143,13 @@ export default function FeedPage() {
     const sb = supabaseRef.current
     if (!sb) return
     async function boot() {
+      if (MOCK_MODE) {
+        setUserName(MOCK.currentUser.name)
+        setUserInit(MOCK.currentUser.name[0])
+        await fetchItems(0, 'all', true)
+        setLoading(false)
+        return
+      }
       const { data: { user } } = await sb!.auth.getUser()
       if (!user) { router.replace('/login'); return }
       const { data: profile } = await sb!.from('profiles').select('full_name').eq('id', user.id).maybeSingle()

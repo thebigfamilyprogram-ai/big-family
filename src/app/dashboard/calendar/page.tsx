@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
 
@@ -42,6 +43,23 @@ export default function CalendarPage() {
     const sb = supabaseRef.current
     if (!sb) return
     async function load() {
+      if (MOCK_MODE) {
+        setUserName(MOCK.currentUser.name)
+        setUserInit(MOCK.currentUser.name[0])
+        setEvents(MOCK.events.map(e => ({
+          id:           e.id,
+          title:        e.title,
+          description:  e.description,
+          location:     null,
+          meeting_link: null,
+          event_date:   e.date,
+          event_time:   null,
+          end_date:     null,
+          end_time:     null,
+        })))
+        setLoading(false)
+        return
+      }
       const { data: { user } } = await sb!.auth.getUser()
       if (!user) { router.replace('/login'); return }
       const { data: profile } = await sb!.from('profiles').select('full_name').eq('id', user.id).maybeSingle()

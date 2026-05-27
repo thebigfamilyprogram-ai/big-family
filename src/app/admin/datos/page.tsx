@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import DatosPage from '@/components/datos/DatosPage'
 
 export default function AdminDatosPage() {
@@ -19,6 +20,12 @@ export default function AdminDatosPage() {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const sb = supabaseRef.current
     async function load() {
+      if (MOCK_MODE) {
+        setUserName('Samuel Gómez Mendoza')
+        setUserInitial('S')
+        setReady(true)
+        return
+      }
       const { data: { user } } = await sb.auth.getUser()
       if (!user) { router.replace('/login'); return }
 

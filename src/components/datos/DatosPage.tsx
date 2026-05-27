@@ -8,6 +8,7 @@ import {
   AreaChart, Area, PieChart, Pie,
 } from 'recharts'
 import { createClient } from '@/lib/supabase'
+import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import AppSidebar from '@/components/AppSidebar'
 import StatCard from '@/components/shared/StatCard'
 
@@ -1103,6 +1104,44 @@ export default memo(function DatosPage({ role, userName = '…', userInitial = '
   const load = useCallback(async () => {
     setLoadingData(true); setDataError('')
     try {
+      if (MOCK_MODE) {
+        const k = MOCK.analytics.kpis
+        setSummary({
+          totalStudents:    k.totalStudents,
+          totalXP:          k.totalXP,
+          avgXP:            k.avgXP,
+          modulesCompleted: k.modulesCompleted,
+          pendingProjects:  k.projectsPending,
+          approvedProjects: k.projectsApproved,
+          rejectedProjects: k.projectsRejected,
+          badgesAwarded:    k.badgesAwarded,
+          activeThisWeek:   k.activeThisWeek,
+          retentionRate:    k.retentionRate,
+          schoolStats: MOCK.schools.map(s => ({
+            school_id:         s.id,
+            school_name:       s.name,
+            student_count:     s.students,
+            total_xp:          s.students * s.avgXP,
+            avg_xp:            s.avgXP,
+            modules_completed: s.modulesCompleted,
+            projects_total:    s.projectsApproved + 3,
+            projects_approved: s.projectsApproved,
+            score:             s.score,
+          })),
+          weeklyGrowth:     MOCK.analytics.weeklyGrowth,
+          weeklyActivity:   MOCK.analytics.weeklyActivity,
+          xpBySchool:       MOCK.schools.map(s => ({ school: s.name.replace(/^(I\.?E\.?|C\.?E\.?|Instituto|Colegio)\s+/i,'').slice(0,16), avg_xp: s.avgXP })),
+          modulesBySchool:  MOCK.schools.map(s => ({ school: s.name.replace(/^(I\.?E\.?|C\.?E\.?|Instituto|Colegio)\s+/i,'').slice(0,16), modules: s.modulesCompleted })),
+          projectsByStatus: [
+            { name:'Enviados',   value: k.projectsPending },
+            { name:'Aprobados',  value: k.projectsApproved },
+            { name:'Rechazados', value: k.projectsRejected },
+          ],
+        })
+        setUpdatedAt(new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }))
+        setLoadingData(false)
+        return
+      }
       const data = await fetchSummary(getSB())
       setSummary(data)
       setUpdatedAt(new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }))
