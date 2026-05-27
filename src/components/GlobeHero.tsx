@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
 
 import TimelineSection from '@/components/TimelineSection'
-import AllianceMap from '@/components/AllianceMap'
+import SchoolTicker from '@/components/SchoolTicker'
 import { createClient } from '@/lib/supabase'
 import AnimatedNumber from '@/components/AnimatedNumber'
 import { useRealtimeStats } from '@/hooks/useRealtimeStats'
@@ -1266,7 +1266,7 @@ export default function GlobeHero() {
       {/* ══════════════════════════════════════════════════════════════════
           SECCIÓN — NUESTRA RED
       ══════════════════════════════════════════════════════════════════ */}
-      <AllianceMap view="guajira" />
+      <SchoolTicker />
 
       {/* ══════════════════════════════════════════════════════════════════
           SECCIÓN 3 — EQUIPO
