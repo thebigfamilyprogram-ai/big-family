@@ -395,27 +395,15 @@ export default function GlobeHero() {
         .stat__num .plus{font-family:"Instrument Serif",serif;font-weight:400;font-style:italic;color:var(--accent);font-size:28px;}
         .stat__label{margin-top:10px;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);}
         .right{position:relative;width:100%;z-index:2;overflow:hidden;}
-        .conferencista{position:absolute;left:40px;right:40px;bottom:-60px;z-index:5;display:flex;align-items:center;background:rgba(255,255,255,.55);backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.9);border-radius:18px;box-shadow:var(--shadow-lg);overflow:hidden;}
-        .conf__person{display:flex;align-items:center;gap:14px;flex:1;padding:16px 20px;}
-        .conf__sep{width:1px;align-self:stretch;background:rgba(13,13,13,.09);flex-shrink:0;}
-        .conf__avatar{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#C9C4BA 0%,#8c8a83 60%,#55534d 100%);border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-family:"Instrument Serif",serif;font-size:17px;color:#fff;position:relative;flex-shrink:0;}
-        .conf__avatar::after{content:"";position:absolute;width:12px;height:12px;border-radius:50%;background:var(--accent);border:2px solid #fff;right:-2px;bottom:-2px;}
-        .conf__text{display:flex;flex-direction:column;}
-        .conf__name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:13.5px;letter-spacing:-0.01em;color:var(--ink);}
-        .conf__role{font-size:11px;color:var(--mute);margin-top:2px;}
-        .conf__badge{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink);padding:16px 18px;border-left:1px solid rgba(13,13,13,.09);display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.5);flex-shrink:0;}
-        .conf__badge .pulse{width:8px;height:8px;border-radius:50%;background:var(--accent);position:relative;box-shadow:0 0 8px rgba(192,57,43,.6);animation:liveBlink 1.6s ease-in-out infinite;}
-        .conf__badge .pulse::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:1.5px solid var(--accent);opacity:.7;animation:pp 1.8s ease-out infinite;}
-        @keyframes liveBlink{0%,100%{opacity:1}50%{opacity:.55}}
         .scroll-ind{position:absolute;left:50%;bottom:-130px;transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute);}
         .scroll-ind .bar{width:1px;height:40px;background:linear-gradient(var(--line),transparent);position:relative;overflow:hidden;}
         .scroll-ind .bar::after{content:"";position:absolute;top:0;left:0;right:0;height:10px;background:var(--ink);animation:drop 2.2s ease-in-out infinite;}
         @keyframes drop{0%{transform:translateY(-10px);opacity:0}40%{opacity:1}100%{transform:translateY(40px);opacity:0}}
         .hero-bottom-spacer{height:0;}
         @media(prefers-reduced-motion:reduce){
-          .meta .dot,.meta .dot::after,.conf__badge .pulse,.conf__badge .pulse::after,.scroll-ind .bar::after{animation:none !important;}
+          .meta .dot,.meta .dot::after,.scroll-ind .bar::after{animation:none !important;}
         }
-        @media(max-width:960px){.hero{grid-template-columns:1fr;padding:80px 24px 100px;}.right{order:-1;height:280px;}.left{order:1;}.conferencista{left:20px;right:20px;flex-direction:column;align-items:stretch;}.conf__person{flex:none;}.conf__sep{width:auto;height:1px;align-self:auto;}.conf__badge{border-left:none;border-top:1px solid rgba(13,13,13,.09);justify-content:center;}.meta{left:20px;right:20px;}}
+        @media(max-width:960px){.hero{grid-template-columns:1fr;padding:80px 24px 100px;}.right{order:-1;height:280px;}.left{order:1;}.meta{left:20px;right:20px;}}
         /* ── MISIÓN ──────────────────────────────────────────────────────────── */
         .mision{background:#080808;padding:136px 40px;}
         .mision__inner{max-width:900px;margin:0 auto;text-align:center;}
