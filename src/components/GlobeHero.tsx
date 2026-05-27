@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
 
 import TimelineSection from '@/components/TimelineSection'
+import AllianceMap from '@/components/AllianceMap'
 import { createClient } from '@/lib/supabase'
 import AnimatedNumber from '@/components/AnimatedNumber'
 import { useRealtimeStats } from '@/hooks/useRealtimeStats'
@@ -120,6 +121,7 @@ const aboutStats = [
 const NAV_LINKS = [
   { href: '#como-funciona', label: 'Cómo funciona' },
   { href: '#paises',        label: 'Países'         },
+  { href: '#nuestra-red',   label: 'Nuestra Red'    },
   { href: '/news',          label: 'Noticias'       },
   { href: '#equipo',        label: 'Equipo'         },
 ]
@@ -1260,6 +1262,11 @@ export default function GlobeHero() {
           </div>
         </section>
       )}
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SECCIÓN — NUESTRA RED
+      ══════════════════════════════════════════════════════════════════ */}
+      <AllianceMap view="guajira" />
 
       {/* ══════════════════════════════════════════════════════════════════
           SECCIÓN 3 — EQUIPO
