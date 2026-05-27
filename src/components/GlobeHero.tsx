@@ -2,6 +2,7 @@
 
 import { memo, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
 
 import TimelineSection from '@/components/TimelineSection'
@@ -10,6 +11,17 @@ import WorldMapPublic from '@/components/WorldMapPublic'
 import { createClient } from '@/lib/supabase'
 import AnimatedNumber from '@/components/AnimatedNumber'
 import { useRealtimeStats } from '@/hooks/useRealtimeStats'
+
+const HeroGlobe = dynamic(() => import('@/components/HeroGlobe'), {
+  ssr: false,
+  loading: () => (
+    <div style={{
+      width: '100%', height: '100%',
+      background: 'radial-gradient(circle at 50% 50%, var(--bg-2) 0%, transparent 70%)',
+      borderRadius: '50%',
+    }} />
+  ),
+})
 
 // ── Country scramble — cycles through connected countries with text scramble ──
 const SCRAMBLE_WORDS = [
@@ -748,19 +760,8 @@ export default function GlobeHero() {
           style={{ y: prefersReduced ? undefined : globeY }}
           transition={{ type: 'spring', stiffness: 80, damping: 18, delay: 0.4 }}
         >
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              minHeight: '500px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'var(--bg-2)',
-              borderRadius: '12px',
-            }}
-          >
-            {/* Hero visual placeholder */}
+          <div style={{ width: '100%', height: '100%', minHeight: '500px', position: 'relative' }}>
+            <HeroGlobe />
           </div>
         </m.div>
 
