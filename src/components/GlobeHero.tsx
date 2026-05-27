@@ -6,6 +6,7 @@ import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring,
 
 import TimelineSection from '@/components/TimelineSection'
 import SchoolTicker from '@/components/SchoolTicker'
+import WorldMapPublic from '@/components/WorldMapPublic'
 import { createClient } from '@/lib/supabase'
 import AnimatedNumber from '@/components/AnimatedNumber'
 import { useRealtimeStats } from '@/hooks/useRealtimeStats'
@@ -119,11 +120,12 @@ const aboutStats = [
 ]
 
 const NAV_LINKS = [
-  { href: '#como-funciona', label: 'Cómo funciona' },
-  { href: '#paises',        label: 'Países'         },
-  { href: '#nuestra-red',   label: 'Nuestra Red'    },
-  { href: '/news',          label: 'Noticias'       },
-  { href: '#equipo',        label: 'Equipo'         },
+  { href: '#como-funciona',      label: 'Cómo funciona' },
+  { href: '#paises',             label: 'Países'         },
+  { href: '#nuestra-red',        label: 'Nuestra Red'    },
+  { href: '#alianzas-globales',  label: 'Alianzas'       },
+  { href: '/news',               label: 'Noticias'       },
+  { href: '#equipo',             label: 'Equipo'         },
 ]
 
 const particles = [
@@ -1267,6 +1269,11 @@ export default function GlobeHero() {
           SECCIÓN — NUESTRA RED
       ══════════════════════════════════════════════════════════════════ */}
       <SchoolTicker />
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SECCIÓN — ALIANZAS GLOBALES
+      ══════════════════════════════════════════════════════════════════ */}
+      <WorldMapPublic />
 
       {/* ══════════════════════════════════════════════════════════════════
           SECCIÓN 3 — EQUIPO
