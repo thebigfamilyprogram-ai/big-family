@@ -124,6 +124,20 @@ export default function CalendarPage() {
         .ev-loc{font-size:12px;color:var(--mute);margin-top:2px;}
         @media(max-width:960px){.cal-layout{grid-template-columns:1fr;}}
         @media(max-width:768px){.cal-cell{aspect-ratio:auto;min-height:36px;}.cal-num{font-size:11px;}}
+        /* ── Mobile list view ── */
+        .cal-mobile-list{display:none;}
+        @media(max-width:480px){
+          .cal-grid{display:none;}
+          .cal-mobile-list{display:block;}
+          .cal-ml-empty{font-size:13px;color:var(--mute);padding:16px 0;text-align:center;}
+          .cal-ml-item{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);}
+          .cal-ml-item:last-child{border-bottom:none;}
+          .cal-ml-day{flex-shrink:0;width:36px;height:36px;border-radius:10px;background:rgba(192,57,43,.08);display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-weight:700;font-size:15px;color:#C0392B;}
+          .cal-ml-day.today{background:#C0392B;color:#fff;}
+          .cal-ml-body{flex:1;min-width:0;}
+          .cal-ml-title{font-family:"Satoshi",sans-serif;font-weight:600;font-size:13.5px;color:var(--ink);line-height:1.3;}
+          .cal-ml-meta{font-size:11.5px;color:var(--mute);margin-top:3px;}
+        }
       `}</style>
 
       <m.main
@@ -174,6 +188,47 @@ export default function CalendarPage() {
                   })
                 })()}
               </div>
+            </div>
+
+            {/* Mobile list — visible only under 480px via CSS */}
+            <div className="cal-mobile-list">
+              {(() => {
+                const daysWithEvents = cells
+                  .map((day) => {
+                    if (!day) return null
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+                    const dayEvs = eventsByDate[dateStr]
+                    if (!dayEvs || dayEvs.length === 0) return null
+                    const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day
+                    return { day, dateStr, isToday, events: dayEvs }
+                  })
+                  .filter(Boolean) as { day: number; dateStr: string; isToday: boolean; events: CalendarEvent[] }[]
+
+                if (daysWithEvents.length === 0) {
+                  return <div className="cal-ml-empty">Sin eventos este mes</div>
+                }
+
+                return daysWithEvents.map(({ day, isToday, events: dayEvs }) =>
+                  dayEvs.map(ev => (
+                    <div
+                      key={ev.id}
+                      className="cal-ml-item"
+                      onClick={() => setSelected(ev)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div className={`cal-ml-day${isToday ? ' today' : ''}`}>{day}</div>
+                      <div className="cal-ml-body">
+                        <div className="cal-ml-title">{ev.title}</div>
+                        <div className="cal-ml-meta">
+                          {new Date(ev.event_date + 'T00:00:00').toLocaleDateString('es-CO', { weekday: 'long', month: 'short' })}
+                          {ev.event_time && ` · ${ev.event_time.slice(0, 5)}`}
+                          {ev.location && ` · ${ev.location}`}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )
+              })()}
             </div>
 
             {/* Upcoming events */}

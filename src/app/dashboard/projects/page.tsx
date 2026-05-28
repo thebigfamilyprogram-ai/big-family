@@ -235,7 +235,7 @@ export default function ProjectsPage() {
                           )}
                           {project.status === 'approved' && (
                             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                              <button className="btn-action approved">Ver proyecto ✓</button>
+                              <button className="btn-action approved" onClick={() => router.push(`/dashboard/projects/${project.id}/edit`)}>Ver proyecto ✓</button>
                               {nominatedIds.has(project.id)
                                 ? <span style={{ fontSize: 11, color: '#065F46', fontWeight: 600, padding: '5px 10px', background: 'rgba(34,197,94,.15)', borderRadius: 999, display: 'inline-flex', alignItems: 'center' }}>Historia en revisión</span>
                                 : <button
