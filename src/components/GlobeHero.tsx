@@ -97,7 +97,52 @@ function CountNumber({ to, suffix = '' }: { to: number; suffix?: string }) {
   return <span ref={ref}>{val}{suffix}</span>
 }
 
+// ── ImpactoNum — per-stat custom duration counter ─────────────────────────────
+function ImpactoNum({ to, duration, delayMs = 0, comma = false, suffix = '' }: {
+  to: number; duration: number; delayMs?: number; comma?: boolean; suffix?: string
+}) {
+  const ref    = useRef<HTMLSpanElement>(null)
+  const rafRef = useRef<number>(0)
+  const tmrRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const inView = useInView(ref, { once: true, margin: '-60px' })
+  const [val, setVal] = useState(0)
+  useEffect(() => {
+    if (!inView) return
+    tmrRef.current = setTimeout(() => {
+      const t0 = performance.now()
+      function tick(t: number) {
+        const p = Math.min((t - t0) / duration, 1)
+        setVal(Math.round(to * (1 - Math.pow(1 - p, 3))))
+        if (p < 1) rafRef.current = requestAnimationFrame(tick)
+      }
+      rafRef.current = requestAnimationFrame(tick)
+    }, delayMs)
+    return () => {
+      if (tmrRef.current) clearTimeout(tmrRef.current)
+      cancelAnimationFrame(rafRef.current)
+    }
+  }, [inView, to, duration, delayMs]) // eslint-disable-line react-hooks/exhaustive-deps
+  return <span ref={ref}>{comma ? val.toLocaleString('en-US') : val}{suffix}</span>
+}
+
 // ── Static section data ───────────────────────────────────────────────────────
+
+const IMPACTO_STATS = [
+  { to: 876,  duration: 1800, delayMs: 0,   comma: false, suffix: '',  label: 'Estudiantes impactados', sub: 'desde 2015'                    },
+  { to: 22,   duration: 1200, delayMs: 200, comma: false, suffix: '',  label: 'Colegios en Colombia',   sub: 'aliados del programa'           },
+  { to: 10,   duration: 1000, delayMs: 400, comma: false, suffix: '',  label: 'Países conectados',      sub: 'red internacional'              },
+  { to: 3300, duration: 2400, delayMs: 100, comma: true,  suffix: '+', label: 'Meta 2030',              sub: '20% líderes transformacionales' },
+] as const
+
+const VALORES = [
+  { name: 'Ética',             icon: '⚖️',  desc: 'Actuamos con integridad en cada decisión.'          },
+  { name: 'Compromiso',        icon: '🤝', desc: 'Nos entregamos completamente a nuestro propósito.'  },
+  { name: 'Trascendencia',     icon: '🌟', desc: 'Dejamos una huella positiva que perdura.'           },
+  { name: 'Conciencia Social', icon: '🌍', desc: 'Entendemos nuestro impacto en la comunidad.'        },
+  { name: 'Innovación',        icon: '💡', desc: 'Buscamos nuevas formas de resolver problemas.'      },
+  { name: 'Creatividad',       icon: '✨', desc: 'Encontramos soluciones originales y únicas.'        },
+]
+
 const misionStats = [
   { to: 5000, suffix: '+', label: 'Líderes a formar'      },
   { to: 50,   suffix: '+', label: 'Países para 2036'      },
@@ -108,10 +153,10 @@ const misionStats = [
 
 /* EDITAR AQUÍ — fundadores */
 const founders = [
-  { initials: 'LB', name: 'Luis Barrios',       role: 'Fundador y Mentor Estratégico',          bio: 'Fundador del programa y mentor del equipo. Su visión y liderazgo son la base institucional de Big Family.',                                                  tags: ['Fundador', 'Mentoría', 'Visión'],           layout: 'featured' as const },
-  { initials: 'JV', name: 'Juan Felipe Visbal', role: 'Director de Visión y Contenido',          bio: 'La cara y voz del programa. Lidera la estrategia de contenido y la comunicación del impacto de Big Family.',                                                tags: ['Contenido', 'Comunicación', 'Liderazgo'] },
-  { initials: 'AG', name: 'Alejandro Garcia',   role: 'Director de Arquitectura y Operaciones',  bio: 'Estructura y organización de todo el programa. Garantiza que cada pieza del sistema funcione con coherencia.',                                             tags: ['Operaciones', 'Estrategia', 'Estructura'] },
-  { initials: 'SG', name: 'Samuel Gomez',       role: 'Director de Tecnología',                  bio: 'Construye y mantiene la plataforma tecnológica que hace posible la certificación The Big Leader.',                                                         tags: ['Tecnología', 'Plataforma', 'Desarrollo'],   layout: 'wide' as const },
+  { initials: 'LB', name: 'Luis Hernando Barrios', role: 'Fundador & Coordinador de Acción Social',  bio: 'M.S. Multidisciplinary Studies, University at Buffalo. Estudios en Liderazgo, Creatividad e Innovación en Javeriana, MIT, Uninorte y Unisabana.',              tags: ['Fundador', 'Liderazgo', 'Innovación'],      layout: 'featured' as const },
+  { initials: 'JV', name: 'Juan Felipe Visbal',    role: 'Director de Visión y Contenido',           bio: 'La cara y voz del programa. Lidera la estrategia de contenido y la comunicación del impacto de Big Family.',                                                tags: ['Contenido', 'Comunicación', 'Liderazgo'] },
+  { initials: 'AG', name: 'Alejandro Garcia',      role: 'Director de Arquitectura y Operaciones',   bio: 'Estructura y organización de todo el programa. Garantiza que cada pieza del sistema funcione con coherencia.',                                             tags: ['Operaciones', 'Estrategia', 'Estructura'] },
+  { initials: 'SG', name: 'Samuel Gomez',          role: 'Director de Tecnología',                   bio: 'Construye y mantiene la plataforma tecnológica que hace posible la certificación The Big Leader.',                                                         tags: ['Tecnología', 'Plataforma', 'Desarrollo'],   layout: 'wide' as const },
 ]
 
 
@@ -123,12 +168,11 @@ const aboutStats = [
 ]
 
 const NAV_LINKS = [
-  { href: '#como-funciona',      label: 'Cómo funciona' },
-  { href: '#paises',             label: 'Países'         },
-  { href: '#nuestra-red',        label: 'Nuestra Red'    },
-  { href: '#alianzas-globales',  label: 'Alianzas'       },
-  { href: '/news',               label: 'Noticias'       },
-  { href: '#equipo',             label: 'Equipo'         },
+  { href: '#historia',    label: 'Historia'    },
+  { href: '#impacto',     label: 'Impacto'     },
+  { href: '#nuestra-red', label: 'Nuestra Red' },
+  { href: '#equipo',      label: 'Equipo'      },
+  { href: '/news',        label: 'Noticias'    },
 ]
 
 const particles = [
@@ -284,6 +328,7 @@ export default function GlobeHero() {
   }, [])
 
   const { scrollY } = useScroll()
+  const historiaTextY = useTransform(scrollY, [600, 2000], [-20, 20])
 
   useEffect(() => {
     setBannerDismissed(localStorage.getItem('dlg-banner-dismissed') === '1')
@@ -322,7 +367,7 @@ export default function GlobeHero() {
   }, [scrollY])
 
   useEffect(() => {
-    const ids = ['como-funciona', 'historia', 'paises', 'equipo']
+    const ids = ['historia', 'impacto', 'nuestra-red', 'equipo']
     const observers: IntersectionObserver[] = []
     ids.forEach(id => {
       const el = document.getElementById(id)
@@ -545,6 +590,86 @@ export default function GlobeHero() {
         .dl-cd-num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(32px,4vw,48px);color:#fff;line-height:1;letter-spacing:-.04em;font-variant-numeric:tabular-nums;}
         .dl-cd-label{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.32);margin-top:8px;}
         @media(max-width:960px){.mision{padding:80px 24px;}.mision__stats{grid-template-columns:1fr 1fr;}.mision__stat{border-right:none;border-bottom:1px solid rgba(255,255,255,0.06);}.vision{padding:80px 24px;}.vision__cols{grid-template-columns:1fr;gap:36px;}.vision__watermark{font-size:80px;}.big-leader__inner{grid-template-columns:1fr;}.historia{padding:80px 24px;}.historia__header{grid-template-columns:1fr;gap:24px;}.bento{grid-template-columns:1fr;}.bento__cell--tall,.bento__cell--wide{grid-row:auto;grid-column:auto;}.about-dark{padding:80px 24px;}.about-dark__inner{grid-template-columns:1fr;gap:48px;}.equipo{padding:80px 24px;}.equipo__header{grid-template-columns:1fr;}.equipo__grid{grid-template-columns:1fr;grid-template-rows:auto;}.equipo__card--featured,.equipo__card--wide{grid-row:auto;grid-column:auto;flex-direction:column;}.equipo__card--wide .equipo__avatar{margin-bottom:28px;flex-shrink:0;}.dl-landing{padding:80px 24px;}.dl-landing__inner{grid-template-columns:1fr;gap:48px;}}
+        /* ── SEC-HISTORIA (Origen — luz) ─────────────────────────────────── */
+        .sec-historia{background:var(--bg);padding:120px 40px;border-top:1px solid var(--line);}
+        .sec-historia__inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:45fr 55fr;gap:80px;align-items:center;}
+        .sec-historia__img-wrap{position:relative;}
+        .sec-historia__watermark-yr{position:absolute;bottom:-10px;left:-10px;font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(80px,12vw,160px);color:rgba(13,13,13,.06);line-height:1;letter-spacing:-0.06em;pointer-events:none;user-select:none;z-index:0;}
+        .sec-historia__img{aspect-ratio:4/5;border-radius:20px;background:var(--bg-2);border:1px solid var(--line);position:relative;z-index:1;overflow:hidden;}
+        .sec-historia__badge{position:absolute;top:24px;right:-20px;z-index:10;background:var(--ink);color:var(--bg);border-radius:14px;padding:12px 20px;text-align:center;}
+        .sec-historia__badge-est{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;opacity:.45;}
+        .sec-historia__badge-label{font-family:"Satoshi",sans-serif;font-weight:900;font-size:28px;letter-spacing:-0.04em;line-height:1.1;}
+        .sec-historia__text{display:flex;flex-direction:column;gap:20px;}
+        .sec-historia__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--mute);}
+        .sec-historia__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(38px,5vw,64px);color:var(--ink);letter-spacing:-0.04em;line-height:1.05;}
+        .sec-historia__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:var(--accent);}
+        .sec-historia__subtitle{font-size:16px;color:var(--mute);line-height:1.6;margin-top:-4px;}
+        .sec-historia__para{font-size:16px;color:var(--ink-2);line-height:1.75;border-left:2px solid rgba(192,57,43,.3);padding:2px 0 2px 20px;}
+        .sec-historia__recono{margin-top:8px;}
+        .sec-historia__recono-label{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--mute);display:block;margin-bottom:10px;}
+        .sec-historia__pills{display:flex;flex-wrap:wrap;gap:8px;}
+        .sec-historia__pill{font-family:"Satoshi",sans-serif;font-size:12px;padding:5px 14px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2);}
+        @media(max-width:960px){.sec-historia{padding:80px 24px;}.sec-historia__inner{grid-template-columns:1fr;gap:48px;}.sec-historia__badge{top:16px;right:16px;}.sec-historia__watermark-yr{font-size:80px;}}
+        /* ── SEC-IMPACTO (Números — oscuro) ──────────────────────────────── */
+        .sec-impacto{background:var(--ink);padding:120px 40px;}
+        .sec-impacto__inner{max-width:1100px;margin:0 auto;text-align:center;}
+        .sec-impacto__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:16px;}
+        .sec-impacto__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(34px,5vw,60px);color:#fff;letter-spacing:-0.04em;line-height:1.08;margin-bottom:80px;}
+        .sec-impacto__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:#C0392B;}
+        .sec-impacto__grid{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);}
+        .sec-impacto__sep{width:1px;height:80px;background:rgba(255,255,255,.10);}
+        .sec-impacto__stat{padding:48px 24px;text-align:center;}
+        .sec-impacto__num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(48px,6vw,80px);color:#fff;letter-spacing:-0.04em;line-height:1;}
+        .sec-impacto__label{font-size:13px;color:rgba(255,255,255,.6);margin-top:10px;line-height:1.4;}
+        .sec-impacto__sub{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-top:6px;}
+        @media(max-width:960px){.sec-impacto{padding:80px 24px;}.sec-impacto__grid{grid-template-columns:1fr 1fr;}.sec-impacto__sep{display:none;}}
+        /* ── SEC-METOD (Metodología — bg-2) ──────────────────────────────── */
+        .sec-metod{background:var(--bg-2);padding:120px 40px;border-top:1px solid var(--line);}
+        .sec-metod__inner{max-width:1200px;margin:0 auto;}
+        .sec-metod__header{margin-bottom:64px;}
+        .sec-metod__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--mute);margin-bottom:16px;}
+        .sec-metod__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(38px,5vw,60px);color:var(--ink);letter-spacing:-0.04em;line-height:1.08;margin-bottom:12px;}
+        .sec-metod__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:var(--accent);}
+        .sec-metod__subtitle{font-size:16px;color:var(--mute);max-width:48ch;line-height:1.65;}
+        .sec-metod__bento{display:grid;grid-template-columns:1.4fr 1fr 1fr;grid-template-rows:auto auto;gap:16px;}
+        .sec-metod__card{border-radius:20px;padding:36px;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:12px;}
+        .sec-metod__card--featured{grid-row:1/span 2;grid-column:1;background:var(--ink);}
+        .sec-metod__card--normal{background:#fff;border:1px solid var(--line);}
+        .sec-metod__card--wide{grid-row:2;grid-column:2/span 2;background:var(--accent);}
+        .sec-metod__num{font-family:var(--font-mono,monospace);font-size:11px;letter-spacing:.2em;}
+        .sec-metod__num--featured{color:rgba(255,255,255,.35);}
+        .sec-metod__num--normal{color:var(--mute);}
+        .sec-metod__num--dark{color:rgba(255,255,255,.5);}
+        .sec-metod__tag{display:inline-block;font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:4px 12px;border-radius:999px;width:fit-content;}
+        .sec-metod__tag--featured{background:rgba(255,255,255,.08);color:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.12);}
+        .sec-metod__tag--normal{background:rgba(13,13,13,.05);color:var(--mute);border:1px solid var(--line);}
+        .sec-metod__tag--dark{background:rgba(255,255,255,.2);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.3);}
+        .sec-metod__card-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:19px;line-height:1.2;}
+        .sec-metod__card-title--featured{font-size:28px;color:#fff;}
+        .sec-metod__card-title--normal{color:var(--ink);}
+        .sec-metod__card-title--dark{color:#fff;}
+        .sec-metod__card-desc{font-size:14px;line-height:1.65;flex:1;}
+        .sec-metod__card-desc--featured{color:rgba(255,255,255,.52);}
+        .sec-metod__card-desc--normal{color:var(--mute);}
+        .sec-metod__card-desc--dark{color:rgba(255,255,255,.78);}
+        @media(max-width:960px){.sec-metod{padding:80px 24px;}.sec-metod__bento{grid-template-columns:1fr;}.sec-metod__card--featured,.sec-metod__card--wide{grid-row:auto;grid-column:auto;}}
+        /* ── SEC-VALORES (Valores — bg) ───────────────────────────────────── */
+        .sec-valores{background:var(--bg);padding:120px 40px;border-top:1px solid var(--line);}
+        .sec-valores__inner{max-width:1200px;margin:0 auto;}
+        .sec-valores__header{text-align:center;margin-bottom:64px;}
+        .sec-valores__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--mute);margin-bottom:16px;}
+        .sec-valores__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(38px,5vw,60px);color:var(--ink);letter-spacing:-0.04em;line-height:1.08;}
+        .sec-valores__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:var(--accent);}
+        .sec-valores__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+        .sec-valores__tile{background:#fff;border:1px solid var(--line);border-radius:20px;padding:36px 32px;display:flex;flex-direction:column;gap:10px;transition:box-shadow .3s cubic-bezier(0.22,1,0.36,1),transform .3s cubic-bezier(0.22,1,0.36,1),border-color .3s cubic-bezier(0.22,1,0.36,1);}
+        .sec-valores__tile:hover{box-shadow:0 16px 40px -8px rgba(13,13,13,.12);transform:translateY(-4px);border-color:rgba(192,57,43,.25);}
+        .sec-valores__icon{font-size:28px;line-height:1;}
+        .sec-valores__name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:17px;color:var(--ink);transition:color .2s;}
+        .sec-valores__tile:hover .sec-valores__name{color:var(--accent);}
+        .sec-valores__desc{font-size:14px;color:var(--mute);line-height:1.6;}
+        @media(max-width:960px){.sec-valores{padding:80px 24px;}.sec-valores__grid{grid-template-columns:1fr 1fr;}}
+        @media(max-width:600px){.sec-valores__grid{grid-template-columns:1fr;}}
+        @media(prefers-reduced-motion:reduce){.sec-valores__tile,.sec-valores__tile:hover{transform:none;}}
       `}</style>
 
       {/* Post-event banner */}
@@ -994,7 +1119,7 @@ export default function GlobeHero() {
       {/* ══════════════════════════════════════════════════════════════════
           SECCIÓN 2 — NUESTRA HISTORIA (Bento)
       ══════════════════════════════════════════════════════════════════ */}
-      <section id="historia" className="historia">
+      <section id="nuestra-historia" className="historia">
         <div className="historia__grain" aria-hidden="true" />
         <div className="historia__radial" aria-hidden="true" />
         <HistoriaParticles />
@@ -1250,6 +1375,112 @@ export default function GlobeHero() {
       )}
 
       {/* ══════════════════════════════════════════════════════════════════
+          SECCIÓN — HISTORIA (Origen — luz)
+      ══════════════════════════════════════════════════════════════════ */}
+      <section id="historia" className="sec-historia">
+        <div className="sec-historia__inner">
+          {/* Columna izquierda — imagen */}
+          <m.div
+            className="sec-historia__img-wrap"
+            initial={prefersReduced ? false : { opacity: 0, x: -32 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ type: 'spring', stiffness: 120, damping: 22 }}
+          >
+            <div className="sec-historia__watermark-yr" aria-hidden="true">2015</div>
+            <div className="sec-historia__img" />
+            <div className="sec-historia__badge">
+              <div className="sec-historia__badge-est">DESDE</div>
+              <div className="sec-historia__badge-label">2015</div>
+            </div>
+          </m.div>
+
+          {/* Columna derecha — texto con parallax */}
+          <m.div
+            className="sec-historia__text"
+            style={navMounted && !prefersReduced ? { y: historiaTextY } : {}}
+            initial={prefersReduced ? false : { opacity: 0, x: 32 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ type: 'spring', stiffness: 120, damping: 22, delay: 0.1 }}
+          >
+            <p className="sec-historia__eyebrow">NUESTRA HISTORIA</p>
+            <h2 className="sec-historia__title">
+              Una idea que <em>nació</em><br />en La Guajira.
+            </h2>
+            <p className="sec-historia__subtitle">El inicio de un movimiento de liderazgo juvenil.</p>
+            <p className="sec-historia__para">
+              En 2015, Luis Barrios fundó Big Family con la convicción de que los jóvenes de La Guajira
+              tenían el potencial para transformar su región. Lo que comenzó como un proyecto piloto
+              en un colegio hoy se ha convertido en una red de liderazgo que impacta a cientos de
+              estudiantes en toda Colombia y más allá.
+            </p>
+            <div className="sec-historia__recono">
+              <span className="sec-historia__recono-label">RECONOCIMIENTOS</span>
+              <div className="sec-historia__pills">
+                <span className="sec-historia__pill">MIT Leadership</span>
+                <span className="sec-historia__pill">Universidad Javeriana</span>
+                <span className="sec-historia__pill">Uninorte</span>
+              </div>
+            </div>
+          </m.div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SECCIÓN — IMPACTO EN NÚMEROS
+      ══════════════════════════════════════════════════════════════════ */}
+      <section id="impacto" className="sec-impacto">
+        <div className="sec-impacto__inner">
+          <m.p
+            className="sec-impacto__eyebrow"
+            initial={prefersReduced ? false : { opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ type: 'spring', stiffness: 130, damping: 20 }}
+          >IMPACTO EN NÚMEROS</m.p>
+          <m.h2
+            className="sec-impacto__title"
+            initial={prefersReduced ? false : { opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.06 }}
+          >
+            Una década construyendo <em>líderes</em>.
+          </m.h2>
+          <div className="sec-impacto__grid">
+            {IMPACTO_STATS.flatMap((stat, i) => [
+              i > 0 ? (
+                <m.div
+                  key={`sep-${i}`}
+                  className="sec-impacto__sep"
+                  initial={prefersReduced ? false : { scaleY: 0 }}
+                  whileInView={{ scaleY: 1 }}
+                  viewport={{ once: true, margin: '-60px' }}
+                  transition={{ type: 'spring', stiffness: 140, damping: 20, delay: i * 0.1 }}
+                  style={{ transformOrigin: 'top' }}
+                />
+              ) : null,
+              <m.div
+                key={i}
+                className="sec-impacto__stat"
+                initial={prefersReduced ? false : { opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ type: 'spring', stiffness: 130, damping: 20, delay: i * 0.08 }}
+              >
+                <div className="sec-impacto__num">
+                  <ImpactoNum to={stat.to} duration={stat.duration} delayMs={stat.delayMs} comma={stat.comma} suffix={stat.suffix} />
+                </div>
+                <div className="sec-impacto__label">{stat.label}</div>
+                <div className="sec-impacto__sub">{stat.sub}</div>
+              </m.div>,
+            ])}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
           SECCIÓN — NUESTRA RED
       ══════════════════════════════════════════════════════════════════ */}
       <SchoolTicker />
@@ -1258,6 +1489,126 @@ export default function GlobeHero() {
           SECCIÓN — ALIANZAS GLOBALES
       ══════════════════════════════════════════════════════════════════ */}
       <WorldMapPublic />
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SECCIÓN — METODOLOGÍA (bg-2)
+      ══════════════════════════════════════════════════════════════════ */}
+      <section id="metodologia" className="sec-metod">
+        <div className="sec-metod__inner">
+          <m.div
+            className="sec-metod__header"
+            initial={prefersReduced ? false : { opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+          >
+            <p className="sec-metod__eyebrow">CÓMO TRABAJAMOS</p>
+            <h2 className="sec-metod__title">
+              Un método que<br /><em>funciona</em>.
+            </h2>
+            <p className="sec-metod__subtitle">
+              Combinamos formación, acción y comunidad para desarrollar líderes completos.
+            </p>
+          </m.div>
+
+          <div className="sec-metod__bento">
+            {/* Card 1 — Featured (tall, col 1) */}
+            <m.div
+              className="sec-metod__card sec-metod__card--featured"
+              initial={prefersReduced ? false : { opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ type: 'spring', stiffness: 120, damping: 22 }}
+            >
+              <div className="sec-metod__num sec-metod__num--featured">01</div>
+              <div className="sec-metod__tag sec-metod__tag--featured">Formación</div>
+              <h3 className="sec-metod__card-title sec-metod__card-title--featured">
+                Desarrollo<br />Integral
+              </h3>
+              <p className="sec-metod__card-desc sec-metod__card-desc--featured">
+                Módulos de liderazgo que desarrollan habilidades técnicas, emocionales y sociales. Cada estudiante construye su perfil de líder de manera progresiva.
+              </p>
+            </m.div>
+
+            {/* Card 2 — Normal */}
+            <m.div
+              className="sec-metod__card sec-metod__card--normal"
+              initial={prefersReduced ? false : { opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ type: 'spring', stiffness: 120, damping: 22, delay: 0.08 }}
+            >
+              <div className="sec-metod__num sec-metod__num--normal">02</div>
+              <div className="sec-metod__tag sec-metod__tag--normal">Práctica</div>
+              <h3 className="sec-metod__card-title sec-metod__card-title--normal">Proyectos Reales</h3>
+              <p className="sec-metod__card-desc sec-metod__card-desc--normal">Cada equipo diseña e implementa un proyecto comunitario con impacto medible en su entorno.</p>
+            </m.div>
+
+            {/* Card 3 — Normal */}
+            <m.div
+              className="sec-metod__card sec-metod__card--normal"
+              initial={prefersReduced ? false : { opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ type: 'spring', stiffness: 120, damping: 22, delay: 0.16 }}
+            >
+              <div className="sec-metod__num sec-metod__num--normal">03</div>
+              <div className="sec-metod__tag sec-metod__tag--normal">Mentoría</div>
+              <h3 className="sec-metod__card-title sec-metod__card-title--normal">Acompañamiento Directo</h3>
+              <p className="sec-metod__card-desc sec-metod__card-desc--normal">Mentores internacionales guían a cada estudiante en su proceso de crecimiento personal y profesional.</p>
+            </m.div>
+
+            {/* Card 4 — Wide (col 2/span 2, accent bg) */}
+            <m.div
+              className="sec-metod__card sec-metod__card--wide"
+              initial={prefersReduced ? false : { opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ type: 'spring', stiffness: 120, damping: 22, delay: 0.24 }}
+            >
+              <div className="sec-metod__num sec-metod__num--dark">04</div>
+              <div className="sec-metod__tag sec-metod__tag--dark">Red Global</div>
+              <h3 className="sec-metod__card-title sec-metod__card-title--dark">Conexión Internacional</h3>
+              <p className="sec-metod__card-desc sec-metod__card-desc--dark">Los estudiantes se conectan con líderes jóvenes de 10 países, ampliando su perspectiva y construyendo relaciones que trascienden fronteras.</p>
+            </m.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SECCIÓN — VALORES
+      ══════════════════════════════════════════════════════════════════ */}
+      <section id="valores" className="sec-valores">
+        <div className="sec-valores__inner">
+          <m.div
+            className="sec-valores__header"
+            initial={prefersReduced ? false : { opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+          >
+            <p className="sec-valores__eyebrow">LO QUE NOS GUÍA</p>
+            <h2 className="sec-valores__title">Nuestros <em>valores</em>.</h2>
+          </m.div>
+
+          <div className="sec-valores__grid">
+            {VALORES.map((v, i) => (
+              <m.div
+                key={v.name}
+                className="sec-valores__tile"
+                initial={prefersReduced ? false : { opacity: 0, filter: 'blur(8px)' }}
+                whileInView={{ opacity: 1, filter: 'blur(0px)' }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ type: 'spring', stiffness: 120, damping: 20, delay: i * 0.07 }}
+              >
+                <div className="sec-valores__icon">{v.icon}</div>
+                <div className="sec-valores__name">{v.name}</div>
+                <div className="sec-valores__desc">{v.desc}</div>
+              </m.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ══════════════════════════════════════════════════════════════════
           SECCIÓN 3 — EQUIPO
