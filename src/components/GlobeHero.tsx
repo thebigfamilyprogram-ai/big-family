@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { memo, useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
+import { Link } from 'next-view-transitions'
 import dynamic from 'next/dynamic'
 import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
 

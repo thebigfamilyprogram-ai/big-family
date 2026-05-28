@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Geist_Mono } from 'next/font/google'
+import { ViewTransitions } from 'next-view-transitions'
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastContainer } from "@/components/Toast";
 import { LazyMotion, domAnimation } from 'framer-motion'
@@ -91,12 +92,14 @@ export default function RootLayout({
         <link rel="preload" href="/fonts/satoshi-900.woff2" as="font" type="font/woff2" crossOrigin="" />
       </head>
       <body className="antialiased">
-        <ThemeProvider>
-          <LazyMotion features={domAnimation}>
-            {children}
-            <ToastContainer />
-          </LazyMotion>
-        </ThemeProvider>
+        <ViewTransitions>
+          <ThemeProvider>
+            <LazyMotion features={domAnimation}>
+              {children}
+              <ToastContainer />
+            </LazyMotion>
+          </ThemeProvider>
+        </ViewTransitions>
       </body>
     </html>
   );
