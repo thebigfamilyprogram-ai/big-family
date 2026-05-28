@@ -57,6 +57,51 @@
 - **Top 10 animaciones** implementadas — diploma entrance 3D, layoutId tabs, quiz question transitions, login card entrance, etc.
 - **Audit completo de diseño** — 6 críticos, 13 importantes, 15 nice-to-have identificados y en proceso
 
+### Features Nuevas (Mayo 2026 — Sesión 2)
+
+**Landing Page:**
+- **SchoolTicker** — ticker horizontal infinito de los 8 colegios, logos desde Supabase Storage bucket `school-logos`, CSS animation puro, dos filas velocidades distintas
+- **HeroCollage** — cards flotantes países aliados con parallax al mouse, Framer Motion useMotionValue + useSpring, preparado para fotos reales (prop `photos?` opcional)
+- **WorldMapPublic** — mapa mundial público con puntos aliados, arcos animados desde Colombia, partículas viajeras, stroke-dashoffset de entrada, en sección `#alianzas-globales`
+- **Sección Historia** — split asimétrico 45/55 (`id="historia"`), watermark "2015", parallax sutil en scroll (`historiaTextY`), badges reconocimientos reales, `navMounted` guard
+- **Sección Impacto en Números** — fondo `var(--ink)`, 4 stats: 876 estudiantes / 22 colegios / 10 países / meta 3300, counters `ImpactoNum` con duración y delay por stat, líneas separadoras `scaleY`
+- **Sección Metodología** — bento asimétrico 4 componentes: Desarrollo Integral (featured tall), Proyectos Reales, Acompañamiento Directo, Conexión Internacional (wide accent), `id="metodologia"`
+- **Sección Valores** — 6 tiles 3×2 con blur-reveal stagger (`filter: blur(8px→0)`), hover CSS nativo, `id="valores"`
+- **Navbar pill flotante** — fixed top-4, backdrop-blur, smooth scroll a todas las secciones, mobile drawer, 5 links: Historia · Impacto · Nuestra Red · Equipo · Noticias
+- **Contenido real del PDF integrado** — misión, visión, historia, Luis Barrios (M.S. University at Buffalo, MIT, Javeriana), reconocimientos internacionales
+
+**Dashboards:**
+- **Rediseño visual completo** — 3 dashboards con sistema de diseño unificado: StatCards con borde semántico izquierdo 3px, Geist Mono para números, bento asimétrico layout
+- **Gráficas con Recharts** — LineChart XP, RadialBar Leadership Path, BarChart Top 10 estudiantes, AreaChart actividad, charts 8fr/4fr asimétrico
+- **KPI counters** — AnimatedNumber desde 0, stagger 80ms entre cards
+- **Sidebar indicator** — `layoutId="sidebar-indicator"` spring entre items activos
+- **Centro de Datos** `/coordinator/datos` y `/admin/datos` — 3 tabs: Resumen, Constructor de gráficas, IA Insights. Constructor: modo rápido + modo avanzado con filtros. Guardar dashboards en tabla `saved_dashboards` (Supabase). Export PNG y CSV. IA Insights: Claude API via Route Handler seguro, análisis automático + chat con datos, max 10 msgs/sesión
+- **MOCK_MODE** — `src/lib/mockData.ts` con `MOCK_MODE` flag, datos hardcodeados para todos los dashboards: 10 estudiantes mock, 8 colegios, 10 proyectos, 7 módulos, feed actividad, metas, eventos, anuncios
+
+**Componentes:**
+- **StatCard rediseñado** — borde izquierdo 3px semántico, delta con ↑↓, hover translateY(-1px) spring
+- **Badge rediseñado** — colores semánticos con nuevos tokens de color
+- **AppSidebar** — 10 fixes: collapse Framer height auto, active color var(--accent), accesibilidad button/aria, overlay AnimatePresence, chevron spring, iconos outlined, bottom sticky fix, stagger entrada, labels 11px, tabular-nums en badges
+
+**Bugs resueltos en esta sesión:**
+- **BUG 1** — Configuración coordinador redirigía al panel (causa: BUG 2)
+- **BUG 2** — `profiles?select=full_name` → 400. Columna correcta es `display_name`. Reemplazado globalmente en 50+ archivos src/
+- **BUG 3** — 400 en Supabase Storage logos. Fix: `logo_url` resuelto en fetch con `getPublicUrl()` si es filename, pass-through si es URL completa, iniciales si null
+
+### Tokens CSS (globals.css — añadidos en Sesión 2)
+```css
+--accent-amber: #D4821A;
+--accent-teal: #0F7B6C;
+--accent-muted: #8C7B6E;
+--shadow-card: 0 1px 3px rgba(13,13,13,0.06), 0 1px 2px rgba(13,13,13,0.04);
+--shadow-raised: 0 4px 16px rgba(13,13,13,0.08), 0 2px 6px rgba(13,13,13,0.04);
+--line-strong: rgba(13,13,13,0.14);
+--surface-1: #FFFFFF;
+--surface-2: var(--bg);
+--surface-3: var(--bg-2);
+/* [data-theme="dark"]: --surface-1: #1C1B19; --surface-2: #141412 */
+```
+
 ---
 
 ## Bugs Resueltos
@@ -114,6 +159,43 @@ Fontshare CDN añadía 370ms al LCP y las fuentes tenían caché de solo 7 días
 ### Añadidas en Mayo 2026
 `timeline_events`, `quiz_retry_requests`, `news_reads`, `notification_preferences` (columna en profiles), `goals`, `goal_templates`, `project_reactions`, `calendar_events`, `announcements`, `announcement_reads`, `activity_feed`, `success_stories`
 
+### Añadidas en Sesión 2
+`saved_dashboards` — `id`, `user_id`, `name`, `config` (jsonb), `created_at` — RLS: `user_id = auth.uid()` para SELECT / INSERT / DELETE
+
+---
+
+## Archivos Clave
+
+| Archivo | Descripción |
+|---|---|
+| `src/lib/mockData.ts` | `MOCK_MODE` flag + todos los datos mock (estudiantes, colegios, proyectos, módulos, feed, metas, eventos, anuncios) |
+| `src/components/GlobeHero.tsx` | Landing page completa — Hero, Misión, Visión, Historia, Impacto, Metodología, Valores, Equipo, navbar pill |
+| `src/components/SchoolTicker.tsx` | Ticker horizontal colegios — logos desde Supabase Storage `school-logos` |
+| `src/components/HeroCollage.tsx` | Collage países hero derecho — parallax mouse con Framer Motion |
+| `src/components/WorldMapPublic.tsx` | Mapa mundial landing — arcos animados desde Colombia, partículas viajeras |
+| `src/components/AnimatedNumber.tsx` | Counter animado desde 0 con easing cúbico |
+| `src/components/datos/DatosPage.tsx` | Centro de datos compartido — 3 tabs: Resumen, Constructor, IA Insights |
+| `src/app/coordinator/datos/page.tsx` | Centro de datos coordinador |
+| `src/app/admin/datos/page.tsx` | Centro de datos admin |
+| `src/app/api/ai-insights/route.ts` | Route Handler Claude API — análisis automático + chat con datos |
+
+## Rutas
+
+| Ruta | Descripción |
+|---|---|
+| `/` | Landing pública (GlobeHero) |
+| `/dashboard` | Dashboard estudiante |
+| `/coordinator` | Panel coordinador |
+| `/coordinator/datos` | Centro de datos coordinador |
+| `/admin` | Panel super admin |
+| `/admin/datos` | Centro de datos admin |
+| `/expositor` | Panel expositor |
+| `/dia-de-liderazgo` | Evento especial (countdown + info) |
+| `/certificacion/[id]` | Diploma animado estudiante |
+| `/success-stories` | Historias de éxito públicas |
+| `/news` | Blog de noticias |
+| `/timeline` | Línea del tiempo pública |
+
 ---
 
 ## Pendiente
@@ -132,6 +214,16 @@ Fontshare CDN añadía 370ms al LCP y las fuentes tenían caché de solo 7 días
 - [ ] Probar pipeline de emails end-to-end
 - [ ] Ejecutar SQL migration features_v2 en Supabase
 - [ ] PageSpeed 98% → quedan reflow forzado y polyfills menores (no crítico)
+
+#### Añadidos en Sesión 2
+- [ ] Conectar `MOCK_MODE = false` cuando Supabase tenga datos reales
+- [ ] API key `ANTHROPIC_API_KEY` en variables de entorno Vercel
+- [ ] Ejecutar SQL: migración `saved_dashboards` en Supabase
+- [ ] Imágenes reales en `/public/images/` (Luis Barrios generará): `historia-graduacion.jpg`, `luis-barrios.jpg`, `metodologia-taller.jpg`
+- [ ] Fotos reales en HeroCollage (prop `photos` cuando estén en Storage)
+- [x] Fix error 400 logos Supabase Storage en SchoolTicker *(resuelto — `getPublicUrl()` en fetch)*
+- [x] Fix configuración coordinador redirige al panel *(resuelto — causado por BUG 2)*
+- [x] Fix `profiles.full_name` → columna correcta es `display_name` *(resuelto — reemplazo global en 50+ archivos)*
 
 ### Contenido (esperando al fundador Luis Barrios)
 - [ ] Stats reales "Sobre Nosotros" (actualmente placeholders en aboutStats)
@@ -158,6 +250,7 @@ Fontshare CDN añadía 370ms al LCP y las fuentes tenían caché de solo 7 días
 NEXT_PUBLIC_SUPABASE_URL=https://hkqzofpaozecjvfsmdum.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci... (legacy anon key de Supabase)
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGci... (legacy service_role key de Supabase)
+ANTHROPIC_API_KEY=sk-ant-... (para IA Insights en /datos — Route Handler server-side)
 ```
 
 **Importante:** Usar siempre las "Legacy anon, service_role API keys" de Supabase, NO las nuevas "Publishable/Secret keys" que tienen formato `sb_publishable_...`. Las nuevas keys no son compatibles con `@supabase/ssr`.
