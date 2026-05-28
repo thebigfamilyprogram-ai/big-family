@@ -49,6 +49,9 @@ const supabase = supabaseRef.current
 if (!supabase) return
 ```
 - Middleware file is `src/proxy.ts` (NOT `src/middleware.ts`)
+- **`profiles` column is `display_name`** — NEVER `full_name` (does not exist). This caused a global 400 error cascade in all pages that queried it.
+- **`MOCK_MODE`** — `src/lib/mockData.ts` exports `MOCK_MODE` (boolean flag) and `MOCK` object with hardcoded data. Always check `if (MOCK_MODE) { ... return }` at the top of any `useEffect` that fetches from Supabase. Flip to `false` when Supabase has real data.
+- **Supabase Storage logos** — `logo_url` in `schools` table can be a bare filename OR a full URL. Resolve at fetch time: `raw.startsWith('http') ? raw : supabase.storage.from('school-logos').getPublicUrl(raw).data.publicUrl`
 
 ### CSS / Design
 - **Never** hardcode colors — always use CSS variables
@@ -97,6 +100,18 @@ const { scrollYProgress } = useScroll({ target: mounted ? ref : undefined })
 --bg: #0D0D0D
 --card-bg: #1a1a1a
 --ink: #F5F3EF
+
+/* Añadidos en Sesión 2 */
+--accent-amber: #D4821A
+--accent-teal: #0F7B6C
+--accent-muted: #8C7B6E
+--shadow-card: 0 1px 3px rgba(13,13,13,0.06), 0 1px 2px rgba(13,13,13,0.04)
+--shadow-raised: 0 4px 16px rgba(13,13,13,0.08), 0 2px 6px rgba(13,13,13,0.04)
+--line-strong: rgba(13,13,13,0.14)
+--surface-1: #FFFFFF
+--surface-2: var(--bg)
+--surface-3: var(--bg-2)
+/* [data-theme="dark"]: --surface-1: #1C1B19; --surface-2: #141412 */
 ```
 
 ---
@@ -157,17 +172,27 @@ Expositor code: `EXPO-BF-2026`
 ## Key Files
 | File | Purpose |
 |------|---------|
-| `src/components/GlobeHero.tsx` | Landing page (complete, no Three.js) |
+| `src/components/GlobeHero.tsx` | Landing page completa — Hero, Misión, Visión, Historia, Impacto, Metodología, Valores, Equipo, navbar pill |
 | `src/components/Globe/GlobeCanvas.tsx` | Globe React wrapper + flag overlays |
 | `src/components/Globe/GlobeWorker.ts` | Three.js in Web Worker (OffscreenCanvas) |
 | `src/components/Globe/GlobeFallback.ts` | Three.js fallback for Safari < 16.4 |
+| `src/components/SchoolTicker.tsx` | Ticker horizontal infinito de los 8 colegios — CSS animation, logos desde `school-logos` |
+| `src/components/HeroCollage.tsx` | Cards flotantes países aliados con parallax mouse — Framer Motion |
+| `src/components/WorldMapPublic.tsx` | Mapa mundial público — arcos animados desde Colombia, partículas viajeras |
+| `src/components/AppSidebar.tsx` | Sidebar unificado — acepta `role` prop, `layoutId` spring indicator |
+| `src/components/datos/DatosPage.tsx` | Centro de Datos compartido — 3 tabs: Resumen, Constructor, IA Insights |
 | `src/components/DashboardSidebar.tsx` | Student sidebar |
 | `src/components/ExpositorSidebar.tsx` | Expositor sidebar |
 | `src/components/ProjectEditor.tsx` | Capstone IDEMR editor |
 | `src/components/ModuleEditor.tsx` | Module editor for expositores |
 | `src/components/NewsEditor.tsx` | News editor with live preview |
 | `src/components/ProjectReactions.tsx` | 5-emoji reaction system |
+| `src/components/AnimatedNumber.tsx` | Counter animado desde 0, easing cúbico |
 | `src/components/Toast.tsx` | Toast notifications |
+| `src/app/coordinator/datos/page.tsx` | Centro de datos coordinador |
+| `src/app/admin/datos/page.tsx` | Centro de datos admin |
+| `src/app/api/ai-insights/route.ts` | Route Handler Claude API — seguro, server-side, max 10 msgs/sesión |
+| `src/lib/mockData.ts` | `MOCK_MODE` flag + datos mock completos (estudiantes, colegios, proyectos, módulos) |
 | `src/proxy.ts` | Middleware (auth protection) |
 | `src/lib/supabase.ts` | Supabase client (lazy init) |
 | `src/lib/animations.ts` | Shared Framer Motion variants |
@@ -235,7 +260,11 @@ Expositor code: `EXPO-BF-2026`
 - `ca542f7` — Quiz damping, evaluate animation, goals CSS, dashboard grid
 - `99a395a` — PageSpeed: local fonts, browserslistrc, reflow fix
 - `66cdedb` — Fix crash: removed optimizeCss, Framer Motion SSR guard, Three.js ES Module
-- Latest — Globe migrated to OffscreenCanvas Web Worker, PageSpeed 54% → 98%
+- `f0a22f4` — Fix: shared dashboard layout to prevent sidebar remount on navigation
+- `99c8f68` — Fix: replace horizontal navbar with sidebar in coordinator projects/modules pages
+- `3c9728f` — Feat: redesign all 3 dashboards — Soft Structuralism + bento charts
+- `81f5e93` — Feat: add Historia, Impacto, Metodología, Valores sections to GlobeHero; update NAV_LINKS; fix profiles.display_name global replace; fix Supabase Storage logo URLs
+- `bf00a6c` — Docs: update context.md with Sesión 2 features
 
 ---
 
@@ -244,9 +273,12 @@ Expositor code: `EXPO-BF-2026`
 / → Landing (GlobeHero)
 /login, /register, /forgot-password
 /submit/* → Día de Liderazgo special flow
+/dia-de-liderazgo → Evento especial (countdown + info)
 /dashboard/* → Student area
 /coordinator/* → Coordinator area
+/coordinator/datos → Centro de datos coordinador (Sesión 2)
 /admin/* → Admin area (Luis Barrios only)
+/admin/datos → Centro de datos admin (Sesión 2)
 /expositor/* → Module creators
 /news, /news/[slug] → Public blog
 /timeline → Public timeline
