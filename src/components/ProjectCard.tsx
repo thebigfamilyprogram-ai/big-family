@@ -221,7 +221,7 @@ export default function ProjectCard({
           overflow: 'hidden',
           boxShadow: '0 2px 12px -4px rgba(13,13,13,.07)',
         }}
-        whileHover={{ y: -4, boxShadow: '0 12px 32px -8px rgba(13,13,13,.14)' }}
+        whileHover={{ y: -4 }}
         transition={{ type: 'spring', stiffness: 260, damping: 22 }}
       >
         {/* Cover */}

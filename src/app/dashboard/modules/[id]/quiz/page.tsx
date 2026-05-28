@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
+import { MOCK_MODE } from '@/lib/mockData'
 
 interface Module {
   id: string
@@ -165,6 +166,10 @@ export default function LeadershipPathPage() {
   const [selected,        setSelected]        = useState<PathNode | null>(null)
   const [hoveredLocked,   setHoveredLocked]   = useState<string | null>(null)
   const [celebPhases,     setCelebPhases]     = useState<Set<string>>(new Set())
+  const [userId,          setUserId]          = useState<string | null>(null)
+  const [userSchool,      setUserSchool]      = useState<string | null>(null)
+  const [retryMap,        setRetryMap]        = useState<Record<string, 'none' | 'pending' | 'approved'>>({})
+  const [retryLoading,    setRetryLoading]    = useState(false)
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -174,7 +179,7 @@ export default function LeadershipPathPage() {
       if (!au) { router.replace('/login'); return }
 
       const { data: profile } = await supabase
-        .from('profiles').select('display_name, school_level').eq('id', au.id).maybeSingle()
+        .from('profiles').select('display_name, school_level, school_id').eq('id', au.id).maybeSingle()
       const level = profile?.school_level ?? 'senior'
 
       const { data: mods } = await supabase
@@ -248,6 +253,8 @@ export default function LeadershipPathPage() {
       })
 
       setUserName(profile?.display_name ?? 'Líder Big Family')
+      setUserId(au.id)
+      setUserSchool((profile as { school_id?: string | null })?.school_id ?? null)
       setTotalXP(total_xp)
       setStreak(streakDays)
       setAttMap(aMap)
@@ -258,6 +265,53 @@ export default function LeadershipPathPage() {
     }
     load()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Check retry status when selected module changes
+  useEffect(() => {
+    if (!selected || !userId) return
+    if (MOCK_MODE) {
+      setRetryMap(prev => ({ ...prev, [selected.module.id]: prev[selected.module.id] ?? 'none' }))
+      return
+    }
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const sb = supabaseRef.current
+    async function checkRetry() {
+      const { data } = await sb!
+        .from('quiz_retry_requests')
+        .select('status')
+        .eq('student_id', userId!)
+        .eq('module_id', selected!.module.id)
+        .order('requested_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      const status: 'none' | 'pending' | 'approved' =
+        data?.status === 'approved' ? 'approved' :
+        data?.status === 'pending'  ? 'pending'  : 'none'
+      setRetryMap(prev => ({ ...prev, [selected!.module.id]: status }))
+    }
+    checkRetry()
+  }, [selected?.module.id, userId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function handleRetryRequest() {
+    if (!selected || !userId || retryLoading) return
+    setRetryLoading(true)
+    if (MOCK_MODE) {
+      setRetryMap(prev => ({ ...prev, [selected.module.id]: 'pending' }))
+      setRetryLoading(false)
+      return
+    }
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const sb = supabaseRef.current
+    await sb!.from('quiz_retry_requests').insert({
+      student_id:   userId,
+      module_id:    selected.module.id,
+      school_id:    userSchool,
+      status:       'pending',
+      requested_at: new Date().toISOString(),
+    })
+    setRetryMap(prev => ({ ...prev, [selected.module.id]: 'pending' }))
+    setRetryLoading(false)
+  }
 
   // Auto-scroll to active node
   useEffect(() => {
@@ -309,6 +363,9 @@ export default function LeadershipPathPage() {
   const selPhase  = selected
     ? PHASES.find(p => selected.module.order_index >= p.range[0] && selected.module.order_index <= p.range[1])
     : null
+
+  const retryStatus: 'none' | 'pending' | 'approved' =
+    selected ? (retryMap[selected.module.id] ?? 'none') : 'none'
 
   const userInitial = userName[0]?.toUpperCase() ?? 'L'
 
@@ -755,7 +812,44 @@ export default function LeadershipPathPage() {
                   ) : selAtt.count === 1 ? (
                     <div style={{ padding: '10px 14px', background: '#FFFBEB', borderRadius: 10, fontSize: 13, color: '#92400E', fontWeight: 600 }}>⚠ 1 intento restante</div>
                   ) : (
+                    <>
                     <div style={{ padding: '10px 14px', background: '#FEE2E2', borderRadius: 10, fontSize: 13, color: '#991B1B', fontWeight: 600 }}>✗ Sin intentos disponibles</div>
+                    {!selAtt?.passed && (
+                      <div style={{ marginTop: 10 }}>
+                        {retryStatus === 'approved' ? (
+                          <div style={{ padding: '10px 14px', background: '#D1FAE5', borderRadius: 10, fontSize: 13, color: '#065F46', fontWeight: 600 }}>
+                            ✓ Reintento aprobado — puedes comenzar de nuevo
+                          </div>
+                        ) : retryStatus === 'pending' ? (
+                          <div style={{ padding: '10px 14px', background: '#FEF3C7', borderRadius: 10, fontSize: 13, color: '#92400E', fontWeight: 600 }}>
+                            ⏳ Solicitud enviada — esperando aprobación del coordinador
+                          </div>
+                        ) : (
+                          <m.button
+                            type="button"
+                            onClick={handleRetryRequest}
+                            disabled={retryLoading}
+                            style={{
+                              width: '100%', padding: '11px 14px',
+                              background: 'transparent',
+                              border: '1.5px solid rgba(13,13,13,0.18)',
+                              borderRadius: 999,
+                              fontFamily: '"Satoshi",sans-serif',
+                              fontWeight: 700, fontSize: 13,
+                              color: 'var(--ink)',
+                              cursor: retryLoading ? 'not-allowed' : 'pointer',
+                              opacity: retryLoading ? 0.6 : 1,
+                            }}
+                            whileHover={retryLoading ? {} : { scale: 1.02 }}
+                            whileTap={retryLoading ? {} : { scale: 0.98 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                          >
+                            {retryLoading ? 'Enviando...' : 'Solicitar reintento al coordinador'}
+                          </m.button>
+                        )}
+                      </div>
+                    )}
+                    </>
                   )}
                 </div>
               )}
@@ -777,6 +871,8 @@ export default function LeadershipPathPage() {
                       Revisar módulo
                     </button>
                   </>
+                ) : (selAtt?.count ?? 0) >= 2 && !selAtt?.passed && retryStatus !== 'approved' ? (
+                  null
                 ) : (
                   <button
                     onClick={() => router.push(`/dashboard/modules/${selected.module.id}`)}
@@ -784,7 +880,7 @@ export default function LeadershipPathPage() {
                     onMouseLeave={e => (e.currentTarget.style.background = '#C0392B')}
                     style={{ width: '100%', padding: '14px', background: '#C0392B', border: 'none', borderRadius: 999, fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15, color: '#fff', cursor: 'pointer', transition: 'background .2s' }}
                   >
-                    Comenzar módulo →
+                    {retryStatus === 'approved' ? 'Comenzar reintento →' : 'Comenzar módulo →'}
                   </button>
                 )}
               </div>

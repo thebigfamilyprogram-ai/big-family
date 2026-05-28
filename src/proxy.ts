@@ -40,7 +40,7 @@ export async function proxy(request: NextRequest) {
 
     // Authenticated → redirect away from auth pages to their home
     if (isAuthPage) {
-      const dest = role === 'coordinator' ? '/coordinator' : role === 'expositor' ? '/expositor' : '/dashboard'
+      const dest = role === 'admin' ? '/admin' : role === 'coordinator' ? '/coordinator' : role === 'expositor' ? '/expositor' : '/dashboard'
       return NextResponse.redirect(new URL(dest, request.url))
     }
 
