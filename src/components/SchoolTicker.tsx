@@ -287,7 +287,7 @@ export default memo(function SchoolTicker() {
           className="stk-eyebrow"
           initial={prefersReduced ? false : { opacity: 0, y: 12 }}
           animate={shouldAnim ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ type: 'spring', stiffness: 200, damping: 22 }}
         >NUESTRA RED</m.p>
 
         <h2 className="stk-title" aria-label="8 colegios. Una sola familia.">
@@ -297,7 +297,7 @@ export default memo(function SchoolTicker() {
               style={{ display: 'inline-block', marginRight: '0.28em' }}
               initial={prefersReduced ? false : { opacity: 0, y: 12 }}
               animate={shouldAnim ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.08 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.08 + i * 0.08 }}
             >{word}</m.span>
           ))}
         </h2>
@@ -306,7 +306,7 @@ export default memo(function SchoolTicker() {
           className="stk-sub"
           initial={prefersReduced ? false : { opacity: 0, y: 12 }}
           animate={shouldAnim ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.48, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.48 }}
         >
           Desde La Guajira, construyendo líderes que transforman Colombia.
         </m.p>
@@ -356,7 +356,7 @@ export default memo(function SchoolTicker() {
             className="stk-stat"
             initial={prefersReduced ? false : { opacity: 0, y: 8 }}
             animate={shouldAnim ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.4 + i * 0.10, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.4 + i * 0.10 }}
           >
             <div className="stk-stat-num"><StatNum to={s.value} /></div>
             <div className="stk-stat-label">{s.label}</div>

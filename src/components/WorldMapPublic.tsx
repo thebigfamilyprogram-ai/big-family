@@ -313,7 +313,7 @@ export default memo(function WorldMapPublic() {
           className="wmp-eyebrow"
           initial={prefersReduced ? false : { opacity: 0, y: 12 }}
           animate={shouldAnim ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ type: 'spring', stiffness: 200, damping: 22 }}
         >ALCANCE GLOBAL</m.p>
 
         <h2 className="wmp-title" aria-label="Una red que crece.">
@@ -323,7 +323,7 @@ export default memo(function WorldMapPublic() {
               style={{ display: 'inline-block', marginRight: '0.28em' }}
               initial={prefersReduced ? false : { opacity: 0, y: 12 }}
               animate={shouldAnim ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.08 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.08 + i * 0.08 }}
             >{word}</m.span>
           ))}
         </h2>
@@ -332,7 +332,7 @@ export default memo(function WorldMapPublic() {
           className="wmp-sub"
           initial={prefersReduced ? false : { opacity: 0, y: 12 }}
           animate={shouldAnim ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.44, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.44 }}
         >
           Conectando líderes de La Guajira con aliados en todo el mundo.
         </m.p>
@@ -347,7 +347,7 @@ export default memo(function WorldMapPublic() {
             className="wmp-map-wrap"
             initial={prefersReduced ? false : { opacity: 0 }}
             animate={shouldAnim ? { opacity: 1 } : {}}
-            transition={{ duration: 0.8, delay: 0, ease: 'easeOut' }}
+            transition={{ type: 'spring', stiffness: 80, damping: 22, delay: 0 }}
           >
             <svg
               viewBox="0 0 1000 500"
@@ -377,7 +377,7 @@ export default memo(function WorldMapPublic() {
                   strokeOpacity={0.4}
                   initial={prefersReduced ? false : { opacity: 0 }}
                   animate={shouldAnim ? { opacity: 1 } : {}}
-                  transition={{ duration: 0.6, delay: 0.5, ease: 'easeOut' }}
+                  transition={{ type: 'spring', stiffness: 80, damping: 22, delay: 0.5 }}
                 />
               )}
 
@@ -521,7 +521,7 @@ export default memo(function WorldMapPublic() {
             className="wmp-stat"
             initial={prefersReduced ? false : { opacity: 0, y: 8 }}
             animate={shouldAnim ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.5 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.5 + i * 0.12 }}
           >
             <div className="wmp-stat-num"><StatNum to={s.value} /></div>
             <div className="wmp-stat-label">{s.label}</div>

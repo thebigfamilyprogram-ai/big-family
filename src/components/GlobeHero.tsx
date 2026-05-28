@@ -284,6 +284,80 @@ function useCountdown(target: Date) {
   return t
 }
 
+const FAQ_ITEMS = [
+  { q: '¿El programa es gratuito?', a: 'Sí, Big Family es completamente gratuito para los estudiantes. El programa es financiado por alianzas institucionales y el compromiso de sus fundadores con la educación equitativa en La Guajira.' },
+  { q: '¿Solo puedo participar si soy de La Guajira, Colombia?', a: 'Actualmente el programa opera en 8 colegios de La Guajira. Si tu institución está interesada en sumarse a la red, puedes contactarnos a través del formulario de coordinadores en /register.' },
+  { q: '¿Qué es la certificación "The Big Leader"?', a: 'The Big Leader es la certificación oficial del programa. Se obtiene al completar los módulos de liderazgo, desarrollar un proyecto comunitario (Capstone IDEMR) y demostrar impacto medible en tu entorno.' },
+  { q: '¿Cuánto tiempo dura el programa?', a: 'El programa tiene una duración de un año académico, con 7 módulos progresivos, mentoría continua y el proyecto Capstone al final del ciclo. Los módulos están diseñados para completarse a tu propio ritmo.' },
+  { q: '¿Cómo se registra un coordinador de colegio?', a: 'Los coordinadores reciben un código de acceso institucional de parte del equipo de Big Family. Con ese código pueden registrarse en /register y acceder al panel de gestión de su colegio.' },
+]
+
+const FAQSection = memo(function FAQSection({ reduced }: { reduced: boolean }) {
+  const [open, setOpen] = useState<number | null>(null)
+  return (
+    <section className="sec-faq">
+      <div className="sec-faq__inner">
+        <m.div
+          className="sec-faq__header"
+          initial={reduced ? false : { opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+        >
+          <p className="sec-faq__eyebrow">PREGUNTAS FRECUENTES</p>
+          <h2 className="sec-faq__title">Todo lo que necesitas <em>saber</em>.</h2>
+        </m.div>
+        <div>
+          {FAQ_ITEMS.map((faq, i) => (
+            <m.div
+              key={i}
+              className="sec-faq__item"
+              initial={reduced ? false : { opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-20px' }}
+              transition={{ type: 'spring', stiffness: 140, damping: 20, delay: i * 0.06 }}
+            >
+              <button
+                className="sec-faq__q"
+                onClick={() => setOpen(open === i ? null : i)}
+                aria-expanded={open === i}
+              >
+                {faq.q}
+                <svg
+                  className={`sec-faq__chevron${open === i ? ' sec-faq__chevron--open' : ''}`}
+                  width="18" height="18" viewBox="0 0 18 18" fill="none"
+                  aria-hidden="true"
+                >
+                  <path d="M4 6.5L9 11.5L14 6.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              <AnimatePresence initial={false}>
+                {open === i && (
+                  <m.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 32 }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <p className="sec-faq__a">{faq.a}</p>
+                  </m.div>
+                )}
+              </AnimatePresence>
+            </m.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+})
+
+const TESTIMONIOS = [
+  { quote: 'Big Family cambió mi manera de ver el mundo. Aprendí a liderar con propósito y a trabajar por mi comunidad con impacto real.', name: 'María González', role: 'Estudiante · Cohorte 2026', school: 'IE Técnica María Inmaculada', init: 'MG' },
+  { quote: 'La certificación The Big Leader me abrió puertas que nunca imaginé. Pude presentar mi proyecto ante líderes internacionales.', name: 'Carlos Pérez', role: 'Estudiante · Cohorte 2026', school: 'IE Comfamiliar', init: 'CP' },
+  { quote: 'Lo más valioso no fue el certificado, sino la familia que construí. Hoy somos una red de líderes que se apoyan mutuamente.', name: 'Valeria Rodríguez', role: 'Estudiante · Cohorte 2026', school: 'IE Paulo VI', init: 'VR' },
+]
+
 export default function GlobeHero() {
   const mouseX  = useMotionValue(0)
   const mouseY  = useMotionValue(0)
@@ -301,6 +375,7 @@ export default function GlobeHero() {
   const [mobileNavOpen,     setMobileNavOpen]     = useState(false)
 
   const { stats: liveStats, loading: statsLoading } = useRealtimeStats()
+  const isEventPast = DL_TARGET.getTime() < Date.now()
 
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const [featuredStories, setFeaturedStories] = useState<{ id: string; title: string; story: string; cover_url: string | null; student_name: string | null; school_name: string | null }[]>([])
@@ -553,7 +628,7 @@ export default function GlobeHero() {
         .equipo__desc{font-family:"Satoshi",sans-serif;font-size:16px;color:#6B6B6B;line-height:1.65;}
         .equipo__grid{display:grid;grid-template-columns:1.8fr 1fr 1fr;grid-template-rows:auto auto;gap:2px;background:rgba(13,13,13,.06);border:1px solid rgba(13,13,13,.06);border-radius:20px;overflow:hidden;}
         .equipo__card{background:#F5F3EF;padding:40px 36px;display:flex;flex-direction:column;border:1px solid transparent;transition:box-shadow .3s cubic-bezier(0.22,1,0.36,1),transform .3s cubic-bezier(0.22,1,0.36,1),border-color .3s cubic-bezier(0.22,1,0.36,1);}
-        .equipo__card:hover{transform:translateY(-4px);box-shadow:0 16px 40px -8px rgba(13,13,13,.18),inset 0 2px 0 #C0392B;border-color:rgba(192,57,43,.3);}
+        .equipo__card:hover{box-shadow:0 16px 40px -8px rgba(13,13,13,.18),inset 0 2px 0 #C0392B;border-color:rgba(192,57,43,.3);}
         .equipo__card:active{transform:scale(0.99) translateY(-2px);}
         .equipo__card--featured{grid-row:1/span 2;grid-column:1;}
         .equipo__card--wide{grid-column:2/span 2;flex-direction:row;gap:28px;align-items:flex-start;}
@@ -662,7 +737,7 @@ export default function GlobeHero() {
         .sec-valores__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:var(--accent);}
         .sec-valores__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
         .sec-valores__tile{background:#fff;border:1px solid var(--line);border-radius:20px;padding:36px 32px;display:flex;flex-direction:column;gap:10px;transition:box-shadow .3s cubic-bezier(0.22,1,0.36,1),transform .3s cubic-bezier(0.22,1,0.36,1),border-color .3s cubic-bezier(0.22,1,0.36,1);}
-        .sec-valores__tile:hover{box-shadow:0 16px 40px -8px rgba(13,13,13,.12);transform:translateY(-4px);border-color:rgba(192,57,43,.25);}
+        .sec-valores__tile:hover{box-shadow:0 16px 40px -8px rgba(13,13,13,.12);border-color:rgba(192,57,43,.25);}
         .sec-valores__icon{font-size:28px;line-height:1;}
         .sec-valores__name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:17px;color:var(--ink);transition:color .2s;}
         .sec-valores__tile:hover .sec-valores__name{color:var(--accent);}
@@ -670,6 +745,68 @@ export default function GlobeHero() {
         @media(max-width:960px){.sec-valores{padding:80px 24px;}.sec-valores__grid{grid-template-columns:1fr 1fr;}}
         @media(max-width:600px){.sec-valores__grid{grid-template-columns:1fr;}}
         @media(prefers-reduced-motion:reduce){.sec-valores__tile,.sec-valores__tile:hover{transform:none;}}
+        /* ── TESTIMONIOS ── */
+        .sec-test{background:#080808;padding:112px 40px;border-top:1px solid rgba(255,255,255,.06);}
+        .sec-test__inner{max-width:1200px;margin:0 auto;}
+        .sec-test__header{text-align:center;margin-bottom:64px;}
+        .sec-test__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:16px;}
+        .sec-test__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(34px,5vw,56px);color:#fff;letter-spacing:-0.04em;line-height:1.08;}
+        .sec-test__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:#C0392B;}
+        .sec-test__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+        .sec-test__card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:36px 32px;display:flex;flex-direction:column;gap:20px;position:relative;overflow:hidden;}
+        .sec-test__card::before{content:"“";position:absolute;top:-10px;left:20px;font-family:"Instrument Serif",serif;font-size:120px;color:rgba(192,57,43,.15);line-height:1;pointer-events:none;}
+        .sec-test__quote{font-family:"Instrument Serif",serif;font-style:italic;font-size:17px;color:rgba(255,255,255,.82);line-height:1.7;position:relative;z-index:1;}
+        .sec-test__author{display:flex;align-items:center;gap:14px;margin-top:auto;}
+        .sec-test__avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#C0392B,#922b21);color:#fff;font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+        .sec-test__name{font-family:"Satoshi",sans-serif;font-weight:600;font-size:14px;color:#fff;}
+        .sec-test__role{font-family:"Satoshi",sans-serif;font-size:12px;color:rgba(255,255,255,.4);margin-top:2px;}
+        @media(max-width:960px){.sec-test{padding:80px 24px;}.sec-test__grid{grid-template-columns:1fr;}}
+        /* ── FAQ ── */
+        .sec-faq{background:var(--bg);padding:112px 40px;border-top:1px solid var(--line);}
+        .sec-faq__inner{max-width:800px;margin:0 auto;}
+        .sec-faq__header{text-align:center;margin-bottom:64px;}
+        .sec-faq__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--mute);margin-bottom:16px;}
+        .sec-faq__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(34px,5vw,52px);color:var(--ink);letter-spacing:-0.04em;line-height:1.08;}
+        .sec-faq__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:var(--accent);}
+        .sec-faq__item{border-bottom:1px solid var(--line);overflow:hidden;}
+        .sec-faq__q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 0;background:none;border:none;cursor:pointer;text-align:left;font-family:"Satoshi",sans-serif;font-weight:600;font-size:16px;color:var(--ink);transition:color .2s;}
+        .sec-faq__q:hover{color:var(--accent);}
+        .sec-faq__q:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px;}
+        .sec-faq__chevron{flex-shrink:0;transition:transform .3s cubic-bezier(0.22,1,0.36,1);}
+        .sec-faq__chevron--open{transform:rotate(180deg);}
+        .sec-faq__a{font-size:15px;color:var(--mute);line-height:1.7;padding:0 0 22px;}
+        @media(max-width:960px){.sec-faq{padding:80px 24px;}}
+        /* ── CTA FINAL ── */
+        .sec-cta{background:#080808;padding:120px 40px;text-align:center;border-top:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden;}
+        .sec-cta::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 110%,rgba(192,57,43,.18),transparent 70%);pointer-events:none;}
+        .sec-cta__inner{max-width:800px;margin:0 auto;position:relative;z-index:1;}
+        .sec-cta__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:20px;}
+        .sec-cta__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(36px,5vw,64px);color:#fff;letter-spacing:-0.04em;line-height:1.05;margin-bottom:20px;}
+        .sec-cta__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:#C0392B;}
+        .sec-cta__sub{font-family:"Satoshi",sans-serif;font-size:17px;color:rgba(255,255,255,.5);line-height:1.65;max-width:520px;margin:0 auto 48px;}
+        .sec-cta__btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+        .sec-cta__btn-p{padding:16px 32px;background:#C0392B;color:#fff;border-radius:999px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:15px;text-decoration:none;transition:background .2s;display:inline-flex;align-items:center;gap:8px;}
+        .sec-cta__btn-p:hover{background:#a93226;}
+        .sec-cta__btn-p:active{transform:scale(0.97);}
+        .sec-cta__btn-g{padding:15px 32px;background:transparent;color:rgba(255,255,255,.7);border:1.5px solid rgba(255,255,255,.2);border-radius:999px;font-family:"Satoshi",sans-serif;font-weight:600;font-size:15px;text-decoration:none;transition:all .2s;display:inline-flex;align-items:center;gap:8px;}
+        .sec-cta__btn-g:hover{border-color:rgba(255,255,255,.5);color:#fff;}
+        @media(max-width:600px){.sec-cta{padding:80px 24px;}.sec-cta__btns{flex-direction:column;align-items:center;}}
+        /* ── FOOTER ── */
+        .bf-footer{background:#060606;padding:60px 40px 40px;border-top:1px solid rgba(255,255,255,.05);}
+        .bf-footer__inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:60px;margin-bottom:48px;}
+        .bf-footer__brand-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:#fff;margin:14px 0 10px;}
+        .bf-footer__brand-desc{font-family:"Satoshi",sans-serif;font-size:13px;color:rgba(255,255,255,.38);line-height:1.6;max-width:280px;}
+        .bf-footer__col-title{font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:18px;}
+        .bf-footer__links{display:flex;flex-direction:column;gap:12px;}
+        .bf-footer__link{font-family:"Satoshi",sans-serif;font-size:13.5px;color:rgba(255,255,255,.5);text-decoration:none;transition:color .15s;}
+        .bf-footer__link:hover{color:#fff;}
+        .bf-footer__bottom{max-width:1200px;margin:0 auto;border-top:1px solid rgba(255,255,255,.05);padding-top:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+        .bf-footer__copy{font-family:"Satoshi",sans-serif;font-size:12px;color:rgba(255,255,255,.2);}
+        .bf-footer__legal{display:flex;gap:20px;}
+        .bf-footer__legal a{font-family:"Satoshi",sans-serif;font-size:12px;color:rgba(255,255,255,.25);text-decoration:none;transition:color .15s;}
+        .bf-footer__legal a:hover{color:rgba(255,255,255,.55);}
+        @media(max-width:960px){.bf-footer__inner{grid-template-columns:1fr 1fr;}.bf-footer{padding:60px 24px 32px;}}
+        @media(max-width:600px){.bf-footer__inner{grid-template-columns:1fr;gap:40px;}}
       `}</style>
 
       {/* Post-event banner */}
@@ -841,6 +978,17 @@ export default function GlobeHero() {
             <Link href="/submit" className="btn btn--solid">Soy estudiante →</Link>
             <button className="btn btn--ghost" onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}>Conocer el programa</button>
           </m.div>
+          <m.p
+            style={{ marginTop: 14, fontSize: 13, color: 'var(--mute)', fontFamily: '"Satoshi",sans-serif' }}
+            initial={prefersReduced ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.42 }}
+          >
+            ¿Eres coordinador?{' '}
+            <Link href="/register" style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>
+              Regístrate aquí →
+            </Link>
+          </m.p>
           <m.div
             className="stats"
             initial={prefersReduced ? false : { opacity: 0, y: 16 }}
@@ -961,7 +1109,7 @@ export default function GlobeHero() {
             <m.div
               key={s.label}
               className="mision__stat"
-              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }}
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 140, damping: 20 } } }}
             >
               <div className="mision__stat-num">
                 <CountNumber to={s.to} />{s.suffix && <em>{s.suffix}</em>}
@@ -1007,7 +1155,7 @@ export default function GlobeHero() {
               initial={prefersReduced ? false : { scaleX: 0 }}
               whileInView={{ scaleX: 1 }}
               viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.15 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.15 }}
             />
           </div>
 
@@ -1200,8 +1348,13 @@ export default function GlobeHero() {
                 style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
               >
                 <div className="about-dark__photo-dots" />
-                {/* EDITAR: reemplazar con <img> cuando haya foto real */}
-                <span className="about-dark__photo-label">[FOTO DEL PROGRAMA]</span>
+                <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:12, position:'relative', zIndex:1 }}>
+                  <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden="true">
+                    <circle cx="26" cy="19" r="9" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5"/>
+                    <path d="M8 46C8 37.163 16.163 30 26 30C35.837 30 44 37.163 44 46" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                  <span style={{ color:'rgba(255,255,255,0.08)', fontFamily:'"Satoshi",sans-serif', fontSize:10, letterSpacing:'.18em', textTransform:'uppercase' }}>Foto del programa</span>
+                </div>
               </m.div>
             </div>
             {/* Badge flotante */}
@@ -1271,6 +1424,7 @@ export default function GlobeHero() {
               initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.48 }}
+              onClick={() => document.getElementById('metodologia')?.scrollIntoView({ behavior: 'smooth' })}
             >Conocer el programa →</m.button>
           </div>
 
@@ -1287,14 +1441,17 @@ export default function GlobeHero() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 120, damping: 20 }}
           >
-            <div className="dl-landing__eyebrow">EVENTO ESPECIAL</div>
+            <div className="dl-landing__eyebrow">{isEventPast ? 'EVENTO PASADO' : 'EVENTO ESPECIAL'}</div>
             <h2 className="dl-landing__title">Día de Liderazgo<br />La Guajira 2026</h2>
             <p className="dl-landing__desc">
-              8 colegios de La Guajira presentan sus proyectos de liderazgo comunitario el 16 de mayo.
+              {isEventPast
+                ? 'El 16 de mayo, 8 colegios de La Guajira presentaron sus proyectos de liderazgo. ¡Gracias a todos los participantes!'
+                : '8 colegios de La Guajira presentan sus proyectos de liderazgo comunitario el 16 de mayo.'}
             </p>
             <div className="dl-landing__btns">
-              <a href="/dia-de-liderazgo" className="dl-landing__btn-g">Ver más →</a>
-              <a href="/submit" className="dl-landing__btn-p">Subir mi proyecto →</a>
+              <a href="/dia-de-liderazgo" className="dl-landing__btn-g">Ver detalles →</a>
+              {!isEventPast && <a href="/submit" className="dl-landing__btn-p">Subir mi proyecto →</a>}
+              {isEventPast && <a href="/success-stories" className="dl-landing__btn-p">Ver historias →</a>}
             </div>
           </m.div>
 
@@ -1334,7 +1491,7 @@ export default function GlobeHero() {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ type: 'spring', stiffness: 140, damping: 20, staggerChildren: 0.08 }}
+              transition={{ type: 'spring', stiffness: 140, damping: 20 }}
             >
               {featuredStories.map((s, i) => (
                 <m.a
@@ -1344,7 +1501,7 @@ export default function GlobeHero() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ type: 'spring', stiffness: 140, damping: 20, delay: i * 0.08 }}
-                  whileHover={{ y: -4, boxShadow: '0 16px 40px -10px rgba(13,13,13,.16)' }}
+                  whileHover={{ y: -4 }}
                   style={{ display: 'block', textDecoration: 'none', background: '#fff', border: '1px solid rgba(13,13,13,.07)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px -4px rgba(13,13,13,.08)' }}
                 >
                   {s.cover_url
@@ -1388,7 +1545,16 @@ export default function GlobeHero() {
             transition={{ type: 'spring', stiffness: 120, damping: 22 }}
           >
             <div className="sec-historia__watermark-yr" aria-hidden="true">2015</div>
-            <div className="sec-historia__img" />
+            <div className="sec-historia__img">
+              <div style={{ height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:14, opacity:.3 }}>
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                  <rect x="4" y="8" width="32" height="24" rx="3" stroke="var(--ink)" strokeWidth="1.5"/>
+                  <circle cx="14" cy="18" r="4" stroke="var(--ink)" strokeWidth="1.5"/>
+                  <path d="M4 28L13 20l6 5 5-4 12 7" stroke="var(--ink)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span style={{ fontFamily:'"Satoshi",sans-serif', fontSize:10, letterSpacing:'.14em', textTransform:'uppercase', color:'var(--mute)' }}>Foto próximamente</span>
+              </div>
+            </div>
             <div className="sec-historia__badge">
               <div className="sec-historia__badge-est">DESDE</div>
               <div className="sec-historia__badge-label">2015</div>
@@ -1519,6 +1685,7 @@ export default function GlobeHero() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ type: 'spring', stiffness: 120, damping: 22 }}
+              whileHover={{ y: -3, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
             >
               <div className="sec-metod__num sec-metod__num--featured">01</div>
               <div className="sec-metod__tag sec-metod__tag--featured">Formación</div>
@@ -1537,6 +1704,7 @@ export default function GlobeHero() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ type: 'spring', stiffness: 120, damping: 22, delay: 0.08 }}
+              whileHover={{ y: -3, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
             >
               <div className="sec-metod__num sec-metod__num--normal">02</div>
               <div className="sec-metod__tag sec-metod__tag--normal">Práctica</div>
@@ -1551,6 +1719,7 @@ export default function GlobeHero() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ type: 'spring', stiffness: 120, damping: 22, delay: 0.16 }}
+              whileHover={{ y: -3, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
             >
               <div className="sec-metod__num sec-metod__num--normal">03</div>
               <div className="sec-metod__tag sec-metod__tag--normal">Mentoría</div>
@@ -1565,6 +1734,7 @@ export default function GlobeHero() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ type: 'spring', stiffness: 120, damping: 22, delay: 0.24 }}
+              whileHover={{ y: -3, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
             >
               <div className="sec-metod__num sec-metod__num--dark">04</div>
               <div className="sec-metod__tag sec-metod__tag--dark">Red Global</div>
@@ -1600,6 +1770,7 @@ export default function GlobeHero() {
                 whileInView={{ opacity: 1, filter: 'blur(0px)' }}
                 viewport={{ once: true, margin: '-40px' }}
                 transition={{ type: 'spring', stiffness: 120, damping: 20, delay: i * 0.07 }}
+                whileHover={{ y: -4, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
               >
                 <div className="sec-valores__icon">{v.icon}</div>
                 <div className="sec-valores__name">{v.name}</div>
@@ -1611,7 +1782,7 @@ export default function GlobeHero() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN 3 — EQUIPO
+          SECCIÓN — EQUIPO
       ══════════════════════════════════════════════════════════════════ */}
       <section id="equipo" className="equipo">
         <div className="equipo__inner">
@@ -1622,7 +1793,7 @@ export default function GlobeHero() {
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.7, ease: [0.2, 0.7, 0.2, 1] }}
+            transition={{ type: 'spring', stiffness: 120, damping: 22 }}
           >
             <div>
               <p className="equipo__eyebrow">EL EQUIPO</p>
@@ -1660,6 +1831,7 @@ export default function GlobeHero() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: '-80px' }}
                   transition={{ type: 'spring', stiffness: 180, damping: 22, delay: i * 0.12 }}
+                  whileHover={{ y: -4, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
                 >
                   <div className={avatarClass} style={{ background: 'linear-gradient(135deg,#C0392B,#922b21)' }}>{f.initials}</div>
                   {isWide ? <div className="equipo__card-content">{cardContent}</div> : cardContent}
@@ -1670,6 +1842,138 @@ export default function GlobeHero() {
 
         </div>
       </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SECCIÓN — TESTIMONIOS
+      ══════════════════════════════════════════════════════════════════ */}
+      <section className="sec-test">
+        <div className="sec-test__inner">
+          <m.div
+            className="sec-test__header"
+            initial={prefersReduced ? false : { opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+          >
+            <p className="sec-test__eyebrow">LO QUE DICEN</p>
+            <h2 className="sec-test__title">Voces de nuestra <em>familia</em>.</h2>
+          </m.div>
+          <div className="sec-test__grid">
+            {TESTIMONIOS.map((t, i) => (
+              <m.div
+                key={i}
+                className="sec-test__card"
+                initial={prefersReduced ? false : { opacity: 0, filter: 'blur(8px)', y: 16 }}
+                whileInView={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ type: 'spring', stiffness: 120, damping: 20, delay: i * 0.1 }}
+              >
+                <p className="sec-test__quote">{t.quote}</p>
+                <div className="sec-test__author">
+                  <div className="sec-test__avatar">{t.init}</div>
+                  <div>
+                    <div className="sec-test__name">{t.name}</div>
+                    <div className="sec-test__role">{t.role} · {t.school}</div>
+                  </div>
+                </div>
+              </m.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SECCIÓN — FAQ
+      ══════════════════════════════════════════════════════════════════ */}
+      <FAQSection reduced={!!prefersReduced} />
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SECCIÓN — CTA FINAL
+      ══════════════════════════════════════════════════════════════════ */}
+      <section className="sec-cta">
+        <div className="sec-cta__inner">
+          <m.p
+            className="sec-cta__eyebrow"
+            initial={prefersReduced ? false : { opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ type: 'spring', stiffness: 140, damping: 20 }}
+          >EL SIGUIENTE PASO ES TUYO</m.p>
+          <m.h2
+            className="sec-cta__title"
+            initial={prefersReduced ? false : { opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ type: 'spring', stiffness: 120, damping: 20, delay: 0.08 }}
+          >
+            Tu liderazgo<br />empieza <em>aquí</em>.
+          </m.h2>
+          <m.p
+            className="sec-cta__sub"
+            initial={prefersReduced ? false : { opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ type: 'spring', stiffness: 120, damping: 20, delay: 0.16 }}
+          >
+            Únete a cientos de jóvenes que transforman sus comunidades. El programa es gratuito y abierto para estudiantes de los colegios aliados.
+          </m.p>
+          <m.div
+            className="sec-cta__btns"
+            initial={prefersReduced ? false : { opacity: 0, y: 16, scale: 0.96 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.24 }}
+          >
+            <Link href="/submit" className="sec-cta__btn-p">Soy estudiante — Únete →</Link>
+            <Link href="/register" className="sec-cta__btn-g">Soy coordinador →</Link>
+          </m.div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          FOOTER
+      ══════════════════════════════════════════════════════════════════ */}
+      <footer className="bf-footer">
+        <div className="bf-footer__inner">
+          <div>
+            <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+              <circle cx="12" cy="5" r="2.4" fill="rgba(255,255,255,0.65)"/>
+              <path d="M12 7.5 L20 22 H4 Z" fill="rgba(255,255,255,0.65)"/>
+            </svg>
+            <div className="bf-footer__brand-name">Big Family</div>
+            <p className="bf-footer__brand-desc">
+              Programa de liderazgo juvenil que conecta estudiantes de La Guajira con una red global de impacto.
+            </p>
+          </div>
+          <div>
+            <p className="bf-footer__col-title">Programa</p>
+            <div className="bf-footer__links">
+              <a href="#historia" className="bf-footer__link">Historia</a>
+              <a href="#impacto" className="bf-footer__link">Impacto</a>
+              <a href="#nuestra-red" className="bf-footer__link">Nuestra Red</a>
+              <a href="#metodologia" className="bf-footer__link">Metodología</a>
+              <a href="#equipo" className="bf-footer__link">Equipo</a>
+            </div>
+          </div>
+          <div>
+            <p className="bf-footer__col-title">Acceso</p>
+            <div className="bf-footer__links">
+              <Link href="/login" className="bf-footer__link">Ingresar</Link>
+              <Link href="/submit" className="bf-footer__link">Registro estudiante</Link>
+              <Link href="/register" className="bf-footer__link">Registro coordinador</Link>
+              <Link href="/news" className="bf-footer__link">Noticias</Link>
+              <Link href="/success-stories" className="bf-footer__link">Historias de Éxito</Link>
+            </div>
+          </div>
+        </div>
+        <div className="bf-footer__bottom">
+          <p className="bf-footer__copy">© {new Date().getFullYear()} The Big Family Program · La Guajira, Colombia</p>
+          <div className="bf-footer__legal">
+            <Link href="/timeline" className="bf-footer__legal-link" style={{ fontFamily:'"Satoshi",sans-serif', fontSize:12, color:'rgba(255,255,255,.25)', textDecoration:'none' }}>Línea del tiempo</Link>
+            <Link href="/success-stories" className="bf-footer__legal-link" style={{ fontFamily:'"Satoshi",sans-serif', fontSize:12, color:'rgba(255,255,255,.25)', textDecoration:'none' }}>Historias</Link>
+          </div>
+        </div>
+      </footer>
     </>
   )
 }

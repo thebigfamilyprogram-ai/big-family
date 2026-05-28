@@ -150,6 +150,7 @@ const CollageCard = memo(function CollageCard({
   return (
     // Level 1 — entrance animation
     <m.div
+      className={`hc-card-${card.id}`}
       style={{
         position: 'absolute',
         left: pos.x,
@@ -340,6 +341,13 @@ export default memo(function HeroCollage({ photos = [] }: HeroCollageProps) {
           photo={photos.find(p => p.cardId === card.id)}
         />
       ))}
+
+      {/* Mobile: hide cards beyond index 3 via inline style injected once */}
+      <style>{`
+        @media(max-width:760px){
+          .hc-card-5,.hc-card-6,.hc-card-7,.hc-card-8{display:none!important;}
+        }
+      `}</style>
     </div>
   )
 })
