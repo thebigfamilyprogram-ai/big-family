@@ -19,10 +19,10 @@ function Progress({ step }: { step: 1 | 2 | 3 }) {
           <div key={label} style={{ display:'flex', alignItems:'center' }}>
             {i > 0 && <div style={{ width:36, height:1, background: done||active ? '#C0392B' : '#E0DDD8' }} />}
             <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:5 }}>
-              <div style={{ width:26, height:26, borderRadius:'50%', background: done||active ? '#C0392B' : '#E8E4DF', color: done||active ? '#fff' : '#9a9690', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>
+              <div style={{ width:26, height:26, borderRadius:'50%', background: done||active ? '#C0392B' : '#E8E4DF', color: done||active ? '#fff' : 'var(--mute)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>
                 {done||active ? '✓' : n}
               </div>
-              <span style={{ fontSize:10.5, fontWeight: active ? 700 : 400, color: active ? '#C0392B' : '#9a9690', whiteSpace:'nowrap' }}>{label}</span>
+              <span style={{ fontSize:10.5, fontWeight: active ? 700 : 400, color: active ? '#C0392B' : 'var(--mute)', whiteSpace:'nowrap' }}>{label}</span>
             </div>
           </div>
         )
@@ -145,7 +145,7 @@ export default function SubmitConfirmationPage() {
         <m.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.5 }}
+          transition={{ type: 'spring', stiffness: 180, damping: 26, delay: 0.5 }}
         >
           <h1 className="sc-title">¡Proyecto enviado exitosamente!</h1>
           <p className="sc-sub">Tu coordinador revisará tu proyecto pronto y te dará retroalimentación.</p>
@@ -156,7 +156,7 @@ export default function SubmitConfirmationPage() {
             style={{ width: '100%', maxWidth: 400, margin: '0 auto' }}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.65 }}
+            transition={{ type: 'spring', stiffness: 180, damping: 26, delay: 0.65 }}
           >
             <div className="sc-info">
               <div className="sc-info-row">

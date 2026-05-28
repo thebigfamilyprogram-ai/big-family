@@ -19,7 +19,7 @@ function Progress({ step }: { step: 1 | 2 | 3 }) {
           <div key={label} style={{ display:'flex', alignItems:'center' }}>
             {i > 0 && <div style={{ width:32, height:1, background: done ? '#C0392B' : '#E0DDD8' }} />}
             <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:5 }}>
-              <div style={{ width:24, height:24, borderRadius:'50%', background: done ? '#C0392B' : active ? '#0D0D0D' : '#E8E4DF', color: done||active ? '#fff' : '#9a9690', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>
+              <div style={{ width:24, height:24, borderRadius:'50%', background: done ? '#C0392B' : active ? '#0D0D0D' : '#E8E4DF', color: done||active ? '#fff' : 'var(--mute)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700 }}>
                 {done ? '✓' : n}
               </div>
               <span style={{ fontSize:10, fontWeight: active ? 700 : 400, color: active ? '#fff' : 'rgba(255,255,255,.5)', whiteSpace:'nowrap' }}>{label}</span>
@@ -185,7 +185,7 @@ export default function SubmitProjectPage() {
       onClick={handleExternalSubmit}
       disabled={submitting || !canSubmit}
       style={{
-        padding: '0 28px', height: 52, background: canSubmit ? '#C0392B' : '#9a9690',
+        padding: '0 28px', height: 52, background: canSubmit ? '#C0392B' : 'var(--mute)',
         color: '#fff', border: 'none', borderRadius: 12,
         fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15,
         cursor: canSubmit ? 'pointer' : 'not-allowed',

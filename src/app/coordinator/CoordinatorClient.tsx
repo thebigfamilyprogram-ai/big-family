@@ -308,7 +308,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
           className="main"
           initial={pref ? false : { opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ type: 'spring', stiffness: 220, damping: 28 }}
         >
           <div className="page-hd">
             <h1>Panel del Coordinador</h1>
@@ -402,7 +402,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
                 <m.div
                   initial={pref ? false : { opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ type: 'spring', stiffness: 180, damping: 26 }}
                 >
                   <ResponsiveContainer width="100%" height={Math.max(220, chartData.length * 40)}>
                     <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 36, left: 0, bottom: 0 }}>
@@ -449,7 +449,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
                 <m.div
                   initial={pref ? false : { opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+                  transition={{ type: 'spring', stiffness: 180, damping: 26, delay: 0.1 }}
                 >
                   <ResponsiveContainer width="100%" height={220}>
                     <AreaChart data={weeklyData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>

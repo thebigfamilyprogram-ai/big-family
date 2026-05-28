@@ -185,7 +185,7 @@ export default function CoordinatorTimelinePage() {
   // ── Render ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg,#F5F3EF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Satoshi,sans-serif', color: '#6B6B6B', fontSize: 14 }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg,#F5F3EF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Satoshi,sans-serif', color: 'var(--mute)', fontSize: 14 }}>
         Verificando acceso…
       </div>
     )

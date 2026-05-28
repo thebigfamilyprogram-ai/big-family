@@ -162,7 +162,7 @@ export default function ExpositorPage() {
           className="exp-content"
           initial={pref ? false : { opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ type: 'spring', stiffness: 220, damping: 28 }}
         >
           {/* Header */}
           <div className="exp-header">
@@ -204,7 +204,7 @@ export default function ExpositorPage() {
                   className="stat-card"
                   initial={pref ? false : { opacity: 0, scale: 0.96 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: i * 0.07 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 27, delay: i * 0.07 }}
                 >
                   <div className="stat-label">{s.label}</div>
                   <div className={`stat-num${s.accent ? ' accent' : ''}`}>{s.num}</div>
@@ -302,7 +302,7 @@ export default function ExpositorPage() {
               <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)', marginBottom: 24 }}>
                 "{deleteTarget.title || 'Sin título'}"
               </p>
-              <p style={{ fontSize: 13, color: '#9a9690', marginBottom: 24 }}>
+              <p style={{ fontSize: 13, color: 'var(--mute)', marginBottom: 24 }}>
                 También se eliminarán todas sus preguntas. Esta acción no se puede deshacer.
               </p>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>

@@ -232,7 +232,7 @@ export default function CoordinatorNewsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ type:'spring', stiffness:140, damping:20, delay: i * 0.04 }}
               >
-                <div className="cn-item-title">{item.title || <span style={{ color:'#9a9690', fontStyle:'italic' }}>Sin título</span>}</div>
+                <div className="cn-item-title">{item.title || <span style={{ color:'var(--mute)', fontStyle:'italic' }}>Sin título</span>}</div>
                 <span style={{ padding:'3px 10px', borderRadius:999, fontSize:11.5, fontWeight:700, background: item.published ? '#D1FAE5' : '#F1EFE8', color: item.published ? '#065F46' : '#444441', flexShrink:0 }}>
                   {item.published ? 'Publicado' : 'Borrador'}
                 </span>

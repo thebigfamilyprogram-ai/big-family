@@ -28,7 +28,7 @@ function Logo({ pref }: { pref: boolean | null }) {
         <circle cx="9" cy="18" r="4" fill="#6B6B6B"/>
         <circle cx="43" cy="18" r="4" fill="#6B6B6B"/>
       </svg>
-      <span style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, color: '#0D0D0D' }}>Big Family</span>
+      <span style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>Big Family</span>
     </m.div>
   )
 }
@@ -52,14 +52,14 @@ function Progress({ step, pref }: { step: 1 | 2 | 3; pref: boolean | null }) {
             )}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
               <m.div
-                style={{ width: 26, height: 26, borderRadius: '50%', background: done ? '#C0392B' : active ? '#0D0D0D' : '#E8E4DF', color: done || active ? '#fff' : '#9a9690', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}
+                style={{ width: 26, height: 26, borderRadius: '50%', background: done ? '#C0392B' : active ? '#0D0D0D' : '#E8E4DF', color: done || active ? '#fff' : 'var(--mute)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}
                 initial={pref ? false : { scale: 0.6 }}
                 animate={{ scale: 1 }}
                 transition={springSnappy}
               >
                 {done ? '✓' : n}
               </m.div>
-              <span style={{ fontSize: 10.5, fontWeight: active ? 700 : 400, color: active ? '#0D0D0D' : '#9a9690', whiteSpace: 'nowrap' }}>{label}</span>
+              <span style={{ fontSize: 10.5, fontWeight: active ? 700 : 400, color: active ? '#0D0D0D' : 'var(--mute)', whiteSpace: 'nowrap' }}>{label}</span>
             </div>
           </div>
         )

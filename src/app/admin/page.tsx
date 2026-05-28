@@ -86,7 +86,7 @@ const STATUS_META: Record<string, { label: string; variant: 'draft' | 'pending' 
 }
 
 const ROLE_META: Record<string, { label: string; color: string; bg: string }> = {
-  student:     { label: 'Estudiante',  color: '#0D0D0D', bg: 'rgba(13,13,13,.07)' },
+  student:     { label: 'Estudiante',  color: 'var(--ink)', bg: 'rgba(13,13,13,.07)' },
   coordinator: { label: 'Coordinador', color: '#4C1D95', bg: '#EDE9FE'            },
   expositor:   { label: 'Expositor',   color: '#065F46', bg: '#D1FAE5'            },
   admin:       { label: 'Admin',       color: '#fff',    bg: 'var(--accent,#C0392B)' },
@@ -434,7 +434,7 @@ export default function AdminPage() {
     return (
       <>
         <style>{``}</style>
-        <div style={{ minHeight: '100vh', background: 'var(--bg,#F5F3EF)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6B6B6B', fontSize: 14 }}>
+        <div style={{ minHeight: '100vh', background: 'var(--bg,#F5F3EF)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--mute)', fontSize: 14 }}>
           Verificando acceso…
         </div>
       </>
@@ -575,7 +575,7 @@ export default function AdminPage() {
                     {[90, 70, 80, 60].map((w, i) => <Skeleton key={i} h={12} r={4} w={`${w}%`} />)}
                   </div>
                 ) : (
-                  <m.div initial={pref ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>
+                  <m.div initial={pref ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 180, damping: 26 }}>
                     <ResponsiveContainer width="100%" height={Math.max(200, schoolXP.length * 38)}>
                       <BarChart data={schoolXP} layout="vertical" margin={{ top: 0, right: 40, left: 0, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" strokeOpacity={0.5} horizontal={false} />
@@ -617,7 +617,7 @@ export default function AdminPage() {
                     {[60, 80, 50, 90].map((w, i) => <Skeleton key={i} h={10} r={4} w={`${w}%`} />)}
                   </div>
                 ) : (
-                  <m.div initial={pref ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}>
+                  <m.div initial={pref ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 180, damping: 26, delay: 0.1 }}>
                     <ResponsiveContainer width="100%" height={200}>
                       <LineChart data={weeklyUsers} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" strokeOpacity={0.5} vertical={false} />
@@ -705,14 +705,14 @@ export default function AdminPage() {
                     </thead>
                     <tbody>
                       {pagedUsers.map(u => {
-                        const rm = ROLE_META[u.role ?? ''] ?? { label: u.role ?? '—', color: '#6B6B6B', bg: 'rgba(13,13,13,.06)' }
+                        const rm = ROLE_META[u.role ?? ''] ?? { label: u.role ?? '—', color: 'var(--mute)', bg: 'rgba(13,13,13,.06)' }
                         return (
                           <tr key={u.id}>
                             <td style={{ fontWeight: 600 }}>{u.display_name ?? '—'}</td>
-                            <td style={{ color: '#6B6B6B', fontSize: 13 }}>{u.email ?? '—'}</td>
+                            <td style={{ color: 'var(--mute)', fontSize: 13 }}>{u.email ?? '—'}</td>
                             <td>{u.school_name ?? '—'}</td>
                             <td><Badge label={rm.label} color={rm.color} bg={rm.bg} /></td>
-                            <td style={{ color: '#9a9690', fontSize: 13 }}>
+                            <td style={{ color: 'var(--mute)', fontSize: 13 }}>
                               {new Date(u.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
                             </td>
                           </tr>
@@ -779,7 +779,7 @@ export default function AdminPage() {
                             <td>{p.student_name ?? '—'}</td>
                             <td>{p.school_name ?? '—'}</td>
                             <td><Badge label={sm.label} variant={sm.variant} /></td>
-                            <td style={{ color: '#9a9690', fontSize: 13 }}>
+                            <td style={{ color: 'var(--mute)', fontSize: 13 }}>
                               {p.submitted_at
                                 ? new Date(p.submitted_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
                                 : '—'}
@@ -822,7 +822,7 @@ export default function AdminPage() {
           ) : (
             <div className="adm-eval-list">
               {evals.map(ev => {
-                const rm = ev.resultado ? (RESULTADO_META[ev.resultado] ?? { label: ev.resultado, color: '#6B6B6B', bg: 'rgba(13,13,13,.06)' }) : null
+                const rm = ev.resultado ? (RESULTADO_META[ev.resultado] ?? { label: ev.resultado, color: 'var(--mute)', bg: 'rgba(13,13,13,.06)' }) : null
                 return (
                   <div key={ev.id} className="adm-eval-card">
                     <div className="adm-eval-top">
@@ -868,14 +868,14 @@ export default function AdminPage() {
 
                     {ev.feedback && (
                       <div className="adm-eval-feedback">
-                        <div style={{ fontSize: 10.5, fontWeight: 700, color: '#9a9690', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: 6 }}>Retroalimentación del coordinador</div>
+                        <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--mute)', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: 6 }}>Retroalimentación del coordinador</div>
                         {ev.feedback}
                       </div>
                     )}
                   </div>
                 )
               })}
-              <p style={{ fontSize: 12.5, color: '#9a9690' }}>
+              <p style={{ fontSize: 12.5, color: 'var(--mute)' }}>
                 {evals.filter(e => e.admin_confirmed).length} de {evals.length} confirmadas
               </p>
             </div>
@@ -896,7 +896,7 @@ export default function AdminPage() {
                 <div key={t.id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, padding: '14px 0', borderBottom: '1px solid var(--line-soft,rgba(13,13,13,.05))' }}>
                   <div>
                     <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 600, fontSize: 14 }}>{t.title}</div>
-                    {t.description && <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 3 }}>{t.description}</div>}
+                    {t.description && <div style={{ fontSize: 12, color: 'var(--mute)', marginTop: 3 }}>{t.description}</div>}
                     <div style={{ fontSize: 11.5, color: '#b25a00', fontWeight: 600, marginTop: 4 }}>+{t.xp_reward} XP</div>
                   </div>
                   <button
@@ -914,15 +914,15 @@ export default function AdminPage() {
               <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Nueva plantilla</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  <label style={{ fontSize: 11.5, fontWeight: 600, color: '#6B6B6B', textTransform: 'uppercase', letterSpacing: '.06em' }}>Título</label>
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.06em' }}>Título</label>
                   <input value={tmplFormTitle} onChange={e => setTmplFormTitle(e.target.value)} placeholder="Ej: Organizar un taller comunitario" style={{ padding: '10px 14px', border: '1.5px solid rgba(13,13,13,.12)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--card-bg,#fff)', color: 'var(--ink,#0D0D0D)' }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  <label style={{ fontSize: 11.5, fontWeight: 600, color: '#6B6B6B', textTransform: 'uppercase', letterSpacing: '.06em' }}>Descripción</label>
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.06em' }}>Descripción</label>
                   <textarea value={tmplFormDesc} onChange={e => setTmplFormDesc(e.target.value)} placeholder="Descripción opcional..." rows={3} style={{ padding: '10px 14px', border: '1.5px solid rgba(13,13,13,.12)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--card-bg,#fff)', resize: 'vertical', color: 'var(--ink,#0D0D0D)' }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  <label style={{ fontSize: 11.5, fontWeight: 600, color: '#6B6B6B', textTransform: 'uppercase', letterSpacing: '.06em' }}>XP al completar</label>
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.06em' }}>XP al completar</label>
                   <input type="number" value={tmplFormXp} onChange={e => setTmplFormXp(Number(e.target.value))} min={10} max={500} step={10} style={{ padding: '10px 14px', border: '1.5px solid rgba(13,13,13,.12)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--card-bg,#fff)', color: 'var(--ink,#0D0D0D)' }} />
                 </div>
                 <button

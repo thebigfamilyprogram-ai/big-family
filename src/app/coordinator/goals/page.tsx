@@ -134,7 +134,7 @@ export default function CoordinatorGoalsPage() {
         </div>
       </nav>
 
-      <m.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}>
+      <m.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 28 }}>
         <h1 className="page-h">Metas de estudiantes</h1>
         <p className="page-sub">{schoolName} — Seguimiento de objetivos personales y del programa</p>
 

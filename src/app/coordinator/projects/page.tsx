@@ -269,7 +269,7 @@ export default function CoordinatorProjectsPage() {
         className="cpj-main"
         initial={pref ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ type: 'spring', stiffness: 220, damping: 28 }}
       >
         {/* Header */}
         <div className="cpj-header">
@@ -296,7 +296,7 @@ export default function CoordinatorProjectsPage() {
                 className="cpj-stat"
                 initial={pref ? false : { opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: i * 0.07 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 27, delay: i * 0.07 }}
               >
                 <div className="cpj-stat__num" style={{ color: s.color }}>{s.num}</div>
                 <div className="cpj-stat__label">{s.label}</div>

@@ -1,4 +1,19 @@
 {
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "& 'c:\\Users\\Sammy\\big-family\\.claude\\load-context.ps1'",
+            "shell": "powershell",
+            "timeout": 20,
+            "statusMessage": "Cargando contexto del proyecto..."
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Bash(npm run *)",

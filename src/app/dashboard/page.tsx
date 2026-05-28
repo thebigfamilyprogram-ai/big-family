@@ -610,7 +610,7 @@ export default function DashboardPage() {
           className="content"
           initial={pref ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ type: 'spring', stiffness: 220, damping: 28 }}
         >
 
           {/* Announcement banner — most recent unread */}
@@ -637,12 +637,12 @@ export default function DashboardPage() {
                 <div className="ob-sep" />
                 <div className="ob-step">
                   <div className="ob-dot next">2</div>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#0D0D0D' }}>Primer módulo</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>Primer módulo</span>
                 </div>
                 <div className="ob-sep" />
                 <div className="ob-step">
                   <div className="ob-dot idle">3</div>
-                  <span style={{ fontSize: 13, color: '#9a9690' }}>Primer IC</span>
+                  <span style={{ fontSize: 13, color: 'var(--mute)' }}>Primer IC</span>
                 </div>
               </div>
             </div>
@@ -761,7 +761,7 @@ export default function DashboardPage() {
                 <m.div
                   initial={pref ? false : { opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ type: 'spring', stiffness: 180, damping: 26 }}
                 >
                   <ResponsiveContainer width="100%" height={140}>
                     <LineChart data={weeklyXP} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
@@ -821,7 +821,7 @@ export default function DashboardPage() {
                   <m.div
                     initial={pref ? false : { opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+                    transition={{ type: 'spring', stiffness: 180, damping: 26, delay: 0.1 }}
                   >
                     <ResponsiveContainer width="100%" height={140}>
                       <RadialBarChart cx="50%" cy="50%" innerRadius={20} outerRadius={68} data={pillars} startAngle={90} endAngle={-270}>

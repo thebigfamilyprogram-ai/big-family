@@ -563,7 +563,7 @@ export default function LeadershipPathPage() {
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
-                          <span style={{ fontSize: 12, color: '#6B6B6B' }}>{modCount} módulos</span>
+                          <span style={{ fontSize: 12, color: 'var(--mute)' }}>{modCount} módulos</span>
                           {complete && (
                             <span style={{ fontSize: 11, padding: '2px 8px', background: 'rgba(192,57,43,0.1)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.2)', borderRadius: 999, whiteSpace: 'nowrap' }}>
                               ✓ Fase completada
@@ -767,7 +767,7 @@ export default function LeadershipPathPage() {
               </div>
 
               {/* Description */}
-              <div style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.65, marginBottom: 20 }}>
+              <div style={{ fontSize: 14, color: 'var(--mute)', lineHeight: 1.65, marginBottom: 20 }}>
                 {selected.module.description}
               </div>
 
@@ -795,7 +795,7 @@ export default function LeadershipPathPage() {
               <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, color: 'var(--ink)', marginBottom: 10 }}>Lo que aprenderás:</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
                 {LEARN_BULLETS.map((b, i) => (
-                  <div key={i} style={{ display: 'flex', gap: 8, fontSize: 13, color: '#6B6B6B', lineHeight: 1.5 }}>
+                  <div key={i} style={{ display: 'flex', gap: 8, fontSize: 13, color: 'var(--mute)', lineHeight: 1.5 }}>
                     <span style={{ color: '#C0392B', flexShrink: 0 }}>✓</span>{b}
                   </div>
                 ))}

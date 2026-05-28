@@ -532,7 +532,7 @@ export default function TeamHubPage() {
                               </div>
                               <div className="th-member-name">
                                 {member.display_name}
-                                {member.id === userId && <span style={{ color: '#6B6B6B', fontWeight: 400, fontSize: 13 }}> (Tú)</span>}
+                                {member.id === userId && <span style={{ color: 'var(--mute)', fontWeight: 400, fontSize: 13 }}> (Tú)</span>}
                               </div>
                               <div className="th-member-stats">⭐ {member.total_xp} XP · 📚 {member.modules_completed} módulos</div>
                               <div className="th-xp-bar">

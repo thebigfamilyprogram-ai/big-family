@@ -71,11 +71,11 @@ function ApproveModal({ mod, onConfirm, onClose, loading }: { mod: ModuleRow; on
         onClick={e => e.stopPropagation()}
         style={{ background: '#fff', borderRadius: 20, padding: '36px 32px', maxWidth: 440, width: '100%', boxShadow: '0 24px 64px -12px rgba(0,0,0,.25)' }}
       >
-        <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 20, color: '#0D0D0D', marginBottom: 10 }}>¿Publicar este módulo?</div>
-        <p style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.6, marginBottom: 6 }}>El módulo quedará visible para todos los estudiantes de la plataforma.</p>
-        <p style={{ fontSize: 14, fontWeight: 600, color: '#0D0D0D', marginBottom: 24 }}>"{mod.title}"</p>
+        <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 10 }}>¿Publicar este módulo?</div>
+        <p style={{ fontSize: 14, color: 'var(--mute)', lineHeight: 1.6, marginBottom: 6 }}>El módulo quedará visible para todos los estudiantes de la plataforma.</p>
+        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)', marginBottom: 24 }}>"{mod.title}"</p>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} disabled={loading} style={{ padding: '10px 20px', borderRadius: 999, background: 'transparent', color: '#6B6B6B', border: '1px solid rgba(13,13,13,.15)', fontFamily: 'inherit', fontSize: 14, cursor: 'pointer' }}>Cancelar</button>
+          <button onClick={onClose} disabled={loading} style={{ padding: '10px 20px', borderRadius: 999, background: 'transparent', color: 'var(--mute)', border: '1px solid rgba(13,13,13,.15)', fontFamily: 'inherit', fontSize: 14, cursor: 'pointer' }}>Cancelar</button>
           <button onClick={onConfirm} disabled={loading} style={{ padding: '10px 22px', borderRadius: 999, background: '#065F46', color: '#fff', border: 'none', fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 14, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
             {loading ? 'Publicando…' : 'Sí, publicar'}
           </button>
@@ -99,16 +99,16 @@ function RejectModal({ mod, onConfirm, onClose, loading }: { mod: ModuleRow; onC
         onClick={e => e.stopPropagation()}
         style={{ background: '#fff', borderRadius: 20, padding: '36px 32px', maxWidth: 460, width: '100%', boxShadow: '0 24px 64px -12px rgba(0,0,0,.25)' }}
       >
-        <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 20, color: '#0D0D0D', marginBottom: 10 }}>Rechazar módulo</div>
-        <p style={{ fontSize: 14, fontWeight: 600, color: '#0D0D0D', marginBottom: 16 }}>"{mod.title}"</p>
-        <div style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 8 }}>Motivo del rechazo (requerido)</div>
+        <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 10 }}>Rechazar módulo</div>
+        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)', marginBottom: 16 }}>"{mod.title}"</p>
+        <div style={{ fontSize: 13, color: 'var(--mute)', marginBottom: 8 }}>Motivo del rechazo (requerido)</div>
         <textarea
           value={reason} onChange={e => setReason(e.target.value)}
           placeholder="Explica al expositor por qué no se aprueba y qué debe mejorar…"
           style={{ width: '100%', minHeight: 100, padding: '10px 14px', border: '1px solid rgba(13,13,13,.15)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
         />
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 }}>
-          <button onClick={onClose} disabled={loading} style={{ padding: '10px 20px', borderRadius: 999, background: 'transparent', color: '#6B6B6B', border: '1px solid rgba(13,13,13,.15)', fontFamily: 'inherit', fontSize: 14, cursor: 'pointer' }}>Cancelar</button>
+          <button onClick={onClose} disabled={loading} style={{ padding: '10px 20px', borderRadius: 999, background: 'transparent', color: 'var(--mute)', border: '1px solid rgba(13,13,13,.15)', fontFamily: 'inherit', fontSize: 14, cursor: 'pointer' }}>Cancelar</button>
           <button onClick={() => reason.trim() && onConfirm(reason.trim())} disabled={loading || !reason.trim()} style={{ padding: '10px 22px', borderRadius: 999, background: '#991B1B', color: '#fff', border: 'none', fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 14, cursor: (loading || !reason.trim()) ? 'not-allowed' : 'pointer', opacity: (loading || !reason.trim()) ? 0.5 : 1 }}>
             {loading ? 'Rechazando…' : 'Confirmar rechazo'}
           </button>
@@ -156,16 +156,16 @@ function ModuleCard({
             </span>
           </div>
 
-          <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 17, color: '#0D0D0D', marginBottom: 6, lineHeight: 1.3 }}>{mod.title}</div>
+          <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 17, color: 'var(--ink)', marginBottom: 6, lineHeight: 1.3 }}>{mod.title}</div>
           {mod.description && (
-            <p style={{ fontSize: 13.5, color: '#6B6B6B', lineHeight: 1.6, marginBottom: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            <p style={{ fontSize: 13.5, color: 'var(--mute)', lineHeight: 1.6, marginBottom: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
               {mod.description}
             </p>
           )}
 
           {/* Meta row */}
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 12.5, color: '#9a9690', marginBottom: 14 }}>
-            <span>Por <strong style={{ color: '#0D0D0D' }}>{mod.expositor_name}</strong></span>
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 12.5, color: 'var(--mute)', marginBottom: 14 }}>
+            <span>Por <strong style={{ color: 'var(--ink)' }}>{mod.expositor_name}</strong></span>
             {mod.submitted_at && (
               <span>Enviado el {new Date(mod.submitted_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
             )}
@@ -205,7 +205,7 @@ function ModuleCard({
             {showActions === 'published' && onUnpublish && (
               <button
                 onClick={() => onUnpublish(mod.id)}
-                style={{ padding: '9px 18px', borderRadius: 999, background: 'transparent', color: '#6B6B6B', border: '1px solid rgba(13,13,13,.14)', fontFamily: 'Satoshi,sans-serif', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all .2s' }}
+                style={{ padding: '9px 18px', borderRadius: 999, background: 'transparent', color: 'var(--mute)', border: '1px solid rgba(13,13,13,.14)', fontFamily: 'Satoshi,sans-serif', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all .2s' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = '#991B1B'; e.currentTarget.style.color = '#991B1B' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(13,13,13,.14)'; e.currentTarget.style.color = '#6B6B6B' }}
               >
@@ -499,11 +499,11 @@ export default function CoordinatorModulesPage() {
                 >
                   <div style={{ background: '#fff', border: '1px solid rgba(13,13,13,.07)', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 8px -4px rgba(13,13,13,.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 16, color: '#0D0D0D', marginBottom: 4 }}>{req.student_name}</div>
-                      <div style={{ fontSize: 13.5, color: '#6B6B6B', marginBottom: 6 }}>
-                        Módulo: <strong style={{ color: '#0D0D0D' }}>{req.module_title}</strong>
+                      <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 16, color: 'var(--ink)', marginBottom: 4 }}>{req.student_name}</div>
+                      <div style={{ fontSize: 13.5, color: 'var(--mute)', marginBottom: 6 }}>
+                        Módulo: <strong style={{ color: 'var(--ink)' }}>{req.module_title}</strong>
                       </div>
-                      <div style={{ fontSize: 12, color: '#9a9690' }}>
+                      <div style={{ fontSize: 12, color: 'var(--mute)' }}>
                         Solicitado el {new Date(req.requested_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
