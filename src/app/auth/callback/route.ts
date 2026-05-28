@@ -1,4 +1,4 @@
-import { createServerClient } from '@supabase/ssr'
+﻿import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     // New registration — create profile
     const { error: insertError } = await admin.from('profiles').insert({
       id:           user.id,
-      full_name:    user.user_metadata?.full_name ?? user.email,
+      display_name:    user.user_metadata?.display_name ?? user.email,
       email:        user.email,
       school_id:    schoolId || null,
       role:         role ?? 'student',

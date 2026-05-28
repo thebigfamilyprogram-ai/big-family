@@ -22,7 +22,7 @@ type Tab = 'stats' | 'users' | 'projects' | 'evaluations' | 'goals'
 
 interface UserRow {
   id:          string
-  full_name:   string | null
+  display_name:   string | null
   email:       string | null
   role:        string | null
   created_at:  string
@@ -147,11 +147,11 @@ export default function AdminPage() {
       if (!user) { router.replace('/login'); return }
 
       const { data: profile } = await supabase
-        .from('profiles').select('full_name, role').eq('id', user.id).maybeSingle()
+        .from('profiles').select('display_name, role').eq('id', user.id).maybeSingle()
 
       if (profile?.role !== 'admin') { router.replace('/dashboard'); return }
 
-      setAdminName(profile?.full_name ?? 'Admin')
+      setAdminName(profile?.display_name ?? 'Admin')
       await fetchStats(supabase)
       setBooting(false)
     }
@@ -230,7 +230,7 @@ export default function AdminPage() {
     if (MOCK_MODE) {
       setUsers(MOCK.students.map(s => ({
         id:          s.id,
-        full_name:   s.name,
+        display_name:   s.name,
         email:       `${s.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'.')}@bigfamily.co`,
         role:        'student',
         created_at:  s.created_at,
@@ -244,7 +244,7 @@ export default function AdminPage() {
     setLoadingUsers(true)
 
     const { data: profileData } = await supabase
-      .from('profiles').select('id, full_name, email, role, created_at, school_id')
+      .from('profiles').select('id, display_name, email, role, created_at, school_id')
       .order('created_at', { ascending: false })
 
     if (!profileData) { setLoadingUsers(false); return }
@@ -257,9 +257,9 @@ export default function AdminPage() {
     const schoolMap: Record<string, string> = {}
     schoolData?.forEach((s: { id: string; name: string }) => { schoolMap[s.id] = s.name })
 
-    setUsers(profileData.map((u: { id: string; full_name: string | null; email: string | null; role: string | null; created_at: string; school_id: string | null }) => ({
+    setUsers(profileData.map((u: { id: string; display_name: string | null; email: string | null; role: string | null; created_at: string; school_id: string | null }) => ({
       id:          u.id,
-      full_name:   u.full_name,
+      display_name:   u.display_name,
       email:       u.email,
       role:        u.role,
       created_at:  u.created_at,
@@ -296,12 +296,12 @@ export default function AdminPage() {
     const schoolIds = [...new Set(projData.map((p: { school_id: string | null }) => p.school_id).filter(Boolean))] as string[]
 
     const [{ data: profileData }, { data: schoolData }] = await Promise.all([
-      userIds.length   ? supabase.from('profiles').select('id, full_name').in('id', userIds)   : Promise.resolve({ data: [] as { id: string; full_name: string | null }[] }),
+      userIds.length   ? supabase.from('profiles').select('id, display_name').in('id', userIds)   : Promise.resolve({ data: [] as { id: string; display_name: string | null }[] }),
       schoolIds.length ? supabase.from('schools').select('id, name').in('id', schoolIds)       : Promise.resolve({ data: [] as { id: string; name: string }[] }),
     ])
 
     const profileMap: Record<string, string> = {}
-    profileData?.forEach((p: { id: string; full_name: string | null }) => { profileMap[p.id] = p.full_name ?? '—' })
+    profileData?.forEach((p: { id: string; display_name: string | null }) => { profileMap[p.id] = p.display_name ?? '—' })
     const schoolMap: Record<string, string> = {}
     schoolData?.forEach((s: { id: string; name: string }) => { schoolMap[s.id] = s.name })
 
@@ -336,11 +336,11 @@ export default function AdminPage() {
     const allIds     = [...new Set([...studentIds, ...coordIds])]
 
     const { data: people } = allIds.length
-      ? await supabase.from('profiles').select('id, full_name').in('id', allIds)
-      : { data: [] as { id: string; full_name: string | null }[] }
+      ? await supabase.from('profiles').select('id, display_name').in('id', allIds)
+      : { data: [] as { id: string; display_name: string | null }[] }
 
     const peopleMap: Record<string, string> = {}
-    people?.forEach((p: { id: string; full_name: string | null }) => { peopleMap[p.id] = p.full_name ?? '—' })
+    people?.forEach((p: { id: string; display_name: string | null }) => { peopleMap[p.id] = p.display_name ?? '—' })
 
     setEvals(evalData.map((e: { id: string; project_id: string; resultado: string | null; feedback: string | null; evaluated_at: string; admin_confirmed: boolean; coordinator_id: string | null; projects: { title: string | null; user_id: string } | null }) => ({
       id:               e.id,
@@ -413,7 +413,7 @@ export default function AdminPage() {
     if (!userSearch.trim()) return users
     const q = userSearch.toLowerCase()
     return users.filter(u =>
-      u.full_name?.toLowerCase().includes(q) ||
+      u.display_name?.toLowerCase().includes(q) ||
       u.email?.toLowerCase().includes(q) ||
       u.school_name?.toLowerCase().includes(q)
     )
@@ -708,7 +708,7 @@ export default function AdminPage() {
                         const rm = ROLE_META[u.role ?? ''] ?? { label: u.role ?? '—', color: '#6B6B6B', bg: 'rgba(13,13,13,.06)' }
                         return (
                           <tr key={u.id}>
-                            <td style={{ fontWeight: 600 }}>{u.full_name ?? '—'}</td>
+                            <td style={{ fontWeight: 600 }}>{u.display_name ?? '—'}</td>
                             <td style={{ color: '#6B6B6B', fontSize: 13 }}>{u.email ?? '—'}</td>
                             <td>{u.school_name ?? '—'}</td>
                             <td><Badge label={rm.label} color={rm.color} bg={rm.bg} /></td>

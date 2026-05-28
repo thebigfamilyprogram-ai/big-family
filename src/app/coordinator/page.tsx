@@ -22,7 +22,7 @@ export default async function CoordinatorPage() {
   const admin = await createSupabaseAdminClient()
   const { data: profile } = await admin
     .from('profiles')
-    .select('role, full_name, school_id')
+    .select('role, display_name, school_id')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -30,7 +30,7 @@ export default async function CoordinatorPage() {
 
   return (
     <CoordinatorClient
-      initialFullName={profile.full_name ?? ''}
+      initialFullName={profile.display_name ?? ''}
       initialSchoolId={profile.school_id ?? ''}
     />
   )

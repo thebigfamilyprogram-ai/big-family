@@ -174,7 +174,7 @@ export default function LeadershipPathPage() {
       if (!au) { router.replace('/login'); return }
 
       const { data: profile } = await supabase
-        .from('profiles').select('full_name, school_level').eq('id', au.id).maybeSingle()
+        .from('profiles').select('display_name, school_level').eq('id', au.id).maybeSingle()
       const level = profile?.school_level ?? 'senior'
 
       const { data: mods } = await supabase
@@ -247,7 +247,7 @@ export default function LeadershipPathPage() {
         }
       })
 
-      setUserName(profile?.full_name ?? 'Líder Big Family')
+      setUserName(profile?.display_name ?? 'Líder Big Family')
       setTotalXP(total_xp)
       setStreak(streakDays)
       setAttMap(aMap)

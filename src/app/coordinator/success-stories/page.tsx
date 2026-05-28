@@ -21,7 +21,7 @@ interface Story {
   created_at: string
 }
 
-interface Student { id: string; full_name: string }
+interface Student { id: string; display_name: string }
 
 function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?: number }) {
   return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
@@ -52,13 +52,13 @@ export default function CoordinatorSuccessStoriesPage() {
     async function load() {
       const { data: { user } } = await sb!.auth.getUser()
       if (!user) { router.replace('/login'); return }
-      const { data: profile } = await sb!.from('profiles').select('full_name, school_id, role').eq('id', user.id).maybeSingle()
+      const { data: profile } = await sb!.from('profiles').select('display_name, school_id, role').eq('id', user.id).maybeSingle()
       if (!profile || !['coordinator','admin'].includes(profile.role ?? '')) { router.replace('/dashboard'); return }
-      setCoordName(profile.full_name ?? ''); setCoordId(user.id); setSchoolId(profile.school_id ?? '')
+      setCoordName(profile.display_name ?? ''); setCoordId(user.id); setSchoolId(profile.school_id ?? '')
 
       const { data: sc } = await sb!.from('schools').select('name').eq('id', profile.school_id).maybeSingle()
       const { data: storiesData } = await sb!.from('success_stories').select('id, title, story, cover_url, published, published_at, student_id, school_id, project_id, created_at').order('created_at', { ascending: false })
-      const { data: studsData } = await sb!.from('profiles').select('id, full_name').eq('school_id', profile.school_id).eq('role', 'student')
+      const { data: studsData } = await sb!.from('profiles').select('id, display_name').eq('school_id', profile.school_id).eq('role', 'student')
 
       setStudents(studsData ?? [])
 
@@ -69,13 +69,13 @@ export default function CoordinatorSuccessStoriesPage() {
       const projIds   = [...new Set(storiesData.map((r: { project_id: string | null }) => r.project_id).filter(Boolean))] as string[]
 
       const [{ data: profData }, { data: schoolData }, { data: projData }] = await Promise.all([
-        sb!.from('profiles').select('id, full_name').in('id', userIds),
+        sb!.from('profiles').select('id, display_name').in('id', userIds),
         schoolIds.length ? sb!.from('schools').select('id, name').in('id', schoolIds) : Promise.resolve({ data: [] }),
         projIds.length ? sb!.from('projects').select('id, title').in('id', projIds) : Promise.resolve({ data: [] }),
       ])
 
       const profMap: Record<string, string> = {}
-      profData?.forEach((p: { id: string; full_name: string | null }) => { profMap[p.id] = p.full_name ?? '—' })
+      profData?.forEach((p: { id: string; display_name: string | null }) => { profMap[p.id] = p.display_name ?? '—' })
       const schoolMap: Record<string, string> = {}
       schoolData?.forEach((s: { id: string; name: string }) => { schoolMap[s.id] = s.name })
       const projMap: Record<string, string> = {}
@@ -110,7 +110,7 @@ export default function CoordinatorSuccessStoriesPage() {
     }).select().maybeSingle()
     if (data) {
       const stud = students.find(s => s.id === createForm.student_id)
-      setStories(prev => [{ id: data.id, title: data.title, story: data.story, cover_url: null, published: false, published_at: null, created_at: data.created_at, student_name: stud?.full_name ?? null, school_name: null, project_title: null }, ...prev])
+      setStories(prev => [{ id: data.id, title: data.title, story: data.story, cover_url: null, published: false, published_at: null, created_at: data.created_at, student_name: stud?.display_name ?? null, school_name: null, project_title: null }, ...prev])
     }
     setCreateForm({ student_id: '', title: '', story: '' }); setShowCreate(false); setSaving(false)
   }
@@ -169,7 +169,7 @@ export default function CoordinatorSuccessStoriesPage() {
                   <label>Estudiante *</label>
                   <select value={createForm.student_id} onChange={e => setCreateForm(f => ({ ...f, student_id: e.target.value }))}>
                     <option value="">— Selecciona —</option>
-                    {students.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+                    {students.map(s => <option key={s.id} value={s.id}>{s.display_name}</option>)}
                   </select>
                 </div>
                 <div className="field" style={{ gridColumn: '1 / -1' }}>

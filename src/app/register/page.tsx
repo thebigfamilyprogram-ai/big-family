@@ -160,7 +160,7 @@ export default function RegisterPage() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: { data: { display_name: fullName } },
     })
 
     if (error || !data.user) {
@@ -173,7 +173,7 @@ export default function RegisterPage() {
 
     await supabase.from('profiles').insert({
       id:           uid,
-      full_name:    fullName,
+      display_name:    fullName,
       email,
       school_id:    schoolId || null,
       role:         userType,

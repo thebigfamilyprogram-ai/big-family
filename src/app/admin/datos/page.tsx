@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,7 +31,7 @@ export default function AdminDatosPage() {
 
       const { data: profile } = await sb
         .from('profiles')
-        .select('full_name, role')
+        .select('display_name, role')
         .eq('id', user.id)
         .maybeSingle()
 
@@ -40,7 +40,7 @@ export default function AdminDatosPage() {
         return
       }
 
-      const name = profile.full_name ?? 'Admin'
+      const name = profile.display_name ?? 'Admin'
       setUserName(name)
       setUserInitial(name.charAt(0).toUpperCase())
       setReady(true)

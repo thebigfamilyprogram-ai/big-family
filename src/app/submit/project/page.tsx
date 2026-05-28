@@ -68,7 +68,7 @@ export default function SubmitProjectPage() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, school_id, school_level, role')
+        .select('display_name, school_id, school_level, role')
         .eq('id', user.id)
         .maybeSingle()
       if (cancelled) return
@@ -77,7 +77,7 @@ export default function SubmitProjectPage() {
         router.replace('/dashboard'); return
       }
 
-      const fullName = profile?.full_name ?? user.email ?? 'Estudiante'
+      const fullName = profile?.display_name ?? user.email ?? 'Estudiante'
       setUserId(user.id)
       setUserFullName(fullName)
 

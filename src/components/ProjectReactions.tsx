@@ -42,17 +42,17 @@ export default function ProjectReactions({ projectId, compact = false }: Props) 
 
       const { data: rows } = await sb!
         .from('project_reactions')
-        .select('emoji, user_id, profiles(full_name)')
+        .select('emoji, user_id, profiles(display_name)')
         .eq('project_id', projectId)
 
       const map: Record<string, { count: number; byMe: boolean; users: string[] }> = {}
       EMOJIS.forEach(e => { map[e] = { count: 0, byMe: false, users: [] } })
 
-      rows?.forEach((r: { emoji: string; user_id: string; profiles: { full_name: string | null } | null }) => {
+      rows?.forEach((r: { emoji: string; user_id: string; profiles: { display_name: string | null } | null }) => {
         if (map[r.emoji]) {
           map[r.emoji].count++
           if (r.user_id === user.id) map[r.emoji].byMe = true
-          map[r.emoji].users.push(r.profiles?.full_name ?? 'Usuario')
+          map[r.emoji].users.push(r.profiles?.display_name ?? 'Usuario')
         }
       })
 

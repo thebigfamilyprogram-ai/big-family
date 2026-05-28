@@ -9,7 +9,7 @@ import { m } from 'framer-motion'
 
 interface StudentReport {
   id: string
-  full_name: string
+  display_name: string
   email: string
   school_name: string
   school_level: string | null
@@ -48,14 +48,14 @@ export default function CoordinatorReportPage() {
       const { data: { user } } = await sb!.auth.getUser()
       if (!user) { router.replace('/login'); return }
 
-      const { data: profile } = await sb!.from('profiles').select('full_name, school_id, role').eq('id', user.id).maybeSingle()
+      const { data: profile } = await sb!.from('profiles').select('display_name, school_id, role').eq('id', user.id).maybeSingle()
       if (!profile || !['coordinator','admin'].includes(profile.role ?? '')) { router.replace('/dashboard'); return }
 
-      setCoordName(profile.full_name ?? '')
+      setCoordName(profile.display_name ?? '')
       const { data: school } = await sb!.from('schools').select('name').eq('id', profile.school_id).maybeSingle()
       setSchoolName(school?.name ?? '')
 
-      const { data: studs } = await sb!.from('profiles').select('id, full_name, email, school_level, created_at').eq('school_id', profile.school_id).eq('role', 'student')
+      const { data: studs } = await sb!.from('profiles').select('id, display_name, email, school_level, created_at').eq('school_id', profile.school_id).eq('role', 'student')
       if (!studs || studs.length === 0) { setLoading(false); return }
 
       const ids = studs.map((s: { id: string }) => s.id)
@@ -98,8 +98,8 @@ export default function CoordinatorReportPage() {
       const quizMap: Record<string, number> = {}
       quizRows?.forEach((r: { user_id: string }) => { quizMap[r.user_id] = (quizMap[r.user_id] ?? 0) + 1 })
 
-      setStudents(studs.map((s: { id: string; full_name: string | null; email: string | null; school_level: string | null; created_at: string }) => ({
-        id: s.id, full_name: s.full_name ?? '—', email: s.email ?? '—',
+      setStudents(studs.map((s: { id: string; display_name: string | null; email: string | null; school_level: string | null; created_at: string }) => ({
+        id: s.id, display_name: s.display_name ?? '—', email: s.email ?? '—',
         school_name: school?.name ?? '—', school_level: s.school_level,
         created_at: s.created_at,
         total_xp: xpMap[s.id] ?? 0, modules_completed: modMap[s.id] ?? 0, badges_earned: badgeMap[s.id] ?? 0,
@@ -133,7 +133,7 @@ export default function CoordinatorReportPage() {
         startY: 38,
         head: [['Nombre', 'Email', 'Nivel', 'XP Total', 'Módulos', 'Badges', 'Proyecto', 'Estado', 'Capstone', 'Metas', 'Quizzes']],
         body: students.map(s => [
-          s.full_name, s.email, s.school_level ?? '—', s.total_xp,
+          s.display_name, s.email, s.school_level ?? '—', s.total_xp,
           s.modules_completed, s.badges_earned,
           s.project_title ?? '—', s.project_status ?? '—',
           s.capstone_resultado ?? '—',
@@ -251,7 +251,7 @@ export default function CoordinatorReportPage() {
               <tbody>
                 {students.map(s => (
                   <tr key={s.id}>
-                    <td style={{ fontWeight: 500 }}>{s.full_name}</td>
+                    <td style={{ fontWeight: 500 }}>{s.display_name}</td>
                     <td>{s.school_level === 'junior' ? 'Junior' : 'Senior'}</td>
                     <td style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, color: '#C0392B' }}>{s.total_xp.toLocaleString()}</td>
                     <td style={{ textAlign: 'center' }}>{s.modules_completed}</td>

@@ -13,7 +13,7 @@ import ProjectCard, { type Project, type ProjectComment } from '@/components/Pro
 type StatusFilter = 'all' | 'draft' | 'pending' | 'approved' | 'rejected'
 
 interface CoordInfo {
-  full_name:   string
+  display_name:   string
   school_id:   string
   school_name: string
   user_id:     string
@@ -58,7 +58,7 @@ export default function CoordinatorProjectsPage() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, role, school_id')
+        .select('display_name, role, school_id')
         .eq('id', user.id)
         .maybeSingle()
 
@@ -69,7 +69,7 @@ export default function CoordinatorProjectsPage() {
         : { data: null }
 
       setCoord({
-        full_name:   profile?.full_name ?? '—',
+        display_name:   profile?.display_name ?? '—',
         school_id:   profile?.school_id ?? '',
         school_name: (schoolRow as any)?.name ?? 'Mi colegio',
         user_id:     user.id,
@@ -91,13 +91,13 @@ export default function CoordinatorProjectsPage() {
         supabase.from('project_images').select('project_id, url').in('project_id', ids),
         supabase.from('project_likes').select('project_id').in('project_id', ids),
         supabase.from('project_comments').select('project_id, id, body, created_at').in('project_id', ids),
-        supabase.from('profiles').select('id, full_name').in('id', userIds),
+        supabase.from('profiles').select('id, display_name').in('id', userIds),
         supabase.from('capstone_evaluations').select('project_id, resultado').in('project_id', ids),
         schoolIds.length ? supabase.from('schools').select('id, name').in('id', schoolIds) : Promise.resolve({ data: [] }),
       ])
 
       const profileMap: Record<string, string> = {}
-      profiles?.forEach((p: { id: string; full_name: string | null }) => { profileMap[p.id] = p.full_name ?? '—' })
+      profiles?.forEach((p: { id: string; display_name: string | null }) => { profileMap[p.id] = p.display_name ?? '—' })
 
       const evalMap: Record<string, string | null> = {}
       evals?.forEach((e: { project_id: string; resultado: string | null }) => { evalMap[e.project_id] = e.resultado })
@@ -111,7 +111,7 @@ export default function CoordinatorProjectsPage() {
           images:         imgs?.filter((i: { project_id: string; url: string }) => i.project_id === p.id).map((i: { project_id: string; url: string }) => i.url) ?? [],
           likes_count:    likes?.filter((l: { project_id: string }) => l.project_id === p.id).length ?? 0,
           comments_count: cmts?.filter((c: { project_id: string; id: string; body: string; created_at: string }) => c.project_id === p.id).length ?? 0,
-          full_name:      profileMap[p.user_id] ?? '—',
+          display_name:      profileMap[p.user_id] ?? '—',
           school_name:    schoolMap[p.school_id ?? ''] ?? '—',
           comments:       (cmts?.filter((c: { project_id: string; id: string; body: string; created_at: string }) => c.project_id === p.id) ?? []) as ProjectComment[],
           resultado:      evalMap[p.id] ?? null,
@@ -170,7 +170,7 @@ export default function CoordinatorProjectsPage() {
     return projects.filter(p => {
       if (filterStatus !== 'all' && p.status !== filterStatus) return false
       if (filterCategory && p.category !== filterCategory) return false
-      if (q && !p.title.toLowerCase().includes(q) && !(p.full_name ?? '').toLowerCase().includes(q)) return false
+      if (q && !p.title.toLowerCase().includes(q) && !(p.display_name ?? '').toLowerCase().includes(q)) return false
       return true
     })
   }, [projects, filterStatus, filterCategory, search])

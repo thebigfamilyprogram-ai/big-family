@@ -135,13 +135,13 @@ export default function GoalsPage() {
       setUserId(authUser.id)
 
       const [{ data: profile }, { data: goalsData }, { data: tmplData }] = await Promise.all([
-        sb!.from('profiles').select('full_name').eq('id', authUser.id).maybeSingle(),
+        sb!.from('profiles').select('display_name').eq('id', authUser.id).maybeSingle(),
         sb!.from('goals').select('*').eq('user_id', authUser.id).order('created_at', { ascending: false }),
         sb!.from('goal_templates').select('*').order('created_at', { ascending: false }),
       ])
 
-      setUserName(profile?.full_name ?? 'Líder')
-      setUserInitial((profile?.full_name ?? 'L')[0].toUpperCase())
+      setUserName(profile?.display_name ?? 'Líder')
+      setUserInitial((profile?.display_name ?? 'L')[0].toUpperCase())
       setGoals(goalsData ?? [])
       setTemplates(tmplData ?? [])
       setLoading(false)

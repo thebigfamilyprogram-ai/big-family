@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase'
 
 interface ProfileData {
   id:           string
-  full_name:    string
+  display_name:    string
   avatar_url:   string | null
   school_name:  string
   school_level: string | null
@@ -63,9 +63,9 @@ export default function StudentProfilePage() {
 
       // Viewer identity for the sidebar
       const { data: viewerProfile } = await supabase
-        .from('profiles').select('full_name').eq('id', user.id).maybeSingle()
+        .from('profiles').select('display_name').eq('id', user.id).maybeSingle()
       if (!cancelled) {
-        const vn = viewerProfile?.full_name ?? user.email ?? 'Leader'
+        const vn = viewerProfile?.display_name ?? user.email ?? 'Leader'
         setViewerName(vn)
         setViewerInit(vn.charAt(0).toUpperCase())
       }
@@ -73,7 +73,7 @@ export default function StudentProfilePage() {
       // Fetch target student profile
       const { data: sp } = await supabase
         .from('profiles')
-        .select('id, full_name, avatar_url, school_level, user_badges, school_id')
+        .select('id, display_name, avatar_url, school_level, user_badges, school_id')
         .eq('id', studentId)
         .maybeSingle()
 
@@ -101,7 +101,7 @@ export default function StudentProfilePage() {
 
       setProfile({
         id:                sp.id,
-        full_name:         sp.full_name ?? '—',
+        display_name:         sp.display_name ?? '—',
         avatar_url:        sp.avatar_url ?? null,
         school_name:       (schoolResult.data as { name: string } | null)?.name ?? '—',
         school_level:      sp.school_level ?? null,
@@ -157,7 +157,7 @@ export default function StudentProfilePage() {
               <a onClick={() => router.push('/dashboard/team-hub')}>Team Hub</a>
               <span className="sp-crumb-sep">›</span>
               <span style={{ color: 'var(--ink)', fontWeight: 500 }}>
-                {loading ? '…' : profile?.full_name ?? 'Perfil'}
+                {loading ? '…' : profile?.display_name ?? 'Perfil'}
               </span>
             </nav>
 
@@ -198,12 +198,12 @@ export default function StudentProfilePage() {
                   <div style={{ display: 'flex', gap: 22, alignItems: 'flex-start', marginBottom: 28, flexWrap: 'wrap' }}>
                     <div className="sp-avatar">
                       {profile.avatar_url
-                        ? <img src={profile.avatar_url} alt={profile.full_name} /> // eslint-disable-line @next/next/no-img-element
-                        : getInitials(profile.full_name)
+                        ? <img src={profile.avatar_url} alt={profile.display_name} /> // eslint-disable-line @next/next/no-img-element
+                        : getInitials(profile.display_name)
                       }
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div className="sp-name">{profile.full_name}</div>
+                      <div className="sp-name">{profile.display_name}</div>
                       <div className="sp-school">{profile.school_name}</div>
                       {lv && (
                         <span style={{ display: 'inline-block', padding: '4px 14px', borderRadius: 999, background: lv.bg, color: lv.color, fontSize: 12.5, fontWeight: 700, fontFamily: '"Satoshi",sans-serif' }}>

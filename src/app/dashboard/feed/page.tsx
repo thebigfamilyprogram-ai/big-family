@@ -15,7 +15,7 @@ interface FeedItem {
   type: string
   metadata: Record<string, string> | null
   created_at: string
-  full_name: string | null
+  display_name: string | null
   school_name: string | null
   initials: string
 }
@@ -96,7 +96,7 @@ export default function FeedPage() {
           goal_title:    item.type === 'goal_completed'     ? item.content : '',
         },
         created_at: item.createdAt,
-        full_name:  item.user,
+        display_name:  item.user,
         school_name:item.school,
         initials:   item.user.split(' ').map((w: string) => w[0]).join('').slice(0,2).toUpperCase(),
       }))
@@ -118,12 +118,12 @@ export default function FeedPage() {
 
     const userIds = [...new Set(feedRows.map((r: { user_id: string }) => r.user_id))] as string[]
     const [{ data: profiles }, { data: schools }] = await Promise.all([
-      sb.from('profiles').select('id, full_name, school_id').in('id', userIds),
+      sb.from('profiles').select('id, display_name, school_id').in('id', userIds),
       sb.from('schools').select('id, name'),
     ])
 
     const profileMap: Record<string, { name: string | null; school_id: string | null }> = {}
-    profiles?.forEach((p: { id: string; full_name: string | null; school_id: string | null }) => { profileMap[p.id] = { name: p.full_name, school_id: p.school_id } })
+    profiles?.forEach((p: { id: string; display_name: string | null; school_id: string | null }) => { profileMap[p.id] = { name: p.display_name, school_id: p.school_id } })
     const schoolMap: Record<string, string> = {}
     schools?.forEach((s: { id: string; name: string }) => { schoolMap[s.id] = s.name })
 
@@ -131,7 +131,7 @@ export default function FeedPage() {
       const prof = profileMap[r.user_id]
       const name = prof?.name ?? 'Usuario'
       const initials = name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() || 'U'
-      return { ...r, full_name: name, school_name: prof?.school_id ? (schoolMap[prof.school_id] ?? null) : null, initials }
+      return { ...r, display_name: name, school_name: prof?.school_id ? (schoolMap[prof.school_id] ?? null) : null, initials }
     })
 
     if (reset) setItems(mapped)
@@ -152,9 +152,9 @@ export default function FeedPage() {
       }
       const { data: { user } } = await sb!.auth.getUser()
       if (!user) { router.replace('/login'); return }
-      const { data: profile } = await sb!.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
-      setUserName(profile?.full_name ?? 'Líder')
-      setUserInit((profile?.full_name ?? 'L')[0].toUpperCase())
+      const { data: profile } = await sb!.from('profiles').select('display_name').eq('id', user.id).maybeSingle()
+      setUserName(profile?.display_name ?? 'Líder')
+      setUserInit((profile?.display_name ?? 'L')[0].toUpperCase())
       await fetchItems(0, 'all', true)
       setLoading(false)
     }
@@ -275,7 +275,7 @@ export default function FeedPage() {
                         {item.initials}
                       </div>
                       <div className="feed-body">
-                        <div className="feed-name">{item.full_name}</div>
+                        <div className="feed-name">{item.display_name}</div>
                         <div className="feed-action">
                           <span style={{ marginRight: 5 }}>{meta.icon}</span>
                           <span style={{ color: meta.color, fontWeight: 600 }}>{meta.label}</span>

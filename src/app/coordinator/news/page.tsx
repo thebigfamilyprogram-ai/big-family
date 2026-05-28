@@ -49,7 +49,7 @@ export default function CoordinatorNewsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.replace('/login'); return }
 
-      const { data: profile } = await supabase.from('profiles').select('full_name, role, school_id').eq('id', user.id).maybeSingle()
+      const { data: profile } = await supabase.from('profiles').select('display_name, role, school_id').eq('id', user.id).maybeSingle()
       if (cancelled) return
       if (!profile || profile.role !== 'coordinator') { router.replace('/dashboard'); return }
 
@@ -59,7 +59,7 @@ export default function CoordinatorNewsPage() {
       if (cancelled) return
 
       setUserId(user.id)
-      setCoordName(profile.full_name ?? '—')
+      setCoordName(profile.display_name ?? '—')
       setSchoolName((school as any)?.name ?? 'Mi colegio')
 
       const { data: rows } = await supabase

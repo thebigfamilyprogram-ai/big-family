@@ -27,7 +27,7 @@ interface ProgressRow {
 }
 
 interface UserData {
-  full_name:    string
+  display_name:    string
   total_xp:     number
   role:         string | null
   school_level: string | null
@@ -226,7 +226,7 @@ export default function DashboardPage() {
         const u = MOCK.currentUser
         const s = MOCK.students[0]
         setUserId(u.id)
-        setUser({ full_name: u.name, total_xp: s.xp, role: 'student', school_level: 'senior' })
+        setUser({ display_name: u.name, total_xp: s.xp, role: 'student', school_level: 'senior' })
         setModules(MOCK.modules.map(m => ({ id: m.id, title: m.title, description: '', xp_reward: m.xpReward, order_index: m.order })))
         setProgressRows([
           { module_id: 'm1', completed: true },
@@ -252,7 +252,7 @@ export default function DashboardPage() {
       setUserId(authUser.id)
 
       const [profileRes, xpRes, modsRes, progRes, projRes] = await Promise.all([
-        supabase.from('profiles').select('full_name, role, school_level, school_id').eq('id', authUser.id).maybeSingle(),
+        supabase.from('profiles').select('display_name, role, school_level, school_id').eq('id', authUser.id).maybeSingle(),
         supabase.from('xp_log').select('amount').eq('user_id', authUser.id),
         supabase.from('modules').select('*').eq('status', 'published').order('order_index'),
         supabase.from('progress').select('module_id, completed').eq('user_id', authUser.id),
@@ -360,7 +360,7 @@ export default function DashboardPage() {
       }
 
       setUser({
-        full_name:    profile?.full_name ?? 'Líder Big Family',
+        display_name:    profile?.display_name ?? 'Líder Big Family',
         total_xp,
         role:         profile?.role ?? null,
         school_level: profile?.school_level ?? null,
@@ -372,7 +372,7 @@ export default function DashboardPage() {
     load()
   }, [retryKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const displayName    = user?.full_name ?? 'Líder Big Family'
+  const displayName    = user?.display_name ?? 'Líder Big Family'
   const avatarLetter   = displayName[0]?.toUpperCase() ?? 'L'
   const initials       = displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'L'
   const completedIds   = new Set(progressRows.filter(p => p.completed).map(p => p.module_id))

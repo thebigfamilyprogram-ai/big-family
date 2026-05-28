@@ -62,9 +62,9 @@ export default function CalendarPage() {
       }
       const { data: { user } } = await sb!.auth.getUser()
       if (!user) { router.replace('/login'); return }
-      const { data: profile } = await sb!.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
-      setUserName(profile?.full_name ?? 'Líder')
-      setUserInit((profile?.full_name ?? 'L')[0].toUpperCase())
+      const { data: profile } = await sb!.from('profiles').select('display_name').eq('id', user.id).maybeSingle()
+      setUserName(profile?.display_name ?? 'Líder')
+      setUserInit((profile?.display_name ?? 'L')[0].toUpperCase())
 
       const { data } = await sb!.from('calendar_events').select('*').order('event_date')
       setEvents(data ?? [])

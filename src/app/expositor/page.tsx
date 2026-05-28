@@ -67,11 +67,11 @@ export default function ExpositorPage() {
       if (cancelled || !user) { router.replace('/login'); return }
 
       const { data: profile } = await supabase
-        .from('profiles').select('full_name, role').eq('id', user.id).maybeSingle()
+        .from('profiles').select('display_name, role').eq('id', user.id).maybeSingle()
       if (cancelled) return
       if (!profile || profile.role !== 'expositor') { router.replace('/login'); return }
 
-      const fullName = profile.full_name ?? user.email ?? 'Expositor'
+      const fullName = profile.display_name ?? user.email ?? 'Expositor'
       setUserName(fullName)
       setUserInitial(fullName.charAt(0).toUpperCase())
 

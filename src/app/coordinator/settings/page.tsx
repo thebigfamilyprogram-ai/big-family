@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
@@ -90,16 +90,16 @@ export default function CoordinatorSettingsPage() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, display_name, bio, avatar_url, school_id, role, user_badges, notification_preferences')
+        .select('display_name, display_name, bio, avatar_url, school_id, role, user_badges, notification_preferences')
         .eq('id', user.id)
         .maybeSingle()
 
       if (profile?.role !== 'coordinator') { router.replace('/coordinator'); return }
 
-      const dn = profile?.display_name || profile?.full_name || user.email || 'Coordinador'
+      const dn = profile?.display_name || profile?.display_name || user.email || 'Coordinador'
       setUserName(dn)
       setUserInitial(dn.charAt(0).toUpperCase())
-      setDisplayName(profile?.display_name ?? profile?.full_name ?? '')
+      setDisplayName(profile?.display_name ?? profile?.display_name ?? '')
       setBio(profile?.bio ?? '')
       setAvatarUrl(profile?.avatar_url ?? '')
       setRole(profile?.role ?? 'coordinator')

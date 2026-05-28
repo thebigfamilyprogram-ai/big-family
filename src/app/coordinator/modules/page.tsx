@@ -246,7 +246,7 @@ export default function CoordinatorModulesPage() {
       if (!user) { router.replace('/login'); return }
 
       const { data: profile } = await supabase
-        .from('profiles').select('full_name, role, school_id').eq('id', user.id).maybeSingle()
+        .from('profiles').select('display_name, role, school_id').eq('id', user.id).maybeSingle()
       if (cancelled) return
       if (!profile || profile.role !== 'coordinator') { router.replace('/dashboard'); return }
 
@@ -255,7 +255,7 @@ export default function CoordinatorModulesPage() {
         : { data: null }
       if (cancelled) return
 
-      setCoordName(profile.full_name ?? '—')
+      setCoordName(profile.display_name ?? '—')
       setSchoolName((schoolRow as any)?.name ?? 'Mi colegio')
 
       // Fetch pending + published modules
@@ -272,7 +272,7 @@ export default function CoordinatorModulesPage() {
 
       const [{ data: qs }, { data: expositors }] = await Promise.all([
         supabase.from('questions').select('module_id').in('module_id', modIds),
-        supabase.from('profiles').select('id, full_name').in('id', creatorIds),
+        supabase.from('profiles').select('id, display_name').in('id', creatorIds),
       ])
       if (cancelled) return
 
@@ -280,7 +280,7 @@ export default function CoordinatorModulesPage() {
       qs?.forEach((q: { module_id: string }) => { qMap[q.module_id] = (qMap[q.module_id] ?? 0) + 1 })
 
       const expMap: Record<string, string> = {}
-      expositors?.forEach((e: { id: string; full_name: string | null }) => { expMap[e.id] = e.full_name ?? '—' })
+      expositors?.forEach((e: { id: string; display_name: string | null }) => { expMap[e.id] = e.display_name ?? '—' })
 
       const enriched: ModuleRow[] = mods.map((m: { id: string; title: string; description: string | null; video_url: string | null; level: string; duration_minutes: number | null; status: string; created_by: string; rejection_reason: string | null; submitted_at: string | null; approved_at: string | null; pilar: string | null }) => ({
         ...m,
@@ -304,12 +304,12 @@ export default function CoordinatorModulesPage() {
         const retryModuleIds = [...new Set(retries.map((r: { module_id: string }) => r.module_id))]
 
         const [{ data: studentProfiles }, { data: retryModules }] = await Promise.all([
-          supabase.from('profiles').select('id, full_name').in('id', retryUserIds),
+          supabase.from('profiles').select('id, display_name').in('id', retryUserIds),
           supabase.from('modules').select('id, title').in('id', retryModuleIds),
         ])
         if (!cancelled) {
           const sMap: Record<string, string> = {}
-          studentProfiles?.forEach((p: { id: string; full_name: string | null }) => { sMap[p.id] = p.full_name ?? '—' })
+          studentProfiles?.forEach((p: { id: string; display_name: string | null }) => { sMap[p.id] = p.display_name ?? '—' })
           const mMap: Record<string, string> = {}
           retryModules?.forEach((m: { id: string; title: string }) => { mMap[m.id] = m.title })
 

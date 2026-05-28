@@ -25,7 +25,7 @@ export interface Project {
   comments_count: number
   images: string[]
   // coordinator-only
-  full_name?: string
+  display_name?: string
   school_name?: string
 }
 
@@ -275,7 +275,7 @@ export default function ProjectCard({
   }
 
   // ── Coordinator card ──────────────────────────────────────────────────────────
-  const initials = (project.full_name ?? '?').charAt(0).toUpperCase()
+  const initials = (project.display_name ?? '?').charAt(0).toUpperCase()
 
   return (
     <m.div
@@ -297,7 +297,7 @@ export default function ProjectCard({
             {initials}
           </div>
           <div>
-            <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 15, color: '#0D0D0D' }}>{project.full_name ?? '—'}</div>
+            <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 15, color: '#0D0D0D' }}>{project.display_name ?? '—'}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
               <span style={{ fontSize: 13, color: '#6B6B6B' }}>{project.school_name ?? '—'}</span>
               <span style={{ color: '#ddd' }}>·</span>

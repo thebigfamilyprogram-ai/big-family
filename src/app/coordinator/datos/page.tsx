@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,7 +34,7 @@ export default function CoordinatorDatosPage() {
 
       const { data: profile } = await sb
         .from('profiles')
-        .select('full_name, role, school_id')
+        .select('display_name, role, school_id')
         .eq('id', user.id)
         .maybeSingle()
 
@@ -47,7 +47,7 @@ export default function CoordinatorDatosPage() {
         ? await sb.from('schools').select('name').eq('id', profile.school_id).maybeSingle()
         : { data: null }
 
-      const name = profile.full_name ?? 'Coordinador'
+      const name = profile.display_name ?? 'Coordinador'
       setUserName(name)
       setUserInitial(name.charAt(0).toUpperCase())
       setSchoolName((school as { name: string } | null)?.name ?? '')

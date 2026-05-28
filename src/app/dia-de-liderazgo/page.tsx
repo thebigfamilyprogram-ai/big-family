@@ -168,7 +168,13 @@ export default function DiaLiderazgoPage() {
         .in('name', SCHOOL_NAMES)
       if (!data) return
       const map: Record<string, { logo_url: string | null; code: string | null }> = {}
-      data.forEach((row: { name: string; logo_url: string | null; code: string | null }) => { map[row.name] = { logo_url: row.logo_url ?? null, code: row.code ?? null } })
+      data.forEach((row: { name: string; logo_url: string | null; code: string | null }) => {
+        const raw = row.logo_url ?? null
+        const resolved = raw === null ? null
+          : raw.startsWith('http') ? raw
+          : supabase.storage.from('school-logos').getPublicUrl(raw).data.publicUrl
+        map[row.name] = { logo_url: resolved, code: row.code ?? null }
+      })
       setSchools(SCHOOL_NAMES.map(name => ({ name, ...(map[name] ?? { logo_url: null, code: null }) })))
     }
     fetchSchools()

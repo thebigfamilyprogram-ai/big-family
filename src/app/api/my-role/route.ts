@@ -34,9 +34,9 @@ export async function GET() {
 
   const { data: profile } = await adminClient
     .from("profiles")
-    .select("role, full_name, school_id")
+    .select("role, display_name, school_id")
     .eq("id", user.id)
     .maybeSingle();
 
-  return NextResponse.json(profile ?? { role: null, full_name: null, school_id: null });
+  return NextResponse.json(profile ?? { role: null, display_name: null, school_id: null });
 }

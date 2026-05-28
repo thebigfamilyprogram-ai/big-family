@@ -271,11 +271,11 @@ export default function GlobeHero() {
       const userIds   = rows.map((r: { student_id: string }) => r.student_id)
       const schoolIds = rows.map((r: { school_id: string | null }) => r.school_id).filter(Boolean) as string[]
       const [{ data: profiles }, { data: schools }] = await Promise.all([
-        sb!.from('profiles').select('id, full_name').in('id', userIds),
+        sb!.from('profiles').select('id, display_name').in('id', userIds),
         schoolIds.length ? sb!.from('schools').select('id, name').in('id', schoolIds) : Promise.resolve({ data: [] }),
       ])
       const pMap: Record<string, string> = {}
-      profiles?.forEach((p: { id: string; full_name: string | null }) => { pMap[p.id] = p.full_name ?? '' })
+      profiles?.forEach((p: { id: string; display_name: string | null }) => { pMap[p.id] = p.display_name ?? '' })
       const sMap: Record<string, string> = {}
       schools?.forEach((s: { id: string; name: string }) => { sMap[s.id] = s.name })
       setFeaturedStories(rows.map((r: { id: string; title: string; story: string; cover_url: string | null; student_id: string; school_id: string | null }) => ({ id: r.id, title: r.title, story: r.story, cover_url: r.cover_url, student_name: pMap[r.student_id] ?? null, school_name: r.school_id ? (sMap[r.school_id] ?? null) : null })))

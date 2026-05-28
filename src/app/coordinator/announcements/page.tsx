@@ -55,9 +55,9 @@ export default function CoordinatorAnnouncementsPage() {
     async function load() {
       const { data: { user } } = await sb!.auth.getUser()
       if (!user) { router.replace('/login'); return }
-      const { data: profile } = await sb!.from('profiles').select('full_name, role').eq('id', user.id).maybeSingle()
+      const { data: profile } = await sb!.from('profiles').select('display_name, role').eq('id', user.id).maybeSingle()
       if (!profile || !['coordinator','admin'].includes(profile.role ?? '')) { router.replace('/dashboard'); return }
-      setUserId(user.id); setCoordName(profile.full_name ?? '')
+      setUserId(user.id); setCoordName(profile.display_name ?? '')
       const [{ data: ann }, { data: sc }] = await Promise.all([
         sb!.from('announcements').select('*').order('created_at', { ascending: false }),
         sb!.from('schools').select('id, name').order('name'),

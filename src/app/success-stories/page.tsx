@@ -41,12 +41,12 @@ export default function SuccessStoriesPage() {
       const userIds   = [...new Set(rows.map((r: { student_id: string }) => r.student_id))] as string[]
       const schoolIds = [...new Set(rows.map((r: { school_id: string | null }) => r.school_id).filter(Boolean))] as string[]
       const [{ data: profiles }, { data: schools }] = await Promise.all([
-        sb!.from('profiles').select('id, full_name').in('id', userIds),
+        sb!.from('profiles').select('id, display_name').in('id', userIds),
         schoolIds.length ? sb!.from('schools').select('id, name').in('id', schoolIds) : Promise.resolve({ data: [] }),
       ])
 
       const profMap: Record<string, string> = {}
-      profiles?.forEach((p: { id: string; full_name: string | null }) => { profMap[p.id] = p.full_name ?? 'Estudiante' })
+      profiles?.forEach((p: { id: string; display_name: string | null }) => { profMap[p.id] = p.display_name ?? 'Estudiante' })
       const schoolMap: Record<string, string> = {}
       schools?.forEach((s: { id: string; name: string }) => { schoolMap[s.id] = s.name })
 

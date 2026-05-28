@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -12,14 +12,14 @@ import { m, useReducedMotion } from 'framer-motion'
 import CoordinatorSidebar from '@/components/CoordinatorSidebar'
 
 interface CoordProfile {
-  full_name:   string
+  display_name:   string
   school_id:   string
   school_name: string
 }
 
 interface StudentData {
   id:                string
-  full_name:         string
+  display_name:         string
   email:             string
   created_at:        string
   total_xp:          number
@@ -34,7 +34,7 @@ interface WeekActivity {
   active: number
 }
 
-type SortKey = keyof Pick<StudentData, 'full_name' | 'created_at' | 'total_xp' | 'modules_completed' | 'tab_switches'>
+type SortKey = keyof Pick<StudentData, 'display_name' | 'created_at' | 'total_xp' | 'modules_completed' | 'tab_switches'>
 type SortDir  = 'asc' | 'desc'
 
 const PAGE_SIZE = 10
@@ -81,10 +81,10 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
     async function load() {
       if (MOCK_MODE) {
         const mockSchool = MOCK.schools[0]
-        setCoord({ full_name: MOCK.currentCoordinator.name, school_id: mockSchool.id, school_name: mockSchool.name })
+        setCoord({ display_name: MOCK.currentCoordinator.name, school_id: mockSchool.id, school_name: mockSchool.name })
         setStudents(MOCK.students.map(s => ({
           id:                s.id,
-          full_name:         s.name,
+          display_name:         s.name,
           email:             `${s.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'.')}@bigfamily.co`,
           created_at:        s.created_at,
           total_xp:          s.xp,
@@ -104,13 +104,13 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
         .from('schools').select('name').eq('id', schoolId).maybeSingle()
 
       setCoord({
-        full_name:   initialFullName,
+        display_name:   initialFullName,
         school_id:   schoolId,
         school_name: schoolRow?.name ?? 'Mi colegio',
       })
 
       const { data: studs } = await supabase
-        .from('profiles').select('id, full_name, email, created_at')
+        .from('profiles').select('id, display_name, email, created_at')
         .eq('school_id', schoolId).eq('role', 'student')
 
       if (!studs || studs.length === 0) { setLoading(false); return }
@@ -168,9 +168,9 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
       const prevModsTotal = Object.values(modMap).reduce((s, v) => s + v, 0)
       setPrevMods(Math.max(0, prevModsTotal - (modMap ? Object.values(modMap).filter(v => v > 0).length : 0)))
 
-      setStudents(studs.map((s: { id: string; full_name: string | null; email: string | null; created_at: string }) => ({
+      setStudents(studs.map((s: { id: string; display_name: string | null; email: string | null; created_at: string }) => ({
         id:                s.id,
-        full_name:         s.full_name ?? '—',
+        display_name:         s.display_name ?? '—',
         email:             s.email ?? '—',
         created_at:        s.created_at,
         total_xp:          xpMap[s.id] ?? 0,
@@ -197,14 +197,14 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
     [...students]
       .sort((a, b) => b.total_xp - a.total_xp)
       .slice(0, 10)
-      .map(s => ({ name: s.full_name.split(' ')[0], fullName: s.full_name, xp: s.total_xp })),
+      .map(s => ({ name: s.display_name.split(' ')[0], fullName: s.display_name, xp: s.total_xp })),
     [students]
   )
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
     return students.filter(s =>
-      s.full_name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q)
+      s.display_name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q)
     )
   }, [students, search])
 
@@ -299,8 +299,8 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
 
       <div className="coord-layout">
         <CoordinatorSidebar
-          userName={loading ? '…' : (coord?.full_name ?? '…')}
-          userInitial={coord?.full_name?.[0]?.toUpperCase() ?? 'C'}
+          userName={loading ? '…' : (coord?.display_name ?? '…')}
+          userInitial={coord?.display_name?.[0]?.toUpperCase() ?? 'C'}
           schoolName={loading ? '…' : (coord?.school_name ?? 'Mi Colegio')}
         />
 
@@ -532,7 +532,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
                   <table className="tbl">
                     <thead>
                       <tr>
-                        <th onClick={() => toggleSort('full_name')}>Nombre <SortArrow col="full_name" /></th>
+                        <th onClick={() => toggleSort('display_name')}>Nombre <SortArrow col="display_name" /></th>
                         <th>Email</th>
                         <th onClick={() => toggleSort('created_at')}>Registro <SortArrow col="created_at" /></th>
                         <th onClick={() => toggleSort('total_xp')} style={{ textAlign: 'right' }}>XP <SortArrow col="total_xp" /></th>
@@ -550,7 +550,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
                         </tr>
                       ) : pageRows.map(s => (
                         <tr key={s.id} onClick={() => router.push('/coordinator/students/' + s.id)} title="Ver perfil completo →">
-                          <td style={{ fontWeight: 600, color: 'var(--ink)' }}>{s.full_name}</td>
+                          <td style={{ fontWeight: 600, color: 'var(--ink)' }}>{s.display_name}</td>
                           <td style={{ color: 'var(--mute)', fontSize: 12 }}>{s.email}</td>
                           <td style={{ color: 'var(--mute)', whiteSpace: 'nowrap', fontSize: 12 }}>
                             {new Date(s.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}

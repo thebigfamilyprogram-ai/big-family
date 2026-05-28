@@ -9,7 +9,7 @@ import { m } from 'framer-motion'
 
 interface StudentGoalSummary {
   id: string
-  full_name: string
+  display_name: string
   email: string
   active: number
   completed: number
@@ -50,15 +50,15 @@ export default function CoordinatorGoalsPage() {
       const { data: { user } } = await sb!.auth.getUser()
       if (!user) { router.replace('/login'); return }
 
-      const { data: profile } = await sb!.from('profiles').select('full_name, school_id, role').eq('id', user.id).maybeSingle()
+      const { data: profile } = await sb!.from('profiles').select('display_name, school_id, role').eq('id', user.id).maybeSingle()
       if (!profile || !['coordinator','admin'].includes(profile.role ?? '')) { router.replace('/dashboard'); return }
 
-      setCoordName(profile.full_name ?? '')
+      setCoordName(profile.display_name ?? '')
 
       const { data: school } = await sb!.from('schools').select('name').eq('id', profile.school_id).maybeSingle()
       setSchoolName(school?.name ?? '')
 
-      const { data: studs } = await sb!.from('profiles').select('id, full_name, email').eq('school_id', profile.school_id).eq('role', 'student')
+      const { data: studs } = await sb!.from('profiles').select('id, display_name, email').eq('school_id', profile.school_id).eq('role', 'student')
       if (!studs || studs.length === 0) { setLoading(false); return }
 
       const ids = studs.map((s: { id: string }) => s.id)
@@ -71,8 +71,8 @@ export default function CoordinatorGoalsPage() {
         if (g.status === 'completed') countMap[g.user_id].completed++
       })
 
-      setStudents(studs.map((s: { id: string; full_name: string | null; email: string | null }) => ({
-        id: s.id, full_name: s.full_name ?? '—', email: s.email ?? '—',
+      setStudents(studs.map((s: { id: string; display_name: string | null; email: string | null }) => ({
+        id: s.id, display_name: s.display_name ?? '—', email: s.email ?? '—',
         active: countMap[s.id]?.active ?? 0,
         completed: countMap[s.id]?.completed ?? 0,
       })))
@@ -160,7 +160,7 @@ export default function CoordinatorGoalsPage() {
                       <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--mute)', padding: '24px 0' }}>Sin estudiantes</td></tr>
                     ) : students.map(s => (
                       <tr key={s.id} className={selected?.id === s.id ? 'sel' : ''} onClick={() => handleSelectStudent(s)}>
-                        <td style={{ fontWeight: 500 }}>{s.full_name}</td>
+                        <td style={{ fontWeight: 500 }}>{s.display_name}</td>
                         <td>
                           <span style={{ padding: '2px 8px', borderRadius: 999, background: s.active > 0 ? 'rgba(192,57,43,.1)' : 'var(--line)', color: s.active > 0 ? '#C0392B' : 'var(--mute)', fontSize: 11, fontWeight: 700 }}>
                             {s.active}
@@ -181,7 +181,7 @@ export default function CoordinatorGoalsPage() {
 
           <div className="panel">
             <div className="panel__title">
-              {selected ? `${selected.full_name}` : 'Selecciona un estudiante'}
+              {selected ? `${selected.display_name}` : 'Selecciona un estudiante'}
             </div>
             {!selected && (
               <p style={{ fontSize: 13, color: 'var(--mute)' }}>Haz clic en un estudiante para ver sus metas.</p>

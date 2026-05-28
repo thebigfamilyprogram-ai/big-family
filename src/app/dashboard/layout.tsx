@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,12 +25,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       const { data: profile } = await sb
         .from('profiles')
-        .select('full_name, role')
+        .select('display_name, role')
         .eq('id', user.id)
         .maybeSingle()
 
-      setUserName(profile?.full_name ?? 'Líder')
-      setUserInit((profile?.full_name ?? 'L')[0].toUpperCase())
+      setUserName(profile?.display_name ?? 'Líder')
+      setUserInit((profile?.display_name ?? 'L')[0].toUpperCase())
       setUserRole(profile?.role ?? undefined)
 
       const { data: reads } = await sb

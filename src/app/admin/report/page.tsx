@@ -14,7 +14,7 @@ interface School {
 
 interface StudentReport {
   id: string
-  full_name: string
+  display_name: string
   email: string
   school_id: string
   school_name: string
@@ -62,7 +62,7 @@ export default function AdminReportPage() {
       const schoolMap: Record<string, string> = {}
       schoolsData?.forEach((s: { id: string; name: string }) => { schoolMap[s.id] = s.name })
 
-      const { data: studs } = await sb!.from('profiles').select('id, full_name, email, school_level, school_id, created_at').eq('role', 'student')
+      const { data: studs } = await sb!.from('profiles').select('id, display_name, email, school_level, school_id, created_at').eq('role', 'student')
       if (!studs || studs.length === 0) { setLoading(false); return }
 
       const ids = studs.map((s: { id: string }) => s.id)
@@ -99,8 +99,8 @@ export default function AdminReportPage() {
       const quizMap: Record<string, number> = {}
       quizRows?.forEach((r: { user_id: string }) => { quizMap[r.user_id] = (quizMap[r.user_id] ?? 0) + 1 })
 
-      setStudents(studs.map((s: { id: string; full_name: string | null; email: string | null; school_level: string | null; school_id: string | null; created_at: string }) => ({
-        id: s.id, full_name: s.full_name ?? '—', email: s.email ?? '—',
+      setStudents(studs.map((s: { id: string; display_name: string | null; email: string | null; school_level: string | null; school_id: string | null; created_at: string }) => ({
+        id: s.id, display_name: s.display_name ?? '—', email: s.email ?? '—',
         school_id: s.school_id ?? '', school_name: s.school_id ? (schoolMap[s.school_id] ?? '—') : '—',
         school_level: s.school_level, created_at: s.created_at,
         total_xp: xpMap[s.id] ?? 0, modules_completed: modMap[s.id] ?? 0, badges_earned: badgeMap[s.id] ?? 0,
@@ -142,7 +142,7 @@ export default function AdminReportPage() {
           startY: currentY + 14,
           head: [['Nombre', 'Email', 'Nivel', 'XP', 'Módulos', 'Proyecto', 'Capstone', 'Metas']],
           body: group.rows.map(s => [
-            s.full_name, s.email, s.school_level ?? '—', s.total_xp,
+            s.display_name, s.email, s.school_level ?? '—', s.total_xp,
             s.modules_completed, s.project_title ?? '—', s.capstone_resultado ?? '—',
             `${s.goals_completed}/${s.goals_active + s.goals_completed}`,
           ]),
@@ -264,7 +264,7 @@ export default function AdminReportPage() {
               <tbody>
                 {displayed.map(s => (
                   <tr key={s.id}>
-                    <td style={{ fontWeight: 500 }}>{s.full_name}</td>
+                    <td style={{ fontWeight: 500 }}>{s.display_name}</td>
                     <td style={{ color: 'var(--mute)', fontSize: 12 }}>{s.school_name}</td>
                     <td>{s.school_level === 'junior' ? 'Junior' : 'Senior'}</td>
                     <td style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, color: '#C0392B' }}>{s.total_xp.toLocaleString()}</td>

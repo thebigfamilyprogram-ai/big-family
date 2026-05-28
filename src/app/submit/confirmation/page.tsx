@@ -54,7 +54,7 @@ export default function SubmitConfirmationPage() {
       if (!user) { router.replace('/submit/login'); return }
 
       const [{ data: profile }, { data: project }] = await Promise.all([
-        supabase.from('profiles').select('full_name, school_id').eq('id', user.id).maybeSingle(),
+        supabase.from('profiles').select('display_name, school_id').eq('id', user.id).maybeSingle(),
         supabase
           .from('projects')
           .select('id, title, status')
@@ -71,7 +71,7 @@ export default function SubmitConfirmationPage() {
       if (cancelled) return
 
       setSummary({
-        fullName:     profile?.full_name ?? user.email ?? 'Estudiante',
+        fullName:     profile?.display_name ?? user.email ?? 'Estudiante',
         schoolName:   (school as any)?.name ?? '',
         projectTitle: project?.title ?? 'Tu proyecto',
         projectId:    project?.id ?? '',

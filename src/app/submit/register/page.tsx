@@ -128,7 +128,7 @@ export default function SubmitRegisterPage() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName, guardian_email: guardianEmail || null } },
+      options: { data: { display_name: fullName, guardian_email: guardianEmail || null } },
     })
 
     if (signUpError || !data.user) {
@@ -141,7 +141,7 @@ export default function SubmitRegisterPage() {
 
     await supabase.from('profiles').insert({
       id:           uid,
-      full_name:    fullName,
+      display_name:    fullName,
       email,
       school_id:    schoolId,
       role:         'student',

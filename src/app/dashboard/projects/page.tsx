@@ -36,9 +36,9 @@ export default function ProjectsPage() {
 
       setUserId(user.id)
       const { data: profile } = await supabase
-        .from('profiles').select('full_name, school_id').eq('id', user.id).maybeSingle()
+        .from('profiles').select('display_name, school_id').eq('id', user.id).maybeSingle()
       setSchoolId(profile?.school_id ?? null)
-      const name = profile?.full_name ?? user.email ?? 'Leader'
+      const name = profile?.display_name ?? user.email ?? 'Leader'
       setUserName(name)
       setInitial(name.charAt(0).toUpperCase())
 

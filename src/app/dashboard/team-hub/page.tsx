@@ -12,7 +12,7 @@ type Tab = 'team' | 'ranking' | 'chat' | 'projects'
 
 interface TeamMember {
   id: string
-  full_name: string
+  display_name: string
   avatar_url: string | null
   school_level: string
   total_xp: number
@@ -24,7 +24,7 @@ interface ChatMessage {
   user_id: string
   content: string
   created_at: string
-  profiles: { full_name: string; avatar_url: string | null; school_level: string } | null
+  profiles: { display_name: string; avatar_url: string | null; school_level: string } | null
 }
 
 interface TeamProject {
@@ -49,7 +49,7 @@ const LEVEL_COLORS: Record<string, { bg: string; text: string; label: string }> 
 // ── Ranking types ─────────────────────────────────────────────────────────────
 interface StudentRankRow {
   id:          string
-  full_name:   string
+  display_name:   string
   avatar_url:  string | null
   school_name: string | null
   school_id:   string | null
@@ -121,11 +121,11 @@ export default function TeamHubPage() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, school_id, school_name')
+        .select('display_name, school_id, school_name')
         .eq('id', user.id)
         .maybeSingle()
 
-      const name = profile?.full_name ?? user.email ?? 'Leader'
+      const name = profile?.display_name ?? user.email ?? 'Leader'
       setUserName(name)
       setUserInitial(name.charAt(0).toUpperCase())
       if (profile?.school_name) setSchoolName(profile.school_name)
@@ -159,7 +159,7 @@ export default function TeamHubPage() {
       }, async (payload: { new: Record<string, unknown> }) => {
         const { data } = await supabase
           .from('team_messages')
-          .select('*, profiles(full_name, avatar_url, school_level)')
+          .select('*, profiles(display_name, avatar_url, school_level)')
           .eq('id', (payload.new as { id: string }).id)
           .maybeSingle()
         if (data) setMessages(prev => [...prev, data as ChatMessage])
@@ -185,18 +185,18 @@ export default function TeamHubPage() {
     const supabase = supabaseRef.current
     const { data } = await supabase
       .from('profiles')
-      .select('id, full_name, avatar_url, school_level')
+      .select('id, display_name, avatar_url, school_level')
       .eq('school_id', sid)
       .eq('role', 'student')
     if (!data) return
 
-    const ids = data.map((p: { id: string; full_name: string; avatar_url: string | null; school_level: string }) => p.id)
+    const ids = data.map((p: { id: string; display_name: string; avatar_url: string | null; school_level: string }) => p.id)
     const [{ data: xpRows }, { data: progressRows }] = await Promise.all([
       supabase.from('xp_log').select('user_id, amount').in('user_id', ids),
       supabase.from('progress').select('user_id, id').eq('completed', true).in('user_id', ids),
     ])
 
-    const members: TeamMember[] = data.map((p: { id: string; full_name: string; avatar_url: string | null; school_level: string }) => ({
+    const members: TeamMember[] = data.map((p: { id: string; display_name: string; avatar_url: string | null; school_level: string }) => ({
       ...p,
       total_xp: xpRows?.filter((x: { user_id: string; amount: number | null }) => x.user_id === p.id).reduce((s: number, x: { user_id: string; amount: number | null }) => s + (x.amount ?? 0), 0) ?? 0,
       modules_completed: progressRows?.filter((pr: { user_id: string; id: string }) => pr.user_id === p.id).length ?? 0,
@@ -210,7 +210,7 @@ export default function TeamHubPage() {
     const supabase = supabaseRef.current
     const { data } = await supabase
       .from('team_messages')
-      .select('*, profiles(full_name, avatar_url, school_level)')
+      .select('*, profiles(display_name, avatar_url, school_level)')
       .eq('school_id', sid)
       .order('created_at', { ascending: true })
       .limit(50)
@@ -229,17 +229,17 @@ export default function TeamHubPage() {
 
     const ids = projData.map((p: { id: string; created_by: string }) => p.id)
     const [{ data: membersData }, { data: creatorProfiles }] = await Promise.all([
-      supabase.from('team_project_members').select('project_id, user_id, profiles(full_name)').in('project_id', ids),
-      supabase.from('profiles').select('id, full_name').in('id', projData.map((p: { id: string; created_by: string }) => p.created_by)),
+      supabase.from('team_project_members').select('project_id, user_id, profiles(display_name)').in('project_id', ids),
+      supabase.from('profiles').select('id, display_name').in('id', projData.map((p: { id: string; created_by: string }) => p.created_by)),
     ])
 
     setMemberIds(membersData?.filter((m: { project_id: string; user_id: string }) => m.user_id === uid).map((m: { project_id: string; user_id: string }) => m.project_id) ?? [])
     setProjects(projData.map((p: { id: string; title: string; description: string; category: string; status: string; created_by: string; school_id: string; created_at: string }) => ({
       ...p,
-      creator_name: creatorProfiles?.find((c: { id: string; full_name: string | null }) => c.id === p.created_by)?.full_name ?? '—',
+      creator_name: creatorProfiles?.find((c: { id: string; display_name: string | null }) => c.id === p.created_by)?.display_name ?? '—',
       member_count: membersData?.filter((m: { project_id: string; user_id: string }) => m.project_id === p.id).length ?? 0,
       member_names: membersData?.filter((m: { project_id: string; user_id: string }) => m.project_id === p.id)
-        .map((m: { project_id: string; user_id: string; profiles: unknown }) => (m.profiles as { full_name: string } | null)?.full_name ?? '?') ?? [],
+        .map((m: { project_id: string; user_id: string; profiles: unknown }) => (m.profiles as { display_name: string } | null)?.display_name ?? '?') ?? [],
     })))
   }
 
@@ -297,7 +297,7 @@ export default function TeamHubPage() {
     setLoadingRanking(true)
 
     const { data: students } = await supabase
-      .from('profiles').select('id, full_name, avatar_url, school_id').eq('role', 'student')
+      .from('profiles').select('id, display_name, avatar_url, school_id').eq('role', 'student')
 
     if (!students || students.length === 0) { setLoadingRanking(false); return }
 
@@ -323,11 +323,11 @@ export default function TeamHubPage() {
     const schoolNameMap: Record<string, string> = {}
     schoolData?.forEach((s: { id: string; name: string }) => { schoolNameMap[s.id] = s.name })
 
-    const ranked: StudentRankRow[] = students.map((s: { id: string; full_name: string | null; avatar_url: string | null; school_id: string | null }) => {
+    const ranked: StudentRankRow[] = students.map((s: { id: string; display_name: string | null; avatar_url: string | null; school_id: string | null }) => {
       const xp = xpMap[s.id] ?? 0
       const modules = modMap[s.id] ?? 0
       const projects = projMap[s.id] ?? 0
-      return { id: s.id, full_name: s.full_name ?? '—', avatar_url: s.avatar_url, school_name: s.school_id ? (schoolNameMap[s.school_id] ?? null) : null, school_id: s.school_id, xp, modules, projects, score: xp + modules * 100 + projects * 500 }
+      return { id: s.id, display_name: s.display_name ?? '—', avatar_url: s.avatar_url, school_name: s.school_id ? (schoolNameMap[s.school_id] ?? null) : null, school_id: s.school_id, xp, modules, projects, score: xp + modules * 100 + projects * 500 }
     }).sort((a: StudentRankRow, b: StudentRankRow) => b.score - a.score)
 
     setStudentRanking(ranked)
@@ -526,12 +526,12 @@ export default function TeamHubPage() {
                             >
                               <div className="th-avatar-wrap">
                                 <div className="th-avatar">
-                                  {member.avatar_url ? <img src={member.avatar_url} alt={member.full_name} /> : getInitials(member.full_name)}
+                                  {member.avatar_url ? <img src={member.avatar_url} alt={member.display_name} /> : getInitials(member.display_name)}
                                 </div>
                                 <div className="th-lvl-badge" style={{ background: lvl.bg, color: lvl.text }}>{lvl.label}</div>
                               </div>
                               <div className="th-member-name">
-                                {member.full_name}
+                                {member.display_name}
                                 {member.id === userId && <span style={{ color: '#6B6B6B', fontWeight: 400, fontSize: 13 }}> (Tú)</span>}
                               </div>
                               <div className="th-member-stats">⭐ {member.total_xp} XP · 📚 {member.modules_completed} módulos</div>
@@ -601,9 +601,9 @@ export default function TeamHubPage() {
                                 {medal ?? <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--mute)' }}>{pos}</span>}
                               </span>
                               <span style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-                                <div className="th-rank-av">{getInitials(s.full_name)}</div>
+                                <div className="th-rank-av">{getInitials(s.display_name)}</div>
                                 <div style={{ minWidth: 0 }}>
-                                  <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, color: isMe ? '#C0392B' : 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.full_name}</div>
+                                  <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, color: isMe ? '#C0392B' : 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.display_name}</div>
                                   {isMe && <div style={{ fontSize: 10, fontWeight: 700, color: '#C0392B', fontFamily: '"Satoshi",sans-serif', letterSpacing: '.06em', textTransform: 'uppercase' }}>Tú</div>}
                                 </div>
                               </span>
@@ -668,7 +668,7 @@ export default function TeamHubPage() {
                         const isOwn = msg.user_id === userId
                         const prev  = messages[i - 1]
                         const isFirstInGroup = !prev || prev.user_id !== msg.user_id
-                        const senderName = msg.profiles?.full_name ?? 'Usuario'
+                        const senderName = msg.profiles?.display_name ?? 'Usuario'
 
                         if (isOwn) return (
                           <m.div key={msg.id} className="th-msg-group th-msg-own"

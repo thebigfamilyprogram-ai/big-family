@@ -44,12 +44,12 @@ export default function EditProjectPage() {
       setUserId(user.id)
 
       const { data: profile } = await supabase
-        .from('profiles').select('full_name, school_id, role').eq('id', user.id).maybeSingle()
+        .from('profiles').select('display_name, school_id, role').eq('id', user.id).maybeSingle()
 
       if (cancelled) return
       if (!profile || !['student', 'coordinator'].includes(profile.role)) { router.push('/dashboard'); return }
 
-      const fullName = profile.full_name ?? user.email ?? 'Leader'
+      const fullName = profile.display_name ?? user.email ?? 'Leader'
       setUserFullName(fullName)
       setUserName(fullName)
       setUserInitial(fullName.charAt(0).toUpperCase())

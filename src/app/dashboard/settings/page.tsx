@@ -91,14 +91,14 @@ export default function SettingsPage() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, display_name, bio, avatar_url, school_id, role, user_badges, notification_preferences')
+        .select('display_name, display_name, bio, avatar_url, school_id, role, user_badges, notification_preferences')
         .eq('id', user.id)
         .maybeSingle()
 
-      const dn   = profile?.display_name || profile?.full_name || user.email || 'Leader'
+      const dn   = profile?.display_name || profile?.display_name || user.email || 'Leader'
       setUserName(dn)
       setUserInitial(dn.charAt(0).toUpperCase())
-      setDisplayName(profile?.display_name ?? profile?.full_name ?? '')
+      setDisplayName(profile?.display_name ?? profile?.display_name ?? '')
       setBio(profile?.bio ?? '')
       setAvatarUrl(profile?.avatar_url ?? '')
       setRole(profile?.role ?? 'student')

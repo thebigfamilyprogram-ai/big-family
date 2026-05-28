@@ -112,8 +112,8 @@ export default function GlobalMapPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
       const { data: profile } = await supabase
-        .from('profiles').select('full_name').eq('id', user.id).maybeSingle()
-      const name = profile?.full_name ?? user.email ?? 'Leader'
+        .from('profiles').select('display_name').eq('id', user.id).maybeSingle()
+      const name = profile?.display_name ?? user.email ?? 'Leader'
       setUserName(name)
       setInitial(name.charAt(0).toUpperCase())
       setAuthLoading(false)
