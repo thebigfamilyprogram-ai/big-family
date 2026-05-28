@@ -65,7 +65,7 @@
 - **WorldMapPublic** — mapa mundial público con puntos aliados, arcos animados desde Colombia, partículas viajeras, stroke-dashoffset de entrada, en sección `#alianzas-globales`
 - **Sección Historia** — split asimétrico 45/55 (`id="historia"`), watermark "2015", parallax sutil en scroll (`historiaTextY`), badges reconocimientos reales, `navMounted` guard
 - **Sección Impacto en Números** — fondo `var(--ink)`, 4 stats: 876 estudiantes / 22 colegios / 10 países / meta 3300, counters `ImpactoNum` con duración y delay por stat, líneas separadoras `scaleY`
-- **Sección Metodología** — bento asimétrico 4 componentes: Desarrollo Integral (featured tall), Proyectos Reales, Acompañamiento Directo, Conexión Internacional (wide accent), `id="metodologia"`
+- **Sección Metodología** — bento asimétrico 4 componentes: Big Leader, Leader's Game, Great Venture, Kashi — `id="metodologia"`
 - **Sección Valores** — 6 tiles 3×2 con blur-reveal stagger (`filter: blur(8px→0)`), hover CSS nativo, `id="valores"`
 - **Navbar pill flotante** — fixed top-4, backdrop-blur, smooth scroll a todas las secciones, mobile drawer, 5 links: Historia · Impacto · Nuestra Red · Equipo · Noticias
 - **Contenido real del PDF integrado** — misión, visión, historia, Luis Barrios (M.S. University at Buffalo, MIT, Javeriana), reconocimientos internacionales

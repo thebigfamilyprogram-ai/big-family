@@ -358,6 +358,37 @@ const TESTIMONIOS = [
   { quote: 'Lo más valioso no fue el certificado, sino la familia que construí. Hoy somos una red de líderes que se apoyan mutuamente.', name: 'Valeria Rodríguez', role: 'Estudiante · Cohorte 2026', school: 'IE Paulo VI', init: 'VR' },
 ]
 
+const METOD_DOTS = [
+  { top: '25%', left: '20%' },
+  { top: '20%', left: '45%' },
+  { top: '35%', left: '70%' },
+  { top: '60%', left: '30%' },
+  { top: '15%', left: '65%' },
+]
+
+function PulseDot({ top, left, delay, active }: { top: string; left: string; delay: number; active: boolean }) {
+  return (
+    <div style={{ position: 'absolute', top, left, width: 6, height: 6, pointerEvents: 'none' }}>
+      <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.9)' }} />
+      {active && (
+        <m.div
+          style={{ position: 'absolute', top: 0, left: 0, width: 6, height: 6, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.7)' }}
+          initial={{ scale: 1, opacity: 0.6 }}
+          animate={{ scale: 2.5, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 100, damping: 20, repeat: Infinity, repeatDelay: 1.5, delay }}
+        />
+      )}
+    </div>
+  )
+}
+
+function MetodCounter({ target, inView }: { target: number; inView: boolean }) {
+  const count = useSpring(0, { stiffness: 200, damping: 25 })
+  const display = useTransform(count, v => `0${Math.round(v)}`)
+  useEffect(() => { if (inView) count.set(target) }, [inView, count, target])
+  return <m.span style={{ fontVariantNumeric: 'tabular-nums' }}>{display}</m.span>
+}
+
 export default function GlobeHero() {
   const mouseX  = useMotionValue(0)
   const mouseY  = useMotionValue(0)
@@ -373,6 +404,12 @@ export default function GlobeHero() {
   const [navMounted,        setNavMounted]        = useState(false)
   const [activeSection,     setActiveSection]     = useState('')
   const [mobileNavOpen,     setMobileNavOpen]     = useState(false)
+
+  const metodRef    = useRef<HTMLDivElement>(null)
+  const metodInView = useInView(metodRef, { once: true, margin: '-80px' })
+  const [hov2, setHov2] = useState(false)
+  const [hov3, setHov3] = useState(false)
+  const [hov4, setHov4] = useState(false)
 
   const { stats: liveStats, loading: statsLoading } = useRealtimeStats()
   const isEventPast = DL_TARGET.getTime() < Date.now()
@@ -715,10 +752,13 @@ export default function GlobeHero() {
         .sec-metod__num--featured{color:rgba(255,255,255,.35);}
         .sec-metod__num--normal{color:var(--mute);}
         .sec-metod__num--dark{color:rgba(255,255,255,.5);}
-        .sec-metod__tag{display:inline-block;font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:4px 12px;border-radius:999px;width:fit-content;}
+        .sec-metod__tag{display:inline-block;font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:4px 12px;border-radius:999px;width:fit-content;transition:background .2s,color .2s,border-color .2s;}
         .sec-metod__tag--featured{background:rgba(255,255,255,.08);color:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.12);}
         .sec-metod__tag--normal{background:rgba(13,13,13,.05);color:var(--mute);border:1px solid var(--line);}
         .sec-metod__tag--dark{background:rgba(255,255,255,.2);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.3);}
+        .sec-metod__card:hover .sec-metod__tag--featured{background:var(--accent);color:#fff;border-color:var(--accent);}
+        .sec-metod__card:hover .sec-metod__tag--normal{background:var(--accent);color:#fff;border-color:var(--accent);}
+        .sec-metod__card:hover .sec-metod__tag--dark{background:#fff;color:var(--accent);border-color:#fff;}
         .sec-metod__card-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:19px;line-height:1.2;}
         .sec-metod__card-title--featured{font-size:28px;color:#fff;}
         .sec-metod__card-title--normal{color:var(--ink);}
@@ -1677,7 +1717,7 @@ export default function GlobeHero() {
             </p>
           </m.div>
 
-          <div className="sec-metod__bento">
+          <div className="sec-metod__bento" ref={metodRef}>
             {/* Card 1 — Featured (tall, col 1) */}
             <m.div
               className="sec-metod__card sec-metod__card--featured"
@@ -1685,9 +1725,9 @@ export default function GlobeHero() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ type: 'spring', stiffness: 120, damping: 22 }}
-              whileHover={{ y: -3, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
+              whileHover={{ scale: 1.005, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
             >
-              <div className="sec-metod__num sec-metod__num--featured">01</div>
+              <div className="sec-metod__num sec-metod__num--featured"><MetodCounter target={1} inView={metodInView} /></div>
               <div className="sec-metod__tag sec-metod__tag--featured">Formación</div>
               <h3 className="sec-metod__card-title sec-metod__card-title--featured">
                 Desarrollo<br />Integral
@@ -1704,12 +1744,28 @@ export default function GlobeHero() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ type: 'spring', stiffness: 120, damping: 22, delay: 0.08 }}
-              whileHover={{ y: -3, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
+              whileHover={{ y: -4, scale: 1.01, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
+              onHoverStart={() => setHov2(true)}
+              onHoverEnd={() => setHov2(false)}
             >
-              <div className="sec-metod__num sec-metod__num--normal">02</div>
+              <div className="sec-metod__num sec-metod__num--normal"><MetodCounter target={2} inView={metodInView} /></div>
               <div className="sec-metod__tag sec-metod__tag--normal">Práctica</div>
               <h3 className="sec-metod__card-title sec-metod__card-title--normal">Proyectos Reales</h3>
               <p className="sec-metod__card-desc sec-metod__card-desc--normal">Cada equipo diseña e implementa un proyecto comunitario con impacto medible en su entorno.</p>
+              <AnimatePresence>
+                {hov2 && (
+                  <m.p
+                    className="sec-metod__card-desc--normal"
+                    style={{ fontSize: 13, overflow: 'hidden' }}
+                    initial={{ opacity: 0, y: 8, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: 'auto' }}
+                    exit={{ opacity: 0, y: 4, height: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+                  >
+                    Metodologías: Design Thinking, Aprendizaje Experiencial y How to Learn.
+                  </m.p>
+                )}
+              </AnimatePresence>
             </m.div>
 
             {/* Card 3 — Normal */}
@@ -1719,12 +1775,28 @@ export default function GlobeHero() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ type: 'spring', stiffness: 120, damping: 22, delay: 0.16 }}
-              whileHover={{ y: -3, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
+              whileHover={{ y: -4, scale: 1.01, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
+              onHoverStart={() => setHov3(true)}
+              onHoverEnd={() => setHov3(false)}
             >
-              <div className="sec-metod__num sec-metod__num--normal">03</div>
+              <div className="sec-metod__num sec-metod__num--normal"><MetodCounter target={3} inView={metodInView} /></div>
               <div className="sec-metod__tag sec-metod__tag--normal">Mentoría</div>
               <h3 className="sec-metod__card-title sec-metod__card-title--normal">Acompañamiento Directo</h3>
               <p className="sec-metod__card-desc sec-metod__card-desc--normal">Mentores internacionales guían a cada estudiante en su proceso de crecimiento personal y profesional.</p>
+              <AnimatePresence>
+                {hov3 && (
+                  <m.p
+                    className="sec-metod__card-desc--normal"
+                    style={{ fontSize: 13, overflow: 'hidden' }}
+                    initial={{ opacity: 0, y: 8, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: 'auto' }}
+                    exit={{ opacity: 0, y: 4, height: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+                  >
+                    Coaching personalizado hacia el proyecto de vida de cada estudiante.
+                  </m.p>
+                )}
+              </AnimatePresence>
             </m.div>
 
             {/* Card 4 — Wide (col 2/span 2, accent bg) */}
@@ -1734,12 +1806,31 @@ export default function GlobeHero() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ type: 'spring', stiffness: 120, damping: 22, delay: 0.24 }}
-              whileHover={{ y: -3, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
+              whileHover={{ y: -4, scale: 1.01, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
+              onHoverStart={() => setHov4(true)}
+              onHoverEnd={() => setHov4(false)}
             >
-              <div className="sec-metod__num sec-metod__num--dark">04</div>
+              {METOD_DOTS.map((pos, i) => (
+                <PulseDot key={i} top={pos.top} left={pos.left} delay={i * 0.4} active={metodInView} />
+              ))}
+              <div className="sec-metod__num sec-metod__num--dark"><MetodCounter target={4} inView={metodInView} /></div>
               <div className="sec-metod__tag sec-metod__tag--dark">Red Global</div>
               <h3 className="sec-metod__card-title sec-metod__card-title--dark">Conexión Internacional</h3>
               <p className="sec-metod__card-desc sec-metod__card-desc--dark">Los estudiantes se conectan con líderes jóvenes de 10 países, ampliando su perspectiva y construyendo relaciones que trascienden fronteras.</p>
+              <AnimatePresence>
+                {hov4 && (
+                  <m.p
+                    className="sec-metod__card-desc--dark"
+                    style={{ fontSize: 13, overflow: 'hidden' }}
+                    initial={{ opacity: 0, y: 8, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: 'auto' }}
+                    exit={{ opacity: 0, y: 4, height: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+                  >
+                    Talleres con instituciones de Colombia, América Latina, Europa y Norteamérica.
+                  </m.p>
+                )}
+              </AnimatePresence>
             </m.div>
           </div>
         </div>
