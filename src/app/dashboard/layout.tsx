@@ -46,7 +46,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       const { data: anns } = await sb
         .from('announcements')
         .select('id')
-        .lte('published_at', now)
         .or(`expires_at.is.null,expires_at.gt.${now}`)
       setUnread((anns ?? []).filter((a: { id: string }) => !readIds.has(a.id)).length)
     }
