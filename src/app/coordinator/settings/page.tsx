@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { useTheme, type Theme } from '@/contexts/ThemeContext'
 import { showToast } from '@/components/Toast'
-import CoordinatorSidebar from '@/components/CoordinatorSidebar'
 
 type Section = 'profile' | 'appearance' | 'account' | 'notifications'
 
@@ -242,12 +241,9 @@ export default function CoordinatorSettingsPage() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', width: '100%', background: 'var(--bg)' }}>
-        <CoordinatorSidebar />
-        <div style={{ flex: 1, minWidth: 0, overflow: 'auto', padding: 40 }}>
-          <div style={{ height: 36, width: 200, borderRadius: 8, background: 'rgba(13,13,13,.07)', marginBottom: 32 }} />
-          <div style={{ height: 480, borderRadius: 16, background: 'rgba(13,13,13,.05)' }} />
-        </div>
+      <div style={{ flex: 1, minWidth: 0, overflow: 'auto', padding: 40 }}>
+        <div style={{ height: 36, width: 200, borderRadius: 8, background: 'rgba(13,13,13,.07)', marginBottom: 32 }} />
+        <div style={{ height: 480, borderRadius: 16, background: 'rgba(13,13,13,.05)' }} />
       </div>
     )
   }
@@ -325,10 +321,7 @@ export default function CoordinatorSettingsPage() {
         }
       `}</style>
 
-      <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', width: '100%', background: 'var(--bg)' }}>
-        <CoordinatorSidebar userName={userName} userInitial={userInitial} schoolName={schoolName} />
-
-        <main style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
+      <main style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
           <div className="st-header">
             <div className="st-eyebrow">BIG FAMILY</div>
             <h1 className="st-title">Configuración</h1>
@@ -637,7 +630,6 @@ export default function CoordinatorSettingsPage() {
             </div>
           </div>
         </main>
-      </div>
 
       {deleteModal && (
         <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) setDeleteModal(false) }}>

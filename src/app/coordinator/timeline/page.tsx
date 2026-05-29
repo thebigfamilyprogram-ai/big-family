@@ -209,7 +209,7 @@ export default function CoordinatorTimelinePage() {
         .ct-btn--danger:hover{background:rgba(192,57,43,.06);}
         .ct-btn--edit{background:transparent;border:1px solid rgba(13,13,13,.15);color:#6B6B6B;font-size:12px;padding:6px 14px;}
         .ct-btn--edit:hover{border-color:#0D0D0D;color:#0D0D0D;}
-        .ct-main{max-width:800px;margin:0 auto;padding:44px 40px 100px;}
+        .ct-main{overflow-y:auto;flex:1;min-width:0;max-width:800px;margin:0 auto;padding:44px 40px 100px;}
         .ct-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:32px;}
         .ct-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:26px;letter-spacing:-.022em;}
         .ct-header p{margin-top:4px;font-size:13px;color:#6B6B6B;}
@@ -234,20 +234,6 @@ export default function CoordinatorTimelinePage() {
       `}</style>
 
       {/* Nav */}
-      <nav className="ct-nav">
-        <a className="ct-brand" href="/">
-          <svg width="20" height="20" viewBox="0 0 52 52" fill="none">
-            <circle cx="26" cy="10" r="6" fill="#0D0D0D"/>
-            <path d="M26 16 L44 48 H8 Z" fill="#0D0D0D"/>
-            <circle cx="9" cy="18" r="4" fill="#6B6B6B"/>
-            <circle cx="43" cy="18" r="4" fill="#6B6B6B"/>
-          </svg>
-          Big Family
-        </a>
-        <div className="ct-spacer" />
-        <span className="ct-badge">Coordinador</span>
-        <button className="ct-btn ct-btn--ghost" onClick={() => router.push('/coordinator')}>Panel</button>
-      </nav>
 
       <main className="ct-main">
         {/* Header */}

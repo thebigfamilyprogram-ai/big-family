@@ -119,7 +119,7 @@ export default function CoordinatorNewsPage() {
         .cn-btn--active{background:#0D0D0D !important;color:#fff !important;border-color:#0D0D0D !important;}
         .cn-btn--ghost{background:none;border:1px solid rgba(13,13,13,.14);border-radius:999px;padding:7px 14px;font-size:12px;color:#6B6B6B;cursor:pointer;transition:all .2s;white-space:nowrap;}
         .cn-btn--ghost:hover{border-color:#0D0D0D;color:#0D0D0D;}
-        .cn-main{max-width:860px;margin:0 auto;padding:44px 40px 80px;}
+        .cn-main{overflow-y:auto;flex:1;min-width:0;max-width:860px;margin:0 auto;padding:44px 40px 80px;}
         .cn-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap;}
         .cn-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:28px;letter-spacing:-.022em;color:#0D0D0D;}
         .cn-header p{margin-top:5px;font-size:13.5px;color:#6B6B6B;}
@@ -141,28 +141,6 @@ export default function CoordinatorNewsPage() {
         .cn-featured-hint{font-size:11.5px;color:#9a9690;margin-bottom:20px;padding:10px 14px;background:rgba(232,164,23,.08);border:1px solid rgba(232,164,23,.2);border-radius:8px;display:flex;align-items:center;gap:6px;}
         @media(max-width:860px){.cn-main{padding:28px 20px 60px;}.cn-nav{padding:0 20px;}.cn-school{display:none;}}
       `}</style>
-
-      <nav className="cn-nav">
-        <a className="cn-brand" href="/">
-          <svg width="20" height="20" viewBox="0 0 52 52" fill="none">
-            <circle cx="26" cy="10" r="6" fill="#0D0D0D"/>
-            <path d="M26 16 L44 48 H8 Z" fill="#0D0D0D"/>
-            <circle cx="9" cy="18" r="4" fill="#6B6B6B"/>
-            <circle cx="43" cy="18" r="4" fill="#6B6B6B"/>
-          </svg>
-          Big Family
-        </a>
-        <div className="cn-school">{loading ? <Sk w={160} h={13} r={6} /> : schoolName}</div>
-        <div className="cn-right">
-          <span className="cn-badge">Coordinador</span>
-          <button className="cn-btn" onClick={() => router.push('/coordinator')}>Panel principal</button>
-          <button className="cn-btn" onClick={() => router.push('/coordinator/projects')}>Proyectos</button>
-          <button className="cn-btn" onClick={() => router.push('/coordinator/modules')}>Módulos</button>
-          <button className="cn-btn cn-btn--active">Noticias</button>
-          <button className="cn-btn" onClick={() => router.push('/dashboard')}>Dashboard</button>
-          <button className="cn-btn--ghost" onClick={handleLogout}>Cerrar sesión</button>
-        </div>
-      </nav>
 
       <main className="cn-main">
         <div className="cn-header">

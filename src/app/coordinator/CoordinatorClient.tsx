@@ -9,7 +9,6 @@ import {
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import { m, useReducedMotion } from 'framer-motion'
-import CoordinatorSidebar from '@/components/CoordinatorSidebar'
 
 interface CoordProfile {
   display_name:   string
@@ -241,7 +240,6 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
         @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100dvh;color:var(--ink);}
-        .coord-layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
         .main{flex:1;min-width:0;overflow-y:auto;padding:36px 32px 80px;}
 
         /* ── Page header ── */
@@ -297,14 +295,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
         }
       `}</style>
 
-      <div className="coord-layout">
-        <CoordinatorSidebar
-          userName={loading ? '…' : (coord?.display_name ?? '…')}
-          userInitial={coord?.display_name?.[0]?.toUpperCase() ?? 'C'}
-          schoolName={loading ? '…' : (coord?.school_name ?? 'Mi Colegio')}
-        />
-
-        <m.main
+      <m.main
           className="main"
           initial={pref ? false : { opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
@@ -607,7 +598,6 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
             )}
           </div>
         </m.main>
-      </div>
     </>
   )
 }

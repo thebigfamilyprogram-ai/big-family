@@ -125,7 +125,7 @@ export default function CoordinatorCalendarPage() {
         .btn-sm:hover{border-color:var(--ink);}
         .btn-primary{padding:10px 20px;background:#C0392B;border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .2s;}
         .btn-primary:hover{background:#a93226;}
-        .main{max-width:1200px;margin:0 auto;padding:40px 40px 80px;}
+        .main{overflow-y:auto;flex:1;min-width:0;max-width:1200px;margin:0 auto;padding:40px 40px 80px;}
         .cal-layout{display:grid;grid-template-columns:1fr 300px;gap:20px;}
         .card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:24px;}
         .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
@@ -147,19 +147,6 @@ export default function CoordinatorCalendarPage() {
         @media(max-width:960px){.cal-layout{grid-template-columns:1fr;}}
         @media(max-width:768px){.cal-cell{aspect-ratio:auto;min-height:36px;}.cal-num{font-size:11px;}}
       `}</style>
-
-      <nav className="nav">
-        <a href="/coordinator" style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 16, color: 'var(--ink)', textDecoration: 'none' }}>Big Family</a>
-        <span style={{ fontSize: 12, color: 'var(--mute)' }}>→ Calendario</span>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
-          <span style={{ fontSize: 13, color: 'var(--mute)' }}>{coordName}</span>
-          <button className="btn-primary" onClick={() => { setEditing(null); setForm(EMPTY_FORM); setShowForm(s => !s) }}>
-            {showForm && !editing ? '× Cancelar' : '+ Nuevo evento'}
-          </button>
-          <button className="btn-sm" onClick={() => router.push('/coordinator')}>Panel</button>
-          <button className="btn-sm" onClick={handleLogout}>Salir</button>
-        </div>
-      </nav>
 
       <m.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 28 }}>
         <h1 style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 24 }}>Calendario de Eventos</h1>

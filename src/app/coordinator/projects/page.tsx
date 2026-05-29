@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { m, useReducedMotion } from 'framer-motion'
 import ProjectCard, { type Project, type ProjectComment } from '@/components/ProjectCard'
-import CoordinatorSidebar from '@/components/CoordinatorSidebar'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -201,21 +200,14 @@ export default function CoordinatorProjectsPage() {
   ]
 
   return (
-    <div className="cpj-layout">
-      <CoordinatorSidebar
-        userName={coord?.display_name ?? '…'}
-        userInitial={(coord?.display_name?.charAt(0) ?? 'C').toUpperCase()}
-        schoolName={coord?.school_name}
-      />
-      <div className="cpj-scroll">
+    <div className="cpj-scroll">
       <style>{`
                 
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;color:#0D0D0D;}
 
         /* Layout */
-        .cpj-layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
-        .cpj-scroll{flex:1;overflow-y:auto;min-width:0;}
+                .cpj-scroll{flex:1;overflow-y:auto;min-width:0;}
 
         /* Main */
         .cpj-main{max-width:860px;margin:0 auto;padding:44px 40px 80px;}
@@ -415,6 +407,5 @@ export default function CoordinatorProjectsPage() {
         )}
       </m.main>
       </div>
-    </div>
   )
 }

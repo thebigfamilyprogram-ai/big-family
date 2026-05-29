@@ -131,7 +131,7 @@ export default function CoordinatorSuccessStoriesPage() {
         .btn-sm:hover{border-color:var(--ink);}
         .btn-primary{padding:10px 20px;background:#C0392B;border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .2s;}
         .btn-primary:hover{background:#a93226;}
-        .main{max-width:1100px;margin:0 auto;padding:40px 40px 80px;}
+        .main{overflow-y:auto;flex:1;min-width:0;max-width:1100px;margin:0 auto;padding:40px 40px 80px;}
         .grid{display:grid;grid-template-columns:1fr 380px;gap:20px;}
         .panel{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:24px;}
         .story-row{padding:14px 0;border-bottom:1px solid var(--line-soft);cursor:pointer;transition:background .1s;}
@@ -144,19 +144,6 @@ export default function CoordinatorSuccessStoriesPage() {
         .field input:focus,.field textarea:focus,.field select:focus{border-color:#C0392B;outline:none;}
         @media(max-width:900px){.grid{grid-template-columns:1fr;}}
       `}</style>
-
-      <nav className="nav">
-        <a href="/coordinator" style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 16, color: 'var(--ink)', textDecoration: 'none' }}>Big Family</a>
-        <span style={{ fontSize: 12, color: 'var(--mute)' }}>→ Historias de Éxito</span>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 10, alignItems: 'center' }}>
-          <span style={{ fontSize: 13, color: 'var(--mute)' }}>{coordName}</span>
-          <button className="btn-primary" onClick={() => setShowCreate(s => !s)}>
-            {showCreate ? '× Cancelar' : '+ Nominar historia'}
-          </button>
-          <button className="btn-sm" onClick={() => router.push('/coordinator')}>Panel</button>
-          <button className="btn-sm" onClick={handleLogout}>Salir</button>
-        </div>
-      </nav>
 
       <m.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 28 }}>
         <h1 style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 24 }}>Historias de Éxito</h1>

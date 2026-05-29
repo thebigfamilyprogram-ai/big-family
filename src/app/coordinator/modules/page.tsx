@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation'
 import { m, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { showToast, ToastContainer } from '@/components/Toast'
-import CoordinatorSidebar from '@/components/CoordinatorSidebar'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface RetryRequest {
@@ -400,19 +399,12 @@ export default function CoordinatorModulesPage() {
   const currentList = tab === 'pending' ? pending : tab === 'published' ? published : []
 
   return (
-    <div className="cm-layout">
-      <CoordinatorSidebar
-        userName={coordName}
-        userInitial={(coordName?.charAt(0) ?? 'C').toUpperCase()}
-        schoolName={schoolName}
-      />
-      <div className="cm-scroll">
+    <div className="cm-scroll">
       <style>{`
                 
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;color:#0D0D0D;}
-        .cm-layout{display:flex;height:100dvh;overflow:hidden;width:100%;}
-        .cm-scroll{flex:1;overflow-y:auto;min-width:0;}
+                .cm-scroll{flex:1;overflow-y:auto;min-width:0;}
         .cm-main{max-width:860px;margin:0 auto;padding:44px 40px 80px;}
         .cm-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;}
         .cm-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:28px;letter-spacing:-.022em;color:#0D0D0D;}
@@ -597,6 +589,5 @@ export default function CoordinatorModulesPage() {
 
       <ToastContainer />
       </div>
-    </div>
   )
 }

@@ -180,7 +180,7 @@ export default function CoordinatorReportPage() {
         .btn-export{padding:10px 22px;background:#C0392B;border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .2s;}
         .btn-export:hover{background:#a93226;}
         .btn-export:disabled{opacity:.5;cursor:not-allowed;}
-        .main{max-width:1200px;margin:0 auto;padding:40px 40px 80px;}
+        .main{overflow-y:auto;flex:1;min-width:0;max-width:1200px;margin:0 auto;padding:40px 40px 80px;}
         .page-h{font-family:"Satoshi",sans-serif;font-weight:900;font-size:26px;letter-spacing:-0.02em;color:var(--ink);margin-bottom:4px;}
         .page-sub{font-size:13px;color:var(--mute);margin-bottom:28px;}
         .tbl-wrap{overflow-x:auto;border:1px solid var(--card-border);border-radius:14px;background:var(--card-bg);}

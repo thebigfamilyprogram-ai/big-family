@@ -108,7 +108,7 @@ export default function CoordinatorGoalsPage() {
         .nav__right{display:flex;align-items:center;gap:12px;margin-left:auto;}
         .btn-sm{padding:7px 14px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:500;color:var(--ink);cursor:pointer;background:none;transition:all .2s;}
         .btn-sm:hover{border-color:var(--ink);background:var(--line);}
-        .main{max-width:1100px;margin:0 auto;padding:40px 40px 80px;}
+        .main{overflow-y:auto;flex:1;min-width:0;max-width:1100px;margin:0 auto;padding:40px 40px 80px;}
         .page-h{font-family:"Satoshi",sans-serif;font-weight:900;font-size:26px;letter-spacing:-0.02em;color:var(--ink);margin-bottom:6px;}
         .page-sub{font-size:13px;color:var(--mute);margin-bottom:28px;}
         .grid{display:grid;grid-template-columns:1fr 400px;gap:20px;}
@@ -123,16 +123,6 @@ export default function CoordinatorGoalsPage() {
         .goal-row:last-child{border-bottom:none;}
         @media(max-width:900px){.grid{grid-template-columns:1fr;}}
       `}</style>
-
-      <nav className="nav">
-        <a className="nav__brand" href="/coordinator">Big Family</a>
-        <span style={{ fontSize: 12, color: 'var(--mute)' }}>→ Metas</span>
-        <div className="nav__right">
-          <span style={{ fontSize: 13, color: 'var(--mute)' }}>{coordName}</span>
-          <button className="btn-sm" onClick={() => router.push('/coordinator')}>Panel principal</button>
-          <button className="btn-sm" onClick={handleLogout}>Salir</button>
-        </div>
-      </nav>
 
       <m.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 28 }}>
         <h1 className="page-h">Metas de estudiantes</h1>
