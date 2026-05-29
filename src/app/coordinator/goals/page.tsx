@@ -99,7 +99,7 @@ export default function CoordinatorGoalsPage() {
   }
 
   return (
-    <>
+    <div style={{ flex:1, minWidth:0, overflowY:"auto" }}>
       <style>{`
         
         *{box-sizing:border-box;margin:0;padding:0;}
@@ -108,7 +108,7 @@ export default function CoordinatorGoalsPage() {
         .nav__right{display:flex;align-items:center;gap:12px;margin-left:auto;}
         .btn-sm{padding:7px 14px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:500;color:var(--ink);cursor:pointer;background:none;transition:all .2s;}
         .btn-sm:hover{border-color:var(--ink);background:var(--line);}
-        .main{overflow-y:auto;flex:1;min-width:0;max-width:1100px;margin:0 auto;padding:40px 40px 80px;}
+        .main{max-width:1100px;margin:0 auto;padding:40px 40px 80px;}
         .page-h{font-family:"Satoshi",sans-serif;font-weight:900;font-size:26px;letter-spacing:-0.02em;color:var(--ink);margin-bottom:6px;}
         .page-sub{font-size:13px;color:var(--mute);margin-bottom:28px;}
         .grid{display:grid;grid-template-columns:1fr 400px;gap:20px;}
@@ -201,6 +201,6 @@ export default function CoordinatorGoalsPage() {
           </div>
         </div>
       </m.div>
-    </>
+    </div>
   )
 }

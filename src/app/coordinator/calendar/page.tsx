@@ -116,7 +116,7 @@ export default function CoordinatorCalendarPage() {
   }
 
   return (
-    <>
+    <div style={{ flex:1, minWidth:0, overflowY:"auto" }}>
       <style>{`
         
         *{box-sizing:border-box;margin:0;padding:0;}
@@ -125,7 +125,7 @@ export default function CoordinatorCalendarPage() {
         .btn-sm:hover{border-color:var(--ink);}
         .btn-primary{padding:10px 20px;background:#C0392B;border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .2s;}
         .btn-primary:hover{background:#a93226;}
-        .main{overflow-y:auto;flex:1;min-width:0;max-width:1200px;margin:0 auto;padding:40px 40px 80px;}
+        .main{max-width:1200px;margin:0 auto;padding:40px 40px 80px;}
         .cal-layout{display:grid;grid-template-columns:1fr 300px;gap:20px;}
         .card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:24px;}
         .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
@@ -275,6 +275,6 @@ export default function CoordinatorCalendarPage() {
           </div>
         </div>
       </m.div>
-    </>
+    </div>
   )
 }

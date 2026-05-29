@@ -192,7 +192,7 @@ export default function CoordinatorTimelinePage() {
   }
 
   return (
-    <>
+    <div style={{ flex:1, minWidth:0, overflowY:"auto" }}>
       <style>{`
                 *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;color:var(--ink);}
@@ -209,7 +209,7 @@ export default function CoordinatorTimelinePage() {
         .ct-btn--danger:hover{background:rgba(192,57,43,.06);}
         .ct-btn--edit{background:transparent;border:1px solid rgba(13,13,13,.15);color:#6B6B6B;font-size:12px;padding:6px 14px;}
         .ct-btn--edit:hover{border-color:#0D0D0D;color:#0D0D0D;}
-        .ct-main{overflow-y:auto;flex:1;min-width:0;max-width:800px;margin:0 auto;padding:44px 40px 100px;}
+        .ct-main{max-width:800px;margin:0 auto;padding:44px 40px 100px;}
         .ct-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:32px;}
         .ct-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:26px;letter-spacing:-.022em;}
         .ct-header p{margin-top:4px;font-size:13px;color:#6B6B6B;}
@@ -351,6 +351,6 @@ export default function CoordinatorTimelinePage() {
       </main>
 
       <ToastContainer />
-    </>
+    </div>
   )
 }

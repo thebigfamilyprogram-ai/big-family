@@ -122,7 +122,7 @@ export default function CoordinatorSuccessStoriesPage() {
   }
 
   return (
-    <>
+    <div style={{ flex:1, minWidth:0, overflowY:"auto" }}>
       <style>{`
         
         *{box-sizing:border-box;margin:0;padding:0;}
@@ -131,7 +131,7 @@ export default function CoordinatorSuccessStoriesPage() {
         .btn-sm:hover{border-color:var(--ink);}
         .btn-primary{padding:10px 20px;background:#C0392B;border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .2s;}
         .btn-primary:hover{background:#a93226;}
-        .main{overflow-y:auto;flex:1;min-width:0;max-width:1100px;margin:0 auto;padding:40px 40px 80px;}
+        .main{max-width:1100px;margin:0 auto;padding:40px 40px 80px;}
         .grid{display:grid;grid-template-columns:1fr 380px;gap:20px;}
         .panel{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:24px;}
         .story-row{padding:14px 0;border-bottom:1px solid var(--line-soft);cursor:pointer;transition:background .1s;}
@@ -247,6 +247,6 @@ export default function CoordinatorSuccessStoriesPage() {
           </div>
         </div>
       </m.div>
-    </>
+    </div>
   )
 }

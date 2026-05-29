@@ -113,7 +113,7 @@ export default function CoordinatorAnnouncementsPage() {
   }
 
   return (
-    <>
+    <div style={{ flex:1, minWidth:0, overflowY:"auto" }}>
       <style>{`
         
         *{box-sizing:border-box;margin:0;padding:0;}
@@ -122,7 +122,7 @@ export default function CoordinatorAnnouncementsPage() {
         .btn-sm:hover{border-color:var(--ink);}
         .btn-primary{padding:10px 20px;background:#C0392B;border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .2s;}
         .btn-primary:hover{background:#a93226;}
-        .main{overflow-y:auto;flex:1;min-width:0;max-width:1000px;margin:0 auto;padding:40px 40px 80px;}
+        .main{max-width:1000px;margin:0 auto;padding:40px 40px 80px;}
         .card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:20px 22px;box-shadow:0 2px 12px -6px rgba(13,13,13,.07);}
         .field{display:flex;flex-direction:column;gap:5px;}
         .field label{font-size:11.5px;font-weight:600;color:var(--mute);letter-spacing:.06em;text-transform:uppercase;}
@@ -210,6 +210,6 @@ export default function CoordinatorAnnouncementsPage() {
           })}
         </div>
       </m.div>
-    </>
+    </div>
   )
 }

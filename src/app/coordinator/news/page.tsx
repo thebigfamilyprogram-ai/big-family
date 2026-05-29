@@ -104,7 +104,7 @@ export default function CoordinatorNewsPage() {
   const drafts    = news.filter(n => !n.published).length
 
   return (
-    <>
+    <div style={{ flex:1, minWidth:0, overflowY:"auto" }}>
       <style>{`
                 
         *{box-sizing:border-box;margin:0;padding:0;}
@@ -119,7 +119,7 @@ export default function CoordinatorNewsPage() {
         .cn-btn--active{background:#0D0D0D !important;color:#fff !important;border-color:#0D0D0D !important;}
         .cn-btn--ghost{background:none;border:1px solid rgba(13,13,13,.14);border-radius:999px;padding:7px 14px;font-size:12px;color:#6B6B6B;cursor:pointer;transition:all .2s;white-space:nowrap;}
         .cn-btn--ghost:hover{border-color:#0D0D0D;color:#0D0D0D;}
-        .cn-main{overflow-y:auto;flex:1;min-width:0;max-width:860px;margin:0 auto;padding:44px 40px 80px;}
+        .cn-main{max-width:860px;margin:0 auto;padding:44px 40px 80px;}
         .cn-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap;}
         .cn-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:28px;letter-spacing:-.022em;color:#0D0D0D;}
         .cn-header p{margin-top:5px;font-size:13.5px;color:#6B6B6B;}
@@ -241,6 +241,6 @@ export default function CoordinatorNewsPage() {
           </div>
         )}
       </main>
-    </>
+    </div>
   )
 }
