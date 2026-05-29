@@ -11,8 +11,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
-  const [userName,   setUserName]   = useState('…')
-  const [userInit,   setUserInit]   = useState('L')
+  const [userName,   setUserName]   = useState('')
+  const [userInit,   setUserInit]   = useState('')
   const [userRole,   setUserRole]   = useState<string | undefined>(undefined)
   const [unread,     setUnread]     = useState(0)
 
@@ -29,8 +29,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         .eq('id', user.id)
         .maybeSingle()
 
-      setUserName(profile?.display_name ?? 'Líder')
-      setUserInit((profile?.display_name ?? 'L')[0].toUpperCase())
+      const rawName  = profile?.display_name
+      const initials = rawName
+        ? rawName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+        : user.email?.split('@')[0].slice(0, 2).toUpperCase() ?? 'LI'
+      setUserName(rawName ?? user.email ?? '—')
+      setUserInit(initials)
       setUserRole(profile?.role ?? undefined)
 
       const { data: reads } = await sb

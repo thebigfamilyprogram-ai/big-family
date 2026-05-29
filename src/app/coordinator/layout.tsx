@@ -11,8 +11,8 @@ export default function CoordinatorLayout({ children }: { children: React.ReactN
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
-  const [userName,   setUserName]   = useState('…')
-  const [userInit,   setUserInit]   = useState('C')
+  const [userName,   setUserName]   = useState('')
+  const [userInit,   setUserInit]   = useState('')
   const [schoolName, setSchoolName] = useState<string | undefined>(undefined)
   const [unread,     setUnread]     = useState(0)
 
@@ -34,9 +34,12 @@ export default function CoordinatorLayout({ children }: { children: React.ReactN
         return
       }
 
-      const displayName = (profile as { display_name?: string | null }).display_name ?? '…'
-      setUserName(displayName)
-      setUserInit(displayName[0]?.toUpperCase() ?? 'C')
+      const rawName  = (profile as { display_name?: string | null }).display_name
+      const initials = rawName
+        ? rawName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+        : user.email?.split('@')[0].slice(0, 2).toUpperCase() ?? 'CO'
+      setUserName(rawName ?? user.email ?? '—')
+      setUserInit(initials)
 
       const schoolId = (profile as { school_id?: string | null }).school_id
       if (schoolId) {

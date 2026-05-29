@@ -460,9 +460,15 @@ export default function AppSidebar({
         {/* Bottom strip — stays pinned, never scrolls */}
         <div className="app-sb__bottom">
           <div className="app-sb__user">
-            <div className="app-sb__avatar">{userInitial}</div>
+            {userInitial
+              ? <div className="app-sb__avatar">{userInitial}</div>
+              : <div className="app-sb__avatar" style={{ background: 'var(--bg-2)', animation: 'shimmer 1.4s ease infinite', backgroundSize: '400% 100%' }} />
+            }
             <div style={{ minWidth: 0 }}>
-              <div className="app-sb__username">{userName}</div>
+              {userName
+                ? <div className="app-sb__username">{userName}</div>
+                : <div style={{ height: 14, width: 100, borderRadius: 6, background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
+              }
               <div className="app-sb__role-label">{roleLabel}</div>
             </div>
           </div>
