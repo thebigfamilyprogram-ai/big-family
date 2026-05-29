@@ -2,10 +2,10 @@
 
 import { memo, useEffect, useRef, useState } from 'react'
 import { m, useInView, useReducedMotion } from 'framer-motion'
+import { createClient } from '@/lib/supabase'
+import { MOCK_MODE } from '@/lib/mockData'
 
 // ── School data ────────────────────────────────────────────────────────────────
-// margin-right: 12px on each card (instead of gap) keeps translateX(-33.333%)
-// perfectly seamless: 24 cards × 232px = 5568px; 1/3 = 1856px = 8 cards × 232px
 const SCHOOLS = [
   { name: 'IE Técnica María Inmaculada',    municipality: 'Riohacha',           initials: 'TM' },
   { name: 'Instituto Pedagógico',            municipality: 'Riohacha',           initials: 'IP' },
@@ -20,9 +20,9 @@ const SCHOOLS = [
 const TRIPLED = [...SCHOOLS, ...SCHOOLS, ...SCHOOLS]
 
 const STATS = [
-  { value: 8,    label: 'Colegios'            },
-  { value: 5,    label: 'Municipios'          },
-  { value: 2026, label: 'Primera generación'  },
+  { value: 8,    label: 'Colegios'           },
+  { value: 5,    label: 'Municipios'         },
+  { value: 2026, label: 'Primera generación' },
 ]
 
 const TITLE_WORDS = ['8', 'colegios.', 'Una', 'sola', 'familia.']
@@ -52,12 +52,25 @@ function StatNum({ to }: { to: number }) {
 
 // ── Individual school card — memoized to avoid ticker re-renders ───────────────
 const SchoolCard = memo(function SchoolCard({
-  name, municipality, initials,
-}: { name: string; municipality: string; initials: string }) {
+  name, municipality, initials, logoUrl,
+}: { name: string; municipality: string; initials: string; logoUrl?: string }) {
+  const [imgErr, setImgErr] = useState(false)
+
   return (
     <div className="stk-card">
       <div className="stk-card-top">
-        <div className="stk-avatar" aria-hidden="true">{initials}</div>
+        <div className="stk-avatar" aria-hidden="true">
+          {logoUrl && !imgErr ? (
+            <img
+              src={logoUrl}
+              alt=""
+              width={28}
+              height={28}
+              style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', display: 'block' }}
+              onError={() => setImgErr(true)}
+            />
+          ) : initials}
+        </div>
         <span className="stk-name">{name}</span>
       </div>
       <div className="stk-sep" aria-hidden="true" />
@@ -72,8 +85,35 @@ const SchoolCard = memo(function SchoolCard({
 // ── Main component ────────────────────────────────────────────────────────────
 export default memo(function SchoolTicker() {
   const sectionRef     = useRef<HTMLElement>(null)
+  const supabaseRef    = useRef<ReturnType<typeof createClient> | null>(null)
   const inView         = useInView(sectionRef, { once: true, margin: '-20% 0px' })
   const prefersReduced = useReducedMotion()
+
+  // logoMap: school name → resolved public URL
+  const [logoMap, setLogoMap] = useState<Record<string, string>>({})
+
+  // Fetch logos from Supabase — skipped in MOCK_MODE
+  useEffect(() => {
+    if (MOCK_MODE) return
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const sb = supabaseRef.current
+    if (!sb) return
+    async function fetchLogos() {
+      const { data } = await sb!.from('schools').select('name, logo_url')
+      if (!data) return
+      const map: Record<string, string> = {}
+      for (const row of data as { name: string; logo_url: string | null }[]) {
+        if (!row.logo_url) continue
+        // Resolve bare filename vs full URL — per CLAUDE.md convention
+        const url = row.logo_url.startsWith('http')
+          ? row.logo_url
+          : sb!.storage.from('school-logos').getPublicUrl(row.logo_url).data.publicUrl
+        map[row.name] = url
+      }
+      setLogoMap(map)
+    }
+    fetchLogos()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const shouldAnim = !prefersReduced && inView
 
@@ -129,8 +169,11 @@ export default memo(function SchoolTicker() {
           flex-direction: column;
           gap: 10px;
         }
-        .stk-ticker-wrap:hover .stk-row-inner {
-          animation-play-state: paused;
+        /* BUG 1 FIX — only pause on devices that truly support hover (not touch) */
+        @media (hover: hover) {
+          .stk-ticker-wrap:hover .stk-row-inner {
+            animation-play-state: paused;
+          }
         }
         .stk-row { overflow: hidden; }
         .stk-row-inner {
@@ -190,6 +233,7 @@ export default memo(function SchoolTicker() {
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          overflow: hidden;
         }
         .stk-name {
           font-family: "Satoshi", sans-serif;
@@ -316,7 +360,7 @@ export default memo(function SchoolTicker() {
       {prefersReduced ? (
         <div className="stk-reduced-grid">
           {SCHOOLS.map(s => (
-            <SchoolCard key={s.name} {...s} />
+            <SchoolCard key={s.name} {...s} logoUrl={logoMap[s.name]} />
           ))}
         </div>
       ) : (
@@ -324,23 +368,23 @@ export default memo(function SchoolTicker() {
           className="stk-ticker-wrap"
           initial={{ opacity: 0 }}
           animate={shouldAnim ? { opacity: 1 } : {}}
-          transition={{ duration: 0.4, delay: 0.2, ease: 'easeOut' }}
+          transition={{ type: 'spring', stiffness: 180, damping: 26, delay: 0.2 }}
           aria-label="Colegios aliados"
         >
-          {/* Row 1: left-moving (standard ticker) */}
+          {/* Row 1: left-moving */}
           <div className="stk-row stk-row-1" aria-hidden="true">
             <div className="stk-row-inner">
               {TRIPLED.map((s, i) => (
-                <SchoolCard key={`r1-${i}`} {...s} />
+                <SchoolCard key={`r1-${i}`} {...s} logoUrl={logoMap[s.name]} />
               ))}
             </div>
           </div>
 
-          {/* Row 2: right-moving (reverse) */}
+          {/* Row 2: right-moving */}
           <div className="stk-row stk-row-2" aria-hidden="true">
             <div className="stk-row-inner">
               {TRIPLED.map((s, i) => (
-                <SchoolCard key={`r2-${i}`} {...s} />
+                <SchoolCard key={`r2-${i}`} {...s} logoUrl={logoMap[s.name]} />
               ))}
             </div>
           </div>
