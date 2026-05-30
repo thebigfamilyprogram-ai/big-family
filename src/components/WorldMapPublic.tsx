@@ -6,38 +6,33 @@ import * as topojson from 'topojson-client'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Country {
-  code:   string
-  name:   string
-  flag:   string
-  x:      number
-  y:      number
-  weight: 'high' | 'medium' | 'low'
-  isoId:  number          // ISO 3166-1 numeric for topojson fill matching
+  code:     string
+  name:     string
+  flag:     string
+  x:        number
+  y:        number
+  weight:   'high' | 'medium' | 'low'
+  isoId:    number
   tooltip?: string
 }
 
-// ── Data — Colombia origin + 10 real destination countries ────────────────────
+// ── Data ──────────────────────────────────────────────────────────────────────
 const COUNTRIES: Country[] = [
   { code: 'co', name: 'Colombia',       flag: '🇨🇴', x: 294, y: 237, weight: 'high',   isoId: 170 },
-  // HIGH — confirmed institutional presence
   { code: 'us', name: 'Estados Unidos', flag: '🇺🇸', x: 231, y: 144, weight: 'high',   isoId: 840, tooltip: 'IB Americas Conference · Orlando' },
   { code: 'ca', name: 'Canadá',         flag: '🇨🇦', x: 233, y:  94, weight: 'high',   isoId: 124, tooltip: 'Alumni — Concordia University' },
-  { code: 'es', name: 'España',         flag: '🇪🇸', x: 490, y: 139, weight: 'high',   isoId: 724, tooltip: 'Congreso Iberoamericano · Madrid · 3er lugar' },
-  // MEDIUM — active network
+  { code: 'es', name: 'España',         flag: '🇪🇸', x: 490, y: 139, weight: 'high',   isoId: 724, tooltip: 'Congreso Iberoamericano · Madrid' },
   { code: 'mx', name: 'México',         flag: '🇲🇽', x: 215, y: 184, weight: 'medium', isoId: 484, tooltip: 'Red de colegios aliados' },
   { code: 've', name: 'Venezuela',      flag: '🇻🇪', x: 315, y: 221, weight: 'medium', isoId: 862, tooltip: 'Red de colegios aliados' },
   { code: 'br', name: 'Brasil',         flag: '🇧🇷', x: 356, y: 289, weight: 'medium', isoId:  76, tooltip: 'Red de colegios aliados' },
   { code: 'ar', name: 'Argentina',      flag: '🇦🇷', x: 323, y: 357, weight: 'medium', isoId:  32, tooltip: 'Red de colegios aliados' },
   { code: 'fr', name: 'Francia',        flag: '🇫🇷', x: 506, y: 122, weight: 'medium', isoId: 250, tooltip: 'Red de colegios aliados' },
-  // LOW — emerging connections
   { code: 'gt', name: 'Guatemala',      flag: '🇬🇹', x: 249, y: 209, weight: 'low',    isoId: 320, tooltip: 'Red de colegios aliados' },
   { code: 'in', name: 'India',          flag: '🇮🇳', x: 714, y: 170, weight: 'low',    isoId: 356, tooltip: 'Red de colegios aliados' },
 ]
 
-// ISO numeric IDs of the 10 connected destinations (FIX 4)
 const CONNECTED_ISO = new Set([840, 124, 724, 484, 862, 76, 32, 250, 320, 356])
 
-// All arcs radiate from Colombia
 const CONNECTION_PAIRS: [string, string][] = [
   ['co', 'us'], ['co', 'ca'], ['co', 'es'],
   ['co', 'mx'], ['co', 've'], ['co', 'br'],
@@ -56,39 +51,36 @@ const TITLE_WORDS = ['Una', 'red', 'que', 'crece.']
 const FLOATING_CARD_CODES = new Set(['us', 'ca', 'es'])
 
 interface FloatingCard {
-  code:           string
-  eyebrow:        string
-  title:          string
-  sub:            string
-  cardLeft:       string
-  cardTop:        string
-  cardLeftMobile: string
-  cardTopMobile:  string
-  lineX:          number  // SVG-space approx card center X for connector
-  lineY:          number  // SVG-space approx card center Y for connector
+  code:    string
+  eyebrow: string
+  title:   string
+  sub:     string
+  left:    string   // % of map container left edge
+  top:     string   // % of map container top edge
+  lineX:   number   // SVG viewBox (0–1000) — card edge closest to dot
+  lineY:   number   // SVG viewBox (0–500)
 }
 
+// Positions anchor cards near their geographic dots.
+// lineX/Y: estimated card edge in SVG coords for the dashed connector line.
 const FLOATING_CARDS: FloatingCard[] = [
-  {
-    code: 'ca', eyebrow: '🎓 Alumni destacado',
-    title: 'Concordia University', sub: 'VP Latin Students',
-    cardLeft: '1%',  cardTop: '1%',
-    cardLeftMobile: '0%', cardTopMobile: '2%',
-    lineX: 90,  lineY: 36,   // dot at (233, 94)
-  },
   {
     code: 'us', eyebrow: '🎤 Presentación oficial',
     title: 'IB Americas Conference', sub: 'Orlando, Florida',
-    cardLeft: '1%',  cardTop: '22%',
-    cardLeftMobile: '0%', cardTopMobile: '40%',
-    lineX: 90,  lineY: 147,  // dot at (231, 144)
+    left: '16%', top: '8%',
+    lineX: 228, lineY: 68,   // card bottom-center ≈ SVG (228,68); dot at (231,144)
+  },
+  {
+    code: 'ca', eyebrow: '🎓 Alumni destacado',
+    title: 'Concordia University', sub: 'VP Latin Students',
+    left: '24%', top: '2%',
+    lineX: 312, lineY: 36,   // card bottom-right ≈ SVG (312,36); dot at (233,94)
   },
   {
     code: 'es', eyebrow: '🏆 3er Lugar',
     title: 'Congreso Iberoamericano', sub: 'Madrid · MBC Educación',
-    cardLeft: '56%', cardTop: '1%',
-    cardLeftMobile: '54%', cardTopMobile: '2%',
-    lineX: 640, lineY: 36,   // dot at (490, 139)
+    left: '60%', top: '10%',
+    lineX: 610, lineY: 90,   // card left-center ≈ SVG (610,90); dot at (490,139)
   },
 ]
 
@@ -122,14 +114,14 @@ function getCountry(code: string): Country {
   return COUNTRIES.find(c => c.code === code)!
 }
 
-// FIX 2 — Arc weight hierarchy (high.opacity 0.75 per spec)
-function arcWeightStyle(weight: 'high' | 'medium' | 'low') {
-  if (weight === 'high')   return { strokeWidth: 1.5, strokeOpacity: 0.75 }
-  if (weight === 'medium') return { strokeWidth: 1,   strokeOpacity: 0.5  }
-  return                         { strokeWidth: 0.6, strokeOpacity: 0.35 }
+// 3 visual weights — high/medium/low
+function arcStyle(weight: 'high' | 'medium' | 'low') {
+  if (weight === 'high')   return { strokeWidth: 1.8, strokeOpacity: 0.80 }
+  if (weight === 'medium') return { strokeWidth: 1.0, strokeOpacity: 0.45 }
+  return                         { strokeWidth: 0.5, strokeOpacity: 0.25 }
 }
 
-// ── Count-up stat number ───────────────────────────────────────────────────────
+// ── Count-up stat ─────────────────────────────────────────────────────────────
 function StatNum({ to }: { to: number }) {
   const ref = useRef<HTMLSpanElement>(null)
   const raf = useRef<number>(0)
@@ -156,7 +148,6 @@ export default memo(function WorldMapPublic() {
   const prefersReduced = useReducedMotion()
 
   const [colombiaPath, setColombiaPath] = useState('')
-  // FIX 4 — store connected flag alongside each world path
   const [countryPaths, setCountryPaths] = useState<{ d: string; connected: boolean }[]>([])
   const [mapReady,     setMapReady]     = useState(false)
   const [hovered,      setHovered]      = useState<Country | null>(null)
@@ -164,6 +155,7 @@ export default memo(function WorldMapPublic() {
 
   const shouldAnim = !prefersReduced && inView
 
+  // Escape closes modal
   useEffect(() => {
     if (!modalCountry) return
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setModalCountry(null) }
@@ -171,6 +163,7 @@ export default memo(function WorldMapPublic() {
     return () => window.removeEventListener('keydown', onKey)
   }, [modalCountry])
 
+  // Load world topology
   useEffect(() => {
     fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json', { cache: 'force-cache' })
       .then(r => r.json())
@@ -183,26 +176,22 @@ export default memo(function WorldMapPublic() {
         fc.features.forEach((f: any) => {
           const d = geoToPath(f.geometry)
           if (!d) return
-          if (f.id === 170) coPath = d  // Colombia ISO numeric 170
+          if (f.id === 170) coPath = d
           else paths.push({ d, connected: CONNECTED_ISO.has(f.id) })
         })
         setColombiaPath(coPath)
         setCountryPaths(paths)
       })
-      .catch(() => { /* render without fills */ })
+      .catch(() => {})
       .finally(() => setMapReady(true))
   }, [])
 
   return (
     <section ref={sectionRef} id="alianzas-globales" className="wmp-section">
       <style>{`
-        @keyframes wmp-aura {
-          0%   { transform: scale(1); opacity: 0.08; }
-          100% { transform: scale(2); opacity: 0;    }
-        }
-        @keyframes wmp-ring {
-          0%   { opacity: 0.22; }
-          100% { opacity: 0.03; }
+        @keyframes wmp-shimmer {
+          0%,100% { opacity: .5; }
+          50%      { opacity: 1;  }
         }
 
         .wmp-section {
@@ -243,6 +232,8 @@ export default memo(function WorldMapPublic() {
           max-width: 540px;
           margin: 0 auto;
         }
+
+        /* Map container — position:relative is critical for cards + modal */
         .wmp-map-outer { position: relative; }
         .wmp-map-wrap {
           position: relative;
@@ -256,115 +247,32 @@ export default memo(function WorldMapPublic() {
           background: rgba(13,13,13,.04);
           animation: wmp-shimmer 1.8s ease-in-out infinite;
         }
-        @keyframes wmp-shimmer {
-          0%,100% { opacity: .5; }
-          50%      { opacity: 1;  }
-        }
 
-        /* ── Country labels — desktop only ── */
-        .wmp-country-label {
+        /* Country labels — desktop only */
+        .wmp-lbl {
           pointer-events: none;
           user-select: none;
         }
-        @media (max-width: 768px) {
-          .wmp-country-label { display: none; }
-        }
+        @media (max-width: 768px) { .wmp-lbl { display: none; } }
 
-        /* FIX 3 — Tooltip ────────────────────────────────────────── */
-        .wmp-tooltip {
+        /* Connector lines — hidden on mobile */
+        .wmp-conn { display: block; }
+        @media (max-width: 640px) { .wmp-conn { display: none; } }
+
+        /* ── Floating achievement cards ─────────────────────────── */
+        .wmp-card {
           position: absolute;
-          pointer-events: none;
-          z-index: 10;
-          transform: translate(-50%, calc(-100% - 14px));
-        }
-        .wmp-tip-box {
-          background: var(--ink, #0D0D0D);
-          color: var(--bg, #F5F3EF);
-          font-family: "Satoshi", sans-serif;
-          font-size: 11px;
-          line-height: 1.5;
-          padding: 6px 12px;
-          border-radius: 6px;
-          max-width: 200px;
-          white-space: normal;
-        }
-        .wmp-tip-name {
-          font-size: 12px;
-          font-weight: 600;
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          margin-bottom: 2px;
-        }
-        .wmp-tip-detail { opacity: 0.75; }
-
-        /* ── Stats row ───────────────────────────────────────────── */
-        .wmp-stats {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-top: 28px;
-          padding: 0 40px;
-        }
-        .wmp-stat {
-          flex: 1;
-          text-align: center;
-          padding: 0 32px;
-          max-width: 240px;
-        }
-        .wmp-stat-num {
-          font-family: var(--font-mono, 'Geist Mono', 'JetBrains Mono', monospace);
-          font-size: 32px;
-          font-weight: 600;
-          color: var(--ink, #0D0D0D);
-          line-height: 1;
-          margin-bottom: 6px;
-        }
-        .wmp-stat-label {
-          font-family: "Satoshi", sans-serif;
-          font-size: 11px;
-          text-transform: uppercase;
-          letter-spacing: .14em;
-          color: var(--mute, #6B6B6B);
-        }
-        .wmp-stat-sep {
-          width: 1px;
-          height: 32px;
-          background: var(--line-strong, rgba(13,13,13,.14));
-          flex-shrink: 0;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .wmp-section circle[style*="wmp-aura"],
-          .wmp-section circle[style*="wmp-ring"] { display: none; }
-        }
-        @media (max-width: 960px) {
-          .wmp-section { padding: 80px 0 60px; }
-          .wmp-header  { padding: 0 24px; }
-          .wmp-stats   { padding: 0 24px; }
-          .wmp-stat    { padding: 0 16px; }
-        }
-
-        /* ── Connector lines — hidden on mobile ── */
-        .wmp-connector-line { display: block; }
-        @media (max-width: 640px) { .wmp-connector-line { display: none; } }
-
-        /* ── Floating achievement cards ──────────────────────────── */
-        .wmp-floating-card {
-          position: absolute;
-          left: var(--fc-left);
-          top:  var(--fc-top);
-          max-width: 160px;
+          width: 152px;
           background: var(--card-bg, #ffffff);
           border: 1px solid var(--card-border, rgba(13,13,13,0.08));
           border-radius: 10px;
           padding: 10px 12px;
-          box-shadow: 0 2px 12px rgba(13,13,13,0.10), 0 1px 3px rgba(13,13,13,0.06);
+          box-shadow: 0 2px 12px rgba(13,13,13,0.09), 0 1px 3px rgba(13,13,13,0.05);
           pointer-events: all;
           cursor: default;
-          z-index: 2;
+          z-index: 3;
         }
-        .wmp-fc-eyebrow {
+        .wmp-card-ey {
           font-family: "Satoshi", sans-serif;
           font-size: 10px;
           font-weight: 600;
@@ -374,7 +282,7 @@ export default memo(function WorldMapPublic() {
           margin: 0 0 3px;
           line-height: 1.4;
         }
-        .wmp-fc-title {
+        .wmp-card-ttl {
           font-family: "Satoshi", sans-serif;
           font-size: 13px;
           font-weight: 700;
@@ -382,7 +290,7 @@ export default memo(function WorldMapPublic() {
           margin: 0 0 2px;
           line-height: 1.3;
         }
-        .wmp-fc-sub {
+        .wmp-card-sub {
           font-family: "Satoshi", sans-serif;
           font-size: 11px;
           color: var(--mute, #6B6B6B);
@@ -390,42 +298,35 @@ export default memo(function WorldMapPublic() {
           line-height: 1.4;
         }
         @media (max-width: 640px) {
-          .wmp-floating-card {
-            left: var(--fc-left-m);
-            top:  var(--fc-top-m);
-            max-width: 128px;
-            padding: 7px 9px;
-          }
-          .wmp-fc-title { font-size: 11px; }
-          .wmp-fc-sub   { display: none; }
+          .wmp-card        { width: 118px; padding: 7px 9px; }
+          .wmp-card-ttl    { font-size: 11px; }
+          .wmp-card-sub    { display: none; }
         }
 
-        /* ── Modal overlay + modal ───────────────────────────────── */
-        .wmp-modal-overlay {
+        /* ── Modal overlay + panel ─────────────────────────────── */
+        .wmp-overlay {
           position: absolute;
           inset: 0;
           z-index: 20;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(13,13,13,0.4);
-          backdrop-filter: blur(2px);
-          -webkit-backdrop-filter: blur(2px);
+          background: rgba(13,13,13,0.35);
+          backdrop-filter: blur(1.5px);
+          -webkit-backdrop-filter: blur(1.5px);
         }
         .wmp-modal {
           position: relative;
-          background: var(--card-bg, #ffffff);
-          border-radius: 16px;
-          padding: 24px;
-          width: 280px;
+          width: 260px;
           max-width: calc(100% - 32px);
-          box-shadow: 0 8px 32px rgba(13,13,13,0.16), 0 2px 8px rgba(13,13,13,0.08);
-          z-index: 21;
+          background: var(--card-bg, #ffffff);
+          border-radius: 14px;
+          padding: 20px;
+          box-shadow: 0 8px 32px rgba(13,13,13,0.14), 0 2px 8px rgba(13,13,13,0.06);
         }
-        .wmp-modal-close {
+        .wmp-modal-x {
           position: absolute;
-          top: 14px;
-          right: 14px;
+          top: 14px; right: 14px;
           background: none;
           border: none;
           cursor: pointer;
@@ -439,7 +340,7 @@ export default memo(function WorldMapPublic() {
         }
         .wmp-modal-name {
           font-family: "Satoshi", sans-serif;
-          font-size: 20px;
+          font-size: 18px;
           font-weight: 700;
           color: var(--ink, #0D0D0D);
           margin: 0 0 10px;
@@ -461,12 +362,55 @@ export default memo(function WorldMapPublic() {
           background: var(--line, rgba(13,13,13,0.10));
           margin: 0 0 12px;
         }
-        .wmp-modal-text {
+        .wmp-modal-txt {
           font-family: "Satoshi", sans-serif;
           font-size: 13px;
           color: var(--mute, #6B6B6B);
           line-height: 1.6;
           margin: 0;
+        }
+
+        /* ── Stats row ─────────────────────────────────────────── */
+        .wmp-stats {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-top: 28px;
+          padding: 0 40px;
+        }
+        .wmp-stat {
+          flex: 1;
+          text-align: center;
+          padding: 0 32px;
+          max-width: 240px;
+        }
+        .wmp-stat-num {
+          font-family: var(--font-mono, 'Geist Mono', 'JetBrains Mono', monospace);
+          font-size: 32px;
+          font-weight: 600;
+          color: var(--ink, #0D0D0D);
+          line-height: 1;
+          margin-bottom: 6px;
+        }
+        .wmp-stat-lbl {
+          font-family: "Satoshi", sans-serif;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: .14em;
+          color: var(--mute, #6B6B6B);
+        }
+        .wmp-stat-sep {
+          width: 1px;
+          height: 32px;
+          background: var(--line-strong, rgba(13,13,13,.14));
+          flex-shrink: 0;
+        }
+
+        @media (max-width: 960px) {
+          .wmp-section { padding: 80px 0 60px; }
+          .wmp-header  { padding: 0 24px; }
+          .wmp-stats   { padding: 0 24px; }
+          .wmp-stat    { padding: 0 16px; }
         }
       `}</style>
 
@@ -519,23 +463,28 @@ export default memo(function WorldMapPublic() {
               aria-label="Mapa mundial de alianzas Big Family"
               role="img"
             >
-              {/* 1 — Base map: non-Colombia countries, connected ones get accent tint */}
+              {/* LAYER 1 — Base map
+                  Connected countries: faint accent tint to distinguish the network.
+                  Colombia: deeper tint, will be overridden by Layer 6 fill. */}
               {countryPaths.map(({ d, connected }, i) => (
                 <path
                   key={i}
                   d={d}
-                  fill={connected ? 'rgba(192,57,43,0.05)' : 'var(--bg-2,#EFECE6)'}
-                  stroke={connected ? 'rgba(192,57,43,0.12)' : 'var(--line,rgba(13,13,13,.10))'}
+                  fill={connected ? 'rgba(192,57,43,0.04)' : 'var(--bg-2,#EFECE6)'}
+                  stroke={connected ? 'rgba(192,57,43,0.10)' : 'var(--line,rgba(13,13,13,.10))'}
                   strokeWidth="0.3"
                 />
               ))}
 
-              {/* 2 — Arcs only (no particles yet) */}
+              {/* LAYER 2 — Arcs: 3 weights communicate institutional importance
+                  HIGH (1.8px, 0.80) → España, EEUU, Canadá
+                  MEDIUM (1.0px, 0.45) → México, Venezuela, Brasil, Argentina, Francia
+                  LOW (0.5px, 0.25) → Guatemala, India */}
               {CONNECTION_PAIRS.map(([a, b], i) => {
                 const ca = getCountry(a)
                 const cb = getCountry(b)
                 const path = arcPath(ca, cb)
-                const { strokeWidth, strokeOpacity } = arcWeightStyle(cb.weight)
+                const { strokeWidth, strokeOpacity } = arcStyle(cb.weight)
                 return (
                   <m.path
                     key={i}
@@ -555,10 +504,10 @@ export default memo(function WorldMapPublic() {
                 )
               })}
 
-              {/* 3 — Traveling particles (above arcs) */}
+              {/* LAYER 3 — Traveling particles */}
               {!prefersReduced && inView && CONNECTION_PAIRS.map(([a, b], i) => {
-                const ca = getCountry(a)
-                const cb = getCountry(b)
+                const ca   = getCountry(a)
+                const cb   = getCountry(b)
                 const path = arcPath(ca, cb)
                 return (
                   <circle key={i} r="2" fill="var(--accent,#C0392B)" fillOpacity="0.7">
@@ -571,100 +520,95 @@ export default memo(function WorldMapPublic() {
                 )
               })}
 
-              {/* 4 — Destination dots + labels */}
+              {/* LAYER 4 — Destination dots (r=4, no permanent pulse ring)
+                  HIGH countries have floating cards — cursor:default, no modal.
+                  MEDIUM/LOW countries open modal on click. */}
               {COUNTRIES.filter(c => c.code !== 'co').map(country => {
-                const i = COUNTRIES.indexOf(country)
+                const i           = COUNTRIES.indexOf(country)
                 const isFloating  = FLOATING_CARD_CODES.has(country.code)
                 const isVenezuela = country.code === 've'
                 const labelX      = isVenezuela ? country.x + 12 : country.x
-                const labelY      = isVenezuela ? country.y + 13  : country.y + 14
-                const labelAnchor = isVenezuela ? 'start'          : 'middle'
+                const labelY      = country.y + 13
+                const labelAnchor = isVenezuela ? 'start' : 'middle'
                 return (
                   <g
                     key={country.code}
                     style={{ cursor: isFloating ? 'default' : 'pointer' }}
                     onMouseEnter={() => { if (!isFloating) setHovered(country) }}
-                    onMouseLeave={() => { if (!isFloating) setHovered(null) }}
+                    onMouseLeave={() => { if (!isFloating) setHovered(null)    }}
                     onClick={() => { if (!isFloating) setModalCountry(country) }}
                   >
+                    {/* Hover pulse — only for modal-enabled (non-floating) countries */}
                     <AnimatePresence>
                       {!prefersReduced && hovered?.code === country.code && (
                         <m.circle
-                          key="hover-pulse"
-                          cx={country.x} cy={country.y} r={5}
+                          key="ring"
+                          cx={country.x} cy={country.y} r={4}
                           fill="var(--accent,#C0392B)"
                           style={{ transformOrigin: `${country.x}px ${country.y}px`, pointerEvents: 'none' }}
-                          animate={{ scale: [1, 3], opacity: [0.5, 0] }}
+                          animate={{ scale: [1, 3.5], opacity: [0.45, 0] }}
                           exit={{ opacity: 0 }}
                           transition={{ repeat: Infinity, duration: 0.9, ease: 'easeOut' }}
                         />
                       )}
                     </AnimatePresence>
+
                     <m.circle
-                      cx={country.x}
-                      cy={country.y}
-                      r={5}
+                      cx={country.x} cy={country.y} r={4}
                       fill="var(--accent,#C0392B)"
-                      fillOpacity={0.85}
+                      fillOpacity={0.80}
                       style={{
                         transformOrigin: `${country.x}px ${country.y}px`,
-                        filter: 'drop-shadow(0 0 3px rgba(192,57,43,.4))',
+                        filter: 'drop-shadow(0 0 3px rgba(192,57,43,.30))',
                         willChange: 'transform, opacity',
                       }}
                       initial={prefersReduced ? false : { scale: 0, opacity: 0 }}
                       animate={shouldAnim ? { scale: 1, opacity: 1 } : {}}
-                      whileHover={{ scale: 1.8, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
+                      whileHover={!isFloating ? { scale: 1.7, transition: { type: 'spring', stiffness: 400, damping: 25 } } : {}}
                       transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 1.3 + i * 0.08 }}
                     />
+
                     <m.text
-                      className="wmp-country-label"
-                      x={labelX}
-                      y={labelY}
+                      className="wmp-lbl"
+                      x={labelX} y={labelY}
                       textAnchor={labelAnchor}
-                      style={{
-                        fontFamily: '"Satoshi",sans-serif',
-                        fontSize: 10,
-                        fill: 'var(--ink,#0D0D0D)',
-                        fillOpacity: 0.65,
-                      }}
+                      style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 10, fill: 'var(--ink,#0D0D0D)', fillOpacity: 0.55 }}
                       initial={prefersReduced ? false : { opacity: 0 }}
-                      animate={shouldAnim ? { opacity: 0.65 } : {}}
+                      animate={shouldAnim ? { opacity: 0.55 } : {}}
                       transition={{ duration: 0.4, delay: 1.6 + i * 0.06 }}
-                    >
-                      {country.name}
-                    </m.text>
+                    >{country.name}</m.text>
                   </g>
                 )
               })}
 
-              {/* 5 — Connector lines for floating cards (above dots, below HTML layer) */}
+              {/* LAYER 5 — Connector lines for floating cards
+                  Rendered above dots but below HTML layer (SVG is always under HTML). */}
               {shouldAnim && FLOATING_CARDS.map(fc => {
                 const country = getCountry(fc.code)
                 return (
                   <line
                     key={`conn-${fc.code}`}
-                    className="wmp-connector-line"
-                    x1={fc.lineX}
-                    y1={fc.lineY}
-                    x2={country.x}
-                    y2={country.y}
+                    className="wmp-conn"
+                    x1={fc.lineX} y1={fc.lineY}
+                    x2={country.x} y2={country.y}
                     stroke="var(--accent,#C0392B)"
-                    strokeOpacity="0.3"
+                    strokeOpacity="0.25"
                     strokeWidth="1"
-                    strokeDasharray="3 3"
+                    strokeDasharray="4 4"
                     style={{ pointerEvents: 'none' }}
                   />
                 )
               })}
 
-              {/* 6 — Colombia origin: always rendered last, always on top */}
+              {/* LAYER 6 — Colombia: always last in SVG = always on top
+                  r=9, strokeWidth=2.5, 2 pulse rings offset by 1s. */}
               <g style={{ cursor: 'default' }}>
                 {colombiaPath && (
                   <m.path
                     d={colombiaPath}
                     fill="rgba(192,57,43,0.10)"
-                    stroke="rgba(192,57,43,0.25)"
-                    strokeWidth={0.8}
+                    stroke="rgba(192,57,43,0.30)"
+                    strokeWidth={1}
                     initial={prefersReduced ? false : { opacity: 0 }}
                     animate={shouldAnim ? { opacity: 1 } : {}}
                     transition={{ type: 'spring', stiffness: 80, damping: 22, delay: 0.5 }}
@@ -673,29 +617,29 @@ export default memo(function WorldMapPublic() {
                 {!prefersReduced && shouldAnim && (
                   <>
                     <m.circle
-                      cx={COUNTRIES[0].x} cy={COUNTRIES[0].y} r={10}
+                      cx={COUNTRIES[0].x} cy={COUNTRIES[0].y} r={9}
                       fill="var(--accent,#C0392B)"
                       style={{ transformOrigin: `${COUNTRIES[0].x}px ${COUNTRIES[0].y}px`, pointerEvents: 'none' }}
-                      animate={{ scale: [1, 2.5], opacity: [0.6, 0] }}
+                      animate={{ scale: [1, 3], opacity: [0.5, 0] }}
                       transition={{ repeat: Infinity, duration: 2, ease: 'easeOut', delay: 0 }}
                     />
                     <m.circle
-                      cx={COUNTRIES[0].x} cy={COUNTRIES[0].y} r={10}
+                      cx={COUNTRIES[0].x} cy={COUNTRIES[0].y} r={9}
                       fill="var(--accent,#C0392B)"
                       style={{ transformOrigin: `${COUNTRIES[0].x}px ${COUNTRIES[0].y}px`, pointerEvents: 'none' }}
-                      animate={{ scale: [1, 2.5], opacity: [0.6, 0] }}
-                      transition={{ repeat: Infinity, duration: 2, ease: 'easeOut', delay: 0.8 }}
+                      animate={{ scale: [1, 3], opacity: [0.5, 0] }}
+                      transition={{ repeat: Infinity, duration: 2, ease: 'easeOut', delay: 1 }}
                     />
                   </>
                 )}
                 <m.circle
-                  cx={COUNTRIES[0].x} cy={COUNTRIES[0].y} r={10}
+                  cx={COUNTRIES[0].x} cy={COUNTRIES[0].y} r={9}
                   fill="var(--accent,#C0392B)"
                   stroke="white"
-                  strokeWidth={2}
+                  strokeWidth={2.5}
                   style={{
                     transformOrigin: `${COUNTRIES[0].x}px ${COUNTRIES[0].y}px`,
-                    filter: 'drop-shadow(0 0 6px rgba(192,57,43,.6))',
+                    filter: 'drop-shadow(0 0 6px rgba(192,57,43,.55))',
                     willChange: 'transform, opacity',
                   }}
                   initial={prefersReduced ? false : { scale: 0, opacity: 0 }}
@@ -703,16 +647,11 @@ export default memo(function WorldMapPublic() {
                   transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 1.3 }}
                 />
                 <m.text
-                  className="wmp-country-label"
+                  className="wmp-lbl"
                   x={COUNTRIES[0].x}
                   y={COUNTRIES[0].y - 16}
                   textAnchor="middle"
-                  style={{
-                    fontFamily: '"Satoshi",sans-serif',
-                    fontSize: 13,
-                    fontWeight: 700,
-                    fill: 'var(--ink,#0D0D0D)',
-                  }}
+                  style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 13, fontWeight: 700, fill: 'var(--ink,#0D0D0D)' }}
                   initial={prefersReduced ? false : { opacity: 0 }}
                   animate={shouldAnim ? { opacity: 1 } : {}}
                   transition={{ duration: 0.4, delay: 1.8 }}
@@ -720,65 +659,61 @@ export default memo(function WorldMapPublic() {
               </g>
             </svg>
 
-            {/* Floating achievement cards — España, EEUU, Canadá */}
+            {/* Floating cards — España, EEUU, Canadá
+                position:absolute within .wmp-map-wrap (position:relative). */}
             {FLOATING_CARDS.map((fc, i) => (
               <m.div
                 key={fc.code}
-                className="wmp-floating-card"
-                style={{
-                  '--fc-left':   fc.cardLeft,
-                  '--fc-top':    fc.cardTop,
-                  '--fc-left-m': fc.cardLeftMobile,
-                  '--fc-top-m':  fc.cardTopMobile,
-                } as React.CSSProperties}
-                initial={prefersReduced ? false : { opacity: 0, y: -8, scale: 0.95 }}
+                className="wmp-card"
+                style={{ left: fc.left, top: fc.top }}
+                initial={prefersReduced ? false : { opacity: 0, y: -6, scale: 0.96 }}
                 animate={shouldAnim ? { opacity: 1, y: 0, scale: 1 } : {}}
-                transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 2.0 + i * 0.15 }}
-                whileHover={{ y: -2, scale: 1.02, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
+                transition={{ type: 'spring', stiffness: 180, damping: 22, delay: 2.0 + i * 0.20 }}
+                whileHover={{ y: -2, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
               >
-                <p className="wmp-fc-eyebrow">{fc.eyebrow}</p>
-                <p className="wmp-fc-title">{fc.title}</p>
-                <p className="wmp-fc-sub">{fc.sub}</p>
+                <p className="wmp-card-ey">{fc.eyebrow}</p>
+                <p className="wmp-card-ttl">{fc.title}</p>
+                <p className="wmp-card-sub">{fc.sub}</p>
               </m.div>
             ))}
 
-            {/* Modal — click on network dots to open */}
+            {/* Modal — overlay wraps modal so flex centers it within the map.
+                Clicking overlay (outside modal) closes it. */}
             <AnimatePresence>
               {modalCountry && (
-                <>
-                  <m.div
-                    className="wmp-modal-overlay"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    onClick={() => setModalCountry(null)}
-                  />
+                <m.div
+                  className="wmp-overlay"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.18 }}
+                  onClick={() => setModalCountry(null)}
+                >
                   <m.div
                     key={modalCountry.code}
                     className="wmp-modal"
-                    initial={{ opacity: 0, scale: 0.92, y: 16 }}
+                    initial={{ opacity: 0, scale: 0.90, y: 12 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 6 }}
                     transition={{ type: 'spring', stiffness: 280, damping: 26 }}
                     onClick={e => e.stopPropagation()}
                   >
                     <m.button
-                      className="wmp-modal-close"
+                      className="wmp-modal-x"
                       onClick={() => setModalCountry(null)}
-                      whileHover={{ rotate: 90, transition: { type: 'spring', stiffness: 400, damping: 20 } }}
+                      whileHover={{ rotate: 90, scale: 1.1, transition: { type: 'spring', stiffness: 400, damping: 20 } }}
                       aria-label="Cerrar"
                     >✕</m.button>
                     <p className="wmp-modal-name">{modalCountry.flag} {modalCountry.name}</p>
                     <span className="wmp-modal-tag">Red de colegios aliados</span>
                     <div className="wmp-modal-sep" />
-                    <p className="wmp-modal-text">
+                    <p className="wmp-modal-txt">
                       Big Family mantiene conexión activa con instituciones educativas
                       en {modalCountry.name}, expandiendo la red de liderazgo juvenil
                       a nivel internacional.
                     </p>
                   </m.div>
-                </>
+                </m.div>
               )}
             </AnimatePresence>
           </m.div>
@@ -797,7 +732,7 @@ export default memo(function WorldMapPublic() {
             transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.5 + i * 0.12 }}
           >
             <div className="wmp-stat-num"><StatNum to={s.value} /></div>
-            <div className="wmp-stat-label">{s.label}</div>
+            <div className="wmp-stat-lbl">{s.label}</div>
           </m.div>,
         ])}
       </div>
