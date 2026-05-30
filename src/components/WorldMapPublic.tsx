@@ -347,200 +347,187 @@ export default memo(function WorldMapPublic() {
               aria-label="Mapa mundial de alianzas Big Family"
               role="img"
             >
-              {/* FIX 4 — World base: connected countries get accent tint */}
+              {/* 1 — Base map: non-Colombia countries, connected ones get accent tint */}
               {countryPaths.map(({ d, connected }, i) => (
                 <path
                   key={i}
                   d={d}
-                  fill={connected ? 'rgba(192,57,43,0.06)' : 'var(--bg-2,#EFECE6)'}
-                  stroke={connected ? 'rgba(192,57,43,0.15)' : 'var(--line,rgba(13,13,13,.10))'}
+                  fill={connected ? 'rgba(192,57,43,0.05)' : 'var(--bg-2,#EFECE6)'}
+                  stroke={connected ? 'rgba(192,57,43,0.12)' : 'var(--line,rgba(13,13,13,.10))'}
                   strokeWidth="0.3"
                 />
               ))}
 
-              {/* FIX 4 — Colombia: deeper tint, thicker stroke */}
-              {colombiaPath && (
-                <m.path
-                  d={colombiaPath}
-                  fill="rgba(192,57,43,0.12)"
-                  stroke="var(--accent,#C0392B)"
-                  strokeWidth={0.8}
-                  strokeOpacity={0.5}
-                  initial={prefersReduced ? false : { opacity: 0 }}
-                  animate={shouldAnim ? { opacity: 1 } : {}}
-                  transition={{ type: 'spring', stiffness: 80, damping: 22, delay: 0.5 }}
-                />
-              )}
-
-              {/* Connection arcs — weight-based stroke hierarchy */}
+              {/* 2 — Arcs only (no particles yet) */}
               {CONNECTION_PAIRS.map(([a, b], i) => {
                 const ca = getCountry(a)
                 const cb = getCountry(b)
                 const path = arcPath(ca, cb)
                 const { strokeWidth, strokeOpacity } = arcWeightStyle(cb.weight)
                 return (
-                  <g key={i}>
-                    <m.path
-                      d={path}
-                      fill="none"
-                      stroke="var(--accent,#C0392B)"
-                      strokeOpacity={strokeOpacity}
-                      strokeWidth={strokeWidth}
-                      strokeDasharray="5 5"
-                      initial={prefersReduced ? false : { pathLength: 0, opacity: 0 }}
-                      animate={shouldAnim ? { pathLength: 1, opacity: 1 } : {}}
-                      transition={{
-                        pathLength: { duration: 0.7, delay: 0.9 + i * 0.18, ease: [0.22, 1, 0.36, 1] },
-                        opacity:    { duration: 0.3, delay: 0.9 + i * 0.18 },
-                      }}
-                    />
-                    {/* Traveling particle */}
-                    {!prefersReduced && inView && (
-                      <circle r="2" fill="var(--accent,#C0392B)" fillOpacity="0.7">
-                        {React.createElement('animateMotion', {
-                          path,
-                          dur: `${4 + i * 0.4}s`,
-                          repeatCount: 'indefinite',
-                        })}
-                      </circle>
-                    )}
-                  </g>
+                  <m.path
+                    key={i}
+                    d={path}
+                    fill="none"
+                    stroke="var(--accent,#C0392B)"
+                    strokeOpacity={strokeOpacity}
+                    strokeWidth={strokeWidth}
+                    strokeDasharray="5 5"
+                    initial={prefersReduced ? false : { pathLength: 0, opacity: 0 }}
+                    animate={shouldAnim ? { pathLength: 1, opacity: 1 } : {}}
+                    transition={{
+                      pathLength: { duration: 0.7, delay: 0.9 + i * 0.18, ease: [0.22, 1, 0.36, 1] },
+                      opacity:    { duration: 0.3, delay: 0.9 + i * 0.18 },
+                    }}
+                  />
                 )
               })}
 
-              {/* Country dots + labels */}
-              {COUNTRIES.map((country, i) => {
-                const isHQ = country.code === 'co'
-                // FIX 1 — Venezuela label shifted right to avoid Colombia overlap
+              {/* 3 — Traveling particles (above arcs) */}
+              {!prefersReduced && inView && CONNECTION_PAIRS.map(([a, b], i) => {
+                const ca = getCountry(a)
+                const cb = getCountry(b)
+                const path = arcPath(ca, cb)
+                return (
+                  <circle key={i} r="2" fill="var(--accent,#C0392B)" fillOpacity="0.7">
+                    {React.createElement('animateMotion', {
+                      path,
+                      dur: `${4 + i * 0.4}s`,
+                      repeatCount: 'indefinite',
+                    })}
+                  </circle>
+                )
+              })}
+
+              {/* 4 — Destination dots + labels */}
+              {COUNTRIES.filter(c => c.code !== 'co').map(country => {
+                const i = COUNTRIES.indexOf(country)
                 const isVenezuela = country.code === 've'
                 const labelX      = isVenezuela ? country.x + 12 : country.x
                 const labelY      = isVenezuela ? country.y + 13  : country.y + 14
                 const labelAnchor = isVenezuela ? 'start'          : 'middle'
-
                 return (
                   <g
                     key={country.code}
-                    style={{ cursor: isHQ ? 'default' : 'pointer' }}
-                    onMouseEnter={() => { if (!isHQ) setHovered(country) }}
-                    onMouseLeave={() => { if (!isHQ) setHovered(null) }}
+                    style={{ cursor: 'pointer' }}
+                    onMouseEnter={() => setHovered(country)}
+                    onMouseLeave={() => setHovered(null)}
                     onTouchStart={e => {
                       e.stopPropagation()
-                      if (!isHQ) setHovered(v => v?.code === country.code ? null : country)
+                      setHovered(v => v?.code === country.code ? null : country)
                     }}
                   >
-                    {isHQ ? (
-                      <>
-                        {/* FIX 1 — Colombia: 2 permanent FM pulse rings (exception: loop animation) */}
-                        {!prefersReduced && shouldAnim && (
-                          <>
-                            <m.circle
-                              cx={country.x} cy={country.y} r={10}
-                              fill="var(--accent,#C0392B)"
-                              style={{ transformOrigin: `${country.x}px ${country.y}px`, pointerEvents: 'none' }}
-                              animate={{ scale: [1, 2.5], opacity: [0.6, 0] }}
-                              transition={{ repeat: Infinity, duration: 2, ease: 'easeOut', delay: 0 }}
-                            />
-                            <m.circle
-                              cx={country.x} cy={country.y} r={10}
-                              fill="var(--accent,#C0392B)"
-                              style={{ transformOrigin: `${country.x}px ${country.y}px`, pointerEvents: 'none' }}
-                              animate={{ scale: [1, 2.5], opacity: [0.6, 0] }}
-                              transition={{ repeat: Infinity, duration: 2, ease: 'easeOut', delay: 0.8 }}
-                            />
-                          </>
-                        )}
-
-                        {/* FIX 1 — Colombia HQ dot: r=10, white stroke */}
+                    <AnimatePresence>
+                      {!prefersReduced && hovered?.code === country.code && (
                         <m.circle
-                          cx={country.x} cy={country.y} r={10}
+                          key="hover-pulse"
+                          cx={country.x} cy={country.y} r={5}
                           fill="var(--accent,#C0392B)"
-                          stroke="white"
-                          strokeWidth={2}
-                          style={{
-                            transformOrigin: `${country.x}px ${country.y}px`,
-                            filter: 'drop-shadow(0 0 6px rgba(192,57,43,.6))',
-                            willChange: 'transform, opacity',
-                          }}
-                          initial={prefersReduced ? false : { scale: 0, opacity: 0 }}
-                          animate={shouldAnim ? { scale: 1, opacity: 1 } : {}}
-                          transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 1.3 }}
+                          style={{ transformOrigin: `${country.x}px ${country.y}px`, pointerEvents: 'none' }}
+                          animate={{ scale: [1, 3], opacity: [0.5, 0] }}
+                          exit={{ opacity: 0 }}
+                          transition={{ repeat: Infinity, duration: 0.9, ease: 'easeOut' }}
                         />
-
-                        {/* FIX 1 — Colombia label: bold 13px */}
-                        <m.text
-                          className="wmp-country-label"
-                          x={country.x}
-                          y={country.y - 16}
-                          textAnchor="middle"
-                          style={{
-                            fontFamily: '"Satoshi",sans-serif',
-                            fontSize: 13,
-                            fontWeight: 700,
-                            fill: 'var(--ink,#0D0D0D)',
-                          }}
-                          initial={prefersReduced ? false : { opacity: 0 }}
-                          animate={shouldAnim ? { opacity: 1 } : {}}
-                          transition={{ duration: 0.4, delay: 1.8 }}
-                        >Colombia</m.text>
-                      </>
-                    ) : (
-                      <>
-                        {/* FIX 1 — Destination hover pulse ring (AnimatePresence) */}
-                        <AnimatePresence>
-                          {!prefersReduced && hovered?.code === country.code && (
-                            <m.circle
-                              key="hover-pulse"
-                              cx={country.x} cy={country.y} r={5}
-                              fill="var(--accent,#C0392B)"
-                              style={{ transformOrigin: `${country.x}px ${country.y}px`, pointerEvents: 'none' }}
-                              animate={{ scale: [1, 3], opacity: [0.5, 0] }}
-                              exit={{ opacity: 0 }}
-                              transition={{ repeat: Infinity, duration: 0.9, ease: 'easeOut' }}
-                            />
-                          )}
-                        </AnimatePresence>
-
-                        {/* FIX 1 — Destination dot: r=5, opacity 0.85, scale 1.8 on hover */}
-                        <m.circle
-                          cx={country.x}
-                          cy={country.y}
-                          r={5}
-                          fill="var(--accent,#C0392B)"
-                          fillOpacity={0.85}
-                          style={{
-                            transformOrigin: `${country.x}px ${country.y}px`,
-                            filter: 'drop-shadow(0 0 3px rgba(192,57,43,.4))',
-                            willChange: 'transform, opacity',
-                          }}
-                          initial={prefersReduced ? false : { scale: 0, opacity: 0 }}
-                          animate={shouldAnim ? { scale: 1, opacity: 1 } : {}}
-                          whileHover={{ scale: 1.8, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
-                          transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 1.3 + i * 0.08 }}
-                        />
-
-                        {/* Destination label — always visible desktop, Venezuela offset FIX 1 */}
-                        <m.text
-                          className="wmp-country-label"
-                          x={labelX}
-                          y={labelY}
-                          textAnchor={labelAnchor}
-                          style={{
-                            fontFamily: '"Satoshi",sans-serif',
-                            fontSize: 10,
-                            fill: 'var(--ink,#0D0D0D)',
-                            fillOpacity: 0.65,
-                          }}
-                          initial={prefersReduced ? false : { opacity: 0 }}
-                          animate={shouldAnim ? { opacity: 0.65 } : {}}
-                          transition={{ duration: 0.4, delay: 1.6 + i * 0.06 }}
-                        >
-                          {country.name}
-                        </m.text>
-                      </>
-                    )}
+                      )}
+                    </AnimatePresence>
+                    <m.circle
+                      cx={country.x}
+                      cy={country.y}
+                      r={5}
+                      fill="var(--accent,#C0392B)"
+                      fillOpacity={0.85}
+                      style={{
+                        transformOrigin: `${country.x}px ${country.y}px`,
+                        filter: 'drop-shadow(0 0 3px rgba(192,57,43,.4))',
+                        willChange: 'transform, opacity',
+                      }}
+                      initial={prefersReduced ? false : { scale: 0, opacity: 0 }}
+                      animate={shouldAnim ? { scale: 1, opacity: 1 } : {}}
+                      whileHover={{ scale: 1.8, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
+                      transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 1.3 + i * 0.08 }}
+                    />
+                    <m.text
+                      className="wmp-country-label"
+                      x={labelX}
+                      y={labelY}
+                      textAnchor={labelAnchor}
+                      style={{
+                        fontFamily: '"Satoshi",sans-serif',
+                        fontSize: 10,
+                        fill: 'var(--ink,#0D0D0D)',
+                        fillOpacity: 0.65,
+                      }}
+                      initial={prefersReduced ? false : { opacity: 0 }}
+                      animate={shouldAnim ? { opacity: 0.65 } : {}}
+                      transition={{ duration: 0.4, delay: 1.6 + i * 0.06 }}
+                    >
+                      {country.name}
+                    </m.text>
                   </g>
                 )
               })}
+
+              {/* 5 — Colombia origin: always rendered last, always on top */}
+              <g style={{ cursor: 'default' }}>
+                {colombiaPath && (
+                  <m.path
+                    d={colombiaPath}
+                    fill="rgba(192,57,43,0.10)"
+                    stroke="rgba(192,57,43,0.25)"
+                    strokeWidth={0.8}
+                    initial={prefersReduced ? false : { opacity: 0 }}
+                    animate={shouldAnim ? { opacity: 1 } : {}}
+                    transition={{ type: 'spring', stiffness: 80, damping: 22, delay: 0.5 }}
+                  />
+                )}
+                {!prefersReduced && shouldAnim && (
+                  <>
+                    <m.circle
+                      cx={COUNTRIES[0].x} cy={COUNTRIES[0].y} r={10}
+                      fill="var(--accent,#C0392B)"
+                      style={{ transformOrigin: `${COUNTRIES[0].x}px ${COUNTRIES[0].y}px`, pointerEvents: 'none' }}
+                      animate={{ scale: [1, 2.5], opacity: [0.6, 0] }}
+                      transition={{ repeat: Infinity, duration: 2, ease: 'easeOut', delay: 0 }}
+                    />
+                    <m.circle
+                      cx={COUNTRIES[0].x} cy={COUNTRIES[0].y} r={10}
+                      fill="var(--accent,#C0392B)"
+                      style={{ transformOrigin: `${COUNTRIES[0].x}px ${COUNTRIES[0].y}px`, pointerEvents: 'none' }}
+                      animate={{ scale: [1, 2.5], opacity: [0.6, 0] }}
+                      transition={{ repeat: Infinity, duration: 2, ease: 'easeOut', delay: 0.8 }}
+                    />
+                  </>
+                )}
+                <m.circle
+                  cx={COUNTRIES[0].x} cy={COUNTRIES[0].y} r={10}
+                  fill="var(--accent,#C0392B)"
+                  stroke="white"
+                  strokeWidth={2}
+                  style={{
+                    transformOrigin: `${COUNTRIES[0].x}px ${COUNTRIES[0].y}px`,
+                    filter: 'drop-shadow(0 0 6px rgba(192,57,43,.6))',
+                    willChange: 'transform, opacity',
+                  }}
+                  initial={prefersReduced ? false : { scale: 0, opacity: 0 }}
+                  animate={shouldAnim ? { scale: 1, opacity: 1 } : {}}
+                  transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 1.3 }}
+                />
+                <m.text
+                  className="wmp-country-label"
+                  x={COUNTRIES[0].x}
+                  y={COUNTRIES[0].y - 16}
+                  textAnchor="middle"
+                  style={{
+                    fontFamily: '"Satoshi",sans-serif',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    fill: 'var(--ink,#0D0D0D)',
+                  }}
+                  initial={prefersReduced ? false : { opacity: 0 }}
+                  animate={shouldAnim ? { opacity: 1 } : {}}
+                  transition={{ duration: 0.4, delay: 1.8 }}
+                >Colombia</m.text>
+              </g>
             </svg>
 
             {/* FIX 3 — Tooltip with spring + real program data */}
