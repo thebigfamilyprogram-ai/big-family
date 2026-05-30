@@ -166,17 +166,17 @@ code, pre, .font-mono {
 
 /* ── View Transitions ────────────────────────────────────────────────────── */
 ::view-transition-old(root) {
-  animation: 200ms ease-in both vt-fade-out;
+  animation: 180ms ease-in both vt-fade-out;
 }
 ::view-transition-new(root) {
-  animation: 300ms ease-out both vt-fade-in;
+  animation: 280ms ease-out both vt-fade-in;
 }
 @keyframes vt-fade-out {
   from { opacity: 1; transform: translateY(0);    }
-  to   { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 0; transform: translateY(-6px); }
 }
 @keyframes vt-fade-in {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0);   }
 }
 @media (prefers-reduced-motion: reduce) {
