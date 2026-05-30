@@ -6,34 +6,38 @@ import * as topojson from 'topojson-client'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Country {
-  code: string
-  name: string
-  flag: string
-  x: number
-  y: number
+  code:   string
+  name:   string
+  flag:   string
+  x:      number
+  y:      number
   weight: 'high' | 'medium' | 'low'
+  isoId:  number          // ISO 3166-1 numeric for topojson fill matching
   tooltip?: string
 }
 
 // ── Data — Colombia origin + 10 real destination countries ────────────────────
 const COUNTRIES: Country[] = [
-  { code: 'co', name: 'Colombia',       flag: '🇨🇴', x: 294, y: 237, weight: 'high' },
+  { code: 'co', name: 'Colombia',       flag: '🇨🇴', x: 294, y: 237, weight: 'high',   isoId: 170 },
   // HIGH — confirmed institutional presence
-  { code: 'us', name: 'Estados Unidos', flag: '🇺🇸', x: 231, y: 144, weight: 'high',   tooltip: 'IB Americas Conference · Orlando' },
-  { code: 'ca', name: 'Canadá',         flag: '🇨🇦', x: 233, y:  94, weight: 'high',   tooltip: 'Alumni — Vicepresidente Latin Students, Concordia University' },
-  { code: 'es', name: 'España',         flag: '🇪🇸', x: 490, y: 139, weight: 'high',   tooltip: 'Congreso Iberoamericano · Madrid · 3er lugar' },
+  { code: 'us', name: 'Estados Unidos', flag: '🇺🇸', x: 231, y: 144, weight: 'high',   isoId: 840, tooltip: 'IB Americas Conference · Orlando' },
+  { code: 'ca', name: 'Canadá',         flag: '🇨🇦', x: 233, y:  94, weight: 'high',   isoId: 124, tooltip: 'Alumni — Concordia University' },
+  { code: 'es', name: 'España',         flag: '🇪🇸', x: 490, y: 139, weight: 'high',   isoId: 724, tooltip: 'Congreso Iberoamericano · Madrid · 3er lugar' },
   // MEDIUM — active network
-  { code: 'mx', name: 'México',         flag: '🇲🇽', x: 215, y: 184, weight: 'medium', tooltip: 'Taller internacional · Red de colegios' },
-  { code: 've', name: 'Venezuela',      flag: '🇻🇪', x: 315, y: 221, weight: 'medium', tooltip: 'Red de colegios aliados' },
-  { code: 'br', name: 'Brasil',         flag: '🇧🇷', x: 356, y: 289, weight: 'medium', tooltip: 'Red de colegios aliados' },
-  { code: 'ar', name: 'Argentina',      flag: '🇦🇷', x: 323, y: 357, weight: 'medium', tooltip: 'Red de colegios aliados' },
-  { code: 'fr', name: 'Francia',        flag: '🇫🇷', x: 506, y: 122, weight: 'medium', tooltip: 'Red de colegios aliados' },
+  { code: 'mx', name: 'México',         flag: '🇲🇽', x: 215, y: 184, weight: 'medium', isoId: 484, tooltip: 'Red de colegios aliados' },
+  { code: 've', name: 'Venezuela',      flag: '🇻🇪', x: 315, y: 221, weight: 'medium', isoId: 862, tooltip: 'Red de colegios aliados' },
+  { code: 'br', name: 'Brasil',         flag: '🇧🇷', x: 356, y: 289, weight: 'medium', isoId:  76, tooltip: 'Red de colegios aliados' },
+  { code: 'ar', name: 'Argentina',      flag: '🇦🇷', x: 323, y: 357, weight: 'medium', isoId:  32, tooltip: 'Red de colegios aliados' },
+  { code: 'fr', name: 'Francia',        flag: '🇫🇷', x: 506, y: 122, weight: 'medium', isoId: 250, tooltip: 'Red de colegios aliados' },
   // LOW — emerging connections
-  { code: 'gt', name: 'Guatemala',      flag: '🇬🇹', x: 249, y: 209, weight: 'low',    tooltip: 'Red de colegios aliados' },
-  { code: 'in', name: 'India',          flag: '🇮🇳', x: 714, y: 170, weight: 'low',    tooltip: 'Red de colegios aliados' },
+  { code: 'gt', name: 'Guatemala',      flag: '🇬🇹', x: 249, y: 209, weight: 'low',    isoId: 320, tooltip: 'Red de colegios aliados' },
+  { code: 'in', name: 'India',          flag: '🇮🇳', x: 714, y: 170, weight: 'low',    isoId: 356, tooltip: 'Red de colegios aliados' },
 ]
 
-// All arcs radiate from Colombia to each destination
+// ISO numeric IDs of the 10 connected destinations (FIX 4)
+const CONNECTED_ISO = new Set([840, 124, 724, 484, 862, 76, 32, 250, 320, 356])
+
+// All arcs radiate from Colombia
 const CONNECTION_PAIRS: [string, string][] = [
   ['co', 'us'], ['co', 'ca'], ['co', 'es'],
   ['co', 'mx'], ['co', 've'], ['co', 'br'],
@@ -78,8 +82,9 @@ function getCountry(code: string): Country {
   return COUNTRIES.find(c => c.code === code)!
 }
 
+// FIX 2 — Arc weight hierarchy (high.opacity 0.75 per spec)
 function arcWeightStyle(weight: 'high' | 'medium' | 'low') {
-  if (weight === 'high')   return { strokeWidth: 1.5, strokeOpacity: 0.7  }
+  if (weight === 'high')   return { strokeWidth: 1.5, strokeOpacity: 0.75 }
   if (weight === 'medium') return { strokeWidth: 1,   strokeOpacity: 0.5  }
   return                         { strokeWidth: 0.6, strokeOpacity: 0.35 }
 }
@@ -104,38 +109,6 @@ function StatNum({ to }: { to: number }) {
   return <span ref={ref}>{v}</span>
 }
 
-// ── Pulse circles — CSS-animated, memoized to prevent parent re-renders ────────
-const PulseCircle = memo(function PulseCircle({
-  x, y, idx,
-}: { x: number; y: number; idx: number }) {
-  const d1 = `${(idx * 0.35).toFixed(2)}s`
-  const d2 = `${(idx * 0.35 + 0.5).toFixed(2)}s`
-  return (
-    <>
-      <circle
-        cx={x} cy={y} r={14}
-        fill="var(--accent,#C0392B)"
-        style={{
-          transformOrigin: `${x}px ${y}px`,
-          animation: `wmp-aura 3s ${d1} ease-out infinite`,
-          willChange: 'transform, opacity',
-        }}
-      />
-      <circle
-        cx={x} cy={y} r={8}
-        fill="none"
-        stroke="var(--accent,#C0392B)"
-        strokeWidth={1}
-        style={{
-          transformOrigin: `${x}px ${y}px`,
-          animation: `wmp-ring 3s ${d2} ease-out infinite`,
-          willChange: 'opacity',
-        }}
-      />
-    </>
-  )
-})
-
 // ── Main component ────────────────────────────────────────────────────────────
 export default memo(function WorldMapPublic() {
   const sectionRef     = useRef<HTMLElement>(null)
@@ -143,7 +116,8 @@ export default memo(function WorldMapPublic() {
   const prefersReduced = useReducedMotion()
 
   const [colombiaPath, setColombiaPath] = useState('')
-  const [countryPaths, setCountryPaths] = useState<string[]>([])
+  // FIX 4 — store connected flag alongside each world path
+  const [countryPaths, setCountryPaths] = useState<{ d: string; connected: boolean }[]>([])
   const [mapReady,     setMapReady]     = useState(false)
   const [hovered,      setHovered]      = useState<Country | null>(null)
 
@@ -155,14 +129,14 @@ export default memo(function WorldMapPublic() {
       .then(topo => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const fc = topojson.feature(topo as any, (topo as any).objects.countries) as any
-        const paths: string[] = []
+        const paths: { d: string; connected: boolean }[] = []
         let coPath = ''
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         fc.features.forEach((f: any) => {
           const d = geoToPath(f.geometry)
           if (!d) return
           if (f.id === 170) coPath = d  // Colombia ISO numeric 170
-          else paths.push(d)
+          else paths.push({ d, connected: CONNECTED_ISO.has(f.id) })
         })
         setColombiaPath(coPath)
         setCountryPaths(paths)
@@ -239,7 +213,7 @@ export default memo(function WorldMapPublic() {
           50%      { opacity: 1;  }
         }
 
-        /* ── Country labels — always visible desktop, hidden mobile ── */
+        /* ── Country labels — desktop only ── */
         .wmp-country-label {
           pointer-events: none;
           user-select: none;
@@ -248,7 +222,7 @@ export default memo(function WorldMapPublic() {
           .wmp-country-label { display: none; }
         }
 
-        /* ── Tooltip ─────────────────────────────────────────────── */
+        /* FIX 3 — Tooltip ────────────────────────────────────────── */
         .wmp-tooltip {
           position: absolute;
           pointer-events: none;
@@ -261,9 +235,9 @@ export default memo(function WorldMapPublic() {
           font-family: "Satoshi", sans-serif;
           font-size: 11px;
           line-height: 1.5;
-          padding: 6px 10px;
+          padding: 6px 12px;
           border-radius: 6px;
-          max-width: 180px;
+          max-width: 200px;
           white-space: normal;
         }
         .wmp-tip-name {
@@ -373,26 +347,25 @@ export default memo(function WorldMapPublic() {
               aria-label="Mapa mundial de alianzas Big Family"
               role="img"
             >
-              {/* World base paths */}
-              {countryPaths.map((d, i) => (
+              {/* FIX 4 — World base: connected countries get accent tint */}
+              {countryPaths.map(({ d, connected }, i) => (
                 <path
                   key={i}
                   d={d}
-                  fill="var(--bg-2,#EFECE6)"
-                  stroke="var(--line,rgba(13,13,13,.10))"
+                  fill={connected ? 'rgba(192,57,43,0.06)' : 'var(--bg-2,#EFECE6)'}
+                  stroke={connected ? 'rgba(192,57,43,0.15)' : 'var(--line,rgba(13,13,13,.10))'}
                   strokeWidth="0.3"
                 />
               ))}
 
-              {/* Colombia — highlighted origin */}
+              {/* FIX 4 — Colombia: deeper tint, thicker stroke */}
               {colombiaPath && (
                 <m.path
                   d={colombiaPath}
-                  fill="var(--accent,#C0392B)"
-                  fillOpacity={0.15}
+                  fill="rgba(192,57,43,0.12)"
                   stroke="var(--accent,#C0392B)"
-                  strokeWidth={0.5}
-                  strokeOpacity={0.4}
+                  strokeWidth={0.8}
+                  strokeOpacity={0.5}
                   initial={prefersReduced ? false : { opacity: 0 }}
                   animate={shouldAnim ? { opacity: 1 } : {}}
                   transition={{ type: 'spring', stiffness: 80, damping: 22, delay: 0.5 }}
@@ -438,6 +411,12 @@ export default memo(function WorldMapPublic() {
               {/* Country dots + labels */}
               {COUNTRIES.map((country, i) => {
                 const isHQ = country.code === 'co'
+                // FIX 1 — Venezuela label shifted right to avoid Colombia overlap
+                const isVenezuela = country.code === 've'
+                const labelX      = isVenezuela ? country.x + 12 : country.x
+                const labelY      = isVenezuela ? country.y + 13  : country.y + 14
+                const labelAnchor = isVenezuela ? 'start'          : 'middle'
+
                 return (
                   <g
                     key={country.code}
@@ -449,49 +428,54 @@ export default memo(function WorldMapPublic() {
                       if (!isHQ) setHovered(v => v?.code === country.code ? null : country)
                     }}
                   >
-                    {/* Pulse rings */}
-                    {!prefersReduced && inView && (
-                      <PulseCircle x={country.x} y={country.y} idx={i} />
-                    )}
-
-                    {/* Core dot */}
-                    <m.circle
-                      cx={country.x}
-                      cy={country.y}
-                      r={isHQ ? 7 : 4}
-                      fill="var(--accent,#C0392B)"
-                      style={{
-                        transformOrigin: `${country.x}px ${country.y}px`,
-                        filter: 'drop-shadow(0 0 4px rgba(192,57,43,.5))',
-                        willChange: 'transform, opacity',
-                      }}
-                      initial={prefersReduced ? false : { scale: 0, opacity: 0 }}
-                      animate={shouldAnim ? { scale: 1, opacity: 1 } : {}}
-                      whileHover={!isHQ ? { scale: 1.5, transition: { type: 'spring', stiffness: 400, damping: 25 } } : undefined}
-                      transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 1.3 + i * 0.08 }}
-                    />
-
-                    {/* Colombia HQ: double ring + label above */}
-                    {isHQ && (
+                    {isHQ ? (
                       <>
+                        {/* FIX 1 — Colombia: 2 permanent FM pulse rings (exception: loop animation) */}
+                        {!prefersReduced && shouldAnim && (
+                          <>
+                            <m.circle
+                              cx={country.x} cy={country.y} r={10}
+                              fill="var(--accent,#C0392B)"
+                              style={{ transformOrigin: `${country.x}px ${country.y}px`, pointerEvents: 'none' }}
+                              animate={{ scale: [1, 2.5], opacity: [0.6, 0] }}
+                              transition={{ repeat: Infinity, duration: 2, ease: 'easeOut', delay: 0 }}
+                            />
+                            <m.circle
+                              cx={country.x} cy={country.y} r={10}
+                              fill="var(--accent,#C0392B)"
+                              style={{ transformOrigin: `${country.x}px ${country.y}px`, pointerEvents: 'none' }}
+                              animate={{ scale: [1, 2.5], opacity: [0.6, 0] }}
+                              transition={{ repeat: Infinity, duration: 2, ease: 'easeOut', delay: 0.8 }}
+                            />
+                          </>
+                        )}
+
+                        {/* FIX 1 — Colombia HQ dot: r=10, white stroke */}
                         <m.circle
-                          cx={country.x} cy={country.y} r={11}
-                          fill="none"
-                          stroke="var(--accent,#C0392B)"
-                          strokeWidth={1}
-                          strokeOpacity={0.35}
+                          cx={country.x} cy={country.y} r={10}
+                          fill="var(--accent,#C0392B)"
+                          stroke="white"
+                          strokeWidth={2}
+                          style={{
+                            transformOrigin: `${country.x}px ${country.y}px`,
+                            filter: 'drop-shadow(0 0 6px rgba(192,57,43,.6))',
+                            willChange: 'transform, opacity',
+                          }}
                           initial={prefersReduced ? false : { scale: 0, opacity: 0 }}
                           animate={shouldAnim ? { scale: 1, opacity: 1 } : {}}
-                          transition={{ type: 'spring', stiffness: 160, damping: 18, delay: 1.5 }}
+                          transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 1.3 }}
                         />
+
+                        {/* FIX 1 — Colombia label: bold 13px */}
                         <m.text
                           className="wmp-country-label"
-                          x={country.x - 8}
+                          x={country.x}
                           y={country.y - 16}
+                          textAnchor="middle"
                           style={{
                             fontFamily: '"Satoshi",sans-serif',
-                            fontSize: 10,
-                            fontWeight: 500,
+                            fontSize: 13,
+                            fontWeight: 700,
                             fill: 'var(--ink,#0D0D0D)',
                           }}
                           initial={prefersReduced ? false : { opacity: 0 }}
@@ -499,34 +483,67 @@ export default memo(function WorldMapPublic() {
                           transition={{ duration: 0.4, delay: 1.8 }}
                         >Colombia</m.text>
                       </>
-                    )}
+                    ) : (
+                      <>
+                        {/* FIX 1 — Destination hover pulse ring (AnimatePresence) */}
+                        <AnimatePresence>
+                          {!prefersReduced && hovered?.code === country.code && (
+                            <m.circle
+                              key="hover-pulse"
+                              cx={country.x} cy={country.y} r={5}
+                              fill="var(--accent,#C0392B)"
+                              style={{ transformOrigin: `${country.x}px ${country.y}px`, pointerEvents: 'none' }}
+                              animate={{ scale: [1, 3], opacity: [0.5, 0] }}
+                              exit={{ opacity: 0 }}
+                              transition={{ repeat: Infinity, duration: 0.9, ease: 'easeOut' }}
+                            />
+                          )}
+                        </AnimatePresence>
 
-                    {/* Destination label — always visible on desktop */}
-                    {!isHQ && (
-                      <m.text
-                        className="wmp-country-label"
-                        x={country.x}
-                        y={country.y + 14}
-                        textAnchor="middle"
-                        style={{
-                          fontFamily: '"Satoshi",sans-serif',
-                          fontSize: 10,
-                          fill: 'var(--ink,#0D0D0D)',
-                          fillOpacity: 0.6,
-                        }}
-                        initial={prefersReduced ? false : { opacity: 0 }}
-                        animate={shouldAnim ? { opacity: 0.6 } : {}}
-                        transition={{ duration: 0.4, delay: 1.6 + i * 0.06 }}
-                      >
-                        {country.name}
-                      </m.text>
+                        {/* FIX 1 — Destination dot: r=5, opacity 0.85, scale 1.8 on hover */}
+                        <m.circle
+                          cx={country.x}
+                          cy={country.y}
+                          r={5}
+                          fill="var(--accent,#C0392B)"
+                          fillOpacity={0.85}
+                          style={{
+                            transformOrigin: `${country.x}px ${country.y}px`,
+                            filter: 'drop-shadow(0 0 3px rgba(192,57,43,.4))',
+                            willChange: 'transform, opacity',
+                          }}
+                          initial={prefersReduced ? false : { scale: 0, opacity: 0 }}
+                          animate={shouldAnim ? { scale: 1, opacity: 1 } : {}}
+                          whileHover={{ scale: 1.8, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
+                          transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 1.3 + i * 0.08 }}
+                        />
+
+                        {/* Destination label — always visible desktop, Venezuela offset FIX 1 */}
+                        <m.text
+                          className="wmp-country-label"
+                          x={labelX}
+                          y={labelY}
+                          textAnchor={labelAnchor}
+                          style={{
+                            fontFamily: '"Satoshi",sans-serif',
+                            fontSize: 10,
+                            fill: 'var(--ink,#0D0D0D)',
+                            fillOpacity: 0.65,
+                          }}
+                          initial={prefersReduced ? false : { opacity: 0 }}
+                          animate={shouldAnim ? { opacity: 0.65 } : {}}
+                          transition={{ duration: 0.4, delay: 1.6 + i * 0.06 }}
+                        >
+                          {country.name}
+                        </m.text>
+                      </>
                     )}
                   </g>
                 )
               })}
             </svg>
 
-            {/* Tooltip — AnimatePresence for smooth mount/unmount */}
+            {/* FIX 3 — Tooltip with spring + real program data */}
             <AnimatePresence>
               {hovered && (
                 <m.div
