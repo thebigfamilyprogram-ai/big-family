@@ -52,6 +52,46 @@ const WMP_STATS = [
 
 const TITLE_WORDS = ['Una', 'red', 'que', 'crece.']
 
+// ── Floating achievement cards — España, EEUU, Canadá ─────────────────────────
+const FLOATING_CARD_CODES = new Set(['us', 'ca', 'es'])
+
+interface FloatingCard {
+  code:           string
+  eyebrow:        string
+  title:          string
+  sub:            string
+  cardLeft:       string
+  cardTop:        string
+  cardLeftMobile: string
+  cardTopMobile:  string
+  lineX:          number  // SVG-space approx card center X for connector
+  lineY:          number  // SVG-space approx card center Y for connector
+}
+
+const FLOATING_CARDS: FloatingCard[] = [
+  {
+    code: 'ca', eyebrow: '🎓 Alumni destacado',
+    title: 'Concordia University', sub: 'VP Latin Students',
+    cardLeft: '1%',  cardTop: '1%',
+    cardLeftMobile: '0%', cardTopMobile: '2%',
+    lineX: 90,  lineY: 36,   // dot at (233, 94)
+  },
+  {
+    code: 'us', eyebrow: '🎤 Presentación oficial',
+    title: 'IB Americas Conference', sub: 'Orlando, Florida',
+    cardLeft: '1%',  cardTop: '22%',
+    cardLeftMobile: '0%', cardTopMobile: '40%',
+    lineX: 90,  lineY: 147,  // dot at (231, 144)
+  },
+  {
+    code: 'es', eyebrow: '🏆 3er Lugar',
+    title: 'Congreso Iberoamericano', sub: 'Madrid · MBC Educación',
+    cardLeft: '56%', cardTop: '1%',
+    cardLeftMobile: '54%', cardTopMobile: '2%',
+    lineX: 640, lineY: 36,   // dot at (490, 139)
+  },
+]
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function geoToPath(geometry: any): string {
@@ -120,8 +160,16 @@ export default memo(function WorldMapPublic() {
   const [countryPaths, setCountryPaths] = useState<{ d: string; connected: boolean }[]>([])
   const [mapReady,     setMapReady]     = useState(false)
   const [hovered,      setHovered]      = useState<Country | null>(null)
+  const [modalCountry, setModalCountry] = useState<Country | null>(null)
 
   const shouldAnim = !prefersReduced && inView
+
+  useEffect(() => {
+    if (!modalCountry) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setModalCountry(null) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [modalCountry])
 
   useEffect(() => {
     fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json', { cache: 'force-cache' })
@@ -296,6 +344,130 @@ export default memo(function WorldMapPublic() {
           .wmp-stats   { padding: 0 24px; }
           .wmp-stat    { padding: 0 16px; }
         }
+
+        /* ── Connector lines — hidden on mobile ── */
+        .wmp-connector-line { display: block; }
+        @media (max-width: 640px) { .wmp-connector-line { display: none; } }
+
+        /* ── Floating achievement cards ──────────────────────────── */
+        .wmp-floating-card {
+          position: absolute;
+          left: var(--fc-left);
+          top:  var(--fc-top);
+          max-width: 160px;
+          background: var(--card-bg, #ffffff);
+          border: 1px solid var(--card-border, rgba(13,13,13,0.08));
+          border-radius: 10px;
+          padding: 10px 12px;
+          box-shadow: 0 2px 12px rgba(13,13,13,0.10), 0 1px 3px rgba(13,13,13,0.06);
+          pointer-events: all;
+          cursor: default;
+          z-index: 2;
+        }
+        .wmp-fc-eyebrow {
+          font-family: "Satoshi", sans-serif;
+          font-size: 10px;
+          font-weight: 600;
+          color: var(--accent, #C0392B);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin: 0 0 3px;
+          line-height: 1.4;
+        }
+        .wmp-fc-title {
+          font-family: "Satoshi", sans-serif;
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--ink, #0D0D0D);
+          margin: 0 0 2px;
+          line-height: 1.3;
+        }
+        .wmp-fc-sub {
+          font-family: "Satoshi", sans-serif;
+          font-size: 11px;
+          color: var(--mute, #6B6B6B);
+          margin: 0;
+          line-height: 1.4;
+        }
+        @media (max-width: 640px) {
+          .wmp-floating-card {
+            left: var(--fc-left-m);
+            top:  var(--fc-top-m);
+            max-width: 128px;
+            padding: 7px 9px;
+          }
+          .wmp-fc-title { font-size: 11px; }
+          .wmp-fc-sub   { display: none; }
+        }
+
+        /* ── Modal overlay + modal ───────────────────────────────── */
+        .wmp-modal-overlay {
+          position: absolute;
+          inset: 0;
+          z-index: 20;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(13,13,13,0.4);
+          backdrop-filter: blur(2px);
+          -webkit-backdrop-filter: blur(2px);
+        }
+        .wmp-modal {
+          position: relative;
+          background: var(--card-bg, #ffffff);
+          border-radius: 16px;
+          padding: 24px;
+          width: 280px;
+          max-width: calc(100% - 32px);
+          box-shadow: 0 8px 32px rgba(13,13,13,0.16), 0 2px 8px rgba(13,13,13,0.08);
+          z-index: 21;
+        }
+        .wmp-modal-close {
+          position: absolute;
+          top: 14px;
+          right: 14px;
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: var(--mute, #6B6B6B);
+          font-size: 16px;
+          padding: 4px;
+          line-height: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .wmp-modal-name {
+          font-family: "Satoshi", sans-serif;
+          font-size: 20px;
+          font-weight: 700;
+          color: var(--ink, #0D0D0D);
+          margin: 0 0 10px;
+          padding-right: 24px;
+          line-height: 1.2;
+        }
+        .wmp-modal-tag {
+          display: inline-block;
+          background: rgba(192,57,43,0.08);
+          color: var(--accent, #C0392B);
+          font-family: "Satoshi", sans-serif;
+          font-size: 11px;
+          border-radius: 99px;
+          padding: 3px 10px;
+          margin-bottom: 12px;
+        }
+        .wmp-modal-sep {
+          height: 1px;
+          background: var(--line, rgba(13,13,13,0.10));
+          margin: 0 0 12px;
+        }
+        .wmp-modal-text {
+          font-family: "Satoshi", sans-serif;
+          font-size: 13px;
+          color: var(--mute, #6B6B6B);
+          line-height: 1.6;
+          margin: 0;
+        }
       `}</style>
 
       {/* ── Header ── */}
@@ -402,6 +574,7 @@ export default memo(function WorldMapPublic() {
               {/* 4 — Destination dots + labels */}
               {COUNTRIES.filter(c => c.code !== 'co').map(country => {
                 const i = COUNTRIES.indexOf(country)
+                const isFloating  = FLOATING_CARD_CODES.has(country.code)
                 const isVenezuela = country.code === 've'
                 const labelX      = isVenezuela ? country.x + 12 : country.x
                 const labelY      = isVenezuela ? country.y + 13  : country.y + 14
@@ -409,13 +582,10 @@ export default memo(function WorldMapPublic() {
                 return (
                   <g
                     key={country.code}
-                    style={{ cursor: 'pointer' }}
-                    onMouseEnter={() => setHovered(country)}
-                    onMouseLeave={() => setHovered(null)}
-                    onTouchStart={e => {
-                      e.stopPropagation()
-                      setHovered(v => v?.code === country.code ? null : country)
-                    }}
+                    style={{ cursor: isFloating ? 'default' : 'pointer' }}
+                    onMouseEnter={() => { if (!isFloating) setHovered(country) }}
+                    onMouseLeave={() => { if (!isFloating) setHovered(null) }}
+                    onClick={() => { if (!isFloating) setModalCountry(country) }}
                   >
                     <AnimatePresence>
                       {!prefersReduced && hovered?.code === country.code && (
@@ -467,7 +637,27 @@ export default memo(function WorldMapPublic() {
                 )
               })}
 
-              {/* 5 — Colombia origin: always rendered last, always on top */}
+              {/* 5 — Connector lines for floating cards (above dots, below HTML layer) */}
+              {shouldAnim && FLOATING_CARDS.map(fc => {
+                const country = getCountry(fc.code)
+                return (
+                  <line
+                    key={`conn-${fc.code}`}
+                    className="wmp-connector-line"
+                    x1={fc.lineX}
+                    y1={fc.lineY}
+                    x2={country.x}
+                    y2={country.y}
+                    stroke="var(--accent,#C0392B)"
+                    strokeOpacity="0.3"
+                    strokeWidth="1"
+                    strokeDasharray="3 3"
+                    style={{ pointerEvents: 'none' }}
+                  />
+                )
+              })}
+
+              {/* 6 — Colombia origin: always rendered last, always on top */}
               <g style={{ cursor: 'default' }}>
                 {colombiaPath && (
                   <m.path
@@ -530,31 +720,65 @@ export default memo(function WorldMapPublic() {
               </g>
             </svg>
 
-            {/* FIX 3 — Tooltip with spring + real program data */}
+            {/* Floating achievement cards — España, EEUU, Canadá */}
+            {FLOATING_CARDS.map((fc, i) => (
+              <m.div
+                key={fc.code}
+                className="wmp-floating-card"
+                style={{
+                  '--fc-left':   fc.cardLeft,
+                  '--fc-top':    fc.cardTop,
+                  '--fc-left-m': fc.cardLeftMobile,
+                  '--fc-top-m':  fc.cardTopMobile,
+                } as React.CSSProperties}
+                initial={prefersReduced ? false : { opacity: 0, y: -8, scale: 0.95 }}
+                animate={shouldAnim ? { opacity: 1, y: 0, scale: 1 } : {}}
+                transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 2.0 + i * 0.15 }}
+                whileHover={{ y: -2, scale: 1.02, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
+              >
+                <p className="wmp-fc-eyebrow">{fc.eyebrow}</p>
+                <p className="wmp-fc-title">{fc.title}</p>
+                <p className="wmp-fc-sub">{fc.sub}</p>
+              </m.div>
+            ))}
+
+            {/* Modal — click on network dots to open */}
             <AnimatePresence>
-              {hovered && (
-                <m.div
-                  key={hovered.code}
-                  className="wmp-tooltip"
-                  style={{
-                    left: `${(hovered.x / 1000) * 100}%`,
-                    top:  `${(hovered.y / 500) * 100}%`,
-                  }}
-                  initial={{ opacity: 0, y: 4, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 4, scale: 0.95 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                >
-                  <div className="wmp-tip-box">
-                    <div className="wmp-tip-name">
-                      <span>{hovered.flag}</span>
-                      <span>{hovered.name}</span>
-                    </div>
-                    {hovered.tooltip && (
-                      <div className="wmp-tip-detail">{hovered.tooltip}</div>
-                    )}
-                  </div>
-                </m.div>
+              {modalCountry && (
+                <>
+                  <m.div
+                    className="wmp-modal-overlay"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    onClick={() => setModalCountry(null)}
+                  />
+                  <m.div
+                    key={modalCountry.code}
+                    className="wmp-modal"
+                    initial={{ opacity: 0, scale: 0.92, y: 16 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                    transition={{ type: 'spring', stiffness: 280, damping: 26 }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <m.button
+                      className="wmp-modal-close"
+                      onClick={() => setModalCountry(null)}
+                      whileHover={{ rotate: 90, transition: { type: 'spring', stiffness: 400, damping: 20 } }}
+                      aria-label="Cerrar"
+                    >✕</m.button>
+                    <p className="wmp-modal-name">{modalCountry.flag} {modalCountry.name}</p>
+                    <span className="wmp-modal-tag">Red de colegios aliados</span>
+                    <div className="wmp-modal-sep" />
+                    <p className="wmp-modal-text">
+                      Big Family mantiene conexión activa con instituciones educativas
+                      en {modalCountry.name}, expandiendo la red de liderazgo juvenil
+                      a nivel internacional.
+                    </p>
+                  </m.div>
+                </>
               )}
             </AnimatePresence>
           </m.div>
