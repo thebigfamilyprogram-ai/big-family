@@ -116,17 +116,19 @@ export default function CertificacionPage() {
   // Data fetch
   useEffect(() => {
     if (!studentId) { router.replace('/dashboard'); return }
+
+    // MOCK_MODE: skip Supabase entirely
+    if (MOCK_MODE) {
+      setData(MOCK.mockDiploma)
+      setLoading(false)
+      return
+    }
+
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const sb = supabaseRef.current
     if (!sb) return
 
     async function load() {
-      if (MOCK_MODE) {
-        setData(MOCK.mockDiploma)
-        setLoading(false)
-        return
-      }
-
       // 1. Student's projects → find certified capstone
       const { data: projects } = await sb!
         .from('projects')
