@@ -26,7 +26,8 @@
   "charts": "Recharts",
   "fonts": "Satoshi (global), Instrument Serif italic (decorative)",
   "deployment": "Vercel + GitHub",
-  "email": "Resend (via Supabase Edge Functions)"
+  "email": "Resend (via Supabase Edge Functions)",
+  "page-transitions": "next-view-transitions@0.3.5"
 }
 ```
 
@@ -55,17 +56,22 @@ if (!supabase) return
 
 ### CSS / Design
 - **Never** hardcode colors — always use CSS variables
-- **Exception:** `--accent: #C0392B` is always hardcoded, never via variable
+- **Exception:** `--accent: #C0392B` is always hardcoded, never via variable. `rgba(192,57,43,X)` is also allowed in SVG fills where `var(--accent)` doesn't support partial opacity.
 - **Never** per-page `@import` for fonts — Satoshi loads globally in `layout.tsx`
 - **Never** `body { background: #F5F3EF }` — always use `var(--bg)`
 - **Never** `color: #0D0D0D` — always use `var(--ink)`
 - **Never** `background: #fff` — always use `var(--card-bg)`
 - **Never** `color: #6B6B6B` — always use `var(--mute)`
+- **Never** `h-screen` — always `min-h-[100dvh]` (bug de iOS Safari)
+- **Never** Inter, Arial, Roboto, system-ui — always Satoshi
 - Skeleton shimmer must use CSS variables: `var(--bg-2)` and `var(--card-bg)`
+- `box-shadow` solo en CSS estático — nunca en `whileHover` de Framer Motion
 
 ### Framer Motion
 - Always `type: "spring"` — never `type: "tween"`
 - Always `viewport={{ once: true }}` on `whileInView`
+- **Anima ÚNICAMENTE `transform` y `opacity`** — nunca `top`, `left`, `width`, `height`, `box-shadow`
+- Animaciones perpetuas DEBEN vivir en su propio Client Component memoizado (`React.memo`)
 - Never pass a ref to `useScroll({ target: ref })` without a mounted guard:
 ```tsx
 const [mounted, setMounted] = useState(false)
@@ -77,6 +83,29 @@ const { scrollYProgress } = useScroll({ target: mounted ? ref : undefined })
   - `springNatural`: `{ stiffness: 140, damping: 20 }`
   - `springHeavy`: `{ stiffness: 80, damping: 18 }`
 - Easing: `expoOut: [0.22, 1, 0.36, 1]`
+
+### Page Transitions
+- La app usa `next-view-transitions@0.3.5`
+- `<ViewTransitions>` wrappea `{children}` en `layout.tsx`
+- Usar `import { Link } from 'next-view-transitions'` en componentes de navegación (no `next/link`)
+- `router.push()` es interceptado automáticamente
+- CSS de transición en `globals.css`:
+  - `::view-transition-old/new(root)` con keyframes `vt-fade-out` / `vt-fade-in`
+  - `180ms` out, `280ms` in, `translateY ±6px`
+
+### WorldMapPublic — Render Layer Architecture
+El orden de render SVG determina z-index (elementos posteriores = encima).
+**Orden obligatorio en `WorldMapPublic.tsx`:**
+1. Paths del mapa base (países sin conexión: fill `var(--bg-2)`, conectados: `rgba(192,57,43,0.04)`)
+2. Arcos — 3 pesos visuales por `weight`: `high` (1.8px / opacity 0.80), `medium` (1.0px / 0.45), `low` (0.5px / 0.25)
+3. Partículas viajeras (`<circle r="2">` con `<animateMotion>`)
+4. Dots destino (`r=4`, sin pulse ring permanente)
+5. Líneas conectoras de cards flotantes (SVG `<line>`, `pointer-events:none`)
+6. **Colombia — SIEMPRE AL ÚLTIMO** (`r=9`, `strokeWidth=2.5`, 2 pulse rings con `delay:0` y `delay:1`)
+
+**Cards flotantes** (España, EEUU, Canadá): `position:absolute` dentro del contenedor `position:relative` del mapa. Posiciones: EEUU `top:8%/left:16%`, Canadá `top:2%/left:24%`, España `top:10%/left:60%`.
+
+**Modal** (7 países red): overlay `position:absolute inset:0` con `display:flex` wrappea al modal para flex-centering. **Nunca `position:fixed`** — el overlay debe estar contenido en el mapa. `e.stopPropagation()` en el modal para no cerrarse al clickearse.
 
 ---
 
@@ -178,7 +207,7 @@ Expositor code: `EXPO-BF-2026`
 | `src/components/Globe/GlobeFallback.ts` | Three.js fallback for Safari < 16.4 |
 | `src/components/SchoolTicker.tsx` | Ticker horizontal infinito de los 8 colegios — CSS animation, logos desde `school-logos` |
 | `src/components/HeroCollage.tsx` | Cards flotantes países aliados con parallax mouse — Framer Motion |
-| `src/components/WorldMapPublic.tsx` | Mapa mundial público — arcos animados desde Colombia, partículas viajeras |
+| `src/components/WorldMapPublic.tsx` | Mapa mundial público — 6 layers SVG, cards flotantes España/EEUU/Canadá, modal para 7 países red |
 | `src/components/AppSidebar.tsx` | Sidebar unificado — acepta `role` prop, `layoutId` spring indicator |
 | `src/components/datos/DatosPage.tsx` | Centro de Datos compartido — 3 tabs: Resumen, Constructor, IA Insights |
 | `src/components/DashboardSidebar.tsx` | Student sidebar |
@@ -191,7 +220,7 @@ Expositor code: `EXPO-BF-2026`
 | `src/components/Toast.tsx` | Toast notifications |
 | `src/app/coordinator/datos/page.tsx` | Centro de datos coordinador |
 | `src/app/admin/datos/page.tsx` | Centro de datos admin |
-| `src/app/api/ai-insights/route.ts` | Route Handler Claude API — seguro, server-side, max 10 msgs/sesión |
+| `src/app/api/ai/insights/route.ts` | Route Handler Claude API — seguro, server-side, max 10 msgs/sesión |
 | `src/lib/mockData.ts` | `MOCK_MODE` flag + datos mock completos (estudiantes, colegios, proyectos, módulos) |
 | `src/proxy.ts` | Middleware (auth protection) |
 | `src/lib/supabase.ts` | Supabase client (lazy init) |
@@ -257,13 +286,15 @@ Expositor code: `EXPO-BF-2026`
 ---
 
 ## Recent Commits
+- `6bb06db` — Redesign: WorldMapPublic full visual hierarchy + dual info system (Sesión 3)
+- `ad897c2` — Feat: WorldMapPublic dual info system — floating cards + modal (Sesión 3)
+- `47b452f` — Fix: WorldMapPublic z-index + country tint (Sesión 3)
 - `ca542f7` — Quiz damping, evaluate animation, goals CSS, dashboard grid
 - `99a395a` — PageSpeed: local fonts, browserslistrc, reflow fix
 - `66cdedb` — Fix crash: removed optimizeCss, Framer Motion SSR guard, Three.js ES Module
 - `f0a22f4` — Fix: shared dashboard layout to prevent sidebar remount on navigation
-- `99c8f68` — Fix: replace horizontal navbar with sidebar in coordinator projects/modules pages
 - `3c9728f` — Feat: redesign all 3 dashboards — Soft Structuralism + bento charts
-- `81f5e93` — Feat: add Historia, Impacto, Metodología, Valores sections to GlobeHero; update NAV_LINKS; fix profiles.display_name global replace; fix Supabase Storage logo URLs
+- `81f5e93` — Feat: add Historia, Impacto, Metodología, Valores sections to GlobeHero
 - `bf00a6c` — Docs: update context.md with Sesión 2 features
 
 ---

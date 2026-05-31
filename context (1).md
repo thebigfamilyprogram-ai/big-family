@@ -1,6 +1,6 @@
 # context.md — Big Family Platform — Decision Log
 
-## Last updated: Mayo 2026
+## Last updated: Mayo 2026 (Sesión 3)
 
 ---
 
@@ -83,7 +83,7 @@
 - **Badge rediseñado** — colores semánticos con nuevos tokens de color
 - **AppSidebar** — 10 fixes: collapse Framer height auto, active color var(--accent), accesibilidad button/aria, overlay AnimatePresence, chevron spring, iconos outlined, bottom sticky fix, stagger entrada, labels 11px, tabular-nums en badges
 
-**Bugs resueltos en esta sesión:**
+**Bugs resueltos en Sesión 2:**
 - **BUG 1** — Configuración coordinador redirigía al panel (causa: BUG 2)
 - **BUG 2** — `profiles?select=full_name` → 400. Columna correcta es `display_name`. Reemplazado globalmente en 50+ archivos src/
 - **BUG 3** — 400 en Supabase Storage logos. Fix: `logo_url` resuelto en fetch con `getPublicUrl()` si es filename, pass-through si es URL completa, iniciales si null
@@ -102,6 +102,40 @@
 /* [data-theme="dark"]: --surface-1: #1C1B19; --surface-2: #141412 */
 ```
 
+### Features Nuevas (Mayo 2026 — Sesión 3)
+
+**Landing Page — WorldMapPublic rediseñado:**
+- **Page transitions** — implementadas con `next-view-transitions@0.3.5`. `<ViewTransitions>` wrappea `{children}` en `layout.tsx`. `::view-transition-old/new(root)` con `vt-fade-out`/`vt-fade-in`, 180ms out / 280ms in / translateY ±6px.
+- **WorldMapPublic jerarquía visual completa** — rediseño total del mapa con sistema de capas SVG:
+  - **6 layers de render** (el orden SVG determina z-index): base map → arcos → partículas → dots destino → líneas conectoras → Colombia al último
+  - **3 pesos de arco** según importancia institucional: HIGH 1.8px/0.80 (España, EEUU, Canadá), MEDIUM 1.0px/0.45 (México, Venezuela, Brasil, Argentina, Francia), LOW 0.5px/0.25 (Guatemala, India)
+  - **Colombia como elemento dominante**: `r=9`, `strokeWidth=2.5`, 2 pulse rings permanentes en loop con delay 0s/1s para efecto de irradiación, label `font-weight:700` encima del dot
+  - **Tinte sutil en países conectados**: `rgba(192,57,43,0.04)` fill en los 10 países del programa, `rgba(192,57,43,0.04)` base más profundo en Colombia
+  - **Z-index fix**: Colombia renderizado en Layer 6 (último en SVG tree) para quedar siempre encima de arcos y dots
+- **Cards flotantes permanentes** (Sistema A) — España, EEUU, Canadá:
+  - `position:absolute` dentro de `.wmp-map-wrap` (`position:relative`)
+  - Posiciones ancladas geográficamente: EEUU `top:8%/left:16%`, Canadá `top:2%/left:24%`, España `top:10%/left:60%`
+  - Contenido real: logros institucionales del programa (IB Americas Conference, Concordia University, Congreso Iberoamericano 3er lugar)
+  - Líneas conectoras SVG dashed (`strokeDasharray:"4 4"`, `opacity:0.25`) desde card hasta dot
+  - Spring entrance `delay: 2.0 + i*0.20` (después de que arcos y dots terminan)
+  - `whileHover: {y:-2}` — nunca `box-shadow` en whileHover
+- **Modal centrado en el mapa** (Sistema B) — 7 países restantes (México, Venezuela, Brasil, Argentina, Francia, Guatemala, India):
+  - Click en dot → modal centrado dentro del contenedor del mapa (nunca `position:fixed`)
+  - Overlay `position:absolute inset:0` con `display:flex` wrappea al modal para flex-centering
+  - `e.stopPropagation()` en modal para no cerrar al clickearse
+  - Cierre por: click en overlay, botón X con `whileHover:{rotate:90}`, tecla Escape con cleanup de event listener
+  - Separación HIGH (floating cards) vs MEDIUM/LOW (modal): dots HIGH tienen `cursor:default` y no abren modal
+
+**Bugs resueltos en Sesión 3:**
+- **BUG SVG z-index** — Colombia tapado por arcos. Fix: reestructurar el árbol SVG para renderizar Colombia en último lugar. Los elementos SVG posteriores tienen z-index mayor.
+- **BUG modal position:fixed** — el overlay cubría toda la página en vez de solo el mapa. Fix: cambiar de arquitectura sibling (overlay + modal como hermanos) a overlay wrapping modal. El overlay con `position:absolute inset:0` queda contenido en el mapa.
+- **BUG cards fuera del mapa** — cards flotantes aparecían fuera del contenedor. Fix: confirmar que `.wmp-map-wrap` tiene `position:relative` y las cards son `position:absolute` dentro de él.
+- **BUG profiles duplicate select** — `profiles?select=display_name,display_name` causaba 400. Fix: deduplicar columnas en queries.
+- **BUG admin redirect** — admin redirect enviaba a `/dashboard` en vez de `/admin`. Fix en `proxy.ts`.
+- **BUG sidebar coordinador** — desaparecía en rutas `/news`, `/success-stories`, `/announcements`, `/calendar`, `/report`. Fix en `layout.tsx` del coordinador.
+- **BUG avatar coordinador** — mostraba "..." en lugar de iniciales cuando `display_name` es null. Fix con fallback a iniciales de email.
+- **BUG ProjectCard whileHover boxShadow** — Framer Motion no anima box-shadow correctamente. Fix: mover sombra a CSS estático, `whileHover` solo con `y` y `scale`.
+
 ---
 
 ## Bugs Resueltos
@@ -116,6 +150,7 @@
 ### Framer Motion
 - **Target ref not hydrated** — Framer Motion v12 lanza error si useScroll recibe un ref con .current null durante SSR. Fix: mounted guard en todos los componentes que usen useScroll({ target: ref }). Ver convención en CLAUDE.md.
 - **experimental.optimizeCss crasheaba** — critters activa un SSR pass extra que expone el bug de Framer Motion. Removido de next.config.mjs.
+- **boxShadow en whileHover** — Framer Motion interpola box-shadow incorrectamente. Regla: box-shadow solo en CSS estático, nunca en propiedades animadas de FM.
 
 ### Three.js / Globe
 - **CDN UMD deprecado** — three@0.160.0/build/three.min.js deprecado en r160. Migrado a `import * as THREE from 'three'` (npm ES Module)
@@ -149,6 +184,12 @@ Supabase Auth tiene SMTP propio pero con límites bajos (3/hora en free tier). R
 ### Por qué fuentes locales en vez de CDN
 Fontshare CDN añadía 370ms al LCP y las fuentes tenían caché de solo 7 días. Las fuentes locales en public/fonts/ con Cache-Control immutable eliminan la dependencia externa y la latencia de conexión.
 
+### Por qué WorldMapPublic usa 6 layers SVG
+El orden de renderizado en SVG determina el z-index (sin propiedad z-index en SVG). Al separar en 6 layers (base → arcos → partículas → dots → conectores → Colombia), Colombia siempre queda encima de todo lo demás. Antes del fix, Colombia era tapado por los arcos porque se renderizaba antes.
+
+### Por qué el modal del mapa usa overlay como wrapper (no position:fixed)
+Si el overlay es `position:fixed`, cubre toda la página. Como el overlay wrappea al modal con `position:absolute inset:0` dentro de `.wmp-map-wrap` (`position:relative`), el overlay queda contenido exactamente en el mapa. El modal se centra con flexbox del overlay. `e.stopPropagation()` en el modal evita que clicks en el modal cierren el overlay.
+
 ---
 
 ## Tablas en Base de Datos
@@ -172,12 +213,12 @@ Fontshare CDN añadía 370ms al LCP y las fuentes tenían caché de solo 7 días
 | `src/components/GlobeHero.tsx` | Landing page completa — Hero, Misión, Visión, Historia, Impacto, Metodología, Valores, Equipo, navbar pill |
 | `src/components/SchoolTicker.tsx` | Ticker horizontal colegios — logos desde Supabase Storage `school-logos` |
 | `src/components/HeroCollage.tsx` | Collage países hero derecho — parallax mouse con Framer Motion |
-| `src/components/WorldMapPublic.tsx` | Mapa mundial landing — arcos animados desde Colombia, partículas viajeras |
+| `src/components/WorldMapPublic.tsx` | Mapa mundial landing — 6 layers SVG, cards flotantes España/EEUU/Canadá, modal para 7 países red |
 | `src/components/AnimatedNumber.tsx` | Counter animado desde 0 con easing cúbico |
 | `src/components/datos/DatosPage.tsx` | Centro de datos compartido — 3 tabs: Resumen, Constructor, IA Insights |
 | `src/app/coordinator/datos/page.tsx` | Centro de datos coordinador |
 | `src/app/admin/datos/page.tsx` | Centro de datos admin |
-| `src/app/api/ai-insights/route.ts` | Route Handler Claude API — análisis automático + chat con datos |
+| `src/app/api/ai/insights/route.ts` | Route Handler Claude API — análisis automático + chat con datos |
 
 ## Rutas
 
@@ -201,7 +242,6 @@ Fontshare CDN añadía 370ms al LCP y las fuentes tenían caché de solo 7 días
 ## Pendiente
 
 ### Antes del lanzamiento
-- [ ] Ejecutar MISSION.md — diagnóstico bugs, fluidez globo, rediseño globo, UI/UX overhaul
 - [ ] Fix diseño dark mode — skeletons, hardcoded colors, success-stories page
 - [ ] Announcement banner + bell en /dashboard (feature half-built)
 - [ ] Fix coordinator nav overflow (10 items)
@@ -219,11 +259,35 @@ Fontshare CDN añadía 370ms al LCP y las fuentes tenían caché de solo 7 días
 - [ ] Conectar `MOCK_MODE = false` cuando Supabase tenga datos reales
 - [ ] API key `ANTHROPIC_API_KEY` en variables de entorno Vercel
 - [ ] Ejecutar SQL: migración `saved_dashboards` en Supabase
-- [ ] Imágenes reales en `/public/images/` (Luis Barrios generará): `historia-graduacion.jpg`, `luis-barrios.jpg`, `metodologia-taller.jpg`
+- [ ] Imágenes reales en `/public/images/`: `historia-graduacion.jpg`, `luis-barrios.jpg`, `metodologia-taller.jpg`
 - [ ] Fotos reales en HeroCollage (prop `photos` cuando estén en Storage)
 - [x] Fix error 400 logos Supabase Storage en SchoolTicker *(resuelto — `getPublicUrl()` en fetch)*
 - [x] Fix configuración coordinador redirige al panel *(resuelto — causado por BUG 2)*
 - [x] Fix `profiles.full_name` → columna correcta es `display_name` *(resuelto — reemplazo global en 50+ archivos)*
+
+#### Añadidos en Sesión 3
+- [ ] `MOCK_MODE = false` cuando Supabase tenga datos reales (pendiente de datos)
+- [ ] `ANTHROPIC_API_KEY` en variables de entorno Vercel
+- [ ] Imágenes reales: `historia-graduacion.jpg`, `luis-barrios.jpg`, foto del programa
+- [ ] `/dashboard/modules` — página lista para estudiantes
+- [ ] `/coordinator/projects/[id]` — vista detalle de proyecto para coordinador
+- [ ] Anti-tab-switch en quiz — detectar cambio de tab durante el quiz
+- [ ] FAQ accordion en landing
+- [ ] CTA final + footer en landing
+- [ ] Sección Testimonios con Jonathan Smith quote
+- [ ] Sección Validaciones Internacionales en landing
+- [ ] Sección 4 Componentes del Programa en landing
+- [ ] topojson bundleado localmente en WorldMapPublic (eliminar fetch a CDN en runtime)
+- [ ] Error boundaries en 3 dashboards (student, coordinator, admin)
+- [ ] Colores hardcodeados en coordinator/feed y admin — reemplazar con CSS variables
+- [x] Fix Colombia tapado por arcos *(resuelto — render order SVG Layer 6)*
+- [x] Fix modal fuera del contenedor del mapa *(resuelto — overlay como wrapper con position:absolute)*
+- [x] Fix cards flotantes fuera del mapa *(resuelto — position:absolute dentro de position:relative)*
+- [x] Fix profiles duplicate select *(resuelto — deduplicar columnas en query)*
+- [x] Fix admin redirect *(resuelto — proxy.ts corregido)*
+- [x] Fix sidebar coordinador desaparecía en rutas adicionales *(resuelto — layout.tsx)*
+- [x] Fix avatar coordinador mostraba "..." *(resuelto — fallback a iniciales de email)*
+- [x] Fix ProjectCard whileHover boxShadow *(resuelto — sombra a CSS estático)*
 
 ### Contenido (esperando al fundador Luis Barrios)
 - [ ] Stats reales "Sobre Nosotros" (actualmente placeholders en aboutStats)
