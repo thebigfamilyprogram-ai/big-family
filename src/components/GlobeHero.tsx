@@ -608,14 +608,14 @@ export default function GlobeHero() {
         .sec-cert__bullet{display:flex;align-items:center;gap:10px;font-family:"Satoshi",sans-serif;font-size:13px;color:var(--mute);}
         .sec-cert__check{width:18px;height:18px;border-radius:50%;background:rgba(192,57,43,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
         .sec-cert__mockup-wrap{display:flex;align-items:center;justify-content:center;}
-        .sc-dp{background:#fff;border-radius:4px;padding:28px 32px;position:relative;width:100%;box-shadow:var(--shadow-lg,0 30px 80px -20px rgba(13,13,13,.18),0 10px 30px -10px rgba(13,13,13,.10));transform:rotate(2deg);}
+        .sc-dp{background:#fff;border-radius:4px;padding:28px 32px;position:relative;width:100%;box-shadow:var(--shadow-lg,0 30px 80px -20px rgba(13,13,13,.18),0 10px 30px -10px rgba(13,13,13,.10));}
         .sc-dp::before{content:"";position:absolute;inset:0;border-radius:4px;border:2px solid #C0392B;pointer-events:none;}
         .sc-dp::after{content:"";position:absolute;inset:6px;border-radius:2px;border:1px solid rgba(192,57,43,.25);pointer-events:none;}
         .sc-sep{height:1px;background:rgba(192,57,43,.22);margin:10px 0;}
         @media(max-width:960px){
           .sec-cert{padding:80px 24px;}
           .sec-cert__inner{grid-template-columns:1fr;gap:48px;}
-          .sc-dp{transform:rotate(1deg);}
+          .sc-dp{}
         }
         /* ── NUESTRA HISTORIA ───────────────────────────────────────────────── */
         .historia{position:relative;background:#070707;padding:112px 40px;overflow:hidden;}
@@ -1291,7 +1291,9 @@ export default function GlobeHero() {
           >
             <m.div
               className="sc-dp"
-              whileHover={prefersReduced ? {} : { y: -4, transition: { type: 'spring', stiffness: 300, damping: 25 } }}
+              initial={{ rotate: 2 }}
+              animate={{ rotate: 2 }}
+              whileHover={prefersReduced ? {} : { y: -4, rotate: 2, transition: { type: 'spring', stiffness: 300, damping: 25 } }}
             >
               {/* Membrete */}
               <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginBottom:12 }}>
