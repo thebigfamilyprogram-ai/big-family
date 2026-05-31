@@ -578,7 +578,7 @@ export default function GlobeHero() {
         .mision__stat-label{font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-top:8px;}
         /* ── VISIÓN ──────────────────────────────────────────────────────────── */
         .vision{background:#0D0D0D;border-top:1px solid rgba(255,255,255,.06);padding:96px 40px;position:relative;overflow:hidden;}
-        .vision__watermark{position:absolute;bottom:-20px;right:-10px;font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(120px,15vw,220px);color:rgba(255,255,255,.03);line-height:1;letter-spacing:-.06em;pointer-events:none;user-select:none;z-index:0;}
+        .vision__watermark{position:absolute;bottom:-20px;right:-10px;font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(120px,15vw,220px);color:rgba(255,255,255,.05);line-height:1;letter-spacing:-.06em;pointer-events:none;user-select:none;z-index:0;}
         .vision__inner{max-width:1200px;margin:0 auto;position:relative;z-index:1;display:flex;flex-direction:column;gap:52px;}
         .vision__row1{display:flex;flex-direction:column;gap:14px;}
         .vision__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#C0392B;}
@@ -586,7 +586,7 @@ export default function GlobeHero() {
         .vision__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(40px,6vw,80px);letter-spacing:-.035em;line-height:1.08;color:#fff;}
         .vision__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:#C0392B;}
         .vision__cols{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;}
-        .vision__para{font-family:"Satoshi",sans-serif;font-size:16px;color:rgba(255,255,255,.72);line-height:1.8;border-left:2px solid rgba(192,57,43,.35);padding:4px 0 4px 20px;}
+        .vision__para{font-family:"Satoshi",sans-serif;font-size:16px;color:rgba(255,255,255,.72);line-height:1.8;border-left:2px solid var(--accent,#C0392B);padding:4px 0 4px 16px;}
         /* ── SEC-CERT (Certificación marketing — light) ──────────────────────── */
         .sec-cert{background:var(--bg);padding:120px 40px;border-top:1px solid var(--line);}
         .sec-cert__inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:45fr 55fr;gap:80px;align-items:center;}
@@ -1239,6 +1239,34 @@ export default function GlobeHero() {
             <p className="vision__para">
               Buscamos que la certificación The Big Leader sea una señal clara y confiable de habilidades reales — que una empresa u organización la vea y entienda inmediatamente el valor de la persona: su capacidad de liderar, trabajar en equipo, tomar decisiones y generar impacto.
             </p>
+          </m.div>
+
+          {/* Row 4 — CTA */}
+          <m.div
+            style={{ display: 'flex', justifyContent: 'center' }}
+            initial={prefersReduced ? false : { opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ type: 'spring', stiffness: 120, damping: 20, delay: 0.9 }}
+          >
+            <m.div
+              style={{ display: 'inline-block' }}
+              whileHover={prefersReduced ? {} : { scale: 1.02, transition: { type: 'spring', stiffness: 300, damping: 25 } }}
+            >
+              <Link
+                href="/submit/register"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  padding: '14px 32px',
+                  background: 'var(--accent,#C0392B)', color: '#fff',
+                  borderRadius: 999,
+                  fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15,
+                  textDecoration: 'none',
+                }}
+              >
+                Sé parte de la historia <span aria-hidden="true">→</span>
+              </Link>
+            </m.div>
           </m.div>
 
         </div>
