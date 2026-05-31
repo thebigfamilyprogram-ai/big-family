@@ -49,6 +49,12 @@ function formatDate(iso: string): string {
   })
 }
 
+function certNumber(id: string, date: string): string {
+  const hex = id.replace(/[^0-9a-f]/gi, '') || '0'
+  const num = (parseInt(hex.slice(-6) || hex, 16) % 9000) + 1000 // always 1000–9999
+  return `CERT-${new Date(date).getFullYear()}-${String(num).padStart(4, '0')}`
+}
+
 // ── Seal SVG ─────────────────────────────────────────────────────────────────
 
 function Seal() {
@@ -251,13 +257,14 @@ export default function CertificacionPage() {
           content:"";position:absolute;inset:0;border-radius:4px;
           border:2px solid #C0392B;pointer-events:none;
         }
-        /* Inner ornamental border */
+        /* Inner ornamental border — 6px gap from outer (outer is 2px, inset 8 = 6px gap) */
         .dp-card::after{
-          content:"";position:absolute;inset:9px;border-radius:2px;
-          border:1px solid rgba(192,57,43,.28);pointer-events:none;
+          content:"";position:absolute;inset:8px;border-radius:2px;
+          border:1px solid rgba(192,57,43,.25);pointer-events:none;
         }
         .dp-sep{height:1px;background:rgba(192,57,43,.22);}
         .dp-sig-line{height:1px;background:rgba(13,13,13,.14);margin-bottom:9px;width:200px;}
+        .dp-val-logo{height:32px;object-fit:contain;filter:grayscale(100%) opacity(.5);}
         @media(max-width:600px){
           .dp-card{padding:40px 28px;}
           .dp-card::after{inset:6px;}
@@ -267,6 +274,7 @@ export default function CertificacionPage() {
           html,body{background:#fff!important;}
           .dp-page{background:#fff!important;padding:0!important;min-height:auto!important;}
           .dp-card{box-shadow:none!important;max-width:100%!important;}
+          .dp-val-logo{filter:grayscale(100%) opacity(.4)!important;-webkit-filter:grayscale(100%) opacity(.4)!important;}
         }
       `}</style>
 
@@ -304,13 +312,22 @@ export default function CertificacionPage() {
         >
           <div className="dp-card">
 
-            {/* 1 — Membrete institucional */}
+            {/* 1 — Membrete institucional: logo colegio | sep | programa */}
             <m.div
-              style={{ textAlign: 'center', marginBottom: 18 }}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                gap: 16, marginBottom: 18,
+              }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={sp(0.55)}
             >
+              <img
+                src="/Logo_ColegioAlbania.png"
+                alt="Colegio Albania"
+                style={{ height: 36, objectFit: 'contain' }}
+              />
+              <div style={{ width: 1, height: 28, background: 'rgba(13,13,13,.15)', flexShrink: 0 }} />
               <p style={{
                 fontFamily: '"Satoshi",sans-serif', fontWeight: 700,
                 fontSize: 11, letterSpacing: '0.32em', textTransform: 'uppercase',
@@ -388,7 +405,7 @@ export default function CertificacionPage() {
               The Big Leader
             </m.p>
 
-            {/* Mención de Honor badge — solo si aplica */}
+            {/* Mención de Honor badge — amber, solo si aplica */}
             {isMencion && (
               <m.div
                 style={{ textAlign: 'center', marginBottom: 22 }}
@@ -399,11 +416,12 @@ export default function CertificacionPage() {
                 <span style={{
                   display: 'inline-block',
                   fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 10,
-                  letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C0392B',
-                  border: '1px solid rgba(192,57,43,.3)', borderRadius: 999,
-                  padding: '4px 14px', background: 'rgba(192,57,43,.06)',
+                  letterSpacing: '0.2em', textTransform: 'uppercase',
+                  color: 'var(--accent-amber,#D4821A)',
+                  border: '1px solid rgba(212,130,26,.3)', borderRadius: 100,
+                  padding: '4px 16px', background: 'rgba(212,130,26,.1)',
                 }}>
-                  Mención de Honor
+                  ✦ MENCIÓN DE HONOR ✦
                 </span>
               </m.div>
             )}
@@ -494,12 +512,43 @@ export default function CertificacionPage() {
               </div>
             </m.div>
 
-            {/* 11 — Separador */}
+            {/* 11 — Separador post-stats */}
             <m.div
               initial={{ opacity: 0, scaleX: 0 }}
               animate={{ opacity: 1, scaleX: 1 }}
               transition={sp(1.52)}
               style={{ transformOrigin: 'center' }}
+            >
+              <div className="dp-sep" />
+            </m.div>
+
+            {/* 11b — Validaciones internacionales */}
+            <m.div
+              style={{ textAlign: 'center', padding: '18px 0 4px' }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={sp(1.60)}
+            >
+              <p style={{
+                fontFamily: '"Satoshi",sans-serif', fontSize: 10,
+                letterSpacing: '0.28em', textTransform: 'uppercase',
+                color: 'var(--mute,#6B6B6B)', marginBottom: 12,
+              }}>
+                RECONOCIDO POR
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 28 }}>
+                <img src="/cognia.png"                              alt="Cognia"                   className="dp-val-logo" />
+                <img src="/International_Baccalaureate_Logo.svg.png" alt="International Baccalaureate" className="dp-val-logo" />
+                <img src="/tri.png"                                 alt="Tri-Association"          className="dp-val-logo" />
+              </div>
+            </m.div>
+
+            {/* Separador pre-firma */}
+            <m.div
+              initial={{ opacity: 0, scaleX: 0 }}
+              animate={{ opacity: 1, scaleX: 1 }}
+              transition={sp(1.70)}
+              style={{ transformOrigin: 'center', marginTop: 18 }}
             >
               <div className="dp-sep" />
             </m.div>
@@ -512,7 +561,7 @@ export default function CertificacionPage() {
               }}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={sp(1.62)}
+              transition={sp(1.78)}
             >
               {/* Firma */}
               <div>
@@ -535,6 +584,20 @@ export default function CertificacionPage() {
               <Seal />
             </m.div>
 
+            {/* 13 — Número de certificado */}
+            <m.p
+              style={{
+                textAlign: 'center', marginTop: 16,
+                fontFamily: '"Satoshi",sans-serif', fontSize: 11,
+                letterSpacing: '0.24em', color: 'var(--mute,#6B6B6B)',
+              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={sp(1.88)}
+            >
+              {certNumber(studentId, data.certDate)}
+            </m.p>
+
           </div>
         </m.div>
 
@@ -547,7 +610,7 @@ export default function CertificacionPage() {
           }}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={sp(1.8)}
+          transition={sp(2.0)}
         >
           <button
             onClick={() => window.print()}
