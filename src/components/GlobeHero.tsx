@@ -782,7 +782,7 @@ export default function GlobeHero() {
         .sec-valid__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
         .sec-valid__card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:16px;transition:border-color .3s cubic-bezier(0.22,1,0.36,1),background .3s cubic-bezier(0.22,1,0.36,1);}
         .sec-valid__card:hover{border-color:rgba(255,255,255,.15);background:rgba(255,255,255,.06);}
-        .sec-valid__logo{height:48px;object-fit:contain;object-position:left;}
+        .sec-valid__logo{height:56px;object-fit:contain;}
         .sec-valid__tag{display:inline-flex;align-items:center;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);border-radius:999px;padding:4px 12px;font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C0392B;width:fit-content;}
         .sec-valid__name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:#fff;line-height:1.3;}
         .sec-valid__desc{font-family:"Satoshi",sans-serif;font-size:14px;color:rgba(255,255,255,.6);line-height:1.65;flex:1;}
@@ -1870,7 +1870,9 @@ export default function GlobeHero() {
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ type: 'spring', stiffness: 120, damping: 20, delay: i * 0.15 }}
               >
-                <img src={v.logo} alt={v.alt} className="sec-valid__logo" />
+                <div style={{ display:'inline-flex', alignItems:'center', background:'#fff', borderRadius:12, padding:'10px 16px' }}>
+                  <img src={v.logo} alt={v.alt} className="sec-valid__logo" />
+                </div>
                 <span className="sec-valid__tag">{v.tag}</span>
                 <p className="sec-valid__name">{v.name}</p>
                 <p className="sec-valid__desc">{v.desc}</p>
