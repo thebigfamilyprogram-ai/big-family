@@ -392,8 +392,7 @@ export default function DashboardPage() {
     }
   }
   const allModulesDone = totalModules > 0 && completedCount >= totalModules
-  // TEMP LAUNCH: capstone unlocked for all students regardless of module completion
-  const capstoneLocked = false
+  const capstoneLocked = !allModulesDone
   const nextModule = sortedModules.find(m => !completedIds.has(m.id) && !lockedIds.has(m.id)) ?? null
 
   async function dismissBanner() {

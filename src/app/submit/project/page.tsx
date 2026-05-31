@@ -72,8 +72,7 @@ export default function SubmitProjectPage() {
         .eq('id', user.id)
         .maybeSingle()
       if (cancelled) return
-      // TEMP LAUNCH: allow both 'student' and null role (newly created accounts may lag)
-      if (profile && profile.role && profile.role !== 'student') {
+      if (profile?.role && profile.role !== 'student') {
         router.replace('/dashboard'); return
       }
 
@@ -157,8 +156,6 @@ export default function SubmitProjectPage() {
     router.replace('/submit')
   }
 
-  // TEMP LAUNCH: External submit button saves status directly; relies on
-  // ProjectEditor autosave having fired for latest content changes.
   async function handleExternalSubmit() {
     if (!projectId || submitting || isSubmitted || !supabaseRef.current) return
     const supabase = supabaseRef.current

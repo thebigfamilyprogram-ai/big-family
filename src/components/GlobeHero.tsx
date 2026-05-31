@@ -240,9 +240,6 @@ const visionStaggerV = {
   visible: { transition: { staggerChildren: 0.04 } },
 }
 
-// TEMP LAUNCH: Día de Liderazgo target — 2026-05-16 08:00 Colombia (UTC-5)
-const DL_TARGET = new Date('2026-05-16T13:00:00Z')
-
 // ── Isolated memoized components — infinite/frequent animations must not re-render parent ──
 
 const HistoriaParticles = memo(function HistoriaParticles() {
@@ -264,49 +261,6 @@ const HistoriaParticles = memo(function HistoriaParticles() {
     </>
   )
 })
-
-// useCountdown lives inside so its 1s setInterval re-renders are isolated here, not in GlobeHero
-const CountdownDisplay = memo(function CountdownDisplay() {
-  const cd = useCountdown(DL_TARGET)
-  if (cd.expired) {
-    return <p style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 22, color: '#C0392B' }}>¡El evento ha comenzado!</p>
-  }
-  return (
-    <div className="dl-cd">
-      {([
-        { val: cd.days,    label: 'Días'     },
-        { val: cd.hours,   label: 'Horas'    },
-        { val: cd.minutes, label: 'Minutos'  },
-        { val: cd.seconds, label: 'Segundos' },
-      ] as { val: number; label: string }[]).map(({ val, label }) => (
-        <div key={label} className="dl-cd-unit">
-          <div className="dl-cd-num">{String(val).padStart(2, '0')}</div>
-          <div className="dl-cd-label">{label}</div>
-        </div>
-      ))}
-    </div>
-  )
-})
-
-function useCountdown(target: Date) {
-  const calc = () => {
-    const diff = target.getTime() - Date.now()
-    if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true }
-    return {
-      days:    Math.floor(diff / 86400000),
-      hours:   Math.floor((diff % 86400000) / 3600000),
-      minutes: Math.floor((diff % 3600000) / 60000),
-      seconds: Math.floor((diff % 60000) / 1000),
-      expired: false,
-    }
-  }
-  const [t, setT] = useState(calc)
-  useEffect(() => {
-    const id = setInterval(() => setT(calc()), 1000)
-    return () => clearInterval(id)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-  return t
-}
 
 const FAQ_ITEMS = [
   { q: '¿El programa es gratuito?', a: 'Sí, Big Family es completamente gratuito para los estudiantes. El programa es financiado por alianzas institucionales y el compromiso de sus fundadores con la educación equitativa en La Guajira.' },
@@ -418,7 +372,6 @@ export default function GlobeHero() {
   const rotateY = useTransform(springX, [-300, 300], [-8, 8])
 
   const prefersReduced      = useReducedMotion()
-  const [bannerDismissed,   setBannerDismissed]   = useState(false)
   const [scrollHintVisible, setScrollHintVisible] = useState(true)
   const [navScrolled,       setNavScrolled]       = useState(false)
   const [navMounted,        setNavMounted]        = useState(false)
@@ -435,7 +388,6 @@ export default function GlobeHero() {
   }, [showDiplomaModal])
 
   const { stats: liveStats, loading: statsLoading } = useRealtimeStats()
-  const isEventPast = DL_TARGET.getTime() < Date.now()
 
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const [featuredStories, setFeaturedStories] = useState<{ id: string; title: string; story: string; cover_url: string | null; student_name: string | null; school_name: string | null }[]>([])
@@ -464,10 +416,6 @@ export default function GlobeHero() {
 
   const { scrollY } = useScroll()
   const historiaTextY = useTransform(scrollY, [600, 2000], [-20, 20])
-
-  useEffect(() => {
-    setBannerDismissed(localStorage.getItem('dlg-banner-dismissed') === '1')
-  }, [])
 
   useEffect(() => {
     const onScrollHint = () => setScrollHintVisible(window.scrollY < 100)
@@ -716,29 +664,7 @@ export default function GlobeHero() {
         .equipo__card-divider{border-top:1px solid var(--line);margin:12px 0;}
         .equipo__tags{display:flex;flex-wrap:wrap;gap:8px;}
         .equipo__tag{font-family:"Satoshi",sans-serif;font-size:11px;color:#C0392B;background:rgba(192,57,43,.08);border-radius:999px;padding:4px 12px;}
-        /* ── DL Banner ── */
-        .dl-banner{background:#C0392B;color:#fff;padding:9px 52px 9px 20px;display:flex;align-items:center;justify-content:center;gap:14px;font-size:13px;font-weight:500;position:relative;flex-wrap:wrap;}
-        .dl-banner a{color:#fff;font-weight:700;text-decoration:underline;white-space:nowrap;}
-        .dl-banner-x{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,.65);font-size:20px;line-height:1;padding:0 4px;transition:color .15s;}
-        .dl-banner-x:hover{color:#fff;}
-        /* ── DL Landing Section ── */
-        .dl-landing{background:#0A0A0A;border-top:1px solid rgba(255,255,255,.06);padding:104px 40px;overflow:hidden;position:relative;}
-        .dl-landing::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 110%,rgba(192,57,43,.14),transparent 70%);pointer-events:none;}
-        .dl-landing__inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;position:relative;z-index:1;}
-        .dl-landing__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#C0392B;margin-bottom:16px;}
-        .dl-landing__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(32px,4vw,52px);color:#fff;letter-spacing:-.03em;line-height:1.1;margin-bottom:14px;}
-        .dl-landing__desc{font-family:"Satoshi",sans-serif;font-size:16px;color:rgba(255,255,255,.52);line-height:1.7;margin-bottom:28px;}
-        .dl-landing__btns{display:flex;gap:12px;flex-wrap:wrap;}
-        .dl-landing__btn-p{padding:13px 26px;background:#C0392B;color:#fff;border-radius:999px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;text-decoration:none;transition:background .2s;white-space:nowrap;}
-        .dl-landing__btn-p:hover{background:#a93226;}
-        .dl-landing__btn-g{padding:12px 26px;background:transparent;color:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.18);border-radius:999px;font-family:"Satoshi",sans-serif;font-weight:600;font-size:14px;text-decoration:none;transition:all .2s;white-space:nowrap;}
-        .dl-landing__btn-g:hover{border-color:rgba(255,255,255,.45);color:#fff;}
-        .dl-cd{display:grid;grid-template-columns:repeat(4,1fr);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;overflow:hidden;}
-        .dl-cd-unit{padding:22px 10px;text-align:center;border-right:1px solid rgba(255,255,255,.07);}
-        .dl-cd-unit:last-child{border-right:none;}
-        .dl-cd-num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(32px,4vw,48px);color:#fff;line-height:1;letter-spacing:-.04em;font-variant-numeric:tabular-nums;}
-        .dl-cd-label{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.32);margin-top:8px;}
-        @media(max-width:960px){.mision{padding:80px 24px;}.mision__stats{grid-template-columns:1fr 1fr;}.mision__stat{border-right:none;border-bottom:1px solid rgba(255,255,255,0.06);}.vision{padding:80px 24px;}.vision__cols{grid-template-columns:1fr;gap:36px;}.vision__watermark{font-size:80px;}.big-leader__inner{grid-template-columns:1fr;}.historia{padding:80px 24px;}.historia__header{grid-template-columns:1fr;gap:24px;}.bento{grid-template-columns:1fr;}.bento__cell--tall,.bento__cell--wide{grid-row:auto;grid-column:auto;}.about-dark{padding:80px 24px;}.about-dark__inner{grid-template-columns:1fr;gap:48px;}.equipo{padding:80px 24px;}.equipo__header{grid-template-columns:1fr;}.equipo__grid{grid-template-columns:1fr;grid-template-rows:auto;}.equipo__card--featured,.equipo__card--wide{grid-row:auto;grid-column:auto;flex-direction:column;}.equipo__card--wide .equipo__avatar{margin-bottom:28px;flex-shrink:0;}.dl-landing{padding:80px 24px;}.dl-landing__inner{grid-template-columns:1fr;gap:48px;}}
+        @media(max-width:960px){.mision{padding:80px 24px;}.mision__stats{grid-template-columns:1fr 1fr;}.mision__stat{border-right:none;border-bottom:1px solid rgba(255,255,255,0.06);}.vision{padding:80px 24px;}.vision__cols{grid-template-columns:1fr;gap:36px;}.vision__watermark{font-size:80px;}.big-leader__inner{grid-template-columns:1fr;}.historia{padding:80px 24px;}.historia__header{grid-template-columns:1fr;gap:24px;}.bento{grid-template-columns:1fr;}.bento__cell--tall,.bento__cell--wide{grid-row:auto;grid-column:auto;}.about-dark{padding:80px 24px;}.about-dark__inner{grid-template-columns:1fr;gap:48px;}.equipo{padding:80px 24px;}.equipo__header{grid-template-columns:1fr;}.equipo__grid{grid-template-columns:1fr;grid-template-rows:auto;}.equipo__card--featured,.equipo__card--wide{grid-row:auto;grid-column:auto;flex-direction:column;}.equipo__card--wide .equipo__avatar{margin-bottom:28px;flex-shrink:0;}}
         /* ── SEC-HISTORIA (Origen — luz) ─────────────────────────────────── */
         .sec-historia{background:var(--bg);padding:120px 40px;border-top:1px solid var(--line);}
         .sec-historia__inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:45fr 55fr;gap:80px;align-items:center;}
@@ -901,26 +827,6 @@ export default function GlobeHero() {
         @media(max-width:960px){.bf-footer__inner{grid-template-columns:1fr 1fr;}.bf-footer{padding:60px 24px 32px;}}
         @media(max-width:600px){.bf-footer__inner{grid-template-columns:1fr;gap:40px;}}
       `}</style>
-
-      {/* Post-event banner */}
-      <AnimatePresence>
-        {!bannerDismissed && (
-          <m.div
-            className="dl-banner"
-            initial={{ scaleY: 1, opacity: 1 }}
-            exit={{ scaleY: 0, opacity: 0 }}
-            style={{ transformOrigin: 'top', overflow: 'hidden' }}
-            transition={{ duration: 0.18, ease: [0.4, 0, 1, 1] }}
-          >
-            <span>🎉 ¡Gracias a todos los participantes del Día de Liderazgo 2026!</span>
-            <button
-              className="dl-banner-x"
-              aria-label="Cerrar"
-              onClick={() => { setBannerDismissed(true); localStorage.setItem('dlg-banner-dismissed', '1') }}
-            >×</button>
-          </m.div>
-        )}
-      </AnimatePresence>
 
       {/* ── Floating Pill Nav ── */}
       <AnimatePresence>
@@ -1609,43 +1515,6 @@ export default function GlobeHero() {
               onClick={() => document.getElementById('metodologia')?.scrollIntoView({ behavior: 'smooth' })}
             >Conocer el programa →</m.button>
           </div>
-
-        </div>
-      </section>
-
-      <section className="dl-landing">
-        <div className="dl-landing__inner">
-
-          {/* Left: copy + buttons */}
-          <m.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-          >
-            <div className="dl-landing__eyebrow">{isEventPast ? 'EVENTO PASADO' : 'EVENTO ESPECIAL'}</div>
-            <h2 className="dl-landing__title">Día de Liderazgo<br />La Guajira 2026</h2>
-            <p className="dl-landing__desc">
-              {isEventPast
-                ? 'El 16 de mayo, 8 colegios de La Guajira presentaron sus proyectos de liderazgo. ¡Gracias a todos los participantes!'
-                : '8 colegios de La Guajira presentan sus proyectos de liderazgo comunitario el 16 de mayo.'}
-            </p>
-            <div className="dl-landing__btns">
-              <a href="/dia-de-liderazgo" className="dl-landing__btn-g">Ver detalles →</a>
-              {!isEventPast && <a href="/submit" className="dl-landing__btn-p">Subir mi proyecto →</a>}
-              {isEventPast && <a href="/success-stories" className="dl-landing__btn-p">Ver historias →</a>}
-            </div>
-          </m.div>
-
-          {/* Right: countdown */}
-          <m.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ type: 'spring', stiffness: 120, damping: 20, delay: 0.1 }}
-          >
-            <CountdownDisplay />
-          </m.div>
 
         </div>
       </section>

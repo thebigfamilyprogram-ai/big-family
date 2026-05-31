@@ -86,10 +86,10 @@ const STATUS_META: Record<string, { label: string; variant: 'draft' | 'pending' 
 }
 
 const ROLE_META: Record<string, { label: string; color: string; bg: string }> = {
-  student:     { label: 'Estudiante',  color: 'var(--ink)', bg: 'rgba(13,13,13,.07)' },
-  coordinator: { label: 'Coordinador', color: '#4C1D95', bg: '#EDE9FE'            },
-  expositor:   { label: 'Expositor',   color: '#065F46', bg: '#D1FAE5'            },
-  admin:       { label: 'Admin',       color: '#fff',    bg: 'var(--accent,#C0392B)' },
+  student:     { label: 'Estudiante',  color: 'var(--ink)',       bg: 'rgba(13,13,13,.07)'       },
+  coordinator: { label: 'Coordinador', color: 'var(--ink)',       bg: 'var(--bg-2,#EFECE6)'      },
+  expositor:   { label: 'Expositor',   color: '#065F46',          bg: '#D1FAE5'                  },
+  admin:       { label: 'Admin',       color: 'var(--bg,#F5F3EF)', bg: 'var(--accent,#C0392B)'   },
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────

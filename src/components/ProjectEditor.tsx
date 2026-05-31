@@ -392,8 +392,6 @@ export default function ProjectEditor({
   const [medir,        setMedir]        = useState<MedirFields>(() =>       parseFields(initialData.idemr_medir, DEFAULT_MEDIR))
   const [reflexionar,  setReflexionar]  = useState<ReflexionarFields>(() => parseFields(initialData.idemr_reflexionar, DEFAULT_REFLEXIONAR))
 
-  // TEMP: plan_continuidad and big_leader_model_reflection kept in state so existing data
-  // is preserved on save even though the UI sections are hidden
   const [planContinuidad,          setPlanContinuidad]          = useState(initialData.plan_continuidad ?? '')
   const [bigLeaderModelReflection, setBigLeaderModelReflection] = useState(initialData.big_leader_model_reflection ?? '')
 
@@ -495,7 +493,7 @@ export default function ProjectEditor({
     if (!mountedRef.current) { mountedRef.current = true; return }
     triggerAutosave()
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current) }
-  }, [title, subtitle, category, track, identificar, diseniar, ejecutar, medir, reflexionar]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [title, subtitle, category, track, identificar, diseniar, ejecutar, medir, reflexionar, planContinuidad, bigLeaderModelReflection]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Submit ─────────────────────────────────────────────────────────────────
   async function handleSubmit() {

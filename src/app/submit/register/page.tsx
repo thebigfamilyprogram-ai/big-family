@@ -88,6 +88,7 @@ export default function SubmitRegisterPage() {
   const [termsAccepted,  setTermsAccepted]  = useState(false)
   const [formError,      setFormError]      = useState('')
   const [formLoading,    setFormLoading]    = useState(false)
+  const [emailSent,      setEmailSent]      = useState(false)
 
   async function handleCodeSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -148,8 +149,7 @@ export default function SubmitRegisterPage() {
       school_level: track,
     })
 
-    // TEMP LAUNCH: no email confirmation required; redirecting directly to project editor
-    router.replace('/submit/project')
+    setEmailSent(true)
   }
 
   return (
@@ -158,9 +158,9 @@ export default function SubmitRegisterPage() {
                 *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Satoshi",sans-serif;min-height:100vh;}
         .sr-page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;}
-        .sr-card{background:#fff;border:1px solid rgba(13,13,13,.09);border-radius:20px;box-shadow:0 8px 40px -12px rgba(13,13,13,.12);padding:36px 32px;width:100%;max-width:420px;}
-        .sr-heading{font-family:"Satoshi",sans-serif;font-weight:900;font-size:22px;color:#0D0D0D;margin-bottom:6px;}
-        .sr-sub{font-size:14px;color:#6B6B6B;margin-bottom:24px;line-height:1.5;}
+        .sr-card{background:var(--card-bg,#fff);border:1px solid rgba(13,13,13,.09);border-radius:20px;box-shadow:0 8px 40px -12px rgba(13,13,13,.12);padding:36px 32px;width:100%;max-width:420px;}
+        .sr-heading{font-family:"Satoshi",sans-serif;font-weight:900;font-size:22px;color:var(--ink,#0D0D0D);margin-bottom:6px;}
+        .sr-sub{font-size:14px;color:var(--mute,#6B6B6B);margin-bottom:24px;line-height:1.5;}
         .sr-school-badge{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#EBF3FC;border:1px solid #B3D1F0;border-radius:10px;margin-bottom:20px;font-size:13.5px;font-weight:600;color:#1A4E7A;}
         .sr-field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
         .sr-label{font-size:12.5px;font-weight:600;color:#2D2D2D;}
@@ -198,9 +198,25 @@ export default function SubmitRegisterPage() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ ...springNatural, delay: 0.08 }}
         >
-          <Progress step={1} pref={pref} />
+          <Progress step={emailSent ? 2 : 1} pref={pref} />
 
-          {step === 'code' ? (
+          {emailSent ? (
+            <m.div
+              initial={pref ? false : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.24, ease: expoOut }}
+              style={{ textAlign: 'center', padding: '8px 0' }}
+            >
+              <div style={{ fontSize: 40, marginBottom: 16 }}>📬</div>
+              <div className="sr-heading" style={{ marginBottom: 8 }}>Revisa tu correo</div>
+              <div className="sr-sub">
+                Te enviamos un enlace de confirmación a <strong>{email}</strong>. Confirma tu cuenta para continuar.
+              </div>
+              <div style={{ marginTop: 20, fontSize: 13, color: 'var(--mute)' }}>
+                ¿No llegó? Revisa tu carpeta de spam.
+              </div>
+            </m.div>
+          ) : step === 'code' ? (
             <>
               <div className="sr-heading">Regístrate</div>
               <div className="sr-sub">Ingresa el código de tu colegio para comenzar</div>
@@ -371,9 +387,11 @@ export default function SubmitRegisterPage() {
             </>
           )}
 
-          <div className="sr-link">
-            ¿Ya tienes cuenta? <a href="/submit/login">Ingresar</a>
-          </div>
+          {!emailSent && (
+            <div className="sr-link">
+              ¿Ya tienes cuenta? <a href="/submit/login">Ingresar</a>
+            </div>
+          )}
         </m.div>
       </div>
     </>

@@ -24,11 +24,11 @@ type FeedFilter = 'all' | 'module_completed' | 'project_submitted' | 'badge_earn
 const PAGE_SIZE = 20
 
 const TYPE_META: Record<string, { icon: string; label: string; color: string; border: string }> = {
-  module_completed:  { icon: '📚', label: 'completó un módulo',  color: '#3B82F6', border: '#3B82F6' },
+  module_completed:  { icon: '📚', label: 'completó un módulo',  color: '#2A9D8F', border: '#2A9D8F' },
   project_submitted: { icon: '📤', label: 'envió un proyecto',   color: '#C0392B', border: '#C0392B' },
-  badge_earned:      { icon: '🏅', label: 'ganó un badge',       color: '#F59E0B', border: '#F59E0B' },
-  certified:         { icon: '🎓', label: 'fue certificado/a',   color: '#10B981', border: '#10B981' },
-  goal_completed:    { icon: '🎯', label: 'completó una meta',   color: '#8B5CF6', border: '#8B5CF6' },
+  badge_earned:      { icon: '🏅', label: 'ganó un badge',       color: '#D4821A', border: '#D4821A' },
+  certified:         { icon: '🎓', label: 'fue certificado/a',   color: '#27AE60', border: '#27AE60' },
+  goal_completed:    { icon: '🎯', label: 'completó una meta',   color: '#2A9D8F', border: '#2A9D8F' },
 }
 
 const FILTER_LABELS: Record<FeedFilter, string> = {
