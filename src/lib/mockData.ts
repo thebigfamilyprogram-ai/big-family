@@ -181,6 +181,16 @@ export const MOCK = {
     totalProgress:   68,
   },
 
+  // DIPLOMA — estudiante certificado para /certificacion/[id]
+  mockDiploma: {
+    studentName:      'Valentina Torres Ospino',
+    schoolName:       'IE Técnica María Inmaculada',
+    resultado:        'certificado' as const,
+    certDate:         '2026-05-15T10:00:00',
+    totalXP:          1840,
+    modulesCompleted: 6,
+  },
+
   // ANALYTICS PARA /datos
   analytics: {
     kpis: {

@@ -7,6 +7,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { m } from 'framer-motion'
 import { Link } from 'next-view-transitions'
 import { createClient } from '@/lib/supabase'
+import { MOCK_MODE, MOCK } from '@/lib/mockData'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -120,6 +121,12 @@ export default function CertificacionPage() {
     if (!sb) return
 
     async function load() {
+      if (MOCK_MODE) {
+        setData(MOCK.mockDiploma)
+        setLoading(false)
+        return
+      }
+
       // 1. Student's projects → find certified capstone
       const { data: projects } = await sb!
         .from('projects')
