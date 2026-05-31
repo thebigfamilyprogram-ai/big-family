@@ -1,6 +1,6 @@
 # context.md — Big Family Platform — Decision Log
 
-## Last updated: Mayo 2026 (Sesión 3)
+## Last updated: Junio 2026 (Sesión 4)
 
 ---
 
@@ -21,6 +21,14 @@
 - **Global Map** — Mapa 3D WebGL con países objetivo (etiquetado "Visión 2036")
 - **Leadership Path** — Ruta de liderazgo con 5 pilares
 - **Globo 3D OffscreenCanvas** — Three.js migrado a Web Worker (OffscreenCanvas), textura NASA día/noche, fallback para Safari < 16.4. Archivos: src/components/Globe/GlobeWorker.ts, GlobeCanvas.tsx, GlobeFallback.ts. PageSpeed subió de 54% a 98%.
+
+### Features Nuevas (Junio 2026)
+- **Onboarding con Test de Perfil de Líder** — BFI-44 (John & Srivastava, 1999) traducido al español. Versión Senior (44 preguntas) y Junior (20 preguntas, lenguaje simplificado). Calcula Big Five → mapea a 5 pilares del Big Leader Model (Yo=C, Norte=O, Vínculo=A, Acción=E, Legado=ES). Llama a Claude API para generar descripción personalizada en JSON. Guarda en `profiles.leadership_profile` + tabla `leadership_assessments`. Gate en proxy.ts: estudiante sin onboarding → redirige a `/onboarding/test`.
+  - `src/lib/bigFiveQuestions.ts` — BFI-44 questions, `calcBigFive()`, `getArchetype()`, `getPillarScores()`, `getStrengths()`, `getGrowthAreas()`
+  - `src/app/api/leadership/assess/route.ts` — Route Handler autenticado: calcula scores, llama Claude sonnet-4-6, guarda en Supabase
+  - `src/app/onboarding/test/page.tsx` — Test page: una pregunta por pantalla, AnimatePresence transitions (x:±40 spring), progress bar, auto-advance 300ms, MOCK_MODE support
+  - `src/app/onboarding/resultado/page.tsx` — Resultado ceremonial: pentagon SVG animado con pathLength, stagger 7 elementos, fortalezas vs áreas de crecimiento, CTA → /dashboard
+  - `supabase/migrations/20260602000000_leadership_profile.sql` — Columnas `leadership_profile JSONB` + `onboarding_completed BOOLEAN` en profiles; tabla `leadership_assessments` con RLS; update existentes a TRUE
 
 ### Features Nuevas (Mayo 2026)
 - **Línea del tiempo global** — `/timeline` público + `/coordinator/timeline` para gestión, embed en landing "Nuestra Historia"

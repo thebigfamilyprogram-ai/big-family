@@ -5,8 +5,9 @@ import type { NextRequest } from 'next/server'
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  const isProtected = ['/dashboard', '/coordinator', '/admin', '/expositor'].some(p => pathname.startsWith(p))
+  const isProtected = ['/dashboard', '/coordinator', '/admin', '/expositor', '/onboarding'].some(p => pathname.startsWith(p))
   const isAuthPage  = pathname === '/login' || pathname === '/register' || pathname === '/forgot-password'
+  const isOnboarding = pathname.startsWith('/onboarding')
 
   if (!isProtected && !isAuthPage) return NextResponse.next()
 
@@ -29,19 +30,36 @@ export async function proxy(request: NextRequest) {
   }
 
   if (user) {
-    // Fetch role once for all role-based decisions
+    // Fetch role + onboarding status in one query
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, onboarding_completed')
       .eq('id', user.id)
       .maybeSingle()
 
     const role = profile?.role ?? 'student'
+    // Default true so existing users (pre-onboarding feature) are not blocked
+    const onboardingCompleted = profile?.onboarding_completed ?? true
 
     // Authenticated → redirect away from auth pages to their home
     if (isAuthPage) {
       const dest = role === 'admin' ? '/admin' : role === 'coordinator' ? '/coordinator' : role === 'expositor' ? '/expositor' : '/dashboard'
       return NextResponse.redirect(new URL(dest, request.url))
+    }
+
+    // Student onboarding gate: incomplete onboarding → send to test
+    if (
+      role === 'student' &&
+      !onboardingCompleted &&
+      !isOnboarding &&
+      pathname.startsWith('/dashboard')
+    ) {
+      return NextResponse.redirect(new URL('/onboarding/test', request.url))
+    }
+
+    // Student completed onboarding → skip /onboarding/* back to dashboard
+    if (role === 'student' && onboardingCompleted && isOnboarding) {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
     }
 
     // Role-based protection
@@ -65,6 +83,7 @@ export const config = {
     '/coordinator/:path*',
     '/admin/:path*',
     '/expositor/:path*',
+    '/onboarding/:path*',
     '/login',
     '/register',
     '/forgot-password',
