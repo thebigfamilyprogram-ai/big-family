@@ -24,6 +24,7 @@
 
 ### Features Nuevas (Junio 2026)
 - **Onboarding con Test de Perfil de Líder** — BFI-44 (John & Srivastava, 1999) traducido al español. Versión Senior (44 preguntas) y Junior (20 preguntas, lenguaje simplificado). Calcula Big Five → mapea a 5 pilares del Big Leader Model (Yo=C, Norte=O, Vínculo=A, Acción=E, Legado=ES). Llama a Claude API para generar descripción personalizada en JSON. Guarda en `profiles.leadership_profile` + tabla `leadership_assessments`. Gate en proxy.ts: estudiante sin onboarding → redirige a `/onboarding/test`.
+- **Dashboard personalizado con perfil de líder** — Identity card reemplaza el user-header: split izquierda (avatar + nombre + track badge + arquetipo en Instrument Serif italic) / derecha (pentagon SVG compacto 160×160 estático con fortalezas en teal y áreas en accent). 5 pillar pills debajo del KPI bento con progreso de módulos por pilar (color semántico: teal=fortaleza, accent=área de crecimiento, mute=neutral). Badges "Tu fortaleza" / "Área clave" en cada módulo del grid. Todo oculto graciosamente si no hay `leadership_profile`.
   - `src/lib/bigFiveQuestions.ts` — BFI-44 questions, `calcBigFive()`, `getArchetype()`, `getPillarScores()`, `getStrengths()`, `getGrowthAreas()`
   - `src/app/api/leadership/assess/route.ts` — Route Handler autenticado: calcula scores, llama Claude sonnet-4-6, guarda en Supabase
   - `src/app/onboarding/test/page.tsx` — Test page: una pregunta por pantalla, AnimatePresence transitions (x:±40 spring), progress bar, auto-advance 300ms, MOCK_MODE support

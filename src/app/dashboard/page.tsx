@@ -43,6 +43,23 @@ interface WeeklyXP {
   xp: number
 }
 
+interface LeaderProfile {
+  arquetipo:         string
+  fortalezas:        string[]
+  areas_crecimiento: string[]
+  big_five: { O: number; C: number; E: number; A: number; N: number; ES: number }
+}
+
+// Module → Big Leader Model pillar mapping (by order_index)
+const MODULE_PILLAR: Record<number, string> = {
+  1: 'Yo', 2: 'Norte', 3: 'Vínculo', 4: 'Vínculo', 5: 'Acción', 6: 'Acción', 7: 'Legado',
+}
+// Pillar → which module order_indices belong to it
+const PILLAR_MODS: Record<string, number[]> = {
+  Yo: [1], Norte: [2], Vínculo: [3, 4], Acción: [4, 5, 6], Legado: [7],
+}
+const PILLAR_ORDER = ['Yo', 'Norte', 'Vínculo', 'Acción', 'Legado'] as const
+
 const QUOTES = [
   { quote: "El líder es aquel que conoce el camino, recorre el camino y muestra el camino.", author: "John C. Maxwell", category: "Liderazgo" },
   { quote: "No se nace líder, uno se hace líder.", author: "Vince Lombardi", category: "Liderazgo" },
@@ -213,6 +230,7 @@ export default function DashboardPage() {
   const [weeklyXP,     setWeeklyXP]     = useState<WeeklyXP[]>([])
   const [streak,       setStreak]       = useState(0)
   const [rankPos,      setRankPos]      = useState<number | null>(null)
+  const [leaderProfile, setLeaderProfile] = useState<LeaderProfile | null>(null)
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -241,6 +259,12 @@ export default function DashboardPage() {
         setAnnBanner({ id: MOCK.announcements[0].id, title: MOCK.announcements[0].title, content: MOCK.announcements[0].content, category: MOCK.announcements[0].category })
         setUnreadAnnCount(MOCK.announcements.length)
         setDiploma({ projectId: 'mock-project-1', resultado: 'certificado' })
+        setLeaderProfile({
+          arquetipo:         'Líder Visionaria',
+          fortalezas:        ['Norte', 'Acción'],
+          areas_crecimiento: ['Yo', 'Vínculo'],
+          big_five:          { O: 85, C: 42, E: 78, A: 38, N: 35, ES: 65 },
+        })
         setLoading(false)
         return
       }
@@ -253,7 +277,7 @@ export default function DashboardPage() {
       setUserId(authUser.id)
 
       const [profileRes, xpRes, modsRes, progRes, projRes] = await Promise.all([
-        supabase.from('profiles').select('display_name, role, school_level, school_id').eq('id', authUser.id).maybeSingle(),
+        supabase.from('profiles').select('display_name, role, school_level, school_id, leadership_profile').eq('id', authUser.id).maybeSingle(),
         supabase.from('xp_log').select('amount').eq('user_id', authUser.id),
         supabase.from('modules').select('*').eq('status', 'published').order('order_index'),
         supabase.from('progress').select('module_id, completed').eq('user_id', authUser.id),
@@ -366,6 +390,7 @@ export default function DashboardPage() {
         role:         profile?.role ?? null,
         school_level: profile?.school_level ?? null,
       })
+      if (profile?.leadership_profile) setLeaderProfile(profile.leadership_profile as LeaderProfile)
       setModules(mods ?? [])
       setProgressRows(prog ?? [])
       setLoading(false)
@@ -613,6 +638,35 @@ export default function DashboardPage() {
           .cards-row{grid-template-columns:1fr;}
           .mods-grid{grid-template-columns:1fr;}
         }
+
+        /* ── Identity card ── */
+        .identity-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:24px;box-shadow:var(--shadow-card);display:flex;align-items:center;gap:28px;}
+        .identity-left{flex:1;min-width:0;display:flex;flex-direction:column;gap:0;}
+        .identity-top{display:flex;align-items:flex-start;gap:16px;}
+        .identity-text{flex:1;min-width:0;}
+        .identity-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:20px;letter-spacing:-0.01em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;}
+        .identity-archetype{font-family:"Instrument Serif",serif;font-style:italic;font-size:16px;color:#C0392B;margin-top:4px;line-height:1.2;}
+        .identity-bottom{display:flex;align-items:center;gap:16px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line);}
+        .identity-stat{display:flex;flex-direction:column;align-items:center;gap:2px;}
+        .identity-stat__num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums;}
+        .identity-stat__label{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);}
+        .identity-divider{width:1px;height:28px;background:var(--line);flex-shrink:0;}
+        .identity-right{flex-shrink:0;}
+        @media(max-width:640px){.identity-right{display:none;}}
+
+        /* ── Pillar pills ── */
+        .pillar-pills{display:flex;gap:10px;flex-wrap:wrap;}
+        .pillar-pill{flex:1;min-width:100px;display:flex;flex-direction:column;gap:5px;padding:12px 14px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;box-shadow:var(--shadow-card);}
+        .pillar-pill__header{display:flex;justify-content:space-between;align-items:center;}
+        .pillar-pill__name{font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;}
+        .pillar-pill__pct{font-family:"Satoshi",sans-serif;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;}
+        .pillar-pill__track{height:3px;background:var(--line);border-radius:999px;overflow:hidden;}
+        .pillar-pill__bar{height:100%;border-radius:999px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+
+        /* ── Module profile badges ── */
+        .mod-profile-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.03em;white-space:nowrap;}
+        .mod-profile-badge.strength{background:rgba(15,123,108,.1);color:var(--accent-teal,#0F7B6C);border:1px solid rgba(15,123,108,.2);}
+        .mod-profile-badge.growth{background:rgba(192,57,43,.08);color:#C0392B;border:1px solid rgba(192,57,43,.2);}
       `}</style>
 
       <m.main
@@ -657,69 +711,88 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* User header */}
-          <div className="user-header">
-            <div className="user-avatar-wrap">
-              <div className="user-avatar">
-                {loading ? 'L' : initials}
+          {/* ── Identity card ── */}
+          <m.div
+            className="identity-card"
+            initial={pref ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 26 }}
+          >
+            <div className="identity-left">
+              {/* Top row: avatar + text */}
+              <div className="identity-top">
+                <div className="user-avatar-wrap" style={{ flexShrink: 0 }}>
+                  <div className="user-avatar">{loading ? 'L' : initials}</div>
+                  <span className="online-badge">ONLINE</span>
+                </div>
+
+                <div className="identity-text">
+                  {loading ? (
+                    <><Sk w="70%" h={20} r={6} /><div style={{ marginTop: 8 }}><Sk w="50%" h={13} r={5} /></div></>
+                  ) : (
+                    <>
+                      <div className="identity-name">{displayName}</div>
+                      {(() => {
+                        const lv = LEVEL_MAP[user?.school_level ?? 'senior'] ?? LEVEL_MAP['senior']
+                        return (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
+                            <span style={{ padding: '2px 9px', borderRadius: 999, background: lv.bg, color: lv.color, fontSize: 11, fontWeight: 700, fontFamily: '"Satoshi",sans-serif', whiteSpace: 'nowrap' }}>
+                              {lv.label}
+                            </span>
+                            {leaderProfile && (
+                              <div className="identity-archetype">{leaderProfile.arquetipo}</div>
+                            )}
+                          </div>
+                        )
+                      })()}
+                    </>
+                  )}
+                </div>
+
+                {/* Role buttons + bell */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto', flexShrink: 0 }}>
+                  {user?.role === 'coordinator' && (
+                    <button className="btn-coordinator" onClick={() => router.push('/coordinator')}>Panel Coordinador</button>
+                  )}
+                  {user?.role === 'expositor' && (
+                    <button className="btn-coordinator" onClick={() => router.push('/expositor')}>Panel Expositor</button>
+                  )}
+                  <button className="bell-btn" onClick={() => router.push('/dashboard/announcements')} title={`${unreadAnnCount} anuncios sin leer`}>
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                      <path d="M10 2A5 5 0 0 0 5 7v3l-1.5 2.5h13L15 10V7A5 5 0 0 0 10 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                      <path d="M8 15a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                    {unreadAnnCount > 0 && <span className="bell-badge" />}
+                  </button>
+                </div>
               </div>
-              <span className="online-badge">ONLINE</span>
+
+              {/* Bottom row: stats */}
+              <div className="identity-bottom">
+                <div className="identity-stat">
+                  <div className="identity-stat__num">{loading ? '…' : (user?.total_xp ?? 0).toLocaleString('es-CO')}</div>
+                  <div className="identity-stat__label">XP Total</div>
+                </div>
+                <div className="identity-divider" />
+                <div className="identity-stat">
+                  <div className="identity-stat__num">{loading ? '…' : completedCount}</div>
+                  <div className="identity-stat__label">Módulos</div>
+                </div>
+                <div className="identity-divider" />
+                <div className="identity-stat">
+                  <div className="identity-stat__num">{loading ? '…' : (rankPos === 0 || rankPos === null ? '—' : `#${rankPos}`)}</div>
+                  <div className="identity-stat__label">Ranking</div>
+                </div>
+              </div>
             </div>
 
-            <div className="user-info">
-              {loading
-                ? <><Sk w="60%" h={22} r={6} /><div style={{ marginTop: 8 }}><Sk w="80%" h={13} r={5} /></div></>
-                : <>
-                    <div className="user-name">{displayName}</div>
-                    {(() => {
-                      const lv = LEVEL_MAP[user?.school_level ?? 'senior'] ?? LEVEL_MAP['senior']
-                      return (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
-                          <span style={{ padding: '3px 10px', borderRadius: 999, background: lv.bg, color: lv.color, fontSize: 12, fontWeight: 700, fontFamily: '"Satoshi",sans-serif', whiteSpace: 'nowrap' }}>
-                            {lv.label}
-                          </span>
-                          <span style={{ fontSize: 13, color: 'var(--mute)' }}>· {lv.sub}</span>
-                        </div>
-                      )
-                    })()}
-                  </>
-              }
-            </div>
-
-            {user?.role === 'coordinator' && (
-              <button className="btn-coordinator" onClick={() => router.push('/coordinator')}>
-                Panel Coordinador
-              </button>
+            {/* Right: compact pentagon SVG */}
+            {!loading && leaderProfile && (
+              <div className="identity-right">
+                <CompactPentagon profile={leaderProfile} />
+              </div>
             )}
-            {user?.role === 'expositor' && (
-              <button className="btn-coordinator" onClick={() => router.push('/expositor')}>
-                Ir al panel de expositor
-              </button>
-            )}
-
-            <div className="user-stats">
-              <div className="ustat">
-                <div className="ustat__num">{loading ? '…' : (user?.total_xp ?? 0).toLocaleString()}</div>
-                <div className="ustat__label">XP Total</div>
-              </div>
-              <div style={{ width: 1, background: 'var(--line)', margin: '4px 0' }} />
-              <div className="ustat">
-                <div className="ustat__num">{loading ? '…' : completedCount}</div>
-                <div className="ustat__label">Módulos</div>
-              </div>
-            </div>
-            <button
-              className="bell-btn"
-              onClick={() => router.push('/dashboard/announcements')}
-              title={`${unreadAnnCount} anuncios sin leer`}
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 2A5 5 0 0 0 5 7v3l-1.5 2.5h13L15 10V7A5 5 0 0 0 10 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-                <path d="M8 15a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-              {unreadAnnCount > 0 && <span className="bell-badge" />}
-            </button>
-          </div>
+          </m.div>
 
           {/* ── KPI Bento ── */}
           <m.div
@@ -754,6 +827,39 @@ export default function DashboardPage() {
               </m.div>
             ))}
           </m.div>
+
+          {/* ── Pillar pills ── */}
+          <div className="pillar-pills">
+            {PILLAR_ORDER.map(pillar => {
+              const modsInPillar = PILLAR_MODS[pillar]
+              const completedInPillar = loading ? 0 : modules.filter(m => modsInPillar.includes(m.order_index) && completedIds.has(m.id)).length
+              const pct = modsInPillar.length > 0 ? Math.round(completedInPillar / modsInPillar.length * 100) : 0
+              const isStrength = leaderProfile?.fortalezas.includes(pillar)
+              const isGrowth   = leaderProfile?.areas_crecimiento.includes(pillar)
+              const color = isStrength
+                ? 'var(--accent-teal,#0F7B6C)'
+                : isGrowth
+                  ? '#C0392B'
+                  : 'var(--mute)'
+              return (
+                <div key={pillar} className="pillar-pill">
+                  {loading ? (
+                    <><Sk w="60%" h={10} r={4} /><Sk w="100%" h={3} r={999} /></>
+                  ) : (
+                    <>
+                      <div className="pillar-pill__header">
+                        <span className="pillar-pill__name" style={{ color }}>{pillar}</span>
+                        <span className="pillar-pill__pct" style={{ color }}>{pct}%</span>
+                      </div>
+                      <div className="pillar-pill__track">
+                        <div className="pillar-pill__bar" style={{ width: `${pct}%`, background: color }} />
+                      </div>
+                    </>
+                  )}
+                </div>
+              )
+            })}
+          </div>
 
           {/* ── Charts bento ── */}
           <div className="charts-row">
@@ -1208,6 +1314,15 @@ export default function DashboardPage() {
                         <span style={{ color: 'var(--mute)', fontWeight: 500 }}>
                           {String(nextModule.order_index).padStart(2, '0')}
                         </span>
+                        {leaderProfile && (() => {
+                          const pillar = MODULE_PILLAR[nextModule.order_index]
+                          if (!pillar) return null
+                          if (leaderProfile.fortalezas.includes(pillar))
+                            return <span className="mod-profile-badge strength">Tu fortaleza</span>
+                          if (leaderProfile.areas_crecimiento.includes(pillar))
+                            return <span className="mod-profile-badge growth">Área clave</span>
+                          return null
+                        })()}
                       </div>
                       <div className="mod-next__title">{nextModule.title}</div>
                       <div className="mod-next__desc">{nextModule.description}</div>
@@ -1254,7 +1369,7 @@ export default function DashboardPage() {
                             onClick={!isLocked && !isDone ? () => router.push(`/dashboard/modules/${mod.id}`) : undefined}
                             style={!isLocked && !isDone ? { cursor: 'pointer' } : undefined}
                           >
-                            <div className="mod-num" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <div className="mod-num" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                               {String(mod.order_index).padStart(2, '0')}
                               {isLocked && (
                                 <svg width="11" height="11" viewBox="0 0 14 14" fill="none" style={{ opacity: .4 }}>
@@ -1262,6 +1377,15 @@ export default function DashboardPage() {
                                   <path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
                                 </svg>
                               )}
+                              {leaderProfile && (() => {
+                                const pillar = MODULE_PILLAR[mod.order_index]
+                                if (!pillar) return null
+                                if (leaderProfile.fortalezas.includes(pillar))
+                                  return <span className="mod-profile-badge strength">Tu fortaleza</span>
+                                if (leaderProfile.areas_crecimiento.includes(pillar))
+                                  return <span className="mod-profile-badge growth">Área clave</span>
+                                return null
+                              })()}
                             </div>
                             <div className="mod-name">{mod.title}</div>
                             <div className="mod-desc">{mod.description}</div>
@@ -1321,5 +1445,76 @@ export default function DashboardPage() {
 
         </m.main>
     </>
+  )
+}
+
+// ── Compact pentagon SVG for identity card ────────────────────────────────────
+// Layout: Yo=top, Norte=top-right, Acción=bottom-right, Legado=bottom-left, Vínculo=top-left
+const PENT = [
+  { key: 'Yo',      angle: -90,  getDim: (b: LeaderProfile['big_five']) => b.C  },
+  { key: 'Norte',   angle: -18,  getDim: (b: LeaderProfile['big_five']) => b.O  },
+  { key: 'Acción',  angle:  54,  getDim: (b: LeaderProfile['big_five']) => b.E  },
+  { key: 'Legado',  angle:  126, getDim: (b: LeaderProfile['big_five']) => b.ES },
+  { key: 'Vínculo', angle:  198, getDim: (b: LeaderProfile['big_five']) => b.A  },
+]
+
+function CompactPentagon({ profile }: { profile: LeaderProfile }) {
+  const CX = 100, CY = 100, R = 62
+  const toRad = (d: number) => (d * Math.PI) / 180
+  const pt = (angle: number, r: number) => ({
+    x: CX + r * Math.cos(toRad(angle)),
+    y: CY + r * Math.sin(toRad(angle)),
+  })
+
+  const refPoints = PENT.map(p => { const v = pt(p.angle, R); return `${v.x},${v.y}` }).join(' ')
+  const profPoints = PENT.map(p => {
+    const score = p.getDim(profile.big_five)
+    const v = pt(p.angle, (score / 100) * R)
+    return `${v.x},${v.y}`
+  }).join(' ')
+
+  return (
+    <svg viewBox="0 0 200 200" width={160} height={160} aria-hidden="true">
+      {/* Grid lines */}
+      {PENT.map(p => {
+        const v = pt(p.angle, R)
+        return <line key={p.key} x1={CX} y1={CY} x2={v.x} y2={v.y} stroke="var(--line)" strokeWidth={0.8} />
+      })}
+      {/* 50% ring */}
+      <polygon
+        points={PENT.map(p => { const v = pt(p.angle, R * 0.5); return `${v.x},${v.y}` }).join(' ')}
+        fill="none" stroke="var(--line)" strokeWidth={0.8} strokeDasharray="2 3"
+      />
+      {/* Reference polygon */}
+      <polygon points={refPoints} fill="none" stroke="var(--bg-2)" strokeWidth={1} />
+      {/* Profile polygon */}
+      <polygon points={profPoints} fill="rgba(192,57,43,0.10)" stroke="#C0392B" strokeWidth={1.5} />
+      {/* Vertex dots */}
+      {PENT.map(p => {
+        const score = p.getDim(profile.big_five)
+        const v = pt(p.angle, (score / 100) * R)
+        const isStrength = profile.fortalezas.includes(p.key)
+        const isGrowth   = profile.areas_crecimiento.includes(p.key)
+        return (
+          <circle
+            key={p.key} cx={v.x} cy={v.y} r={4}
+            fill={isStrength ? 'var(--accent-teal,#0F7B6C)' : isGrowth ? '#C0392B' : 'var(--bg-2)'}
+          />
+        )
+      })}
+      {/* Labels */}
+      {PENT.map(p => {
+        const lv = pt(p.angle, R + 22)
+        return (
+          <text
+            key={p.key} x={lv.x} y={lv.y}
+            textAnchor="middle" dominantBaseline="middle"
+            style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 10, fill: 'var(--mute)', letterSpacing: '0.04em' }}
+          >
+            {p.key}
+          </text>
+        )
+      })}
+    </svg>
   )
 }
