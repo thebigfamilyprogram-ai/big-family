@@ -152,7 +152,7 @@ const VALIDACIONES = [
     tag:  'Acreditación Institucional',
   },
   {
-    logo: '/images/ibimage-transparent_orig.png',
+    logo: '/ibimage-transparent_orig.png',
     alt:  'International Baccalaureate',
     name: 'International Baccalaureate',
     desc: 'El programa fue presentado en la IB Americas Conference en Orlando como iniciativa destacada de liderazgo escolar.',
