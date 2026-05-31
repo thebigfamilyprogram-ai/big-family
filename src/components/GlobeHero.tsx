@@ -135,13 +135,13 @@ const IMPACTO_STATS = [
 ] as const
 
 const VALORES = [
-  { name: 'Ética',             icon: '⚖️',  desc: 'Actuamos con integridad en cada decisión.'          },
-  { name: 'Compromiso',        icon: '🤝', desc: 'Nos entregamos completamente a nuestro propósito.'  },
-  { name: 'Trascendencia',     icon: '🌟', desc: 'Dejamos una huella positiva que perdura.'           },
-  { name: 'Conciencia Social', icon: '🌍', desc: 'Entendemos nuestro impacto en la comunidad.'        },
-  { name: 'Innovación',        icon: '💡', desc: 'Buscamos nuevas formas de resolver problemas.'      },
-  { name: 'Creatividad',       icon: '✨', desc: 'Encontramos soluciones originales y únicas.'        },
-]
+  { name: 'Ética',             slug: 'etica',            desc: 'Actuamos con integridad en cada decisión.'          },
+  { name: 'Compromiso',        slug: 'compromiso',        desc: 'Nos entregamos completamente a nuestro propósito.'  },
+  { name: 'Trascendencia',     slug: 'trascendencia',     desc: 'Dejamos una huella positiva que perdura.'           },
+  { name: 'Conciencia Social', slug: 'conciencia-social', desc: 'Entendemos nuestro impacto en la comunidad.'        },
+  { name: 'Innovación',        slug: 'innovacion',        desc: 'Buscamos nuevas formas de resolver problemas.'      },
+  { name: 'Creatividad',       slug: 'creatividad',       desc: 'Encontramos soluciones originales y únicas.'        },
+] as const
 
 const misionStats = [
   { to: 5000, suffix: '+', label: 'Líderes a formar'      },
@@ -773,22 +773,31 @@ export default function GlobeHero() {
           .sec-prog__body{order:0;}
           .sec-prog__img{order:1;}
         }
-        /* ── SEC-VALORES (Valores — bg) ───────────────────────────────────── */
-        .sec-valores{background:var(--bg);padding:120px 40px;border-top:1px solid var(--line);}
+        /* ── SEC-VALORES (Valores — bg-2 + cards bg) ────────────────────────── */
+        .sec-valores{background:var(--bg-2);padding:120px 40px;border-top:1px solid var(--line);}
         .sec-valores__inner{max-width:1200px;margin:0 auto;}
         .sec-valores__header{text-align:center;margin-bottom:64px;}
         .sec-valores__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--mute);margin-bottom:16px;}
         .sec-valores__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(38px,5vw,60px);color:var(--ink);letter-spacing:-0.04em;line-height:1.08;}
         .sec-valores__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:var(--accent);}
         .sec-valores__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
-        .sec-valores__tile{background:#fff;border:1px solid var(--line);border-radius:20px;padding:36px 32px;display:flex;flex-direction:column;gap:10px;transition:box-shadow .3s cubic-bezier(0.22,1,0.36,1),transform .3s cubic-bezier(0.22,1,0.36,1),border-color .3s cubic-bezier(0.22,1,0.36,1);}
-        .sec-valores__tile:hover{box-shadow:0 16px 40px -8px rgba(13,13,13,.12);border-color:rgba(192,57,43,.25);}
-        .sec-valores__icon{font-size:28px;line-height:1;}
+        .sec-valores__tile{background:var(--card-bg,#fff);border:1px solid var(--line);border-radius:20px;padding:32px 28px;display:flex;flex-direction:column;gap:12px;box-shadow:0 2px 12px rgba(13,13,13,.05),0 1px 3px rgba(13,13,13,.03);transition:box-shadow .3s cubic-bezier(0.22,1,0.36,1),transform .3s cubic-bezier(0.22,1,0.36,1),border-color .3s cubic-bezier(0.22,1,0.36,1);}
+        .sec-valores__tile--featured{grid-column:span 2;}
+        .sec-valores__tile:hover{box-shadow:0 12px 32px -6px rgba(13,13,13,.12);border-color:rgba(192,57,43,.2);}
+        .sec-valores__num{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.18em;color:var(--accent);opacity:.6;font-weight:700;}
+        .sec-valores__img-ph{width:64px;height:64px;background:var(--bg-2);border-radius:12px;flex-shrink:0;}
         .sec-valores__name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:17px;color:var(--ink);transition:color .2s;}
         .sec-valores__tile:hover .sec-valores__name{color:var(--accent);}
         .sec-valores__desc{font-size:14px;color:var(--mute);line-height:1.6;}
-        @media(max-width:960px){.sec-valores{padding:80px 24px;}.sec-valores__grid{grid-template-columns:1fr 1fr;}}
-        @media(max-width:600px){.sec-valores__grid{grid-template-columns:1fr;}}
+        @media(max-width:960px){
+          .sec-valores{padding:80px 24px;}
+          .sec-valores__grid{grid-template-columns:1fr 1fr;}
+          .sec-valores__tile--featured{grid-column:span 2;}
+        }
+        @media(max-width:600px){
+          .sec-valores__grid{grid-template-columns:1fr;}
+          .sec-valores__tile--featured{grid-column:span 1;}
+        }
         @media(prefers-reduced-motion:reduce){.sec-valores__tile,.sec-valores__tile:hover{transform:none;}}
         /* ── TESTIMONIOS ── */
         .sec-test{background:#080808;padding:112px 40px;border-top:1px solid rgba(255,255,255,.06);}
@@ -1869,14 +1878,21 @@ export default function GlobeHero() {
             {VALORES.map((v, i) => (
               <m.div
                 key={v.name}
-                className="sec-valores__tile"
+                className={`sec-valores__tile${i === 0 ? ' sec-valores__tile--featured' : ''}`}
                 initial={prefersReduced ? false : { opacity: 0, filter: 'blur(8px)' }}
                 whileInView={{ opacity: 1, filter: 'blur(0px)' }}
                 viewport={{ once: true, margin: '-40px' }}
                 transition={{ type: 'spring', stiffness: 120, damping: 20, delay: i * 0.07 }}
                 whileHover={{ y: -4, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
               >
-                <div className="sec-valores__icon">{v.icon}</div>
+                <div className="sec-valores__num" aria-hidden="true">
+                  {String(i + 1).padStart(2, '0')}
+                </div>
+                <div
+                  className="sec-valores__img-ph"
+                  data-value={v.slug}
+                  aria-hidden="true"
+                />
                 <div className="sec-valores__name">{v.name}</div>
                 <div className="sec-valores__desc">{v.desc}</div>
               </m.div>
