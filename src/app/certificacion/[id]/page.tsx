@@ -248,8 +248,8 @@ export default function CertificacionPage() {
         }
         .dp-card{
           background:#FFFFFF;border-radius:4px;
-          padding:56px 64px;
-          position:relative;width:100%;max-width:720px;
+          padding:48px 72px;
+          position:relative;width:100%;max-width:900px;
           box-shadow:0 20px 60px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);
         }
         /* Outer ornamental border */
@@ -264,17 +264,23 @@ export default function CertificacionPage() {
         }
         .dp-sep{height:1px;background:rgba(192,57,43,.22);}
         .dp-sig-line{height:1px;background:rgba(13,13,13,.14);margin-bottom:9px;width:200px;}
-        .dp-val-logo{height:32px;object-fit:contain;filter:grayscale(100%) opacity(.5);}
-        @media(max-width:600px){
-          .dp-card{padding:40px 28px;}
+        .dp-val-logo{height:48px;object-fit:contain;}
+        /* Stats+val row collapses to column on mobile */
+        .dp-stats-row{display:flex;justify-content:center;align-items:center;margin:22px 0;flex-wrap:wrap;gap:0;}
+        .dp-stats-cell{text-align:center;padding:10px 28px;}
+        .dp-stats-vsep{width:1px;height:40px;background:rgba(13,13,13,.12);flex-shrink:0;}
+        @media(max-width:640px){
+          .dp-card{padding:40px 28px;max-width:100%;}
           .dp-card::after{inset:6px;}
+          .dp-stats-row{flex-direction:column;gap:18px;}
+          .dp-stats-vsep{display:none;}
+          .dp-val-logo{height:36px;}
         }
         @media print{
           .no-print{display:none!important;}
           html,body{background:#fff!important;}
           .dp-page{background:#fff!important;padding:0!important;min-height:auto!important;}
           .dp-card{box-shadow:none!important;max-width:100%!important;}
-          .dp-val-logo{filter:grayscale(100%) opacity(.4)!important;-webkit-filter:grayscale(100%) opacity(.4)!important;}
         }
       `}</style>
 
@@ -304,7 +310,7 @@ export default function CertificacionPage() {
       >
         {/* Diploma card — spring entry, fires confetti on complete */}
         <m.div
-          style={{ width: '100%', maxWidth: 720 }}
+          style={{ width: '100%', maxWidth: 900 }}
           initial={{ opacity: 0, y: 40, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.3 }}
@@ -464,17 +470,15 @@ export default function CertificacionPage() {
               <div className="dp-sep" />
             </m.div>
 
-            {/* 10 — Stats: XP + Módulos */}
+            {/* 10 — Stats + Validaciones en fila única (landscape) */}
             <m.div
-              style={{
-                display: 'flex', justifyContent: 'center', alignItems: 'center',
-                margin: '22px 0',
-              }}
+              className="dp-stats-row"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={sp(1.45)}
             >
-              <div style={{ textAlign: 'center', padding: '0 36px' }}>
+              {/* XP */}
+              <div className="dp-stats-cell">
                 <div style={{
                   fontFamily: '"Satoshi",sans-serif', fontWeight: 900, fontSize: 28,
                   color: '#C0392B', letterSpacing: '-0.02em',
@@ -490,12 +494,10 @@ export default function CertificacionPage() {
                 </div>
               </div>
 
-              {/* Separador vertical */}
-              <div style={{
-                width: 1, height: 40, background: 'rgba(13,13,13,.12)', flexShrink: 0,
-              }} />
+              <div className="dp-stats-vsep" />
 
-              <div style={{ textAlign: 'center', padding: '0 36px' }}>
+              {/* Módulos */}
+              <div className="dp-stats-cell">
                 <div style={{
                   fontFamily: '"Satoshi",sans-serif', fontWeight: 900, fontSize: 28,
                   color: '#C0392B', letterSpacing: '-0.02em',
@@ -510,58 +512,45 @@ export default function CertificacionPage() {
                   Módulos Completados
                 </div>
               </div>
+
+              <div className="dp-stats-vsep" />
+
+              {/* Validaciones */}
+              <div className="dp-stats-cell">
+                <p style={{
+                  fontFamily: '"Satoshi",sans-serif', fontSize: 10,
+                  letterSpacing: '0.28em', textTransform: 'uppercase',
+                  color: 'var(--mute,#6B6B6B)', marginBottom: 10,
+                }}>
+                  RECONOCIDO POR
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+                  <img src="/cognia.png"                               alt="Cognia"                   className="dp-val-logo" />
+                  <img src="/International_Baccalaureate_Logo.svg.png" alt="International Baccalaureate" className="dp-val-logo" />
+                  <img src="/tri.png"                                  alt="Tri-Association"          className="dp-val-logo" />
+                </div>
+              </div>
             </m.div>
 
-            {/* 11 — Separador post-stats */}
+            {/* 11 — Separador pre-firma */}
             <m.div
               initial={{ opacity: 0, scaleX: 0 }}
               animate={{ opacity: 1, scaleX: 1 }}
-              transition={sp(1.52)}
+              transition={sp(1.55)}
               style={{ transformOrigin: 'center' }}
             >
               <div className="dp-sep" />
             </m.div>
 
-            {/* 11b — Validaciones internacionales */}
-            <m.div
-              style={{ textAlign: 'center', padding: '18px 0 4px' }}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={sp(1.60)}
-            >
-              <p style={{
-                fontFamily: '"Satoshi",sans-serif', fontSize: 10,
-                letterSpacing: '0.28em', textTransform: 'uppercase',
-                color: 'var(--mute,#6B6B6B)', marginBottom: 12,
-              }}>
-                RECONOCIDO POR
-              </p>
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 28 }}>
-                <img src="/cognia.png"                              alt="Cognia"                   className="dp-val-logo" />
-                <img src="/International_Baccalaureate_Logo.svg.png" alt="International Baccalaureate" className="dp-val-logo" />
-                <img src="/tri.png"                                 alt="Tri-Association"          className="dp-val-logo" />
-              </div>
-            </m.div>
-
-            {/* Separador pre-firma */}
-            <m.div
-              initial={{ opacity: 0, scaleX: 0 }}
-              animate={{ opacity: 1, scaleX: 1 }}
-              transition={sp(1.70)}
-              style={{ transformOrigin: 'center', marginTop: 18 }}
-            >
-              <div className="dp-sep" />
-            </m.div>
-
-            {/* 12 — Firma + Sello */}
+            {/* 12 — Firma | Cert number | Sello */}
             <m.div
               style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
-                marginTop: 24,
+                marginTop: 22,
               }}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={sp(1.78)}
+              transition={sp(1.65)}
             >
               {/* Firma */}
               <div>
@@ -580,23 +569,18 @@ export default function CertificacionPage() {
                 </p>
               </div>
 
+              {/* Número de certificado — centro */}
+              <p style={{
+                fontFamily: '"Satoshi",sans-serif', fontSize: 11,
+                letterSpacing: '0.24em', color: 'var(--mute,#6B6B6B)',
+                alignSelf: 'flex-end', paddingBottom: 2,
+              }}>
+                {certNumber(studentId, data.certDate)}
+              </p>
+
               {/* Sello circular */}
               <Seal />
             </m.div>
-
-            {/* 13 — Número de certificado */}
-            <m.p
-              style={{
-                textAlign: 'center', marginTop: 16,
-                fontFamily: '"Satoshi",sans-serif', fontSize: 11,
-                letterSpacing: '0.24em', color: 'var(--mute,#6B6B6B)',
-              }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={sp(1.88)}
-            >
-              {certNumber(studentId, data.certDate)}
-            </m.p>
 
           </div>
         </m.div>
