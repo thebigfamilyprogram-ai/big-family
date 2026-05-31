@@ -52,6 +52,8 @@ const I = {
   report:    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="1" width="10" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M6 5h4M6 8h4M6 11h2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
   checklist: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="1" width="10" height="14" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M6 5l1.5 1.5L10 4M6 9l1.5 1.5L10 8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   barChart:  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 13V8M6 13V4M10 13V6M14 13V10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  key:       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.4"/><path d="M9 8h5M12 7v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  building:  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1" stroke="currentColor" strokeWidth="1.4"/><path d="M6 14V9h4v5M2 7h12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
 }
 
 // ── Nav definitions per role ──────────────────────────────────────────────────
@@ -114,6 +116,8 @@ function getNav(role: 'student' | 'coordinator' | 'admin', unread: number): Sect
         { label: 'Proyectos',    tab: 'projects',    icon: I.folder     },
         { label: 'Evaluaciones', tab: 'evaluations', icon: I.checklist  },
         { label: 'Metas',        tab: 'goals',       icon: I.target     },
+        { label: 'Códigos',      tab: 'codes',       icon: I.key        },
+        { label: 'Colegios',     tab: 'schools',     icon: I.building   },
       ],
     },
     {

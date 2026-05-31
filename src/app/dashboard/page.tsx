@@ -240,6 +240,7 @@ export default function DashboardPage() {
         setRankPos(s.rank)
         setAnnBanner({ id: MOCK.announcements[0].id, title: MOCK.announcements[0].title, content: MOCK.announcements[0].content, category: MOCK.announcements[0].category })
         setUnreadAnnCount(MOCK.announcements.length)
+        setDiploma({ projectId: 'mock-project-1', resultado: 'certificado' })
         setLoading(false)
         return
       }
@@ -576,6 +577,15 @@ export default function DashboardPage() {
         /* ── Side-by-side cards row ── */
         .cards-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 
+        /* ── Diploma unlocked banner ── */
+        .cert-unlocked{display:flex;align-items:center;gap:20px;background:var(--ink,#0D0D0D);border:1px solid rgba(192,57,43,.35);border-radius:16px;padding:20px 24px;cursor:pointer;transition:border-color .2s cubic-bezier(0.22,1,0.36,1);text-decoration:none;margin-bottom:20px;width:100%;}
+        .cert-unlocked:hover{border-color:var(--accent,#C0392B);}
+        .cert-unlocked__seal{width:48px;height:48px;border-radius:50%;background:rgba(192,57,43,.15);border:1.5px solid rgba(192,57,43,.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+        .cert-unlocked__body{flex:1;min-width:0;}
+        .cert-unlocked__eyebrow{font-family:"Satoshi",sans-serif;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;}
+        .cert-unlocked__title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:#fff;margin-bottom:2px;}
+        .cert-unlocked__sub{font-family:"Satoshi",sans-serif;font-size:13px;color:var(--accent,#C0392B);}
+        .cert-unlocked__arrow{color:rgba(255,255,255,.35);font-size:22px;flex-shrink:0;line-height:1;}
         /* ── Certification card ── */
         .cert-eyebrow{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:#C0392B;font-weight:700;font-family:"Satoshi",sans-serif;margin-bottom:10px;}
         .cert-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:20px;color:var(--ink);margin-bottom:18px;}
@@ -1152,6 +1162,31 @@ export default function DashboardPage() {
               </div>
             ) : (
               <>
+                {/* ── Diploma unlocked card — shown above modules when certified ── */}
+                {diploma && (
+                  <m.button
+                    className="cert-unlocked"
+                    onClick={() => router.push(`/certificacion/${userId}`)}
+                    initial={pref ? false : { opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                    whileHover={pref ? undefined : { scale: 1.01, transition: { type: 'spring', stiffness: 300, damping: 25 } }}
+                    style={{ border: 'none' }}
+                  >
+                    <div className="cert-unlocked__seal" aria-hidden="true">
+                      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                        <path d="M11 1L13.5 8H21L15 12.5L17.5 20L11 15.5L4.5 20L7 12.5L1 8H8.5L11 1Z" fill="#C0392B"/>
+                      </svg>
+                    </div>
+                    <div className="cert-unlocked__body">
+                      <div className="cert-unlocked__eyebrow">LOGRO DESBLOQUEADO</div>
+                      <div className="cert-unlocked__title">Tu certificación está lista</div>
+                      <div className="cert-unlocked__sub">The Big Leader — Ver mi diploma →</div>
+                    </div>
+                    <div className="cert-unlocked__arrow" aria-hidden="true">›</div>
+                  </m.button>
+                )}
+
                 {/* ── Featured: next module ── */}
                 {nextModule && (
                   <m.div

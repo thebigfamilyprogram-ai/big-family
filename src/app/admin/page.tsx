@@ -18,7 +18,7 @@ import {
 } from 'recharts'
 
 // ── Types ────────────────────────────────────────────────────────────────────
-type Tab = 'stats' | 'users' | 'projects' | 'evaluations' | 'goals'
+type Tab = 'stats' | 'users' | 'projects' | 'evaluations' | 'goals' | 'codes' | 'schools'
 
 interface UserRow {
   id:          string
@@ -124,6 +124,38 @@ export default function AdminPage() {
 
   const [userSearch,     setUserSearch]     = useState('')
   const [projectStatus,  setProjectStatus]  = useState('all')
+
+  // ── Codes tab ─────────────────────────────────────────────────────────────────
+  interface SchoolOption { id: string; name: string; code: string | null }
+  interface CodeRow      { id: string; code: string; used: boolean; created_at: string; school_name?: string }
+  const [codesSchools,       setCodesSchools]       = useState<SchoolOption[]>([])
+  const [selCoordSchool,     setSelCoordSchool]     = useState('')
+  const [lastCoordCode,      setLastCoordCode]      = useState('')
+  const [coordCodesList,     setCoordCodesList]     = useState<CodeRow[]>([])
+  const [lastExpoCode,       setLastExpoCode]       = useState('')
+  const [expoCodesList,      setExpoCodesList]      = useState<CodeRow[]>([])
+  const [generatingCoord,    setGeneratingCoord]    = useState(false)
+  const [generatingExpo,     setGeneratingExpo]     = useState(false)
+  const [loadingCodes,       setLoadingCodes]       = useState(false)
+
+  // ── Schools tab ───────────────────────────────────────────────────────────────
+  interface SchoolRow { id: string; name: string; code: string | null; city: string | null; logo_url: string | null; created_at: string; coord_count: number; student_count: number }
+  const [schoolsList,        setSchoolsList]        = useState<SchoolRow[]>([])
+  const [loadingSchools,     setLoadingSchools]     = useState(false)
+  const [sfName,             setSfName]             = useState('')
+  const [sfCode,             setSfCode]             = useState('')
+  const [sfCity,             setSfCity]             = useState('')
+  const [sfLogoFile,         setSfLogoFile]         = useState<File | null>(null)
+  const [sfLogoPreview,      setSfLogoPreview]      = useState('')
+  const [savingSchool,       setSavingSchool]       = useState(false)
+  const [editSchool,         setEditSchool]         = useState<SchoolRow | null>(null)
+  const [efName,             setEfName]             = useState('')
+  const [efCity,             setEfCity]             = useState('')
+  const [efLogoFile,         setEfLogoFile]         = useState<File | null>(null)
+  const [efLogoPreview,      setEfLogoPreview]      = useState('')
+  const [savingEdit,         setSavingEdit]         = useState(false)
+  const logoInputRef  = useRef<HTMLInputElement>(null)
+  const editLogoRef   = useRef<HTMLInputElement>(null)
   const [confirmingId,   setConfirmingId]   = useState<string | null>(null)
   const [userPage,       setUserPage]       = useState(0)
   const [projectPage,    setProjectPage]    = useState(0)
@@ -165,6 +197,8 @@ export default function AdminPage() {
     if (tab === 'projects'    && projects.length      === 0) fetchProjects()
     if (tab === 'evaluations' && evals.length         === 0) fetchEvals()
     if (tab === 'goals'       && goalTemplates.length === 0) fetchGoalTemplates()
+    if (tab === 'codes'       && codesSchools.length  === 0) fetchCodesData()
+    if (tab === 'schools'     && schoolsList.length   === 0) fetchSchoolsData()
   }, [tab, booting]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Data fetchers ──────────────────────────────────────────────────────────
@@ -405,6 +439,130 @@ export default function AdminPage() {
     router.push('/login')
   }
 
+  // ── Codes helpers ──────────────────────────────────────────────────────────────
+  async function fetchCodesData() {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const sb = supabaseRef.current
+    if (MOCK_MODE) {
+      setCodesSchools(MOCK.schools.map(s => ({ id: s.id, name: s.name, code: s.id })))
+      setLoadingCodes(false); return
+    }
+    setLoadingCodes(true)
+    const [{ data: sch }, { data: coordRows }, { data: expoRows }] = await Promise.all([
+      sb.from('schools').select('id, name, code').order('name'),
+      sb.from('coordinator_codes').select('id, code, used, created_at, school_id').order('created_at', { ascending: false }).limit(10),
+      sb.from('expositor_codes').select('id, code, used, created_at').order('created_at', { ascending: false }).limit(10),
+    ])
+    const schMap: Record<string, string> = {}
+    sch?.forEach((s: { id: string; name: string }) => { schMap[s.id] = s.name })
+    setCodesSchools((sch ?? []) as { id: string; name: string; code: string | null }[])
+    setCoordCodesList((coordRows ?? []).map((r: { id: string; code: string; used: boolean; created_at: string; school_id: string }) => ({ ...r, school_name: schMap[r.school_id] })))
+    setExpoCodesList((expoRows ?? []) as { id: string; code: string; used: boolean; created_at: string }[])
+    setLoadingCodes(false)
+  }
+
+  async function generateCoordCode() {
+    if (!selCoordSchool || !supabaseRef.current) return
+    const sb = supabaseRef.current
+    const school = codesSchools.find(s => s.id === selCoordSchool)
+    const slug   = (school?.code ?? school?.name.slice(0, 4) ?? 'SCH').toUpperCase().replace(/\s+/g, '-')
+    const code   = `COORD-BF-${slug}-${new Date().getFullYear()}`
+    setGeneratingCoord(true)
+    if (MOCK_MODE) {
+      setLastCoordCode(code)
+      setCoordCodesList(prev => [{ id: Date.now().toString(), code, used: false, created_at: new Date().toISOString(), school_name: school?.name }, ...prev].slice(0, 10))
+      setGeneratingCoord(false); return
+    }
+    const { error } = await sb.from('coordinator_codes').insert({ code, school_id: selCoordSchool, used: false })
+    if (error) { showToast('error', error.code === '23505' ? 'Ese código ya existe' : 'Error al generar'); setGeneratingCoord(false); return }
+    setLastCoordCode(code)
+    setCoordCodesList(prev => [{ id: Date.now().toString(), code, used: false, created_at: new Date().toISOString(), school_name: school?.name }, ...prev].slice(0, 10))
+    showToast('success', 'Código generado')
+    setGeneratingCoord(false)
+  }
+
+  async function generateExpoCode() {
+    if (!supabaseRef.current) return
+    const sb  = supabaseRef.current
+    const yr  = new Date().getFullYear()
+    const rnd = String(Math.floor(1000 + Math.random() * 9000))
+    const code = `EXPO-BF-${yr}-${rnd}`
+    setGeneratingExpo(true)
+    if (MOCK_MODE) {
+      setLastExpoCode(code)
+      setExpoCodesList(prev => [{ id: Date.now().toString(), code, used: false, created_at: new Date().toISOString() }, ...prev].slice(0, 10))
+      setGeneratingExpo(false); return
+    }
+    const { error } = await sb.from('expositor_codes').insert({ code, used: false })
+    if (error) { showToast('error', 'Error al generar código'); setGeneratingExpo(false); return }
+    setLastExpoCode(code)
+    setExpoCodesList(prev => [{ id: Date.now().toString(), code, used: false, created_at: new Date().toISOString() }, ...prev].slice(0, 10))
+    showToast('success', 'Código de expositor generado')
+    setGeneratingExpo(false)
+  }
+
+  function copyCode(code: string) {
+    navigator.clipboard.writeText(code).then(() => showToast('success', 'Copiado al portapapeles'))
+  }
+
+  // ── Schools helpers ────────────────────────────────────────────────────────────
+  async function fetchSchoolsData() {
+    if (!supabaseRef.current) supabaseRef.current = createClient()
+    const sb = supabaseRef.current
+    if (MOCK_MODE) {
+      setSchoolsList(MOCK.schools.map(s => ({ id: s.id, name: s.name, code: s.id, city: 'Riohacha', logo_url: null, created_at: '2026-01-01T00:00:00Z', coord_count: 1, student_count: s.students })))
+      return
+    }
+    setLoadingSchools(true)
+    const [{ data: sch }, { data: coords }, { data: studs }] = await Promise.all([
+      sb.from('schools').select('id, name, code, city, logo_url, created_at').order('name'),
+      sb.from('profiles').select('school_id').eq('role', 'coordinator'),
+      sb.from('profiles').select('school_id').eq('role', 'student'),
+    ])
+    const coordMap: Record<string, number> = {}
+    coords?.forEach((r: { school_id: string | null }) => { if (r.school_id) coordMap[r.school_id] = (coordMap[r.school_id] ?? 0) + 1 })
+    const studMap: Record<string, number> = {}
+    studs?.forEach((r: { school_id: string | null }) => { if (r.school_id) studMap[r.school_id] = (studMap[r.school_id] ?? 0) + 1 })
+    setSchoolsList((sch ?? []).map((s: { id: string; name: string; code: string | null; city: string | null; logo_url: string | null; created_at: string }) => ({ ...s, coord_count: coordMap[s.id] ?? 0, student_count: studMap[s.id] ?? 0 })))
+    setLoadingSchools(false)
+  }
+
+  async function handleAddSchool() {
+    if (!sfName.trim() || !sfCode.trim() || !supabaseRef.current) return
+    const sb = supabaseRef.current
+    setSavingSchool(true)
+    let logo_url: string | null = null
+    if (sfLogoFile) {
+      const path = `${sfCode.trim().toLowerCase()}-${Date.now()}`
+      const { data: up } = await sb.storage.from('school-logos').upload(path, sfLogoFile, { cacheControl: '3600', upsert: true })
+      if (up) { const { data: { publicUrl } } = sb.storage.from('school-logos').getPublicUrl(up.path); logo_url = publicUrl }
+    }
+    const { data, error } = await sb.from('schools').insert({ name: sfName.trim(), code: sfCode.trim().toUpperCase(), city: sfCity.trim() || null, logo_url }).select().maybeSingle()
+    if (error) { showToast('error', error.code === '23505' ? 'Ese código ya existe' : 'Error al crear el colegio'); setSavingSchool(false); return }
+    if (data) setSchoolsList(prev => [{ ...data, coord_count: 0, student_count: 0 }, ...prev])
+    setSfName(''); setSfCode(''); setSfCity(''); setSfLogoFile(null); setSfLogoPreview('')
+    showToast('success', 'Colegio creado correctamente')
+    setSavingSchool(false)
+  }
+
+  async function handleEditSchool() {
+    if (!editSchool || !efName.trim() || !supabaseRef.current) return
+    const sb = supabaseRef.current
+    setSavingEdit(true)
+    let logo_url = editSchool.logo_url
+    if (efLogoFile) {
+      const path = `${editSchool.code ?? editSchool.id}-${Date.now()}`
+      const { data: up } = await sb.storage.from('school-logos').upload(path, efLogoFile, { cacheControl: '3600', upsert: true })
+      if (up) { const { data: { publicUrl } } = sb.storage.from('school-logos').getPublicUrl(up.path); logo_url = publicUrl }
+    }
+    const { error } = await sb.from('schools').update({ name: efName.trim(), city: efCity.trim() || null, logo_url }).eq('id', editSchool.id)
+    if (error) { showToast('error', 'Error al actualizar'); setSavingEdit(false); return }
+    setSchoolsList(prev => prev.map(s => s.id === editSchool.id ? { ...s, name: efName.trim(), city: efCity.trim() || null, logo_url } : s))
+    showToast('success', 'Colegio actualizado')
+    setEditSchool(null); setEfLogoFile(null); setEfLogoPreview('')
+    setSavingEdit(false)
+  }
+
   // ── Derived ────────────────────────────────────────────────────────────────
   const PAGE_SIZE = 20
 
@@ -503,6 +661,35 @@ export default function AdminPage() {
         .adm-page-btn{padding:6px 16px;border-radius:999px;border:1.5px solid rgba(13,13,13,.12);font-family:"Satoshi",sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;background:none;color:#6B6B6B;transition:all .15s;}
         .adm-page-btn:hover:not(:disabled){border-color:var(--ink,#0D0D0D);color:var(--ink,#0D0D0D);}
         .adm-page-btn:disabled{opacity:.35;cursor:not-allowed;}
+        /* ── Codes tab ── */
+        .codes-section{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:28px 24px;margin-bottom:20px;}
+        .codes-section-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:15px;color:var(--ink);margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--line);}
+        .codes-gen-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:20px;}
+        .codes-select{flex:1;min-width:180px;padding:10px 14px;border:1.5px solid var(--line);border-radius:10px;font-family:"Satoshi",sans-serif;font-size:14px;background:var(--card-bg);color:var(--ink);outline:none;}
+        .codes-select:focus{border-color:var(--ink);}
+        .codes-output-row{display:flex;gap:8px;align-items:center;margin-bottom:16px;}
+        .codes-output{flex:1;padding:11px 16px;border:1.5px solid var(--line);border-radius:10px;font-family:"Satoshi",sans-serif;font-size:14px;color:var(--ink);background:var(--bg-2);letter-spacing:.04em;}
+        .codes-list-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:13px;}
+        .codes-list-row:last-child{border-bottom:none;}
+        .codes-badge-used{padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;background:#D1FAE5;color:#065F46;}
+        .codes-badge-free{padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;background:var(--bg-2);color:var(--mute);}
+        /* ── Schools tab ── */
+        .sch-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
+        .sch-table-wrap{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;overflow:hidden;}
+        .sch-form-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:24px;}
+        .sch-form-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:15px;color:var(--ink);margin-bottom:18px;}
+        .sch-field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+        .sch-label{font-size:12px;font-weight:600;color:var(--mute);letter-spacing:.04em;}
+        .sch-input{padding:10px 14px;border:1.5px solid var(--line);border-radius:10px;font-family:"Satoshi",sans-serif;font-size:14px;background:var(--card-bg);color:var(--ink);outline:none;}
+        .sch-input:focus{border-color:var(--ink);}
+        .sch-logo-area{border:2px dashed var(--line);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:14px;}
+        .sch-logo-area:hover{border-color:var(--ink);}
+        .sch-logo-preview{width:80px;height:80px;object-fit:contain;border-radius:8px;margin:0 auto 8px;}
+        /* Edit panel */
+        .sch-edit-overlay{position:fixed;inset:0;background:rgba(13,13,13,.35);z-index:200;}
+        .sch-edit-panel{position:fixed;top:0;right:0;bottom:0;width:360px;background:var(--card-bg);border-left:1px solid var(--card-border);padding:28px 24px;overflow-y:auto;z-index:201;box-shadow:-12px 0 40px rgba(13,13,13,.08);}
+        .sch-edit-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:17px;color:var(--ink);margin-bottom:20px;}
+        @media(max-width:900px){.sch-grid{grid-template-columns:1fr;}}
 
         @media(max-width:1000px){
           .adm-stats-grid{grid-template-columns:repeat(3,1fr);}
@@ -935,6 +1122,223 @@ export default function AdminPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* ── CÓDIGOS ── */}
+        {tab === 'codes' && (
+          <m.div initial={pref ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 24 }}>
+            <div className="adm-section-title" style={{ marginBottom: 24 }}>Generador de Códigos de Acceso</div>
+
+            {/* Coordinator codes */}
+            <div className="codes-section">
+              <div className="codes-section-title">Códigos de Coordinador</div>
+              {loadingCodes ? (
+                <Skeleton w="100%" h={40} r={10} />
+              ) : (
+                <>
+                  <div className="codes-gen-row">
+                    <select className="codes-select" value={selCoordSchool} onChange={e => setSelCoordSchool(e.target.value)}>
+                      <option value="">Seleccionar colegio…</option>
+                      {codesSchools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                    <button
+                      className="adm-btn adm-btn-primary"
+                      disabled={!selCoordSchool || generatingCoord}
+                      onClick={generateCoordCode}
+                    >
+                      {generatingCoord ? 'Generando…' : 'Generar código'}
+                    </button>
+                  </div>
+                  {lastCoordCode && (
+                    <div className="codes-output-row">
+                      <div className="codes-output">{lastCoordCode}</div>
+                      <button className="adm-btn adm-btn-ghost" onClick={() => copyCode(lastCoordCode)}>Copiar</button>
+                    </div>
+                  )}
+                  {coordCodesList.length > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      <div style={{ fontSize: 11.5, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--mute)', marginBottom: 8, fontWeight: 600 }}>Últimos generados</div>
+                      {coordCodesList.map(row => (
+                        <div key={row.id} className="codes-list-row">
+                          <div>
+                            <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 13, color: 'var(--ink)', letterSpacing: '.02em' }}>{row.code}</div>
+                            {row.school_name && <div style={{ fontSize: 12, color: 'var(--mute)', marginTop: 1 }}>{row.school_name}</div>}
+                          </div>
+                          <span className={row.used ? 'codes-badge-used' : 'codes-badge-free'}>{row.used ? 'Usado' : 'Libre'}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Expositor codes */}
+            <div className="codes-section">
+              <div className="codes-section-title">Códigos de Expositor</div>
+              <div className="codes-gen-row">
+                <button
+                  className="adm-btn adm-btn-primary"
+                  disabled={generatingExpo}
+                  onClick={generateExpoCode}
+                >
+                  {generatingExpo ? 'Generando…' : 'Generar código de expositor'}
+                </button>
+              </div>
+              {lastExpoCode && (
+                <div className="codes-output-row">
+                  <div className="codes-output">{lastExpoCode}</div>
+                  <button className="adm-btn adm-btn-ghost" onClick={() => copyCode(lastExpoCode)}>Copiar</button>
+                </div>
+              )}
+              {expoCodesList.length > 0 && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ fontSize: 11.5, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--mute)', marginBottom: 8, fontWeight: 600 }}>Últimos generados</div>
+                  {expoCodesList.map(row => (
+                    <div key={row.id} className="codes-list-row">
+                      <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 13, color: 'var(--ink)', letterSpacing: '.02em' }}>{row.code}</div>
+                      <span className={row.used ? 'codes-badge-used' : 'codes-badge-free'}>{row.used ? 'Usado' : 'Libre'}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </m.div>
+        )}
+
+        {/* ── COLEGIOS ── */}
+        {tab === 'schools' && (
+          <m.div initial={pref ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 24 }}>
+            <div className="adm-section-title" style={{ marginBottom: 24 }}>Gestión de Colegios</div>
+            <div className="sch-grid">
+
+              {/* Table */}
+              <div className="sch-table-wrap">
+                {loadingSchools ? (
+                  <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {[1,2,3,4].map(i => <Skeleton key={i} w="100%" h={20} r={6} />)}
+                  </div>
+                ) : (
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <thead>
+                      <tr>
+                        <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 600, background: 'var(--bg-2)', borderBottom: '1px solid var(--line)' }}>Colegio</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 600, background: 'var(--bg-2)', borderBottom: '1px solid var(--line)' }}>Código</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 600, background: 'var(--bg-2)', borderBottom: '1px solid var(--line)' }}>Coords</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 600, background: 'var(--bg-2)', borderBottom: '1px solid var(--line)' }}>Estudiantes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {schoolsList.map(s => (
+                        <tr
+                          key={s.id}
+                          style={{ cursor: 'pointer', transition: 'background .15s' }}
+                          onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-2)')}
+                          onMouseLeave={e => (e.currentTarget.style.background = '')}
+                          onClick={() => { setEditSchool(s); setEfName(s.name); setEfCity(s.city ?? ''); setEfLogoFile(null); setEfLogoPreview(s.logo_url ?? '') }}
+                        >
+                          <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--line-soft)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              {s.logo_url
+                                ? <img src={s.logo_url} alt="" style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6, flexShrink: 0 }} />
+                                : <div style={{ width: 32, height: 32, background: 'var(--bg-2)', borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'var(--mute)', fontWeight: 700 }}>{s.name[0]}</div>
+                              }
+                              <div>
+                                <div style={{ fontWeight: 600, color: 'var(--ink)' }}>{s.name}</div>
+                                {s.city && <div style={{ fontSize: 12, color: 'var(--mute)', marginTop: 1 }}>{s.city}</div>}
+                              </div>
+                            </div>
+                          </td>
+                          <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--line-soft)', fontFamily: '"Satoshi",sans-serif', fontSize: 12, color: 'var(--mute)', letterSpacing: '.04em' }}>{s.code ?? '—'}</td>
+                          <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--line-soft)', textAlign: 'center', color: 'var(--ink)' }}>{s.coord_count}</td>
+                          <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--line-soft)', textAlign: 'center', fontWeight: 700, color: 'var(--ink)' }}>{s.student_count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+
+              {/* Add form */}
+              <div className="sch-form-card">
+                <div className="sch-form-title">Agregar colegio</div>
+                <div className="sch-field">
+                  <label className="sch-label">Nombre *</label>
+                  <input className="sch-input" value={sfName} onChange={e => setSfName(e.target.value)} placeholder="IE Técnica María Inmaculada" />
+                </div>
+                <div className="sch-field">
+                  <label className="sch-label">Código *</label>
+                  <input className="sch-input" value={sfCode} onChange={e => setSfCode(e.target.value.toUpperCase())} placeholder="BF-COL-MIM-2026" style={{ letterSpacing: '.05em' }} />
+                </div>
+                <div className="sch-field">
+                  <label className="sch-label">Ciudad</label>
+                  <input className="sch-input" value={sfCity} onChange={e => setSfCity(e.target.value)} placeholder="Riohacha" />
+                </div>
+                {/* Logo upload */}
+                <div
+                  className="sch-logo-area"
+                  onClick={() => logoInputRef.current?.click()}
+                >
+                  {sfLogoPreview
+                    ? <img src={sfLogoPreview} alt="Logo preview" className="sch-logo-preview" />
+                    : <div style={{ fontSize: 13, color: 'var(--mute)' }}>📷 Subir logo (opcional)</div>
+                  }
+                  <input
+                    ref={logoInputRef} type="file" accept="image/*" style={{ display: 'none' }}
+                    onChange={e => { const f = e.target.files?.[0]; if (f) { setSfLogoFile(f); setSfLogoPreview(URL.createObjectURL(f)) } }}
+                  />
+                </div>
+                <button
+                  className="adm-btn adm-btn-primary" style={{ width: '100%' }}
+                  disabled={!sfName.trim() || !sfCode.trim() || savingSchool}
+                  onClick={handleAddSchool}
+                >
+                  {savingSchool ? 'Guardando…' : 'Crear colegio'}
+                </button>
+              </div>
+
+            </div>
+
+            {/* Edit panel */}
+            <AnimatePresence>
+              {editSchool && (
+                <>
+                  <m.div className="sch-edit-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} onClick={() => setEditSchool(null)} />
+                  <m.div className="sch-edit-panel" initial={{ x: 360 }} animate={{ x: 0 }} exit={{ x: 360 }} transition={{ type: 'spring', stiffness: 260, damping: 28 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                      <div className="sch-edit-title">Editar colegio</div>
+                      <button onClick={() => setEditSchool(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontSize: 20 }}>×</button>
+                    </div>
+                    <div className="sch-field">
+                      <label className="sch-label">Nombre *</label>
+                      <input className="sch-input" value={efName} onChange={e => setEfName(e.target.value)} />
+                    </div>
+                    <div className="sch-field">
+                      <label className="sch-label">Ciudad</label>
+                      <input className="sch-input" value={efCity} onChange={e => setEfCity(e.target.value)} />
+                    </div>
+                    <div className="sch-logo-area" onClick={() => editLogoRef.current?.click()} style={{ marginBottom: 20 }}>
+                      {efLogoPreview
+                        ? <img src={efLogoPreview} alt="Logo" className="sch-logo-preview" />
+                        : <div style={{ fontSize: 13, color: 'var(--mute)' }}>📷 Cambiar logo</div>
+                      }
+                      <input
+                        ref={editLogoRef} type="file" accept="image/*" style={{ display: 'none' }}
+                        onChange={e => { const f = e.target.files?.[0]; if (f) { setEfLogoFile(f); setEfLogoPreview(URL.createObjectURL(f)) } }}
+                      />
+                    </div>
+                    <button
+                      className="adm-btn adm-btn-primary" style={{ width: '100%' }}
+                      disabled={!efName.trim() || savingEdit}
+                      onClick={handleEditSchool}
+                    >
+                      {savingEdit ? 'Guardando…' : 'Guardar cambios'}
+                    </button>
+                  </m.div>
+                </>
+              )}
+            </AnimatePresence>
+          </m.div>
         )}
 
       </main>

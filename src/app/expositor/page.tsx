@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
+import { MOCK_MODE } from '@/lib/mockData'
 import ExpositorSidebar from '@/components/ExpositorSidebar'
 
 interface ModuleRow {
@@ -16,6 +17,12 @@ interface ModuleRow {
   duration_minutes: number
   rejection_reason: string | null
   question_count:   number
+}
+
+interface ModuleAnalytics {
+  completed:       number
+  avg_score:       number | null
+  completion_rate: number   // 0-100
 }
 
 const LEVEL_LABELS: Record<string, { label: string; color: string; bg: string }> = {
@@ -53,6 +60,7 @@ export default function ExpositorPage() {
   const [userName,     setUserName]     = useState('…')
   const [userInitial,  setUserInitial]  = useState('E')
   const [modules,      setModules]      = useState<ModuleRow[]>([])
+  const [analytics,    setAnalytics]    = useState<Record<string, ModuleAnalytics>>({})
   const [deleteTarget, setDeleteTarget] = useState<ModuleRow | null>(null)
   const [deleting,     setDeleting]     = useState(false)
   const pref = useReducedMotion()
@@ -84,11 +92,50 @@ export default function ExpositorPage() {
       if (cancelled) return
 
       if (mods && mods.length > 0) {
-        const { data: qs } = await supabase
-          .from('questions').select('module_id').in('module_id', mods.map((m: { id: string }) => m.id))
+        const modIds = mods.map((m: { id: string }) => m.id)
+        const [{ data: qs }, { data: progRows }, { data: quizRows }, { count: totalStudents }] = await Promise.all([
+          supabase.from('questions').select('module_id').in('module_id', modIds),
+          supabase.from('progress').select('module_id').in('module_id', modIds).eq('completed', true),
+          supabase.from('quiz_attempts').select('module_id, score').in('module_id', modIds),
+          supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'student'),
+        ])
         if (cancelled) return
+
+        const total = totalStudents ?? 1
         const qMap: Record<string, number> = {}
         qs?.forEach((q: { module_id: string }) => { qMap[q.module_id] = (qMap[q.module_id] ?? 0) + 1 })
+
+        const compMap: Record<string, number> = {}
+        progRows?.forEach((r: { module_id: string }) => { compMap[r.module_id] = (compMap[r.module_id] ?? 0) + 1 })
+
+        const scoreMap: Record<string, number[]> = {}
+        quizRows?.forEach((r: { module_id: string; score: number | null }) => {
+          if (r.score != null) { if (!scoreMap[r.module_id]) scoreMap[r.module_id] = []; scoreMap[r.module_id].push(r.score) }
+        })
+
+        const analyticsResult: Record<string, ModuleAnalytics> = {}
+        modIds.forEach((id: string) => {
+          const completed = compMap[id] ?? 0
+          const scores    = scoreMap[id] ?? []
+          analyticsResult[id] = {
+            completed,
+            avg_score:       scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null,
+            completion_rate: Math.round((completed / total) * 100),
+          }
+        })
+
+        // Mock overrides
+        if (MOCK_MODE) {
+          modIds.forEach((id: string, i: number) => {
+            analyticsResult[id] = {
+              completed:       [12, 9, 7, 5, 3, 2][i % 6],
+              avg_score:       [82, 76, 88, 71, 65, 90][i % 6],
+              completion_rate: [78, 55, 42, 31, 18, 12][i % 6],
+            }
+          })
+        }
+
+        setAnalytics(analyticsResult)
         setModules(mods.map((m: { id: string; title: string; level: string; status: string; duration_minutes: number | null; rejection_reason: string | null }) => ({ ...m, question_count: qMap[m.id] ?? 0 })))
       }
 
@@ -145,6 +192,12 @@ export default function ExpositorPage() {
         .btn-delete{padding:8px 14px;border-radius:999px;border:1.5px solid transparent;background:none;font-family:"Satoshi",sans-serif;font-weight:600;font-size:13px;color:var(--mute);cursor:pointer;transition:all .18s;white-space:nowrap;}
         .btn-delete:hover{border-color:#FCA5A5;color:#991B1B;background:#FFF5F5;}
         .mod-rejection{margin-top:12px;padding:10px 14px;background:#FFF5F5;border:1px solid #FCA5A5;border-radius:8px;font-size:13px;color:#7F1D1D;line-height:1.5;}
+        .mod-analytics{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+        .mod-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-family:"Satoshi",sans-serif;font-size:11.5px;font-weight:600;border:1px solid transparent;}
+        .mod-pill--green{background:rgba(42,157,143,.1);color:#2A9D8F;border-color:rgba(42,157,143,.2);}
+        .mod-pill--amber{background:rgba(212,130,26,.1);color:#D4821A;border-color:rgba(212,130,26,.2);}
+        .mod-pill--red{background:rgba(192,57,43,.08);color:#C0392B;border-color:rgba(192,57,43,.2);}
+        .mod-pill--neutral{background:var(--bg-2);color:var(--mute);border-color:var(--line);}
         .empty-state{text-align:center;padding:80px 0;color:var(--mute);}
         @media(max-width:900px){
           .exp-content{padding:24px 20px 60px;}
@@ -265,6 +318,26 @@ export default function ExpositorPage() {
                       </button>
                     )}
                   </div>
+                  {/* Analytics pills — only for published modules */}
+                  {mod.status === 'published' && analytics[mod.id] && (() => {
+                    const a = analytics[mod.id]
+                    const rateClass = a.completion_rate >= 60 ? 'mod-pill--green' : a.completion_rate >= 30 ? 'mod-pill--amber' : 'mod-pill--red'
+                    return (
+                      <div className="mod-analytics">
+                        <span className={`mod-pill ${rateClass}`}>
+                          {a.completed} completado{a.completed !== 1 ? 's' : ''}
+                        </span>
+                        {a.avg_score !== null && (
+                          <span className="mod-pill mod-pill--neutral">
+                            Quiz avg: {a.avg_score}%
+                          </span>
+                        )}
+                        <span className={`mod-pill ${rateClass}`}>
+                          {a.completion_rate}% completion
+                        </span>
+                      </div>
+                    )
+                  })()}
                   {mod.status === 'rejected' && mod.rejection_reason && (
                     <div className="mod-rejection">
                       <strong>Motivo de rechazo:</strong> {mod.rejection_reason}
