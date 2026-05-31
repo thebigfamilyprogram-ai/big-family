@@ -50,6 +50,14 @@ interface LeaderProfile {
   big_five: { O: number; C: number; E: number; A: number; N: number; ES: number }
 }
 
+// Fallback profile for MOCK_MODE (shared between MOCK block and render)
+const MOCK_LEADER_PROFILE: LeaderProfile = {
+  arquetipo:         'Líder Visionaria',
+  fortalezas:        ['Norte', 'Acción'],
+  areas_crecimiento: ['Yo', 'Vínculo'],
+  big_five:          { O: 85, C: 42, E: 78, A: 38, N: 35, ES: 65 },
+}
+
 // Module → Big Leader Model pillar mapping (by order_index)
 const MODULE_PILLAR: Record<number, string> = {
   1: 'Yo', 2: 'Norte', 3: 'Vínculo', 4: 'Vínculo', 5: 'Acción', 6: 'Acción', 7: 'Legado',
@@ -259,12 +267,7 @@ export default function DashboardPage() {
         setAnnBanner({ id: MOCK.announcements[0].id, title: MOCK.announcements[0].title, content: MOCK.announcements[0].content, category: MOCK.announcements[0].category })
         setUnreadAnnCount(MOCK.announcements.length)
         setDiploma({ projectId: 'mock-project-1', resultado: 'certificado' })
-        setLeaderProfile({
-          arquetipo:         'Líder Visionaria',
-          fortalezas:        ['Norte', 'Acción'],
-          areas_crecimiento: ['Yo', 'Vínculo'],
-          big_five:          { O: 85, C: 42, E: 78, A: 38, N: 35, ES: 65 },
-        })
+        setLeaderProfile(MOCK_LEADER_PROFILE)
         setLoading(false)
         return
       }
@@ -651,7 +654,7 @@ export default function DashboardPage() {
         .identity-stat__num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums;}
         .identity-stat__label{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);}
         .identity-divider{width:1px;height:28px;background:var(--line);flex-shrink:0;}
-        .identity-right{flex-shrink:0;}
+        .identity-right{flex-shrink:0;width:160px;height:160px;}
         @media(max-width:640px){.identity-right{display:none;}}
 
         /* ── Pillar pills ── */
@@ -786,10 +789,10 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Right: compact pentagon SVG */}
-            {!loading && leaderProfile && (
+            {/* Right: compact pentagon SVG — shows if profile loaded, or mock fallback */}
+            {!loading && (leaderProfile ?? (MOCK_MODE ? MOCK_LEADER_PROFILE : null)) && (
               <div className="identity-right">
-                <CompactPentagon profile={leaderProfile} />
+                <CompactPentagon profile={(leaderProfile ?? MOCK_LEADER_PROFILE)!} />
               </div>
             )}
           </m.div>
