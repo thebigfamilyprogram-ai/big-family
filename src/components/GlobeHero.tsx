@@ -579,22 +579,28 @@ export default function GlobeHero() {
         .vision__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:#C0392B;}
         .vision__cols{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;}
         .vision__para{font-family:"Satoshi",sans-serif;font-size:16px;color:rgba(255,255,255,.72);line-height:1.8;border-left:2px solid rgba(192,57,43,.35);padding:4px 0 4px 20px;}
-        /* ── BIG LEADER CARD ─────────────────────────────────────────────────── */
-        .big-leader{margin-top:80px;position:relative;background:linear-gradient(135deg,rgba(192,57,43,0.12) 0%,rgba(255,255,255,0.02) 50%,rgba(192,57,43,0.06) 100%);border:1px solid rgba(192,57,43,0.25);border-radius:24px;padding:48px;overflow:hidden;cursor:default;transition:border-color 0.4s cubic-bezier(0.16,1,0.3,1),box-shadow 0.4s cubic-bezier(0.16,1,0.3,1);}
-        .big-leader:hover{border-color:rgba(192,57,43,0.45);box-shadow:0 0 60px rgba(192,57,43,0.08);}
-        .big-leader__glow{position:absolute;top:-60px;left:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(192,57,43,0.2),transparent);pointer-events:none;}
-        .big-leader__inner{display:grid;grid-template-columns:45% 55%;gap:48px;position:relative;z-index:1;}
-        .big-leader__badge{display:inline-flex;align-items:center;background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.3);border-radius:999px;padding:6px 14px;font-size:11px;letter-spacing:0.25em;text-transform:uppercase;color:#C0392B;margin-bottom:24px;}
-        .big-leader__name-the{font-family:"Satoshi",sans-serif;font-weight:400;font-size:42px;color:rgba(255,255,255,0.5);display:block;line-height:1.1;}
-        .big-leader__name-leader{font-family:"Satoshi",sans-serif;font-weight:900;font-size:64px;color:#fff;letter-spacing:-0.04em;display:block;line-height:1.0;}
-        .big-leader__sub{font-family:"Satoshi",sans-serif;font-size:15px;color:rgba(255,255,255,0.5);line-height:1.6;margin-top:16px;max-width:280px;}
-        .big-leader__skills{display:flex;flex-direction:column;justify-content:center;}
-        .big-leader__skill{display:flex;gap:14px;align-items:flex-start;padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
-        .big-leader__skill:first-child{padding-top:0;}
-        .big-leader__skill:last-child{border-bottom:none;padding-bottom:0;}
-        .big-leader__skill-icon{width:36px;height:36px;background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-        .big-leader__skill-title{font-family:"Satoshi",sans-serif;font-weight:600;font-size:15px;color:#fff;}
-        .big-leader__skill-sub{font-family:"Satoshi",sans-serif;font-size:13px;color:rgba(255,255,255,0.4);margin-top:3px;line-height:1.5;}
+        /* ── SEC-CERT (Certificación marketing — light) ──────────────────────── */
+        .sec-cert{background:var(--bg);padding:120px 40px;border-top:1px solid var(--line);}
+        .sec-cert__inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:45fr 55fr;gap:80px;align-items:center;}
+        .sec-cert__eyebrow{display:inline-flex;align-items:center;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:#C0392B;font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;border-radius:999px;padding:5px 14px;margin-bottom:24px;}
+        .sec-cert__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(32px,4vw,52px);color:var(--ink);letter-spacing:-0.04em;line-height:1.08;margin-bottom:20px;}
+        .sec-cert__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:var(--accent);}
+        .sec-cert__para{font-family:"Satoshi",sans-serif;font-size:16px;color:var(--mute);line-height:1.75;max-width:44ch;margin-bottom:32px;}
+        .sec-cert__cta{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;background:var(--accent,#C0392B);color:#fff;border-radius:999px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;text-decoration:none;transition:background .2s;}
+        .sec-cert__cta:hover{background:#a93226;}
+        .sec-cert__bullets{margin-top:24px;display:flex;flex-direction:column;gap:10px;}
+        .sec-cert__bullet{display:flex;align-items:center;gap:10px;font-family:"Satoshi",sans-serif;font-size:13px;color:var(--mute);}
+        .sec-cert__check{width:18px;height:18px;border-radius:50%;background:rgba(192,57,43,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+        .sec-cert__mockup-wrap{display:flex;align-items:center;justify-content:center;}
+        .sc-dp{background:#fff;border-radius:4px;padding:28px 32px;position:relative;width:100%;box-shadow:var(--shadow-lg,0 30px 80px -20px rgba(13,13,13,.18),0 10px 30px -10px rgba(13,13,13,.10));transform:rotate(2deg);}
+        .sc-dp::before{content:"";position:absolute;inset:0;border-radius:4px;border:2px solid #C0392B;pointer-events:none;}
+        .sc-dp::after{content:"";position:absolute;inset:6px;border-radius:2px;border:1px solid rgba(192,57,43,.25);pointer-events:none;}
+        .sc-sep{height:1px;background:rgba(192,57,43,.22);margin:10px 0;}
+        @media(max-width:960px){
+          .sec-cert{padding:80px 24px;}
+          .sec-cert__inner{grid-template-columns:1fr;gap:48px;}
+          .sc-dp{transform:rotate(1deg);}
+        }
         /* ── NUESTRA HISTORIA ───────────────────────────────────────────────── */
         .historia{position:relative;background:#070707;padding:112px 40px;overflow:hidden;}
         .historia__grain{position:absolute;inset:0;pointer-events:none;z-index:0;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");opacity:0.35;mix-blend-mode:overlay;}
@@ -1219,69 +1225,128 @@ export default function GlobeHero() {
             </p>
           </m.div>
 
-          {/* The Big Leader Card */}
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SECCIÓN — CERTIFICACIÓN MARKETING (light)
+      ══════════════════════════════════════════════════════════════════ */}
+      <section className="sec-cert">
+        <div className="sec-cert__inner">
+
+          {/* Izquierda — Copy */}
           <m.div
-            className="big-leader"
-            initial={{ opacity: 0, y: 40, scale: 0.97 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+            initial={prefersReduced ? false : { opacity: 0, x: -32 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ type: 'spring', stiffness: 100, damping: 22 }}
           >
-            <div className="big-leader__glow" aria-hidden="true" />
-            <div className="big-leader__inner">
-
-              {/* Col izq — identidad */}
-              <div>
-                <span className="big-leader__badge">CERTIFICACIÓN OFICIAL</span>
-                <span className="big-leader__name-the">The Big</span>
-                <span className="big-leader__name-leader">Leader</span>
-                <p className="big-leader__sub">Más que una certificación — una garantía de preparación.</p>
-              </div>
-
-              {/* Col der — habilidades */}
-              <div className="big-leader__skills">
-
-                <div className="big-leader__skill">
-                  <div className="big-leader__skill-icon">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path d="M8 1L9.8 5.6H15L10.8 8.8L12.4 13.4L8 10.2L3.6 13.4L5.2 8.8L1 5.6H6.2L8 1Z" fill="#C0392B"/>
+            <span className="sec-cert__eyebrow">CERTIFICACIÓN OFICIAL</span>
+            <h2 className="sec-cert__title">
+              Un logro que<br /><em>abre puertas</em>.
+            </h2>
+            <p className="sec-cert__para">
+              Al completar los 12 módulos y el proyecto capstone, cada estudiante recibe la certificación The Big Leader — reconocida por Cognia, IB y Tri-Association.
+            </p>
+            <Link href="/certificacion/mock-student-1" className="sec-cert__cta">
+              Ver ejemplo de diploma <span aria-hidden="true">→</span>
+            </Link>
+            <div className="sec-cert__bullets">
+              {(['Reconocido internacionalmente', 'Imprimible y verificable', 'Mención de Honor para los mejores'] as const).map(text => (
+                <div key={text} className="sec-cert__bullet">
+                  <div className="sec-cert__check">
+                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden="true">
+                      <path d="M1 4L3.5 6.5L9 1" stroke="#C0392B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
-                  <div>
-                    <div className="big-leader__skill-title">Liderazgo real</div>
-                    <div className="big-leader__skill-sub">Capacidad de guiar equipos y tomar decisiones bajo presión</div>
-                  </div>
+                  {text}
                 </div>
-
-                <div className="big-leader__skill">
-                  <div className="big-leader__skill-icon">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <circle cx="4" cy="8" r="2" stroke="#C0392B" strokeWidth="1.5"/>
-                      <circle cx="12" cy="4" r="2" stroke="#C0392B" strokeWidth="1.5"/>
-                      <circle cx="12" cy="12" r="2" stroke="#C0392B" strokeWidth="1.5"/>
-                      <path d="M6 8H10M6 8C8 6.5 10 4 10 4M6 8C8 9.5 10 12 10 12" stroke="#C0392B" strokeWidth="1.3" strokeLinecap="round"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="big-leader__skill-title">Trabajo en equipo</div>
-                    <div className="big-leader__skill-sub">Colaboración efectiva en entornos diversos y multiculturales</div>
-                  </div>
-                </div>
-
-                <div className="big-leader__skill">
-                  <div className="big-leader__skill-icon">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path d="M9 2L5 9H8L7 14L11 7H8L9 2Z" fill="#C0392B"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="big-leader__skill-title">Impacto medible</div>
-                    <div className="big-leader__skill-sub">Iniciativas concretas que transforman comunidades</div>
-                  </div>
-                </div>
-
-              </div>
+              ))}
             </div>
+          </m.div>
+
+          {/* Derecha — Mockup del diploma (estático, rotate 2deg) */}
+          <m.div
+            className="sec-cert__mockup-wrap"
+            initial={prefersReduced ? false : { opacity: 0, x: 32 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ type: 'spring', stiffness: 100, damping: 22, delay: 0.1 }}
+          >
+            <m.div
+              className="sc-dp"
+              whileHover={prefersReduced ? {} : { y: -4, transition: { type: 'spring', stiffness: 300, damping: 25 } }}
+            >
+              {/* Membrete */}
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginBottom:12 }}>
+                <img src="/Logo_ColegioAlbania.png" alt="" aria-hidden="true" style={{ height:20, objectFit:'contain' }} />
+                <div style={{ width:1, height:14, background:'rgba(13,13,13,.15)', flexShrink:0 }} />
+                <span style={{ fontFamily:'"Satoshi",sans-serif', fontWeight:700, fontSize:7.5, letterSpacing:'0.3em', textTransform:'uppercase', color:'#0D0D0D' }}>The Big Family Program</span>
+              </div>
+
+              <div className="sc-sep" />
+
+              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontSize:7.5, color:'#6B6B6B', fontStyle:'italic', marginBottom:6 }}>
+                Este certificado se otorga a
+              </p>
+              <p style={{ textAlign:'center', fontFamily:'"Instrument Serif",serif', fontStyle:'italic', fontWeight:400, fontSize:22, color:'#0D0D0D', letterSpacing:'-0.01em', lineHeight:1.1, marginBottom:8 }}>
+                Valentina Torres Ospino
+              </p>
+              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontSize:7.5, color:'#6B6B6B', marginBottom:4 }}>
+                por haber completado exitosamente el programa de liderazgo
+              </p>
+              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontWeight:700, fontSize:9, letterSpacing:'0.2em', textTransform:'uppercase', color:'#C0392B', marginBottom:8 }}>
+                The Big Leader
+              </p>
+              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontSize:7.5, color:'#6B6B6B', marginBottom:2 }}>IE Técnica María Inmaculada</p>
+              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontSize:7.5, color:'#6B6B6B', marginBottom:12 }}>15 de mayo de 2026</p>
+
+              <div className="sc-sep" />
+
+              {/* Stats + Logos */}
+              <div style={{ display:'flex', justifyContent:'center', alignItems:'center', margin:'10px 0' }}>
+                <div style={{ textAlign:'center', padding:'0 10px' }}>
+                  <div style={{ fontFamily:'"Satoshi",sans-serif', fontWeight:900, fontSize:14, color:'#C0392B' }}>1.840</div>
+                  <div style={{ fontFamily:'"Satoshi",sans-serif', fontSize:6, letterSpacing:'0.14em', textTransform:'uppercase', color:'#6B6B6B', marginTop:2 }}>Puntos de Impacto</div>
+                </div>
+                <div style={{ width:1, height:22, background:'rgba(13,13,13,.12)', flexShrink:0 }} />
+                <div style={{ textAlign:'center', padding:'0 10px' }}>
+                  <div style={{ fontFamily:'"Satoshi",sans-serif', fontWeight:900, fontSize:14, color:'#C0392B' }}>6</div>
+                  <div style={{ fontFamily:'"Satoshi",sans-serif', fontSize:6, letterSpacing:'0.14em', textTransform:'uppercase', color:'#6B6B6B', marginTop:2 }}>Módulos</div>
+                </div>
+                <div style={{ width:1, height:22, background:'rgba(13,13,13,.12)', flexShrink:0 }} />
+                <div style={{ textAlign:'center', padding:'0 10px' }}>
+                  <p style={{ fontFamily:'"Satoshi",sans-serif', fontSize:6, letterSpacing:'0.18em', textTransform:'uppercase', color:'#6B6B6B', marginBottom:5 }}>RECONOCIDO POR</p>
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:5 }}>
+                    <img src="/cognia.png"                               alt="Cognia" style={{ height:14, objectFit:'contain' }} />
+                    <img src="/International_Baccalaureate_Logo.svg.png" alt="IB"     style={{ height:14, objectFit:'contain' }} />
+                    <img src="/tri.png"                                  alt="Tri"    style={{ height:14, objectFit:'contain' }} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="sc-sep" />
+
+              {/* Firma + cert + sello */}
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginTop:10 }}>
+                <div>
+                  <div style={{ height:1, background:'rgba(13,13,13,.14)', marginBottom:4, width:80 }} />
+                  <p style={{ fontFamily:'"Satoshi",sans-serif', fontWeight:700, fontSize:7.5, color:'#0D0D0D' }}>Luis Hernando Barrios</p>
+                  <p style={{ fontFamily:'"Satoshi",sans-serif', fontSize:6.5, color:'#6B6B6B', marginTop:1 }}>Fundador, The Big Family Program</p>
+                </div>
+                <p style={{ fontFamily:'"Satoshi",sans-serif', fontSize:6.5, letterSpacing:'0.18em', color:'#6B6B6B', alignSelf:'flex-end', paddingBottom:1 }}>CERT-2026-1001</p>
+                {/* Sello mini */}
+                <svg viewBox="0 0 100 100" width="38" height="38" aria-hidden="true">
+                  <defs><path id="mc-arc" d="M 8 50 A 42 42 0 0 0 92 50"/></defs>
+                  <circle cx="50" cy="50" r="47" fill="none" stroke="#C0392B" strokeWidth="1.5"/>
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="#C0392B" strokeWidth="0.6"/>
+                  <text fill="#C0392B" fontSize="6.8" fontFamily="Satoshi,sans-serif" fontWeight="700" letterSpacing="1.5">
+                    <textPath href="#mc-arc" startOffset="50%" textAnchor="middle">BIG FAMILY · CERTIFIED</textPath>
+                  </text>
+                  <path d="M50 36 L53.5 45.1 L63.3 45.7 L55.7 51.8 L58.2 61.3 L50 56 L41.8 61.3 L44.3 51.8 L36.7 45.7 L46.5 45.1Z" fill="#C0392B"/>
+                </svg>
+              </div>
+            </m.div>
           </m.div>
 
         </div>
