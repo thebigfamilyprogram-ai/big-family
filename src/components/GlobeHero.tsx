@@ -400,7 +400,15 @@ export default function GlobeHero() {
   const [navMounted,        setNavMounted]        = useState(false)
   const [activeSection,     setActiveSection]     = useState('')
   const [mobileNavOpen,     setMobileNavOpen]     = useState(false)
+  const [showDiplomaModal,  setShowDiplomaModal]  = useState(false)
 
+  // Close diploma modal on ESC
+  useEffect(() => {
+    if (!showDiplomaModal) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowDiplomaModal(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [showDiplomaModal])
 
   const { stats: liveStats, loading: statsLoading } = useRealtimeStats()
   const isEventPast = DL_TARGET.getTime() < Date.now()
@@ -586,8 +594,16 @@ export default function GlobeHero() {
         .sec-cert__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(32px,4vw,52px);color:var(--ink);letter-spacing:-0.04em;line-height:1.08;margin-bottom:20px;}
         .sec-cert__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:var(--accent);}
         .sec-cert__para{font-family:"Satoshi",sans-serif;font-size:16px;color:var(--mute);line-height:1.75;max-width:44ch;margin-bottom:32px;}
-        .sec-cert__cta{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;background:var(--accent,#C0392B);color:#fff;border-radius:999px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;text-decoration:none;transition:background .2s;}
+        .sec-cert__cta{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;background:var(--accent,#C0392B);color:#fff;border-radius:999px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;text-decoration:none;transition:background .2s;border:none;cursor:pointer;appearance:none;}
         .sec-cert__cta:hover{background:#a93226;}
+        /* ── Diploma modal ─────────────────────────────────────────────────── */
+        .dm-overlay{position:fixed;inset:0;background:rgba(13,13,13,.75);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
+        .dm-panel{position:relative;width:100%;max-width:660px;max-height:90dvh;overflow-y:auto;background:#fff;border-radius:4px;padding:36px 44px;}
+        .dm-panel::before{content:"";position:absolute;inset:0;border-radius:4px;border:2px solid #C0392B;pointer-events:none;}
+        .dm-panel::after{content:"";position:absolute;inset:8px;border-radius:2px;border:1px solid rgba(192,57,43,.25);pointer-events:none;}
+        .dm-close{position:absolute;top:14px;right:14px;background:rgba(13,13,13,.07);border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;transition:background .15s;}
+        .dm-close:hover{background:rgba(13,13,13,.14);}
+        .dm-sep{height:1px;background:rgba(192,57,43,.22);margin:14px 0;}
         .sec-cert__bullets{margin-top:24px;display:flex;flex-direction:column;gap:10px;}
         .sec-cert__bullet{display:flex;align-items:center;gap:10px;font-family:"Satoshi",sans-serif;font-size:13px;color:var(--mute);}
         .sec-cert__check{width:18px;height:18px;border-radius:50%;background:rgba(192,57,43,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -1248,9 +1264,9 @@ export default function GlobeHero() {
             <p className="sec-cert__para">
               Al completar los 12 módulos y el proyecto capstone, cada estudiante recibe la certificación The Big Leader — reconocida por Cognia, IB y Tri-Association.
             </p>
-            <Link href="/certificacion/mock-student-1" className="sec-cert__cta">
+            <button className="sec-cert__cta" onClick={() => setShowDiplomaModal(true)}>
               Ver ejemplo de diploma <span aria-hidden="true">→</span>
-            </Link>
+            </button>
             <div className="sec-cert__bullets">
               {(['Reconocido internacionalmente', 'Imprimible y verificable', 'Mención de Honor para los mejores'] as const).map(text => (
                 <div key={text} className="sec-cert__bullet">
@@ -2032,6 +2048,104 @@ export default function GlobeHero() {
           </div>
         </div>
       </footer>
+
+      {/* ── Diploma modal — inline preview desde landing ─────────────────── */}
+      <AnimatePresence>
+        {showDiplomaModal && (
+          <m.div
+            className="dm-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setShowDiplomaModal(false)}
+          >
+            <m.div
+              className="dm-panel"
+              initial={{ opacity: 0, y: 28, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 12, scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 26 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <button className="dm-close" onClick={() => setShowDiplomaModal(false)} aria-label="Cerrar">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+                </svg>
+              </button>
+
+              {/* Membrete */}
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:10, marginBottom:16 }}>
+                <img src="/Logo_ColegioAlbania.png" alt="" aria-hidden="true" style={{ height:28, objectFit:'contain' }} />
+                <div style={{ width:1, height:20, background:'rgba(13,13,13,.15)', flexShrink:0 }} />
+                <span style={{ fontFamily:'"Satoshi",sans-serif', fontWeight:700, fontSize:9, letterSpacing:'0.3em', textTransform:'uppercase', color:'#0D0D0D' }}>The Big Family Program</span>
+              </div>
+
+              <div className="dm-sep" />
+
+              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontSize:12, color:'#6B6B6B', fontStyle:'italic', marginTop:14, marginBottom:10 }}>
+                Este certificado se otorga a
+              </p>
+              <p style={{ textAlign:'center', fontFamily:'"Instrument Serif",serif', fontStyle:'italic', fontWeight:400, fontSize:'clamp(1.8rem,4vw,2.8rem)', color:'#0D0D0D', letterSpacing:'-0.02em', lineHeight:1.1, marginBottom:14 }}>
+                Valentina Torres Ospino
+              </p>
+              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontSize:13, color:'#6B6B6B', marginBottom:8 }}>
+                por haber completado exitosamente el programa de liderazgo
+              </p>
+              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontWeight:700, fontSize:12, letterSpacing:'0.22em', textTransform:'uppercase', color:'#C0392B', marginBottom:14 }}>
+                The Big Leader
+              </p>
+              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontSize:12, color:'#6B6B6B', marginBottom:3 }}>IE Técnica María Inmaculada</p>
+              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontSize:12, color:'#6B6B6B', marginBottom:16 }}>15 de mayo de 2026</p>
+
+              <div className="dm-sep" />
+
+              {/* Stats + Logos */}
+              <div style={{ display:'flex', justifyContent:'center', alignItems:'center', flexWrap:'wrap', margin:'4px 0 4px' }}>
+                <div style={{ textAlign:'center', padding:'8px 20px' }}>
+                  <div style={{ fontFamily:'"Satoshi",sans-serif', fontWeight:900, fontSize:20, color:'#C0392B' }}>1.840</div>
+                  <div style={{ fontFamily:'"Satoshi",sans-serif', fontSize:8, letterSpacing:'0.15em', textTransform:'uppercase', color:'#6B6B6B', marginTop:3 }}>Puntos de Impacto</div>
+                </div>
+                <div style={{ width:1, height:34, background:'rgba(13,13,13,.12)', flexShrink:0 }} />
+                <div style={{ textAlign:'center', padding:'8px 20px' }}>
+                  <div style={{ fontFamily:'"Satoshi",sans-serif', fontWeight:900, fontSize:20, color:'#C0392B' }}>6</div>
+                  <div style={{ fontFamily:'"Satoshi",sans-serif', fontSize:8, letterSpacing:'0.15em', textTransform:'uppercase', color:'#6B6B6B', marginTop:3 }}>Módulos Completados</div>
+                </div>
+                <div style={{ width:1, height:34, background:'rgba(13,13,13,.12)', flexShrink:0 }} />
+                <div style={{ textAlign:'center', padding:'8px 20px' }}>
+                  <p style={{ fontFamily:'"Satoshi",sans-serif', fontSize:8, letterSpacing:'0.2em', textTransform:'uppercase', color:'#6B6B6B', marginBottom:7 }}>RECONOCIDO POR</p>
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:10 }}>
+                    <img src="/cognia.png"                               alt="Cognia" style={{ height:24, objectFit:'contain' }} />
+                    <img src="/International_Baccalaureate_Logo.svg.png" alt="IB"     style={{ height:24, objectFit:'contain' }} />
+                    <img src="/tri.png"                                  alt="Tri"    style={{ height:24, objectFit:'contain' }} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="dm-sep" />
+
+              {/* Firma + Cert + Sello */}
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginTop:10 }}>
+                <div>
+                  <div style={{ height:1, background:'rgba(13,13,13,.14)', marginBottom:6, width:148 }} />
+                  <p style={{ fontFamily:'"Satoshi",sans-serif', fontWeight:700, fontSize:12, color:'#0D0D0D' }}>Luis Hernando Barrios</p>
+                  <p style={{ fontFamily:'"Satoshi",sans-serif', fontSize:10.5, color:'#6B6B6B', marginTop:2 }}>Fundador, The Big Family Program</p>
+                </div>
+                <p style={{ fontFamily:'"Satoshi",sans-serif', fontSize:9.5, letterSpacing:'0.2em', color:'#6B6B6B', alignSelf:'flex-end', paddingBottom:1 }}>CERT-2026-1001</p>
+                <svg viewBox="0 0 100 100" width="52" height="52" aria-hidden="true">
+                  <defs><path id="dm-arc" d="M 8 50 A 42 42 0 0 0 92 50"/></defs>
+                  <circle cx="50" cy="50" r="47" fill="none" stroke="#C0392B" strokeWidth="1.5"/>
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="#C0392B" strokeWidth="0.6"/>
+                  <text fill="#C0392B" fontSize="6.8" fontFamily="Satoshi,sans-serif" fontWeight="700" letterSpacing="1.5">
+                    <textPath href="#dm-arc" startOffset="50%" textAnchor="middle">BIG FAMILY · CERTIFIED</textPath>
+                  </text>
+                  <path d="M50 36 L53.5 45.1 L63.3 45.7 L55.7 51.8 L58.2 61.3 L50 56 L41.8 61.3 L44.3 51.8 L36.7 45.7 L46.5 45.1Z" fill="#C0392B"/>
+                </svg>
+              </div>
+            </m.div>
+          </m.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }

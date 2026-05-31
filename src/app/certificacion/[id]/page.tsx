@@ -111,6 +111,7 @@ export default function CertificacionPage() {
   const [loading,        setLoading]        = useState(true)
   const [data,           setData]           = useState<DiplomaData | null>(null)
   const [confettiActive, setConfettiActive] = useState(false)
+  const [authed,         setAuthed]         = useState(false)
 
   // Remove confetti particles after animations complete
   useEffect(() => {
@@ -161,12 +162,19 @@ export default function CertificacionPage() {
         return
       }
 
-      // 2. Parallel fetch — profile, XP, modules
-      const [{ data: profile }, { data: xpRows }, { data: progRows }] = await Promise.all([
+      // 2. Parallel fetch — profile, XP, modules, viewer auth
+      const [
+        { data: profile },
+        { data: xpRows },
+        { data: progRows },
+        { data: { user: viewer } },
+      ] = await Promise.all([
         sb!.from('profiles').select('display_name, school_id').eq('id', studentId).maybeSingle(),
         sb!.from('xp_log').select('amount').eq('user_id', studentId),
         sb!.from('progress').select('id').eq('user_id', studentId).eq('completed', true),
+        sb!.auth.getUser(),
       ])
+      if (viewer) setAuthed(true)
 
       // 3. School name
       const schoolId = (profile as { school_id?: string | null } | null)?.school_id
@@ -585,8 +593,8 @@ export default function CertificacionPage() {
           </div>
         </m.div>
 
-        {/* Botones — ocultos en print */}
-        <m.div
+        {/* Botones — solo para usuarios autenticados, ocultos en print */}
+        {authed && <m.div
           className="no-print"
           style={{
             display: 'flex', gap: 12, marginTop: 28,
@@ -624,7 +632,7 @@ export default function CertificacionPage() {
           >
             Volver al dashboard
           </Link>
-        </m.div>
+        </m.div>}
       </m.div>
     </>
   )
