@@ -358,36 +358,32 @@ const TESTIMONIOS = [
   { quote: 'Lo más valioso no fue el certificado, sino la familia que construí. Hoy somos una red de líderes que se apoyan mutuamente.', name: 'Valeria Rodríguez', role: 'Estudiante · Cohorte 2026', school: 'IE Paulo VI', init: 'VR' },
 ]
 
-const METOD_DOTS = [
-  { top: '25%', left: '20%' },
-  { top: '20%', left: '45%' },
-  { top: '35%', left: '70%' },
-  { top: '60%', left: '30%' },
-  { top: '15%', left: '65%' },
-]
-
-function PulseDot({ top, left, delay, active }: { top: string; left: string; delay: number; active: boolean }) {
-  return (
-    <div style={{ position: 'absolute', top, left, width: 6, height: 6, pointerEvents: 'none' }}>
-      <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.9)' }} />
-      {active && (
-        <m.div
-          style={{ position: 'absolute', top: 0, left: 0, width: 6, height: 6, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.7)' }}
-          initial={{ scale: 1, opacity: 0.6 }}
-          animate={{ scale: 2.5, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 20, repeat: Infinity, repeatDelay: 1.5, delay }}
-        />
-      )}
-    </div>
-  )
-}
-
-function MetodCounter({ target, inView }: { target: number; inView: boolean }) {
-  const count = useSpring(0, { stiffness: 200, damping: 25 })
-  const display = useTransform(count, v => `0${Math.round(v)}`)
-  useEffect(() => { if (inView) count.set(target) }, [inView, count, target])
-  return <m.span style={{ fontVariantNumeric: 'tabular-nums' }}>{display}</m.span>
-}
+const PROGRAM_COMPONENTS = [
+  {
+    num: '01',
+    tag: 'Coaching Individual',
+    name: 'The Big Leader',
+    desc: 'Entrenamiento personalizado enfocado en habilidades intrapersonales e interpersonales. Incluye sesiones de coaching y planes de acción anuales. Forman Mini y Junior CEOs.',
+  },
+  {
+    num: '02',
+    tag: 'Metodología Lúdica',
+    name: "The Leader's Game",
+    desc: 'Juego de retos por estaciones donde los equipos acumulan puntos. Identifica fortalezas y áreas de crecimiento de cada participante, especialmente para estudiantes neurodiversos.',
+  },
+  {
+    num: '03',
+    tag: 'Emprendimiento Global',
+    name: 'The Great Venture',
+    desc: 'Aplicación con algoritmo que ayuda a los estudiantes a definir su dirección como emprendedores globales. Usa la matriz Hoshin Kanri para garantizar el éxito.',
+  },
+  {
+    num: '04',
+    tag: 'Red Social Educativa',
+    name: 'Kashi',
+    desc: 'Red social educativa. Kashi es palabra wayuu que significa "luna". Los estudiantes comparten sus fortalezas con pares de otras instituciones a nivel mundial.',
+  },
+] as const
 
 export default function GlobeHero() {
   const mouseX  = useMotionValue(0)
@@ -405,11 +401,6 @@ export default function GlobeHero() {
   const [activeSection,     setActiveSection]     = useState('')
   const [mobileNavOpen,     setMobileNavOpen]     = useState(false)
 
-  const metodRef    = useRef<HTMLDivElement>(null)
-  const metodInView = useInView(metodRef, { once: true, margin: '-80px' })
-  const [hov2, setHov2] = useState(false)
-  const [hov3, setHov3] = useState(false)
-  const [hov4, setHov4] = useState(false)
 
   const { stats: liveStats, loading: statsLoading } = useRealtimeStats()
   const isEventPast = DL_TARGET.getTime() < Date.now()
@@ -735,39 +726,31 @@ export default function GlobeHero() {
         .sec-impacto__label{font-size:13px;color:rgba(255,255,255,.6);margin-top:10px;line-height:1.4;}
         .sec-impacto__sub{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-top:6px;}
         @media(max-width:960px){.sec-impacto{padding:80px 24px;}.sec-impacto__grid{grid-template-columns:1fr 1fr;}.sec-impacto__sep{display:none;}}
-        /* ── SEC-METOD (Metodología — bg-2) ──────────────────────────────── */
-        .sec-metod{background:var(--bg-2);padding:120px 40px;border-top:1px solid var(--line);}
-        .sec-metod__inner{max-width:1200px;margin:0 auto;}
-        .sec-metod__header{margin-bottom:64px;}
-        .sec-metod__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--mute);margin-bottom:16px;}
-        .sec-metod__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(38px,5vw,60px);color:var(--ink);letter-spacing:-0.04em;line-height:1.08;margin-bottom:12px;}
-        .sec-metod__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:var(--accent);}
-        .sec-metod__subtitle{font-size:16px;color:var(--mute);max-width:48ch;line-height:1.65;}
-        .sec-metod__bento{display:grid;grid-template-columns:1.4fr 1fr 1fr;grid-template-rows:auto auto;gap:16px;}
-        .sec-metod__card{border-radius:20px;padding:36px;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:12px;}
-        .sec-metod__card--featured{grid-row:1/span 2;grid-column:1;background:var(--ink);}
-        .sec-metod__card--normal{background:#fff;border:1px solid var(--line);}
-        .sec-metod__card--wide{grid-row:2;grid-column:2/span 2;background:var(--accent);}
-        .sec-metod__num{font-family:var(--font-mono,monospace);font-size:11px;letter-spacing:.2em;}
-        .sec-metod__num--featured{color:rgba(255,255,255,.35);}
-        .sec-metod__num--normal{color:var(--mute);}
-        .sec-metod__num--dark{color:rgba(255,255,255,.5);}
-        .sec-metod__tag{display:inline-block;font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:4px 12px;border-radius:999px;width:fit-content;transition:background .2s,color .2s,border-color .2s;}
-        .sec-metod__tag--featured{background:rgba(255,255,255,.08);color:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.12);}
-        .sec-metod__tag--normal{background:rgba(13,13,13,.05);color:var(--mute);border:1px solid var(--line);}
-        .sec-metod__tag--dark{background:rgba(255,255,255,.2);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.3);}
-        .sec-metod__card:hover .sec-metod__tag--featured{background:var(--accent);color:#fff;border-color:var(--accent);}
-        .sec-metod__card:hover .sec-metod__tag--normal{background:var(--accent);color:#fff;border-color:var(--accent);}
-        .sec-metod__card:hover .sec-metod__tag--dark{background:#fff;color:var(--accent);border-color:#fff;}
-        .sec-metod__card-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:19px;line-height:1.2;}
-        .sec-metod__card-title--featured{font-size:28px;color:#fff;}
-        .sec-metod__card-title--normal{color:var(--ink);}
-        .sec-metod__card-title--dark{color:#fff;}
-        .sec-metod__card-desc{font-size:14px;line-height:1.65;flex:1;}
-        .sec-metod__card-desc--featured{color:rgba(255,255,255,.52);}
-        .sec-metod__card-desc--normal{color:var(--mute);}
-        .sec-metod__card-desc--dark{color:rgba(255,255,255,.78);}
-        @media(max-width:960px){.sec-metod{padding:80px 24px;}.sec-metod__bento{grid-template-columns:1fr;}.sec-metod__card--featured,.sec-metod__card--wide{grid-row:auto;grid-column:auto;}}
+        /* ── SEC-PROG (Componentes del programa — bg-2) ────────────────── */
+        .sec-prog{background:var(--bg-2);padding:120px 40px;border-top:1px solid var(--line);}
+        .sec-prog__inner{max-width:1200px;margin:0 auto;}
+        .sec-prog__head{margin-bottom:88px;}
+        .sec-prog__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--mute);margin-bottom:16px;}
+        .sec-prog__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(38px,5vw,60px);color:var(--ink);letter-spacing:-0.04em;line-height:1.08;}
+        .sec-prog__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:var(--accent);}
+        .sec-prog__list{display:flex;flex-direction:column;}
+        .sec-prog__item{display:grid;grid-template-columns:128px 1fr minmax(0,360px);gap:0 64px;padding:72px 0;border-bottom:1px solid var(--line);align-items:center;}
+        .sec-prog__item:first-child{border-top:1px solid var(--line);}
+        .sec-prog__num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(80px,10vw,116px);color:var(--ink);letter-spacing:-0.05em;line-height:1;opacity:.08;user-select:none;align-self:flex-start;padding-top:2px;}
+        .sec-prog__body{display:flex;flex-direction:column;gap:14px;}
+        .sec-prog__tag{font-family:"Satoshi",sans-serif;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--accent);font-weight:700;}
+        .sec-prog__name{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(26px,3vw,40px);color:var(--ink);letter-spacing:-0.03em;line-height:1.08;}
+        .sec-prog__desc{font-family:"Satoshi",sans-serif;font-size:15px;color:var(--mute);line-height:1.78;max-width:44ch;}
+        .sec-prog__img{aspect-ratio:4/3;background:var(--bg);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+        .sec-prog__img-ph{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--ink);opacity:.2;}
+        .sec-prog__img-ph-label{font-family:"Satoshi",sans-serif;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;}
+        @media(max-width:960px){
+          .sec-prog{padding:80px 24px;}
+          .sec-prog__item{grid-template-columns:1fr;gap:28px;padding:52px 0;}
+          .sec-prog__num{font-size:72px;order:-1;}
+          .sec-prog__body{order:0;}
+          .sec-prog__img{order:1;}
+        }
         /* ── SEC-VALORES (Valores — bg) ───────────────────────────────────── */
         .sec-valores{background:var(--bg);padding:120px 40px;border-top:1px solid var(--line);}
         .sec-valores__inner{max-width:1200px;margin:0 auto;}
@@ -1697,142 +1680,61 @@ export default function GlobeHero() {
       <WorldMapPublic />
 
       {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN — METODOLOGÍA (bg-2)
+          SECCIÓN — COMPONENTES DEL PROGRAMA (bg-2)
       ══════════════════════════════════════════════════════════════════ */}
-      <section id="metodologia" className="sec-metod">
-        <div className="sec-metod__inner">
+      <section id="metodologia" className="sec-prog">
+        <div className="sec-prog__inner">
+
+          {/* Header */}
           <m.div
-            className="sec-metod__header"
+            className="sec-prog__head"
             initial={prefersReduced ? false : { opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 120, damping: 20 }}
           >
-            <p className="sec-metod__eyebrow">CÓMO TRABAJAMOS</p>
-            <h2 className="sec-metod__title">
-              Un método que<br /><em>funciona</em>.
+            <p className="sec-prog__eyebrow">LOS 4 COMPONENTES</p>
+            <h2 className="sec-prog__title">
+              Un programa<br />que <em>transforma</em>.
             </h2>
-            <p className="sec-metod__subtitle">
-              Combinamos formación, acción y comunidad para desarrollar líderes completos.
-            </p>
           </m.div>
 
-          <div className="sec-metod__bento" ref={metodRef}>
-            {/* Card 1 — Featured (tall, col 1) */}
-            <m.div
-              className="sec-metod__card sec-metod__card--featured"
-              initial={prefersReduced ? false : { opacity: 0, y: 32 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ type: 'spring', stiffness: 120, damping: 22 }}
-              whileHover={{ scale: 1.005, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
-            >
-              <div className="sec-metod__num sec-metod__num--featured"><MetodCounter target={1} inView={metodInView} /></div>
-              <div className="sec-metod__tag sec-metod__tag--featured">Formación</div>
-              <h3 className="sec-metod__card-title sec-metod__card-title--featured">
-                Desarrollo<br />Integral
-              </h3>
-              <p className="sec-metod__card-desc sec-metod__card-desc--featured">
-                Módulos de liderazgo que desarrollan habilidades técnicas, emocionales y sociales. Cada estudiante construye su perfil de líder de manera progresiva.
-              </p>
-            </m.div>
+          {/* Rows */}
+          <div className="sec-prog__list">
+            {PROGRAM_COMPONENTS.map((c, i) => (
+              <m.div
+                key={c.num}
+                className="sec-prog__item"
+                initial={prefersReduced ? false : { opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ type: 'spring', stiffness: 100, damping: 22, delay: i * 0.07 }}
+              >
+                {/* Número ancla */}
+                <div className="sec-prog__num" aria-hidden="true">{c.num}</div>
 
-            {/* Card 2 — Normal */}
-            <m.div
-              className="sec-metod__card sec-metod__card--normal"
-              initial={prefersReduced ? false : { opacity: 0, y: 32 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ type: 'spring', stiffness: 120, damping: 22, delay: 0.08 }}
-              whileHover={{ y: -4, scale: 1.01, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
-              onHoverStart={() => setHov2(true)}
-              onHoverEnd={() => setHov2(false)}
-            >
-              <div className="sec-metod__num sec-metod__num--normal"><MetodCounter target={2} inView={metodInView} /></div>
-              <div className="sec-metod__tag sec-metod__tag--normal">Práctica</div>
-              <h3 className="sec-metod__card-title sec-metod__card-title--normal">Proyectos Reales</h3>
-              <p className="sec-metod__card-desc sec-metod__card-desc--normal">Cada equipo diseña e implementa un proyecto comunitario con impacto medible en su entorno.</p>
-              <AnimatePresence>
-                {hov2 && (
-                  <m.p
-                    className="sec-metod__card-desc--normal"
-                    style={{ fontSize: 13, overflow: 'hidden' }}
-                    initial={{ opacity: 0, y: 8, height: 0 }}
-                    animate={{ opacity: 1, y: 0, height: 'auto' }}
-                    exit={{ opacity: 0, y: 4, height: 0 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-                  >
-                    Metodologías: Design Thinking, Aprendizaje Experiencial y How to Learn.
-                  </m.p>
-                )}
-              </AnimatePresence>
-            </m.div>
+                {/* Contenido */}
+                <div className="sec-prog__body">
+                  <span className="sec-prog__tag">{c.tag}</span>
+                  <h3 className="sec-prog__name">{c.name}</h3>
+                  <p className="sec-prog__desc">{c.desc}</p>
+                </div>
 
-            {/* Card 3 — Normal */}
-            <m.div
-              className="sec-metod__card sec-metod__card--normal"
-              initial={prefersReduced ? false : { opacity: 0, y: 32 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ type: 'spring', stiffness: 120, damping: 22, delay: 0.16 }}
-              whileHover={{ y: -4, scale: 1.01, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
-              onHoverStart={() => setHov3(true)}
-              onHoverEnd={() => setHov3(false)}
-            >
-              <div className="sec-metod__num sec-metod__num--normal"><MetodCounter target={3} inView={metodInView} /></div>
-              <div className="sec-metod__tag sec-metod__tag--normal">Mentoría</div>
-              <h3 className="sec-metod__card-title sec-metod__card-title--normal">Acompañamiento Directo</h3>
-              <p className="sec-metod__card-desc sec-metod__card-desc--normal">Mentores internacionales guían a cada estudiante en su proceso de crecimiento personal y profesional.</p>
-              <AnimatePresence>
-                {hov3 && (
-                  <m.p
-                    className="sec-metod__card-desc--normal"
-                    style={{ fontSize: 13, overflow: 'hidden' }}
-                    initial={{ opacity: 0, y: 8, height: 0 }}
-                    animate={{ opacity: 1, y: 0, height: 'auto' }}
-                    exit={{ opacity: 0, y: 4, height: 0 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-                  >
-                    Coaching personalizado hacia el proyecto de vida de cada estudiante.
-                  </m.p>
-                )}
-              </AnimatePresence>
-            </m.div>
-
-            {/* Card 4 — Wide (col 2/span 2, accent bg) */}
-            <m.div
-              className="sec-metod__card sec-metod__card--wide"
-              initial={prefersReduced ? false : { opacity: 0, y: 32 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ type: 'spring', stiffness: 120, damping: 22, delay: 0.24 }}
-              whileHover={{ y: -4, scale: 1.01, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
-              onHoverStart={() => setHov4(true)}
-              onHoverEnd={() => setHov4(false)}
-            >
-              {METOD_DOTS.map((pos, i) => (
-                <PulseDot key={i} top={pos.top} left={pos.left} delay={i * 0.4} active={metodInView} />
-              ))}
-              <div className="sec-metod__num sec-metod__num--dark"><MetodCounter target={4} inView={metodInView} /></div>
-              <div className="sec-metod__tag sec-metod__tag--dark">Red Global</div>
-              <h3 className="sec-metod__card-title sec-metod__card-title--dark">Conexión Internacional</h3>
-              <p className="sec-metod__card-desc sec-metod__card-desc--dark">Los estudiantes se conectan con líderes jóvenes de 10 países, ampliando su perspectiva y construyendo relaciones que trascienden fronteras.</p>
-              <AnimatePresence>
-                {hov4 && (
-                  <m.p
-                    className="sec-metod__card-desc--dark"
-                    style={{ fontSize: 13, overflow: 'hidden' }}
-                    initial={{ opacity: 0, y: 8, height: 0 }}
-                    animate={{ opacity: 1, y: 0, height: 'auto' }}
-                    exit={{ opacity: 0, y: 4, height: 0 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-                  >
-                    Talleres con instituciones de Colombia, América Latina, Europa y Norteamérica.
-                  </m.p>
-                )}
-              </AnimatePresence>
-            </m.div>
+                {/* Placeholder de imagen */}
+                <div className="sec-prog__img" aria-hidden="true">
+                  <div className="sec-prog__img-ph">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                      <rect x="3" y="5" width="26" height="22" rx="3" stroke="currentColor" strokeWidth="1.6"/>
+                      <circle cx="11" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.6"/>
+                      <path d="M3 22l7-6 6 5 5-4 8 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <span className="sec-prog__img-ph-label">Foto próximamente</span>
+                  </div>
+                </div>
+              </m.div>
+            ))}
           </div>
+
         </div>
       </section>
 
