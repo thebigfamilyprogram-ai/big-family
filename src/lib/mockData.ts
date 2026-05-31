@@ -1,6 +1,6 @@
 // ─── MOCK MODE ────────────────────────────────────────────────────────────────
 // Set to false to switch back to live Supabase data
-export const MOCK_MODE = true
+export const MOCK_MODE = false
 
 // ─── MOCK DATA ────────────────────────────────────────────────────────────────
 export const MOCK = {
