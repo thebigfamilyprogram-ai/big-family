@@ -94,10 +94,11 @@ interface ChatMessage {
 }
 
 export interface DatosPageProps {
-  role:         'coordinator' | 'admin'
-  userName?:    string
-  userInitial?: string
-  schoolName?:  string
+  role?:         'coordinator' | 'admin'
+  showSidebar?:  boolean
+  userName?:     string
+  userInitial?:  string
+  schoolName?:   string
 }
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
@@ -1092,7 +1093,13 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'insights',    label: 'IA Insights'   },
 ]
 
-export default memo(function DatosPage({ role, userName = '…', userInitial = 'U', schoolName }: DatosPageProps) {
+export default memo(function DatosPage({
+  role = 'coordinator',
+  showSidebar = true,
+  userName = '…',
+  userInitial = 'U',
+  schoolName,
+}: DatosPageProps) {
   const [tab,         setTab]         = useState<TabKey>('resumen')
   const [summary,     setSummary]     = useState<SummaryData | null>(null)
   const [loadingData, setLoadingData] = useState(true)
@@ -1153,23 +1160,8 @@ export default memo(function DatosPage({ role, userName = '…', userInitial = '
 
   useEffect(() => { void load() }, [load])
 
-  return (
-    <>
-      <style>{`
-        @keyframes shimmer { 0%{background-position:100% 50%} 100%{background-position:0% 50%} }
-        @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:.5} }
-      `}</style>
-
-      <div style={{ display: 'flex', minHeight: '100dvh', background: 'var(--bg,#F5F3EF)' }}>
-
-        <AppSidebar
-          role={role}
-          userName={userName}
-          userInitial={userInitial}
-          schoolName={schoolName}
-        />
-
-        <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', padding: '32px 36px', gap: 24, overflowY: 'auto' }}>
+  const mainContent = (
+    <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', padding: '32px 36px', gap: 24, overflowY: 'auto' }}>
 
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -1227,8 +1219,26 @@ export default memo(function DatosPage({ role, userName = '…', userInitial = '
               {tab === 'insights'    && <InsightsContent summaryData={summary} loading={loadingData} />}
             </m.div>
           </AnimatePresence>
-        </main>
-      </div>
+      </main>
+  )
+
+  return (
+    <>
+      <style>{`
+        @keyframes shimmer { 0%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:.5} }
+      `}</style>
+      {showSidebar ? (
+        <div style={{ display: 'flex', minHeight: '100dvh', background: 'var(--bg,#F5F3EF)' }}>
+          <AppSidebar
+            role={role}
+            userName={userName}
+            userInitial={userInitial}
+            schoolName={schoolName}
+          />
+          {mainContent}
+        </div>
+      ) : mainContent}
     </>
   )
 })

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { m, AnimatePresence } from 'framer-motion'
 
 export type QuestionType = 'multiple_choice' | 'true_false' | 'reflection'
 
@@ -15,13 +16,34 @@ export interface Question {
 interface Props {
   question: Question
   onChange: (answer: string | null) => void
+  onTabSwitch?: (totalSwitches: number) => void
 }
 
-export default function QuizQuestion({ question, onChange }: Props) {
+export default function QuizQuestion({ question, onChange, onTabSwitch }: Props) {
   const [selected, setSelected]     = useState<string | null>(null)
   const [text, setText]             = useState('')
   const [pasteWarn, setPasteWarn]   = useState(false)
+  const [tabWarn, setTabWarn]       = useState(false)
   const shuffledRef                  = useRef<string[]>([])
+  const tabSwitchesRef               = useRef(0)
+  const tabWarnTimerRef              = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Detect tab switches: increment counter, notify parent, show ephemeral warning
+  useEffect(() => {
+    function onVisibility() {
+      if (!document.hidden) return
+      tabSwitchesRef.current += 1
+      onTabSwitch?.(tabSwitchesRef.current)
+      setTabWarn(true)
+      if (tabWarnTimerRef.current) clearTimeout(tabWarnTimerRef.current)
+      tabWarnTimerRef.current = setTimeout(() => setTabWarn(false), 3000)
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility)
+      if (tabWarnTimerRef.current) clearTimeout(tabWarnTimerRef.current)
+    }
+  }, [onTabSwitch])
 
   // Shuffle options once per question instance (key-based reset handles re-mount)
   if (shuffledRef.current.length === 0 && question.type === 'multiple_choice' && question.options) {
@@ -50,6 +72,38 @@ export default function QuizQuestion({ question, onChange }: Props) {
 
   return (
     <div>
+      {/* Tab-switch warning banner */}
+      <AnimatePresence>
+        {tabWarn && (
+          <m.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+            style={{
+              marginBottom: 16,
+              padding: '10px 16px',
+              borderRadius: 10,
+              background: 'rgba(192,57,43,0.08)',
+              border: '1px solid rgba(192,57,43,0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              fontFamily: '"Satoshi",sans-serif',
+              fontSize: 13,
+              color: 'var(--accent,#C0392B)',
+              fontWeight: 500,
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4"/>
+              <path d="M8 5v3.5M8 10.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            Cambio de pestaña detectado — mantén el foco en el quiz
+          </m.div>
+        )}
+      </AnimatePresence>
+
       {/* Question text */}
       <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 20, color: 'var(--ink)', marginBottom: 28, lineHeight: 1.45 }}>
         {question.question}

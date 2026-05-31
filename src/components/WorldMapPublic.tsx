@@ -165,7 +165,7 @@ export default memo(function WorldMapPublic() {
 
   // Load world topology
   useEffect(() => {
-    fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json', { cache: 'force-cache' })
+    fetch('/world-atlas/countries-110m.json')
       .then(r => r.json())
       .then(topo => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
