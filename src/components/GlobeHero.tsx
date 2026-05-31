@@ -143,6 +143,30 @@ const VALORES = [
   { name: 'Creatividad',       slug: 'creatividad',       desc: 'Encontramos soluciones originales y únicas.'        },
 ] as const
 
+const VALIDACIONES = [
+  {
+    logo: '/cognia.png',
+    alt:  'Cognia',
+    name: 'Cognia (formerly AdvancED)',
+    desc: 'Reconoció el programa durante su visita institucional como innovador y socialmente relevante.',
+    tag:  'Acreditación Institucional',
+  },
+  {
+    logo: '/International_Baccalaureate_Logo.svg.png',
+    alt:  'International Baccalaureate',
+    name: 'International Baccalaureate',
+    desc: 'El programa fue presentado en la IB Americas Conference en Orlando como iniciativa destacada de liderazgo escolar.',
+    tag:  'IB Americas Conference',
+  },
+  {
+    logo: '/tri.png',
+    alt:  'Tri-Association',
+    name: 'Tri-Association',
+    desc: 'Destacó la importancia del programa en 2024 y lo seleccionó para participar en el evento TRIHEROES en mayo 2025.',
+    tag:  'TRIHEROES 2025',
+  },
+] as const
+
 const misionStats = [
   { to: 5000, suffix: '+', label: 'Líderes a formar'      },
   { to: 50,   suffix: '+', label: 'Países para 2036'      },
@@ -748,6 +772,21 @@ export default function GlobeHero() {
         .sec-impacto__label{font-size:13px;color:rgba(255,255,255,.6);margin-top:10px;line-height:1.4;}
         .sec-impacto__sub{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-top:6px;}
         @media(max-width:960px){.sec-impacto{padding:80px 24px;}.sec-impacto__grid{grid-template-columns:1fr 1fr;}.sec-impacto__sep{display:none;}}
+        /* ── SEC-VALID (Validaciones internacionales — oscuro) ──────────────── */
+        .sec-valid{background:var(--ink);padding:120px 40px;}
+        .sec-valid__inner{max-width:1200px;margin:0 auto;}
+        .sec-valid__head{max-width:640px;margin:0 auto 64px;text-align:center;}
+        .sec-valid__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:16px;}
+        .sec-valid__title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:clamp(28px,4vw,44px);color:#fff;letter-spacing:-0.03em;line-height:1.1;margin-bottom:16px;}
+        .sec-valid__sub{font-family:"Satoshi",sans-serif;font-size:16px;color:rgba(255,255,255,.55);line-height:1.7;}
+        .sec-valid__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+        .sec-valid__card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:16px;transition:border-color .3s cubic-bezier(0.22,1,0.36,1),background .3s cubic-bezier(0.22,1,0.36,1);}
+        .sec-valid__card:hover{border-color:rgba(255,255,255,.15);background:rgba(255,255,255,.06);}
+        .sec-valid__logo{height:48px;object-fit:contain;object-position:left;}
+        .sec-valid__tag{display:inline-flex;align-items:center;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);border-radius:999px;padding:4px 12px;font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C0392B;width:fit-content;}
+        .sec-valid__name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:#fff;line-height:1.3;}
+        .sec-valid__desc{font-family:"Satoshi",sans-serif;font-size:14px;color:rgba(255,255,255,.6);line-height:1.65;flex:1;}
+        @media(max-width:960px){.sec-valid{padding:80px 24px;}.sec-valid__grid{grid-template-columns:1fr;gap:14px;}}
         /* ── SEC-PROG (Componentes del programa — bg-2) ────────────────── */
         .sec-prog{background:var(--bg-2);padding:120px 40px;border-top:1px solid var(--line);}
         .sec-prog__inner{max-width:1200px;margin:0 auto;}
@@ -1798,6 +1837,49 @@ export default function GlobeHero() {
           SECCIÓN — ALIANZAS GLOBALES
       ══════════════════════════════════════════════════════════════════ */}
       <WorldMapPublic />
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SECCIÓN — VALIDACIONES INTERNACIONALES (oscuro)
+      ══════════════════════════════════════════════════════════════════ */}
+      <section className="sec-valid">
+        <div className="sec-valid__inner">
+
+          {/* Header */}
+          <m.div
+            className="sec-valid__head"
+            initial={prefersReduced ? false : { opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+          >
+            <p className="sec-valid__eyebrow">RECONOCIMIENTOS</p>
+            <h2 className="sec-valid__title">Validado por los mejores.</h2>
+            <p className="sec-valid__sub">
+              Organizaciones internacionales de excelencia educativa han reconocido Big Family como un programa innovador y de impacto social real.
+            </p>
+          </m.div>
+
+          {/* Cards */}
+          <div className="sec-valid__grid">
+            {VALIDACIONES.map((v, i) => (
+              <m.div
+                key={v.name}
+                className="sec-valid__card"
+                initial={prefersReduced ? false : { opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ type: 'spring', stiffness: 120, damping: 20, delay: i * 0.15 }}
+              >
+                <img src={v.logo} alt={v.alt} className="sec-valid__logo" />
+                <span className="sec-valid__tag">{v.tag}</span>
+                <p className="sec-valid__name">{v.name}</p>
+                <p className="sec-valid__desc">{v.desc}</p>
+              </m.div>
+            ))}
+          </div>
+
+        </div>
+      </section>
 
       {/* ══════════════════════════════════════════════════════════════════
           SECCIÓN — COMPONENTES DEL PROGRAMA (bg-2)
