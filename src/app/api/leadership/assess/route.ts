@@ -8,6 +8,7 @@ import {
   getStrengths,
   getGrowthAreas,
 } from '@/lib/bigFiveQuestions'
+import { MOCK_MODE } from '@/lib/mockData'
 
 interface AssessBody {
   answers: Record<number, number>
@@ -22,7 +23,23 @@ interface ClaudeProfile {
   reto_principal: string
 }
 
+const MOCK_RESULT = {
+  arquetipo:           'Líder Visionaria',
+  descripcion:         'Tienes una capacidad natural para ver lo que otros no ven. Tu energía y apertura generan movimiento a tu alrededor, y tu capacidad de inspirar es genuina. Eres el tipo de líder que define hacia dónde va el grupo, no quien solo lo sigue.',
+  mensaje_bienvenida:  'Valentina, tu manera de conectar ideas con acción es lo que el programa necesita. Tu ruta comienza ahora.',
+  fortaleza_principal: 'Tu mayor fortaleza es la capacidad de transformar visiones abstractas en entusiasmo concreto.',
+  reto_principal:      'Tu reto es aprender a construir estructuras que sostengan tus ideas cuando la energía inicial se agota.',
+  fortalezas:          ['Norte', 'Acción'],
+  areas_crecimiento:   ['Yo', 'Vínculo'],
+  big_five:            { O: 85, C: 42, E: 78, A: 38, N: 35, ES: 65 },
+}
+
 export async function POST(req: NextRequest) {
+  // ── MOCK_MODE: skip Anthropic + Supabase entirely ────────────────────────────
+  if (MOCK_MODE) {
+    return NextResponse.json(MOCK_RESULT)
+  }
+
   // ── Auth ─────────────────────────────────────────────────────────────────────
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
