@@ -833,15 +833,27 @@ export default function DashboardPage() {
             )}
           </m.div>
 
-          {/* ── Portfolio public link ── */}
-          {!loading && user?.username && (
+          {/* ── Portfolio public link — solo para estudiantes ── */}
+          {!loading && user?.role === 'student' && (
             <m.div
               initial={pref ? false : { opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 200, damping: 26 }}
-              style={{ display: 'flex', alignItems: 'center', gap: 12 }}
             >
-              {user.portfolio_public ? (
+              {!user.username ? (
+                /* Sin username: guiar al usuario a configurar su portafolio */
+                <a
+                  href="/dashboard/settings"
+                  style={{
+                    fontFamily: '"Satoshi",sans-serif', fontSize: 12,
+                    color: 'var(--mute)', textDecoration: 'none',
+                  }}
+                >
+                  Configura tu portafolio en{' '}
+                  <span style={{ color: '#C0392B', fontWeight: 600 }}>Configuración →</span>
+                </a>
+              ) : user.portfolio_public ? (
+                /* Portafolio activo */
                 <a
                   href={`/p/${user.username}`}
                   target="_blank"
@@ -850,18 +862,19 @@ export default function DashboardPage() {
                     display: 'inline-flex', alignItems: 'center', gap: 7,
                     padding: '8px 16px', border: '1px solid var(--line)',
                     borderRadius: 999, fontFamily: '"Satoshi",sans-serif',
-                    fontSize: 13, fontWeight: 600, color: 'var(--ink)',
+                    fontSize: 13, fontWeight: 600, color: 'var(--mute)',
                     textDecoration: 'none', transition: 'border-color .2s, color .2s',
                   }}
                   onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = '#C0392B'; (e.currentTarget as HTMLAnchorElement).style.color = '#C0392B' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--line)'; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--ink)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--line)'; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--mute)' }}
                 >
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <svg width="12" height="12" viewBox="0 0 13 13" fill="none">
                     <path d="M5 2H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8M8 1h4m0 0v4m0-4L5.5 7.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  Ver mi portafolio público
+                  Ver mi portafolio público ↗
                 </a>
               ) : (
+                /* Portafolio privado */
                 <span style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 12, color: 'var(--mute)' }}>
                   Tu portafolio está privado —{' '}
                   <a href="/dashboard/settings" style={{ color: '#C0392B', textDecoration: 'none', fontWeight: 600 }}>
