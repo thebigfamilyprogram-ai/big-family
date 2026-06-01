@@ -370,22 +370,28 @@ export default function PortfolioPage() {
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{font-family:"Satoshi",sans-serif;-webkit-font-smoothing:antialiased;background:#FAF8F4;}
         .pf-page{min-height:100dvh;background:#FAF8F4;padding:0 0 80px;}
-        .pf-inner{max-width:780px;margin:0 auto;padding:0 clamp(24px,5vw,64px);}
-        /* Top brand strip */
-        .pf-brand{text-align:center;padding:20px 0 16px;font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--mute,#6B6B6B);}
+        .pf-inner{max-width:900px;margin:0 auto;padding:0 clamp(20px,4vw,56px);}
+        /* Brand strip */
+        .pf-brand{text-align:center;padding:20px 0 16px;font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#6B6B6B;}
         .pf-divider{height:1px;background:rgba(13,13,13,.08);margin-bottom:40px;}
-        /* Cards */
-        .pf-card{background:#fff;border:1px solid rgba(13,13,13,.07);border-radius:16px;padding:32px;margin-bottom:20px;box-shadow:0 2px 12px rgba(13,13,13,.04);}
+        /* Main flex grid — gap between all rows */
+        .pf-grid{display:flex;flex-direction:column;gap:24px;}
+        /* Base card — no margin-bottom (gap handles spacing) */
+        .pf-card{background:#fff;border:1px solid rgba(13,13,13,.07);border-radius:16px;padding:32px;box-shadow:0 2px 12px rgba(13,13,13,.04);height:100%;}
         .pf-eyebrow{font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#C0392B;margin-bottom:14px;}
-        /* Identity */
-        .pf-id{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:start;}
-        .pf-avatar{width:80px;height:80px;border-radius:50%;background:#C0392B;display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-weight:700;font-size:24px;color:#fff;flex-shrink:0;margin-bottom:16px;}
-        .pf-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:clamp(1.8rem,4vw,2.5rem);color:#0D0D0D;letter-spacing:-0.02em;line-height:1.1;margin-bottom:6px;}
-        .pf-arch{font-family:"Instrument Serif",serif;font-style:italic;font-size:1.1rem;color:#C0392B;margin-bottom:10px;}
-        .pf-badges-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;}
-        .pf-track{padding:3px 10px;border-radius:999px;font-family:"Satoshi",sans-serif;font-size:11px;font-weight:700;background:rgba(192,57,43,.08);color:#C0392B;}
+        /* Row layouts */
+        .pf-row-asym{display:grid;grid-template-columns:3fr 2fr;gap:24px;align-items:start;}
+        .pf-row-half{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
+        /* ── IDENTITY ── */
+        .pf-id-h{display:flex;align-items:center;gap:32px;}
+        .pf-id-left{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;}
+        .pf-id-right{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;}
+        .pf-id-arch-big{font-family:"Instrument Serif",serif;font-style:italic;font-size:1.15rem;color:#C0392B;text-align:center;line-height:1.3;}
+        .pf-avatar{width:96px;height:96px;border-radius:50%;background:#C0392B;display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-weight:700;font-size:28px;color:#fff;flex-shrink:0;}
+        .pf-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:clamp(1.8rem,4vw,2.5rem);color:#0D0D0D;letter-spacing:-0.02em;line-height:1.1;}
+        .pf-track{padding:3px 10px;border-radius:999px;font-family:"Satoshi",sans-serif;font-size:11px;font-weight:700;background:rgba(192,57,43,.08);color:#C0392B;width:fit-content;}
         .pf-school{font-family:"Satoshi",sans-serif;font-size:14px;color:#6B6B6B;}
-        /* Cert */
+        /* ── CERT ── */
         .pf-cert-badge{display:inline-flex;align-items:center;padding:4px 12px;border-radius:999px;font-family:"Satoshi",sans-serif;font-size:11px;font-weight:700;margin-bottom:12px;}
         .pf-cert-badge.cert{background:#D1FAE5;color:#065F46;}
         .pf-cert-badge.honor{background:rgba(212,130,26,.12);color:#92400E;}
@@ -394,22 +400,23 @@ export default function PortfolioPage() {
         .pf-cert-qr img{border-radius:4px;}
         .pf-cert-verify{font-family:"Satoshi",sans-serif;font-size:12px;font-weight:600;color:#C0392B;text-decoration:none;}
         .pf-cert-verify:hover{text-decoration:underline;}
-        .pf-logos{display:flex;align-items:center;gap:16px;margin-top:16px;}
-        .pf-logo{height:28px;object-fit:contain;filter:grayscale(1);opacity:.5;}
-        /* Stats grid */
-        .pf-stats{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-        .pf-stat{text-align:center;padding:20px;background:var(--bg-2,#EFECE6);border-radius:12px;}
-        .pf-stat__num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:2rem;color:#C0392B;font-variant-numeric:tabular-nums;}
-        .pf-stat__lbl{font-family:"Satoshi",sans-serif;font-size:11px;color:#6B6B6B;letter-spacing:.1em;text-transform:uppercase;margin-top:4px;}
-        /* IDEMR pills */
+        /* ── STATS ── */
+        .pf-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+        .pf-stat{text-align:center;padding:16px 10px;background:#EFECE6;border-radius:12px;}
+        .pf-stat__num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:1.6rem;color:#C0392B;font-variant-numeric:tabular-nums;}
+        .pf-stat__lbl{font-family:"Satoshi",sans-serif;font-size:10px;color:#6B6B6B;letter-spacing:.1em;text-transform:uppercase;margin-top:4px;line-height:1.3;}
+        /* ── IDEMR ── */
         .pf-idemr{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
         .pf-idemr-pill{padding:4px 12px;border-radius:999px;font-family:"Satoshi",sans-serif;font-size:11px;font-weight:700;background:rgba(192,57,43,.08);color:#C0392B;border:1px solid rgba(192,57,43,.15);}
-        /* Great Venture */
-        .pf-gv-meta{font-family:"Instrument Serif",serif;font-style:italic;font-size:1.3rem;color:#0D0D0D;line-height:1.5;margin-bottom:16px;}
+        /* ── GREAT VENTURE ── */
+        .pf-gv-meta{font-family:"Instrument Serif",serif;font-style:italic;font-size:1.25rem;color:#0D0D0D;line-height:1.55;margin-bottom:16px;}
         .pf-gv-list{display:flex;flex-direction:column;gap:6px;}
         .pf-gv-item{font-family:"Satoshi",sans-serif;font-size:13px;color:#6B6B6B;display:flex;align-items:flex-start;gap:8px;}
         .pf-gv-dot{width:6px;height:6px;border-radius:50%;background:#C0392B;flex-shrink:0;margin-top:4px;}
-        /* Universities */
+        /* ── ACCREDITATIONS ── */
+        .pf-accred{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;height:100%;text-align:center;}
+        .pf-accred-logo{height:40px;object-fit:contain;filter:grayscale(1);opacity:.55;max-width:140px;}
+        /* ── UNIVERSITIES ── */
         .pf-uni-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
         .pf-uni-card{background:#FAF8F4;border:1px solid rgba(13,13,13,.07);border-radius:14px;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:10px;min-height:160px;text-align:center;}
         .pf-uni-initial{width:56px;height:56px;border-radius:10px;background:rgba(192,57,43,.08);display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-size:14px;font-weight:700;color:#C0392B;}
@@ -419,28 +426,27 @@ export default function PortfolioPage() {
         .pf-uni-desc{font-family:"Satoshi",sans-serif;font-size:11px;color:#6B6B6B;line-height:1.5;flex:1;}
         .pf-uni-btn{display:inline-flex;align-items:center;padding:6px 14px;border-radius:999px;border:1px solid rgba(13,13,13,.2);font-family:"Satoshi",sans-serif;font-size:12px;font-weight:600;color:#0D0D0D;text-decoration:none;transition:border-color .2s,color .2s;margin-top:auto;}
         .pf-uni-btn:hover{border-color:#0D0D0D;}
-        @media(max-width:768px){.pf-uni-grid{grid-template-columns:repeat(2,1fr);}}
-        @media(max-width:480px){.pf-uni-grid{grid-template-columns:1fr;}}
-        /* Export card */
-        .pf-export{background:#0D0D0D;border-radius:16px;padding:36px;margin-bottom:20px;}
+        /* ── EXPORT ── */
+        .pf-export{background:#0D0D0D;border-radius:16px;padding:40px;}
         .pf-export-eyebrow{font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:14px;}
         .pf-export-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:1.5rem;color:#fff;margin-bottom:10px;}
         .pf-export-sub{font-family:"Satoshi",sans-serif;font-size:14px;color:rgba(255,255,255,.55);line-height:1.65;margin-bottom:24px;}
         .pf-export-btn{padding:12px 28px;background:#C0392B;border:none;border-radius:999px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;color:#fff;cursor:pointer;transition:background .2s;}
         .pf-export-btn:hover{background:#a93226;}
-        /* Footer */
+        /* ── FOOTER ── */
         .pf-footer{text-align:center;padding:32px 0 0;border-top:1px solid rgba(13,13,13,.06);}
         .pf-footer-text{font-family:"Satoshi",sans-serif;font-size:12px;color:rgba(13,13,13,.35);margin-bottom:8px;}
         .pf-footer-link{font-family:"Satoshi",sans-serif;font-size:12px;color:#C0392B;text-decoration:none;}
         .pf-footer-link:hover{text-decoration:underline;}
-        @media(max-width:600px){
-          .pf-id{grid-template-columns:1fr;}
-          .pf-stats{grid-template-columns:1fr 1fr;}
-          .pf-cert-row{flex-direction:column;}
+        /* ── RESPONSIVE ── */
+        @media(max-width:768px){
+          .pf-row-asym,.pf-row-half{grid-template-columns:1fr;}
+          .pf-id-h{flex-direction:column;align-items:flex-start;gap:20px;}
+          .pf-id-right{align-self:center;}
+          .pf-uni-grid{grid-template-columns:repeat(2,1fr);}
         }
-        @media print{
-          .pf-export,.pf-uni-grid{display:none!important;}
-        }
+        @media(max-width:480px){.pf-uni-grid{grid-template-columns:1fr;}}
+        @media print{.pf-export,.pf-uni-grid{display:none!important;}}
       `}</style>
 
       <div className="pf-page">
@@ -450,82 +456,94 @@ export default function PortfolioPage() {
           <div className="pf-divider" />
         </m.div>
 
-        <div className="pf-inner">
+        <div className="pf-inner pf-grid">
 
-          {/* ── SECCIÓN 1 — Identidad ── */}
-          <m.div className="pf-card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp(0.1)}>
-            <div className="pf-id">
-              <div>
+          {/* ── FILA 1 — Identidad (full width, más horizontal) ── */}
+          <m.div className="pf-card" style={{ padding: 40 }} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp(0.1)}>
+            <div className="pf-id-h">
+              <div className="pf-id-left">
                 <div className="pf-avatar">{initials}</div>
                 <h1 className="pf-name">{d.displayName}</h1>
-                {d.arquetipo && <p className="pf-arch">{d.arquetipo}</p>}
-                <div className="pf-badges-row">
-                  <span className="pf-track">{trackLabel}</span>
-                </div>
+                <span className="pf-track">{trackLabel}</span>
                 {d.schoolName && <p className="pf-school">{d.schoolName} · La Guajira, Colombia</p>}
               </div>
               {d.big_five && (
-                <ProfilePentagon bf={d.big_five} size={120} />
+                <div className="pf-id-right">
+                  <ProfilePentagon bf={d.big_five} size={160} />
+                  {d.arquetipo && <p className="pf-id-arch-big">{d.arquetipo}</p>}
+                </div>
               )}
             </div>
           </m.div>
 
-          {/* ── SECCIÓN 2 — Certificación ── */}
-          {d.resultado && d.certDate && (
-            <m.div className="pf-card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp(0.2)}>
-              <div className="pf-eyebrow">CERTIFICACIÓN OFICIAL</div>
-              <h2 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: '1.3rem', color: '#0D0D0D', marginBottom: 10 }}>
-                The Big Leader
-              </h2>
-              <span className={`pf-cert-badge ${d.resultado === 'mencion_honor' ? 'honor' : 'cert'}`}>
-                {d.resultado === 'mencion_honor' ? '✦ Mención de Honor' : '✓ Certificado'}
-              </span>
-              <div className="pf-cert-row">
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 13, color: '#6B6B6B', marginBottom: 8 }}>
-                    {fmtDate(d.certDate)}
-                  </p>
-                  {certId && (
-                    <>
-                      <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 11, color: 'rgba(13,13,13,.4)', letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 8 }}>
-                        {certId}
-                      </p>
-                      <a href={`/verify/${certId}`} className="pf-cert-verify" target="_blank" rel="noreferrer">
-                        Verificar autenticidad →
-                      </a>
-                    </>
-                  )}
-                </div>
-                {qrUrl && (
-                  <div className="pf-cert-qr">
-                    <img src={qrUrl} alt="QR verificar" width={56} height={56} />
-                    <span style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 8, color: '#6B6B6B', letterSpacing: '.06em' }}>VERIFICAR</span>
+          {/* ── FILA 2 — Certificación 60% | Stats 40% ── */}
+          {(d.resultado || d.showXP) && (
+            <m.div className="pf-row-asym" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp(0.2)}>
+              {/* Cert — izquierda */}
+              {d.resultado && d.certDate ? (
+                <div className="pf-card">
+                  <div className="pf-eyebrow">CERTIFICACIÓN OFICIAL</div>
+                  <h2 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: '1.3rem', color: '#0D0D0D', marginBottom: 10 }}>
+                    The Big Leader
+                  </h2>
+                  <span className={`pf-cert-badge ${d.resultado === 'mencion_honor' ? 'honor' : 'cert'}`}>
+                    {d.resultado === 'mencion_honor' ? '✦ Mención de Honor' : '✓ Certificado'}
+                  </span>
+                  <div className="pf-cert-row">
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 13, color: '#6B6B6B', marginBottom: 8 }}>{fmtDate(d.certDate)}</p>
+                      {certId && (
+                        <>
+                          <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 11, color: 'rgba(13,13,13,.4)', letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 8 }}>{certId}</p>
+                          <a href={`/verify/${certId}`} className="pf-cert-verify" target="_blank" rel="noreferrer">Verificar autenticidad →</a>
+                        </>
+                      )}
+                    </div>
+                    {qrUrl && (
+                      <div className="pf-cert-qr">
+                        <img src={qrUrl} alt="QR verificar" width={56} height={56} />
+                        <span style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 8, color: '#6B6B6B', letterSpacing: '.06em' }}>VERIFICAR</span>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              <div className="pf-logos">
-                <img src="/cognia.png" alt="Cognia" className="pf-logo" />
-                <img src="/International_Baccalaureate_Logo.svg.png" alt="IB" className="pf-logo" />
-                <img src="/tri.png" alt="Tri-Association" className="pf-logo" />
-              </div>
+                </div>
+              ) : <div />}
+
+              {/* Stats — derecha */}
+              {d.showXP ? (
+                <div className="pf-card">
+                  <div className="pf-eyebrow">IMPACTO</div>
+                  <div className="pf-stats">
+                    {[
+                      { num: d.totalXP.toLocaleString('es-CO'), lbl: 'Puntos de Impacto' },
+                      { num: `${d.modulesCompleted}/7`,          lbl: 'Módulos' },
+                      { num: `${d.badgesCount}`,                  lbl: 'Badges' },
+                      { num: `${daysSince(d.createdAt)}`,         lbl: 'Días' },
+                    ].map(({ num, lbl }) => (
+                      <div key={lbl} className="pf-stat">
+                        <div className="pf-stat__num">{num}</div>
+                        <div className="pf-stat__lbl">{lbl}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : <div />}
             </m.div>
           )}
 
-          {/* ── SECCIÓN 3 — Proyecto Capstone ── */}
+          {/* ── FILA 3 — Capstone (full width) ── */}
           {d.showCapstone && d.projectTitle && (
             <m.div className="pf-card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp(0.3)}>
               <div className="pf-eyebrow">PROYECTO DE LIDERAZGO</div>
-              <h2 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: '1.3rem', color: '#0D0D0D', marginBottom: 12 }}>
+              <h2 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: '1.3rem', color: '#0D0D0D', marginBottom: 14 }}>
                 {d.projectTitle}
               </h2>
               {d.projectDesc && (
-                <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 15, color: '#2D2D2D', lineHeight: 1.7, marginBottom: 16 }}>
+                <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 15, color: '#2D2D2D', lineHeight: 1.7, marginBottom: 18 }}>
                   {d.projectDesc.split(' ').slice(0, 150).join(' ')}{d.projectDesc.split(' ').length > 150 ? '…' : ''}
                 </p>
               )}
-              <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 8 }}>
-                METODOLOGÍA
-              </p>
+              <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 8 }}>METODOLOGÍA</p>
               <div className="pf-idemr">
                 {['Identificar', 'Diseñar', 'Ejecutar', 'Medir', 'Reflexionar'].map(s => (
                   <span key={s} className="pf-idemr-pill">{s.charAt(0)} · {s}</span>
@@ -534,99 +552,77 @@ export default function PortfolioPage() {
             </m.div>
           )}
 
-          {/* ── SECCIÓN 4 — Estadísticas ── */}
-          {d.showXP && (
-            <m.div className="pf-card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp(0.4)}>
-              <div className="pf-eyebrow">ESTADÍSTICAS DE IMPACTO</div>
-              <div className="pf-stats">
-                {[
-                  { num: d.totalXP.toLocaleString('es-CO'), lbl: 'Puntos de Impacto' },
-                  { num: `${d.modulesCompleted} / 7`, lbl: 'Módulos Completados' },
-                  { num: `${d.badgesCount}`, lbl: 'Badges Obtenidos' },
-                  { num: `${daysSince(d.createdAt)}`, lbl: 'Días en el Programa' },
-                ].map(({ num, lbl }) => (
-                  <div key={lbl} className="pf-stat">
-                    <div className="pf-stat__num">{num}</div>
-                    <div className="pf-stat__lbl">{lbl}</div>
+          {/* ── FILA 4 — Great Venture 50% | Acreditaciones 50% ── */}
+          <m.div className="pf-row-half" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp(0.4)}>
+            {/* Great Venture — izquierda */}
+            {d.showGV && d.metaNucleo ? (
+              <div className="pf-card">
+                <div className="pf-eyebrow">THE GREAT VENTURE</div>
+                <p className="pf-gv-meta">{d.metaNucleo}</p>
+                {d.gvEquipo.length > 0 && (
+                  <div style={{ marginBottom: 12 }}>
+                    <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 8 }}>EQUIPO DE PODER</p>
+                    <div className="pf-gv-list">
+                      {d.gvEquipo.map((mem, i) => <div key={i} className="pf-gv-item"><div className="pf-gv-dot"/>{mem}</div>)}
+                    </div>
                   </div>
-                ))}
+                )}
+                {d.gvPlanes.length > 0 && (
+                  <div>
+                    <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 8 }}>PLANES DE ACCIÓN</p>
+                    <div className="pf-gv-list">
+                      {d.gvPlanes.map((plan, i) => <div key={i} className="pf-gv-item"><div className="pf-gv-dot"/>{plan}</div>)}
+                    </div>
+                  </div>
+                )}
               </div>
-            </m.div>
-          )}
+            ) : <div />}
 
-          {/* ── SECCIÓN 5 — Great Venture ── */}
-          {d.showGV && d.metaNucleo && (
-            <m.div className="pf-card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp(0.5)}>
-              <div className="pf-eyebrow">THE GREAT VENTURE</div>
-              <p className="pf-gv-meta">{d.metaNucleo}</p>
-              {d.gvEquipo.length > 0 && (
-                <div style={{ marginBottom: 12 }}>
-                  <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 8 }}>EQUIPO DE PODER</p>
-                  <div className="pf-gv-list">
-                    {d.gvEquipo.map((m, i) => <div key={i} className="pf-gv-item"><div className="pf-gv-dot"/>{m}</div>)}
-                  </div>
-                </div>
-              )}
-              {d.gvPlanes.length > 0 && (
-                <div>
-                  <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: '#6B6B6B', marginBottom: 8 }}>PLANES DE ACCIÓN</p>
-                  <div className="pf-gv-list">
-                    {d.gvPlanes.map((p, i) => <div key={i} className="pf-gv-item"><div className="pf-gv-dot"/>{p}</div>)}
-                  </div>
-                </div>
-              )}
-            </m.div>
-          )}
+            {/* Acreditaciones — derecha */}
+            <div className="pf-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div className="pf-eyebrow" style={{ textAlign: 'center' }}>RECONOCIDO POR</div>
+              <div className="pf-accred">
+                <img src="/cognia.png"                               alt="Cognia"                   className="pf-accred-logo" />
+                <img src="/International_Baccalaureate_Logo.svg.png" alt="International Baccalaureate" className="pf-accred-logo" />
+                <img src="/tri.png"                                  alt="Tri-Association"          className="pf-accred-logo" />
+              </div>
+            </div>
+          </m.div>
 
-          {/* ── SECCIÓN 6 — Universidades ── */}
-          <m.div className="pf-card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp(0.55)}>
+          {/* ── FILA 5 — Universidades ── */}
+          <m.div className="pf-card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp(0.5)}>
             <div className="pf-eyebrow">SIGUIENTE PASO</div>
-            <h2 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: '1.5rem', color: '#0D0D0D', marginBottom: 8 }}>
-              ¿Listo para el siguiente paso?
-            </h2>
+            <h2 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: '1.5rem', color: '#0D0D0D', marginBottom: 8 }}>¿Listo para el siguiente paso?</h2>
             <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 15, color: '#6B6B6B', lineHeight: 1.65, marginBottom: 24 }}>
               Este portafolio y certificado son reconocidos internacionalmente. Úsalos en tu aplicación universitaria.
             </p>
             <div className="pf-uni-grid">
               {UNIVERSITIES.map(u => (
-                <m.div
-                  key={u.name}
-                  className="pf-uni-card"
-                  whileHover={{ y: -2, scale: 1.01 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                >
+                <m.div key={u.name} className="pf-uni-card" whileHover={{ y: -2, scale: 1.01 }} transition={{ type: 'spring', stiffness: 200, damping: 22 }}>
                   <UniLogo src={u.logo} alt={u.name} initial={u.initial} />
                   <div className="pf-uni-name">{u.name}</div>
                   <div className="pf-uni-desc">{u.desc}</div>
-                  <a href={u.url} target="_blank" rel="noreferrer" className="pf-uni-btn">
-                    Aplicar →
-                  </a>
+                  <a href={u.url} target="_blank" rel="noreferrer" className="pf-uni-btn">Aplicar →</a>
                 </m.div>
               ))}
             </div>
           </m.div>
 
-          {/* ── SECCIÓN 7 — Export PDF ── */}
-          <m.div className="pf-export" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp(0.6)}>
+          {/* ── FILA 6 — Export (full width, fondo var(--ink)) ── */}
+          <m.div className="pf-export" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp(0.55)}>
             <div className="pf-export-eyebrow">EXPORTAR PORTAFOLIO</div>
             <h2 className="pf-export-title">Listo para Common App y más.</h2>
             <p className="pf-export-sub">
               Descarga tu portafolio formateado para pegarlo directamente en la sección
               &ldquo;Additional Information&rdquo; de Common App, UCAS, o cualquier plataforma de admisiones.
             </p>
-            <m.button
-              className="pf-export-btn"
-              onClick={exportPDF}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-            >
+            <m.button className="pf-export-btn" onClick={exportPDF} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} transition={{ type: 'spring', stiffness: 200, damping: 22 }}>
               Descargar PDF
             </m.button>
           </m.div>
 
           {/* ── Footer ── */}
-          <m.div className="pf-footer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={sp(0.7)}>
+          <m.div className="pf-footer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={sp(0.6)}>
             <p className="pf-footer-text">Portafolio generado por The Big Family Platform</p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 8 }}>
               <a href="/" className="pf-footer-link">← Ver el programa</a>
