@@ -195,6 +195,26 @@ const MapSVG = memo(function MapSVG({
       {/* Dot grid background */}
       <rect width="800" height="600" fill="url(#gv-dotgrid)" />
 
+      {/* Concentric rings — purely decorative depth layer */}
+      {[
+        { r: 100, stroke: 'rgba(13,13,13,0.04)',  delay: 0.1 },
+        { r: 180, stroke: 'rgba(13,13,13,0.035)', delay: 0.2 },
+        { r: 260, stroke: 'rgba(13,13,13,0.03)',  delay: 0.3 },
+      ].map(({ r, stroke, delay }) => (
+        <m.circle
+          key={r}
+          cx={CX} cy={CY} r={r}
+          fill="none"
+          stroke={stroke}
+          strokeWidth={1}
+          aria-hidden="true"
+          style={{ transformOrigin: `${CX}px ${CY}px` }}
+          initial={pref ? false : { scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 60, damping: 20, delay }}
+        />
+      ))}
+
       {/* Connection lines — drawn below nodes */}
       {ready && SAT_KEYS.map((key, i) => {
         const isHov = hovered === key
@@ -203,8 +223,8 @@ const MapSVG = memo(function MapSVG({
           <m.path
             key={key}
             d={CONN_PATHS[key]}
-            stroke={isHov ? cfg.lineColor : 'rgba(13,13,13,0.14)'}
-            strokeWidth={1.5}
+            stroke={isHov ? cfg.lineColor : 'rgba(13,13,13,0.20)'}
+            strokeWidth={2}
             fill="none"
             style={{ transition: 'stroke 0.2s' }}
             initial={pref ? false : { pathLength: 0 }}
@@ -552,7 +572,18 @@ export default function GreatVentureMapaPage() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4 }}
         >
-          <div className="gvm-card-scroll">
+          {/* Grain/noise overlay — above card surface, below SVG content */}
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute', inset: 0, borderRadius: 24,
+              pointerEvents: 'none', zIndex: 1,
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+              opacity: 0.025,
+              mixBlendMode: 'multiply',
+            }}
+          />
+          <div className="gvm-card-scroll" style={{ position: 'relative', zIndex: 2 }}>
             <MapSVG
               data={data}
               panel={panel}
