@@ -1,7 +1,7 @@
 'use client'
 export const dynamic = 'force-dynamic'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
@@ -14,62 +14,314 @@ interface GVData     { meta_nucleo: string; creencias: string; paradigma: string
 
 type NodeKey = 'meta' | 'creencias' | 'paradigma' | 'equipo' | 'planes'
 
-// ── SVG constants ─────────────────────────────────────────────────────────────
-const W  = 900, H  = 780
-const CX = 450, CY = 390
-const CR = 80    // central node radius
-const SR = 70    // satellite node radius
-const SD = 170   // satellite distance from center
+// ── SVG geometry ──────────────────────────────────────────────────────────────
+// viewBox 800 × 600 — central ellipse at (400, 300)
+const CX = 400, CY = 300  // ellipse center
+const ERX = 110, ERY = 75  // ellipse radii
 
-// Per-satellite accent colors (fill, stroke)
-const SAT_COLORS: Record<string, { fill: string; stroke: string }> = {
-  creencias: { fill: 'rgba(15,123,108,0.22)',  stroke: 'rgba(15,123,108,0.55)'  },
-  paradigma: { fill: 'rgba(212,130,26,0.22)',  stroke: 'rgba(212,130,26,0.55)'  },
-  equipo:    { fill: 'rgba(192,57,43,0.30)',   stroke: 'rgba(192,57,43,0.60)'   },
-  planes:    { fill: 'rgba(255,255,255,0.08)', stroke: 'rgba(255,255,255,0.18)' },
+// Satellite node centers (hardcoded — cardinal positions)
+const SAT = {
+  creencias: { cx: 400, cy:  90 },
+  paradigma: { cx: 680, cy: 300 },
+  planes:    { cx: 400, cy: 510 },
+  equipo:    { cx: 120, cy: 300 },
+} as const
+
+// Rect dimensions for satellite nodes: w=140, h=110, rx=16
+const RW = 140, RH = 110, RRX = 16
+
+// Bezier curves from (CX,CY) to each satellite center — lateral offset 30px
+const CONN_PATHS: Record<string, string> = {
+  creencias: `M${CX},${CY} Q430,195 400,90`,
+  paradigma: `M${CX},${CY} Q540,330 680,300`,
+  planes:    `M${CX},${CY} Q370,405 400,510`,
+  equipo:    `M${CX},${CY} Q260,270 120,300`,
 }
 
-// Truncate to first N words for node preview
-function first12Words(s: string): string {
-  const words = s.trim().split(/\s+/).filter(Boolean)
-  return words.length <= 12 ? s.trim() : words.slice(0, 12).join(' ') + '…'
+// Per-node design tokens
+const NODE_CFG: Record<string, { label: string; stroke: string; labelColor: string; lineColor: string }> = {
+  creencias: { label: 'CREENCIAS', stroke: '#0F7B6C', labelColor: '#0F7B6C', lineColor: '#0F7B6C' },
+  paradigma: { label: 'PARADIGMA', stroke: '#D4821A', labelColor: '#D4821A', lineColor: '#D4821A' },
+  planes:    { label: 'PLANES',    stroke: '#C0392B', labelColor: '#C0392B', lineColor: '#C0392B' },
+  equipo:    { label: 'EQUIPO',    stroke: 'rgba(13,13,13,0.28)', labelColor: 'rgba(13,13,13,0.5)', lineColor: 'rgba(13,13,13,0.18)' },
 }
 
-const SATELLITES: { key: NodeKey; label: string; angle: number }[] = [
-  { key: 'creencias', label: 'CREENCIAS', angle: -90  },
-  { key: 'paradigma', label: 'PARADIGMA', angle:   0  },
-  { key: 'planes',    label: 'PLANES',    angle:  90  },
-  { key: 'equipo',    label: 'EQUIPO',    angle: 180  },
-]
-
-function rad(d: number) { return (d * Math.PI) / 180 }
-function sat(angle: number) {
-  return { x: CX + SD * Math.cos(rad(angle)), y: CY + SD * Math.sin(rad(angle)) }
-}
-function curvePath(angle: number) {
-  const { x: x2, y: y2 } = sat(angle)
-  const dx = x2 - CX, dy = y2 - CY
-  const cpx = CX + dx * 0.5 + dy * 0.12
-  const cpy = CY + dy * 0.5 - dx * 0.12
-  return `M${CX},${CY} Q${cpx},${cpy} ${x2},${y2}`
-}
+const SAT_KEYS = ['creencias', 'paradigma', 'planes', 'equipo'] as const
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 const MOCK_GV: GVData = {
   meta_nucleo: 'Crear un programa de mentoría entre estudiantes en los 8 colegios de La Guajira',
-  creencias:   'Creo que el liderazgo nace en la comunidad, no en los libros',
-  paradigma:   'Veo en cada joven el potencial de cambiar su entorno',
-  equipo:      [{ nombre: 'Luis B.', rol: 'mi mentor' }, { nombre: 'Samuel', rol: 'me da feedback' }, { nombre: 'María', rol: 'ejecución' }],
-  planes:      [
-    { id: 'p1', texto: 'Hablar con el rector esta semana',            fecha: '2026-06-07', completado: false },
-    { id: 'p2', texto: 'Formar el primer grupo piloto',               fecha: '2026-07-01', completado: false },
-    { id: 'p3', texto: 'Presentar en el Día de Liderazgo',            fecha: '2026-05-16', completado: true  },
+  creencias:   'Creo que el liderazgo nace en la comunidad, no en los libros. Cada joven tiene algo valioso que enseñar.',
+  paradigma:   'Veo en cada obstáculo una oportunidad de aprender. Mi comunidad tiene más fortalezas que problemas.',
+  equipo: [
+    { nombre: 'Luis B.',  rol: 'Mentor'    },
+    { nombre: 'Samuel',   rol: 'Feedback'  },
+    { nombre: 'María',    rol: 'Ejecución' },
+  ],
+  planes: [
+    { id: 'p1', texto: 'Hablar con el rector esta semana',          fecha: '2026-06-07', completado: false },
+    { id: 'p2', texto: 'Formar el primer grupo piloto en marzo',    fecha: '2026-07-01', completado: false },
+    { id: 'p3', texto: 'Presentar resultados en el Día de Liderazgo', fecha: '2026-05-16', completado: true },
   ],
 }
 
 const genId = () => `p_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
 
-// ── Component ─────────────────────────────────────────────────────────────────
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })
+}
+
+// ── MapSVG — memoized to prevent re-render on panel state changes ─────────────
+interface MapSVGProps {
+  data:      GVData
+  panel:     NodeKey | null
+  hovered:   NodeKey | null
+  pref:      boolean | null
+  ready:     boolean
+  onNodeClick:  (k: NodeKey) => void
+  onNodeEnter:  (k: NodeKey) => void
+  onNodeLeave:  () => void
+}
+
+const MapSVG = memo(function MapSVG({
+  data, panel, hovered, pref, ready,
+  onNodeClick, onNodeEnter, onNodeLeave,
+}: MapSVGProps) {
+
+  function nodeContent(key: string) {
+    const { equipo, planes, creencias, paradigma } = data
+    const cfg = NODE_CFG[key]
+
+    if (key === 'equipo') {
+      const visible = equipo.slice(0, 3)
+      const extra   = equipo.length - 3
+      return (
+        <div style={{ padding: '8px 8px 6px', height: '100%', display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <span style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 9, fontWeight: 700, letterSpacing: '0.15em', color: cfg.labelColor, textTransform: 'uppercase' }}>
+            {cfg.label}
+          </span>
+          <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {visible.map((mem, i) => (
+              <div key={i} style={{
+                width: 28, height: 28, borderRadius: '50%', background: '#C0392B',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 11, fontWeight: 700, color: '#fff', fontFamily: 'Satoshi,sans-serif', flexShrink: 0,
+              }}>
+                {mem.nombre.charAt(0).toUpperCase()}
+              </div>
+            ))}
+            {extra > 0 && (
+              <div style={{
+                width: 28, height: 28, borderRadius: '50%', background: 'var(--bg-2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 9, fontWeight: 700, color: 'var(--mute)', fontFamily: 'Satoshi,sans-serif',
+              }}>
+                +{extra}
+              </div>
+            )}
+          </div>
+          {visible.length > 0 && (
+            <div style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 9, color: 'var(--mute)', textAlign: 'center', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {visible.map(m => m.nombre).join(', ')}
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    if (key === 'planes') {
+      return (
+        <div style={{ padding: '8px 8px 6px', height: '100%', display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <span style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 9, fontWeight: 700, letterSpacing: '0.15em', color: cfg.labelColor, textTransform: 'uppercase' }}>
+            {cfg.label}
+          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {planes.slice(0, 3).map((p, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 5 }}>
+                <div style={{
+                  width: 6, height: 6, borderRadius: '50%', flexShrink: 0, marginTop: 3,
+                  background: p.completado ? '#0F7B6C' : '#C0392B',
+                }} />
+                <span style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 10, color: p.completado ? 'var(--mute)' : 'var(--ink-2)', lineHeight: 1.4, textDecoration: p.completado ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {p.texto}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    // creencias / paradigma — text
+    const text = key === 'creencias' ? creencias : paradigma
+    return (
+      <div style={{ padding: '8px 8px 6px', height: '100%', display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <span style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 9, fontWeight: 700, letterSpacing: '0.15em', color: cfg.labelColor, textTransform: 'uppercase' }}>
+          {cfg.label}
+        </span>
+        <span style={{
+          fontFamily: 'Satoshi,sans-serif', fontSize: 11,
+          color: 'var(--ink-2,#2D2D2D)', lineHeight: 1.5,
+          display: '-webkit-box', WebkitLineClamp: 4,
+          WebkitBoxOrient: 'vertical', overflow: 'hidden',
+        }}>
+          {text || '—'}
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <svg
+      viewBox="0 0 800 600"
+      style={{ width: '100%', height: 'auto', display: 'block', minWidth: 600 }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        {/* Dot grid pattern */}
+        <pattern id="gv-dotgrid" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+          <circle cx="10" cy="10" r="0.8" fill="rgba(13,13,13,0.06)" />
+        </pattern>
+        {/* Central ellipse shadow */}
+        <filter id="gv-shadow-red" x="-30%" y="-40%" width="160%" height="180%">
+          <feDropShadow dx="0" dy="8" stdDeviation="12" floodColor="#C0392B" floodOpacity="0.35" />
+        </filter>
+        {/* Card node shadow */}
+        <filter id="gv-shadow-card" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="rgba(13,13,13,0.08)" />
+        </filter>
+      </defs>
+
+      {/* Dot grid background */}
+      <rect width="800" height="600" fill="url(#gv-dotgrid)" />
+
+      {/* Connection lines — drawn below nodes */}
+      {ready && SAT_KEYS.map((key, i) => {
+        const isHov = hovered === key
+        const cfg   = NODE_CFG[key]
+        return (
+          <m.path
+            key={key}
+            d={CONN_PATHS[key]}
+            stroke={isHov ? cfg.lineColor : 'rgba(13,13,13,0.14)'}
+            strokeWidth={1.5}
+            fill="none"
+            style={{ transition: 'stroke 0.2s' }}
+            initial={pref ? false : { pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.6, delay: 1.4 + i * 0.02, ease: [0.22, 1, 0.36, 1] }}
+          />
+        )
+      })}
+
+      {/* Central ellipse */}
+      <m.ellipse
+        cx={CX} cy={CY} rx={ERX} ry={ERY}
+        fill="#C0392B"
+        filter="url(#gv-shadow-red)"
+        style={{ cursor: 'pointer', transformOrigin: `${CX}px ${CY}px` }}
+        initial={pref ? false : { scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        whileHover={{ scale: panel === 'meta' ? 1.03 : 1.02 }}
+        transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.7 }}
+        onClick={() => onNodeClick('meta')}
+        onHoverStart={() => onNodeEnter('meta')}
+        onHoverEnd={onNodeLeave}
+      />
+
+      {/* Central text */}
+      {ready && (
+        <m.g
+          initial={pref ? false : { opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 160, damping: 22, delay: 1.1 }}
+          style={{ pointerEvents: 'none' }}
+        >
+          <foreignObject x={CX - 90} y={CY - 50} width={180} height={90}>
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 180, height: 90, padding: '0 10px', textAlign: 'center', overflow: 'hidden',
+            }}>
+              <span style={{
+                fontFamily: '"Instrument Serif",serif', fontStyle: 'italic',
+                fontSize: data.meta_nucleo.split(/\s+/).length <= 8 ? 15 : 13,
+                fontWeight: 600, color: '#FFFFFF', lineHeight: 1.4,
+                display: '-webkit-box', WebkitLineClamp: 4,
+                WebkitBoxOrient: 'vertical', overflow: 'hidden',
+              }}>
+                {data.meta_nucleo || 'Tu Meta Núcleo'}
+              </span>
+            </div>
+          </foreignObject>
+        </m.g>
+      )}
+
+      {/* "META NÚCLEO" label below ellipse */}
+      {ready && (
+        <m.text
+          x={CX} y={CY + ERY + 18}
+          textAnchor="middle"
+          initial={pref ? false : { opacity: 0, y: 4 }}
+          animate={{ opacity: 0.7, y: 0 }}
+          transition={{ type: 'spring', stiffness: 160, damping: 22, delay: 0.9 }}
+          style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 9, fontWeight: 700, fill: '#C0392B', letterSpacing: '0.2em', pointerEvents: 'none' }}
+        >
+          META NÚCLEO
+        </m.text>
+      )}
+
+      {/* Satellite nodes */}
+      {SAT_KEYS.map((key, i) => {
+        const { cx, cy } = SAT[key]
+        const rx = cx - RW / 2, ry = cy - RH / 2
+        const cfg    = NODE_CFG[key]
+        const isOpen = panel === key
+        const isDim  = !!panel && panel !== key && panel !== 'meta'
+
+        return (
+          <m.g
+            key={key}
+            style={{ cursor: 'pointer', transformOrigin: `${cx}px ${cy}px` }}
+            initial={pref ? false : { scale: 0.8, opacity: 0 }}
+            animate={{
+              scale:   isOpen ? 1.03 : isDim ? 0.97 : 1,
+              opacity: isDim ? 0.4 : 1,
+            }}
+            whileHover={{ scale: isOpen ? 1.03 : 1.04 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22, delay: pref ? 0 : 1.8 + i * 0.1 }}
+            onClick={() => onNodeClick(key)}
+            onHoverStart={() => onNodeEnter(key)}
+            onHoverEnd={onNodeLeave}
+          >
+            <rect
+              x={rx} y={ry} width={RW} height={RH} rx={RRX}
+              fill="var(--card-bg,#fff)"
+              stroke={isOpen || hovered === key ? cfg.stroke : cfg.stroke}
+              strokeWidth={isOpen || hovered === key ? 2 : 1.5}
+              filter="url(#gv-shadow-card)"
+              style={{ transition: 'stroke-width 0.15s' }}
+            />
+            {/* Content */}
+            {ready && (
+              <m.g
+                initial={pref ? false : { opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 160, damping: 22, delay: pref ? 0 : 2.2 + i * 0.08 }}
+                style={{ pointerEvents: 'none' }}
+              >
+                <foreignObject x={rx + 8} y={ry + 8} width={RW - 16} height={RH - 16}>
+                  {nodeContent(key)}
+                </foreignObject>
+              </m.g>
+            )}
+          </m.g>
+        )
+      })}
+    </svg>
+  )
+})
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default function GreatVentureMapaPage() {
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
@@ -77,19 +329,22 @@ export default function GreatVentureMapaPage() {
   const mapRef      = useRef<HTMLDivElement>(null)
   const pref        = useReducedMotion()
 
-  const [data,      setData]      = useState<GVData>(MOCK_GV)
-  const [userId,    setUserId]    = useState('')
-  const [userName,  setUserName]  = useState('')
-  const [loading,   setLoading]   = useState(true)
-  const [ready,     setReady]     = useState(false)
-  const [panel,     setPanel]     = useState<NodeKey | null>(null)
+  const [data,       setData]       = useState<GVData>(MOCK_GV)
+  const [userId,     setUserId]     = useState('')
+  const [userName,   setUserName]   = useState('')
+  const [updatedAt,  setUpdatedAt]  = useState('')
+  const [loading,    setLoading]    = useState(true)
+  const [ready,      setReady]      = useState(false)
+  const [panel,      setPanel]      = useState<NodeKey | null>(null)
+  const [hovered,    setHovered]    = useState<NodeKey | null>(null)
+  const [autoSaved,  setAutoSaved]  = useState(false)
 
   // Panel edit state
-  const [editText,      setEditText]      = useState('')
-  const [editNombre,    setEditNombre]    = useState('')
-  const [editRol,       setEditRol]       = useState('')
-  const [editPlanText,  setEditPlanText]  = useState('')
-  const [editPlanDate,  setEditPlanDate]  = useState('')
+  const [editText,     setEditText]     = useState('')
+  const [editNombre,   setEditNombre]   = useState('')
+  const [editRol,      setEditRol]      = useState('')
+  const [editPlanText, setEditPlanText] = useState('')
+  const [editPlanDate, setEditPlanDate] = useState('')
 
   // ── Boot ────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -98,6 +353,7 @@ export default function GreatVentureMapaPage() {
         setData(MOCK_GV)
         setUserId(MOCK.currentUser.id)
         setUserName(MOCK.currentUser.name.split(' ')[0])
+        setUpdatedAt(new Date().toISOString())
         setLoading(false)
         setTimeout(() => setReady(true), 100)
         return
@@ -108,9 +364,13 @@ export default function GreatVentureMapaPage() {
       const { data: { user } } = await sb.auth.getUser()
       if (!user) { router.replace('/login'); return }
       setUserId(user.id)
-      const { data: prof } = await sb.from('profiles').select('display_name').eq('id', user.id).maybeSingle()
+
+      const [{ data: prof }, { data: gv }] = await Promise.all([
+        sb.from('profiles').select('display_name').eq('id', user.id).maybeSingle(),
+        sb.from('great_ventures').select('*').eq('user_id', user.id).maybeSingle(),
+      ])
+
       if (prof?.display_name) setUserName(prof.display_name.split(' ')[0])
-      const { data: gv } = await sb.from('great_ventures').select('*').eq('user_id', user.id).maybeSingle()
       if (gv) {
         setData({
           meta_nucleo: gv.meta_nucleo ?? '',
@@ -119,6 +379,7 @@ export default function GreatVentureMapaPage() {
           equipo:      (gv.equipo as TeamMember[]) ?? [],
           planes:      (gv.planes as Plan[]) ?? [],
         })
+        setUpdatedAt(gv.updated_at ?? '')
       }
       setLoading(false)
       setTimeout(() => setReady(true), 100)
@@ -132,11 +393,16 @@ export default function GreatVentureMapaPage() {
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(async () => {
       if (!supabaseRef.current) supabaseRef.current = createClient()
-      const sb = supabaseRef.current; if (!sb) return
+      const sb = supabaseRef.current
+      if (!sb) return
+      const now = new Date().toISOString()
       await sb.from('great_ventures').upsert(
-        { user_id: userId, ...d, updated_at: new Date().toISOString() },
+        { user_id: userId, ...d, updated_at: now },
         { onConflict: 'user_id' }
       )
+      setUpdatedAt(now)
+      setAutoSaved(true)
+      setTimeout(() => setAutoSaved(false), 2200)
     }, 800)
   }, [userId])
 
@@ -144,15 +410,19 @@ export default function GreatVentureMapaPage() {
     setData(prev => { const next = { ...prev, ...partial }; scheduleSave(next); return next })
   }
 
-  // ── Panel open/close ─────────────────────────────────────────────────────
-  function openPanel(key: NodeKey) {
+  // ── Panel ────────────────────────────────────────────────────────────────
+  const openPanel = useCallback((key: NodeKey) => {
     setPanel(key)
-    if (key === 'meta')      setEditText(data.meta_nucleo)
-    if (key === 'creencias') setEditText(data.creencias)
-    if (key === 'paradigma') setEditText(data.paradigma)
+    setEditText(
+      key === 'meta'      ? data.meta_nucleo :
+      key === 'creencias' ? data.creencias :
+      key === 'paradigma' ? data.paradigma : ''
+    )
     setEditNombre(''); setEditRol(''); setEditPlanText(''); setEditPlanDate('')
-  }
-  function closePanel() { setPanel(null) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.meta_nucleo, data.creencias, data.paradigma])
+
+  const closePanel = useCallback(() => setPanel(null), [])
 
   function savePanel() {
     if (panel === 'meta')      updateData({ meta_nucleo: editText })
@@ -180,302 +450,202 @@ export default function GreatVentureMapaPage() {
     updateData({ planes: data.planes.map(p => p.id === id ? { ...p, completado: !p.completado } : p) })
   }
 
-  // ── Export PNG ──────────────────────────────────────────────────────────
+  const onNodeEnter  = useCallback((k: NodeKey) => setHovered(k), [])
+  const onNodeLeave  = useCallback(() => setHovered(null), [])
+
+  // ── Export ───────────────────────────────────────────────────────────────
   async function exportPNG() {
     const el = mapRef.current
     if (!el) return
     try {
       const { default: html2canvas } = await import('html2canvas')
-      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#0D0D0D', logging: false })
+      const canvas = await html2canvas(el, {
+        scale: 2, useCORS: true,
+        backgroundColor: 'var(--card-bg, #ffffff)',
+        logging: false,
+      })
       const a = document.createElement('a')
-      a.download = 'great-venture.png'
+      a.download = `great-venture-${userName || 'mapa'}.png`
       a.href = canvas.toDataURL('image/png')
       a.click()
     } catch (err) { console.error('[export]', err) }
   }
 
-  const truncate = (s: string, n: number) => s.length > n ? s.slice(0, n) + '…' : s
+  // ── Panel node config ────────────────────────────────────────────────────
+  const panelCfg = panel && panel !== 'meta' ? NODE_CFG[panel] : null
+  const panelColor = panel === 'meta' ? '#C0392B' : panelCfg?.labelColor ?? 'var(--ink)'
 
   if (loading) return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#0D0D0D', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid rgba(255,255,255,.1)', borderTopColor: '#C0392B', animation: 'spin 0.8s linear infinite' }} />
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid var(--line)', borderTopColor: '#C0392B', animation: 'gv-spin 0.8s linear infinite' }} />
     </div>
   )
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: '#0D0D0D', overflow: 'hidden' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'var(--bg)', overflowY: 'auto' }}>
       <style>{`
-        @keyframes spin{to{transform:rotate(360deg)}}
-        .gvm-top{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:20px 28px;}
-        .gvm-top-btn{background:none;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:7px 14px;font-family:"Satoshi",sans-serif;font-size:12px;font-weight:600;color:rgba(255,255,255,.55);cursor:pointer;transition:border-color .2s,color .2s;}
-        .gvm-top-btn:hover{border-color:rgba(255,255,255,.35);color:rgba(255,255,255,.85);}
-        .gvm-export{background:none;border:1px solid rgba(192,57,43,.4);border-radius:999px;padding:7px 14px;font-family:"Satoshi",sans-serif;font-size:12px;font-weight:700;color:#C0392B;cursor:pointer;transition:border-color .2s,background .2s;}
-        .gvm-export:hover{background:rgba(192,57,43,.08);}
-        .gvm-canvas{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:68px 20px 60px;}
-        .gvm-map-title{font-family:"Instrument Serif",serif;font-style:italic;font-size:20px;color:rgba(255,255,255,0.7);text-align:center;flex-shrink:0;}
-        .gvm-svg-wrap{width:100%;max-width:860px;aspect-ratio:900/780;}
-        .gvm-bottom{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);}
-        .gvm-dash-btn{padding:12px 28px;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.35);border-radius:999px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#C0392B;cursor:pointer;transition:background .2s;white-space:nowrap;}
-        .gvm-dash-btn:hover{background:rgba(192,57,43,.25);}
+        @keyframes gv-spin{to{transform:rotate(360deg)}}
+        .gvm-inner{max-width:900px;margin:0 auto;padding:40px 24px 80px;}
+        .gvm-header{margin-bottom:32px;}
+        .gvm-eyebrow{font-family:"Satoshi",sans-serif;font-weight:700;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#C0392B;margin-bottom:10px;}
+        .gvm-title{font-family:"Instrument Serif",serif;font-style:italic;font-size:clamp(1.8rem,4vw,2.8rem);color:var(--ink);letter-spacing:-0.01em;line-height:1.1;margin-bottom:8px;}
+        .gvm-updated{font-family:"Satoshi",sans-serif;font-size:13px;color:var(--mute);}
+        .gvm-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:24px;padding:48px;box-shadow:0 4px 16px rgba(13,13,13,.08),0 2px 6px rgba(13,13,13,.04);position:relative;overflow:hidden;}
+        .gvm-card-scroll{overflow-x:auto;}
+        .gvm-actions{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:28px;flex-wrap:wrap;}
+        .gvm-btn-ghost{padding:10px 20px;background:none;border:1px solid var(--line);border-radius:999px;font-family:"Satoshi",sans-serif;font-size:13px;font-weight:600;color:var(--mute);cursor:pointer;transition:border-color .2s,color .2s;}
+        .gvm-btn-ghost:hover{border-color:var(--ink);color:var(--ink);}
+        .gvm-btn-outline{padding:10px 20px;background:none;border:1px solid var(--ink);border-radius:999px;font-family:"Satoshi",sans-serif;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;transition:background .2s,color .2s;}
+        .gvm-btn-outline:hover{background:var(--ink);color:var(--bg);}
+        .gvm-btn-primary{padding:10px 24px;background:#C0392B;border:none;border-radius:999px;font-family:"Satoshi",sans-serif;font-size:13px;font-weight:700;color:#fff;cursor:pointer;transition:background .2s;}
+        .gvm-btn-primary:hover{background:#a93226;}
 
-        /* Panel */
-        .gvm-panel{position:fixed;top:0;right:0;bottom:0;width:360px;background:rgba(20,19,17,0.98);border-left:1px solid rgba(255,255,255,.08);backdrop-filter:blur(12px);z-index:20;overflow-y:auto;padding:28px 24px;}
-        .gvm-panel__title{font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:16px;}
-        .gvm-panel__close{position:absolute;top:20px;right:20px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:18px;line-height:1;transition:color .15s;padding:4px;}
-        .gvm-panel__close:hover{color:rgba(255,255,255,.8);}
-        .gvm-ta{width:100%;min-height:140px;padding:12px 14px;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;font-family:"Satoshi",sans-serif;font-size:14px;color:rgba(255,255,255,.85);line-height:1.65;resize:vertical;outline:none;transition:border-color .2s;}
+        /* Edit panel — light */
+        .gvm-panel{position:fixed;top:0;right:0;bottom:0;width:320px;background:var(--card-bg);border-left:1px solid var(--card-border);z-index:300;overflow-y:auto;padding:32px 24px;}
+        .gvm-panel__head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+        .gvm-panel__title{font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;}
+        .gvm-panel__close{background:none;border:none;cursor:pointer;color:var(--mute);font-size:18px;padding:4px;line-height:1;transition:color .15s;}
+        .gvm-panel__close:hover{color:var(--ink);}
+        .gvm-panel__saved{font-family:"Satoshi",sans-serif;font-size:11px;color:var(--accent-teal,#0F7B6C);display:flex;align-items:center;gap:4px;}
+        .gvm-ta{width:100%;min-height:140px;padding:12px 14px;background:var(--bg-2);border:1.5px solid var(--line);border-radius:12px;font-family:"Satoshi",sans-serif;font-size:14px;color:var(--ink);line-height:1.65;resize:vertical;outline:none;transition:border-color .2s;}
         .gvm-ta:focus{border-color:rgba(192,57,43,.5);}
         .gvm-save-btn{margin-top:12px;width:100%;padding:10px;background:#C0392B;border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .2s;}
         .gvm-save-btn:hover{background:#a93226;}
-        .gvm-p-input{width:100%;padding:9px 12px;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);border-radius:9px;font-family:"Satoshi",sans-serif;font-size:13px;color:rgba(255,255,255,.8);outline:none;transition:border-color .2s;margin-bottom:8px;}
-        .gvm-p-input:focus{border-color:rgba(192,57,43,.5);}
-        .gvm-p-add{padding:8px 14px;background:#C0392B;border:none;border-radius:8px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:12px;color:#fff;cursor:pointer;margin-bottom:12px;}
-        .gvm-p-add:disabled{opacity:.4;cursor:not-allowed;}
-        .gvm-p-chip{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;margin-bottom:6px;}
-        .gvm-p-chip-x{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.3);font-size:14px;margin-left:auto;padding:2px;transition:color .15s;}
-        .gvm-p-chip-x:hover{color:#C0392B;}
-        .gvm-p-check{width:16px;height:16px;border-radius:4px;border:1.5px solid rgba(255,255,255,.25);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;}
-        .gvm-p-check.done{background:#22c55e;border-color:#22c55e;}
+        .gvm-input{width:100%;padding:9px 12px;background:var(--bg-2);border:1.5px solid var(--line);border-radius:9px;font-family:"Satoshi",sans-serif;font-size:13px;color:var(--ink);outline:none;transition:border-color .2s;margin-bottom:8px;}
+        .gvm-input:focus{border-color:rgba(192,57,43,.5);}
+        .gvm-add-btn{padding:8px 14px;background:#C0392B;border:none;border-radius:8px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:12px;color:#fff;cursor:pointer;margin-bottom:12px;}
+        .gvm-add-btn:disabled{opacity:.4;cursor:not-allowed;}
+        .gvm-chip{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg-2);border:1px solid var(--line);border-radius:8px;margin-bottom:6px;}
+        .gvm-chip-x{background:none;border:none;cursor:pointer;color:var(--mute);font-size:14px;margin-left:auto;padding:2px;transition:color .15s;}
+        .gvm-chip-x:hover{color:#C0392B;}
+        .gvm-pcheck{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--line);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,border-color .15s;}
+        .gvm-pcheck.done{background:#22c55e;border-color:#22c55e;}
+        @media(max-width:768px){
+          .gvm-inner{padding:24px 16px 60px;}
+          .gvm-card{padding:24px 16px;}
+          .gvm-panel{top:auto;right:0;left:0;bottom:0;width:100%;border-left:none;border-top:1px solid var(--card-border);border-radius:20px 20px 0 0;padding:24px 20px 40px;}
+        }
       `}</style>
 
-      {/* Top controls */}
-      <div className="gvm-top">
-        <button className="gvm-top-btn" onClick={() => router.push('/dashboard/great-venture')}>← Volver al wizard</button>
-        <button className="gvm-export" onClick={exportPNG}>Exportar PNG</button>
-      </div>
+      <div className="gvm-inner">
+        {/* ── Header ── */}
+        <m.header
+          className="gvm-header"
+          initial={pref ? false : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 160, damping: 22, delay: 0.3 }}
+        >
+          <div className="gvm-eyebrow">THE GREAT VENTURE</div>
+          <h1 className="gvm-title">
+            El mapa de {userName || 'tu liderazgo'}
+          </h1>
+          {updatedAt && (
+            <p className="gvm-updated">Actualizado el {fmtDate(updatedAt)}</p>
+          )}
+        </m.header>
 
-      {/* Map canvas */}
-      <m.div
-        className="gvm-canvas"
-        initial={pref ? false : { opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
-      >
-        {/* Map title */}
-        {userName && (
-          <div className="gvm-map-title">
-            El Great Venture de {userName}
-          </div>
-        )}
-
-        <div ref={mapRef} className="gvm-svg-wrap">
-          <svg
-            viewBox={`0 0 ${W} ${H}`}
-            style={{ width: '100%', height: '100%' }}
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Dot grid background */}
-            <defs>
-              <pattern id="gv-dots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
-                <circle cx="12" cy="12" r="1" fill="rgba(255,255,255,0.04)" />
-              </pattern>
-            </defs>
-            <rect width={W} height={H} fill="url(#gv-dots)" />
-
-            {/* Connection curves */}
-            {ready && SATELLITES.map((s, i) => (
-              <m.path
-                key={s.key}
-                d={curvePath(s.angle)}
-                stroke="rgba(192,57,43,0.6)"
-                strokeWidth={2}
-                fill="none"
-                opacity={0.6}
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ type: 'spring', stiffness: 60, damping: 18, delay: 0.6 + i * 0.15 }}
-              />
-            ))}
-
-            {/* Central node — Meta Núcleo */}
-            <m.circle
-              cx={CX} cy={CY} r={CR}
-              fill="#C0392B"
-              initial={pref ? false : { scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.3 }}
-              style={{ cursor: 'pointer', transformOrigin: `${CX}px ${CY}px` }}
-              onClick={() => openPanel('meta')}
+        {/* ── Map card ── */}
+        <m.div
+          ref={mapRef}
+          className="gvm-card"
+          initial={pref ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+        >
+          <div className="gvm-card-scroll">
+            <MapSVG
+              data={data}
+              panel={panel}
+              hovered={hovered}
+              pref={pref}
+              ready={ready}
+              onNodeClick={openPanel}
+              onNodeEnter={onNodeEnter}
+              onNodeLeave={onNodeLeave}
             />
-            {ready && (
-              <m.g
-                initial={pref ? false : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.8 }}
-              >
-                <foreignObject x={CX - 64} y={CY - 52} width={128} height={104} style={{ cursor: 'pointer', pointerEvents: 'none' }}>
-                  <div
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      width: 128, height: 104, padding: '10px',
-                      textAlign: 'center', overflow: 'hidden',
-                    }}
-                  >
-                    {(() => {
-                      const text = data.meta_nucleo || 'Tu Meta Núcleo'
-                      const wordCount = text.trim().split(/\s+/).length
-                      return (
-                        <span style={{
-                          fontFamily: '"Instrument Serif", serif',
-                          fontStyle: 'italic',
-                          fontSize: wordCount <= 6 ? 15 : 13,
-                          fontWeight: 600,
-                          color: '#FFFFFF',
-                          lineHeight: 1.4,
-                          display: '-webkit-box',
-                          WebkitLineClamp: 5,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }}>
-                          {text}
-                        </span>
-                      )
-                    })()}
-                  </div>
-                </foreignObject>
-              </m.g>
-            )}
+          </div>
+        </m.div>
 
-            {/* Satellite nodes */}
-            {SATELLITES.map((s, i) => {
-              const { x, y } = sat(s.angle)
-              const col = SAT_COLORS[s.key]
-              const fullText =
-                s.key === 'creencias' ? data.creencias :
-                s.key === 'paradigma' ? data.paradigma :
-                s.key === 'equipo'    ? data.equipo.map(m => m.nombre).join(', ') :
-                data.planes.map(p => p.texto).join(' · ')
-
-              return (
-                <m.g
-                  key={s.key}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => openPanel(s.key)}
-                  initial={pref ? false : { scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 1.2 + i * 0.15 }}
-                  whileHover={{ scale: 1.06 }}
-                >
-                  {/* Native SVG tooltip with full text */}
-                  <title>{fullText || s.label}</title>
-
-                  <circle
-                    cx={x} cy={y} r={SR}
-                    fill={col.fill}
-                    stroke={panel === s.key ? 'rgba(192,57,43,0.8)' : col.stroke}
-                    strokeWidth={1.5}
-                  />
-                  {/* Node label — prominent */}
-                  <text
-                    x={x} y={y - 38}
-                    textAnchor="middle"
-                    style={{
-                      fontFamily: 'Satoshi, sans-serif',
-                      fontSize: 11,
-                      fontWeight: 700,
-                      fill: 'rgba(255,255,255,0.9)',
-                      letterSpacing: '0.10em',
-                    }}
-                  >
-                    {s.label}
-                  </text>
-                  {/* Node content — larger area thanks to SR=70 */}
-                  {ready && (
-                    <m.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 + i * 0.1 }}>
-                      <foreignObject x={x - 55} y={y - 20} width={110} height={64} style={{ pointerEvents: 'none' }}>
-                        <div style={{
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                          width: 110, height: 64, padding: '4px 8px', textAlign: 'center', overflow: 'hidden',
-                        }}>
-                          {s.key === 'equipo' && data.equipo.length > 0 ? (
-                            <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', justifyContent: 'center' }}>
-                              {data.equipo.slice(0, 5).map((mem, mi) => (
-                                <div key={mi} style={{
-                                  width: 24, height: 24, borderRadius: '50%',
-                                  background: '#C0392B',
-                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                  fontSize: 10, fontWeight: 700, color: '#FFFFFF',
-                                  fontFamily: 'Satoshi, sans-serif',
-                                  flexShrink: 0,
-                                }}>
-                                  {mem.nombre.charAt(0).toUpperCase()}
-                                </div>
-                              ))}
-                            </div>
-                          ) : s.key === 'planes' && data.planes.length > 0 ? (
-                            <div style={{ textAlign: 'left', width: '100%' }}>
-                              {data.planes.slice(0, 4).map((p, pi) => (
-                                <div key={pi} style={{
-                                  fontFamily: 'Satoshi, sans-serif', fontSize: 11,
-                                  color: 'rgba(255,255,255,0.85)', lineHeight: 1.5,
-                                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                                  marginBottom: 1,
-                                }}>
-                                  · {truncate(p.texto, 20)}
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <span style={{
-                              fontFamily: 'Satoshi, sans-serif',
-                              fontSize: 11,
-                              color: 'rgba(255,255,255,0.85)',
-                              lineHeight: 1.5,
-                              display: '-webkit-box',
-                              WebkitLineClamp: 4,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden',
-                              textAlign: 'center',
-                            }}>
-                              {first12Words(s.key === 'creencias' ? data.creencias : data.paradigma)}
-                            </span>
-                          )}
-                        </div>
-                      </foreignObject>
-                    </m.g>
-                  )}
-                </m.g>
-              )
-            })}
-
-            {/* Central node label removed per design — text inside node is sufficient */}
-          </svg>
+        {/* ── Action buttons ── */}
+        <div className="gvm-actions">
+          <m.button
+            className="gvm-btn-ghost"
+            onClick={() => router.push('/dashboard/great-venture')}
+            whileHover={pref ? undefined : { y: -1, scale: 1.01 }}
+            whileTap={pref ? undefined : { scale: 0.97 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+          >
+            ← Editar en wizard
+          </m.button>
+          <m.button
+            className="gvm-btn-outline"
+            onClick={exportPNG}
+            whileHover={pref ? undefined : { y: -1, scale: 1.01 }}
+            whileTap={pref ? undefined : { scale: 0.97 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+          >
+            Exportar PNG
+          </m.button>
+          <m.button
+            className="gvm-btn-primary"
+            onClick={() => router.push('/dashboard')}
+            whileHover={pref ? undefined : { y: -1, scale: 1.01 }}
+            whileTap={pref ? undefined : { scale: 0.97 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+          >
+            Ir al dashboard →
+          </m.button>
         </div>
-      </m.div>
-
-      {/* Bottom CTA */}
-      <div className="gvm-bottom">
-        <button className="gvm-dash-btn" onClick={() => router.push('/dashboard')}>
-          Ir a mi dashboard →
-        </button>
       </div>
 
-      {/* Edit panel */}
+      {/* ── Edit panel ── */}
       <AnimatePresence>
         {panel && (
           <m.div
             className="gvm-panel"
-            initial={{ x: 360, opacity: 0 }}
+            initial={{ x: 320, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 360, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 26 }}
+            exit={{ x: 320, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 28 }}
+            style={{ ['--panel-color' as string]: panelColor }}
           >
-            <button className="gvm-panel__close" onClick={closePanel} aria-label="Cerrar">×</button>
+            <div className="gvm-panel__head">
+              <span className="gvm-panel__title" style={{ color: panelColor }}>
+                {panel === 'meta' ? 'META NÚCLEO' : NODE_CFG[panel].label}
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <AnimatePresence>
+                  {autoSaved && (
+                    <m.span
+                      className="gvm-panel__saved"
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                    >
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                        <path d="M2 5l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      Guardado
+                    </m.span>
+                  )}
+                </AnimatePresence>
+                <button className="gvm-panel__close" onClick={closePanel}>×</button>
+              </div>
+            </div>
 
+            {/* Text panels */}
             {(panel === 'meta' || panel === 'creencias' || panel === 'paradigma') && (
               <>
-                <div className="gvm-panel__title">
-                  {panel === 'meta' ? 'META NÚCLEO' : panel === 'creencias' ? 'CREENCIAS' : 'PARADIGMA'}
-                </div>
                 <textarea
                   className="gvm-ta"
                   value={editText}
                   onChange={e => setEditText(e.target.value)}
                   onBlur={savePanel}
                   placeholder={
-                    panel === 'meta' ? 'Tu gran sueño como líder...' :
+                    panel === 'meta'      ? 'Tu gran sueño como líder...' :
                     panel === 'creencias' ? 'Las convicciones que te sostienen...' :
-                    'Cómo ves y lees el mundo...'
+                                           'Cómo ves y lees el mundo...'
                   }
                   maxLength={1500}
                 />
@@ -485,73 +655,47 @@ export default function GreatVentureMapaPage() {
               </>
             )}
 
+            {/* Equipo panel */}
             {panel === 'equipo' && (
               <>
-                <div className="gvm-panel__title">EQUIPO DE PODER</div>
-                <input
-                  className="gvm-p-input"
-                  placeholder="Nombre"
-                  value={editNombre}
-                  onChange={e => setEditNombre(e.target.value)}
-                  maxLength={50}
-                />
-                <input
-                  className="gvm-p-input"
-                  placeholder="Rol en tu vida"
-                  value={editRol}
-                  onChange={e => setEditRol(e.target.value)}
-                  maxLength={80}
-                />
-                <button className="gvm-p-add" onClick={addEquipoMember} disabled={!editNombre.trim() || data.equipo.length >= 5}>
-                  + Agregar
+                <input className="gvm-input" placeholder="Nombre" value={editNombre} onChange={e => setEditNombre(e.target.value)} maxLength={50} />
+                <input className="gvm-input" placeholder="Rol en tu vida" value={editRol} onChange={e => setEditRol(e.target.value)} maxLength={80} />
+                <button className="gvm-add-btn" onClick={addEquipoMember} disabled={!editNombre.trim() || data.equipo.length >= 5}>
+                  + Agregar persona
                 </button>
-                {data.equipo.map((m, i) => (
-                  <div key={i} className="gvm-p-chip">
-                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(192,57,43,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', fontFamily: 'Satoshi,sans-serif', flexShrink: 0 }}>
-                      {m.nombre.charAt(0).toUpperCase()}
+                {data.equipo.map((mem, i) => (
+                  <div key={i} className="gvm-chip">
+                    <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#C0392B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', fontFamily: 'Satoshi,sans-serif', flexShrink: 0 }}>
+                      {mem.nombre.charAt(0).toUpperCase()}
                     </div>
-                    <div>
-                      <div style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 13, color: 'rgba(255,255,255,.8)', fontWeight: 600 }}>{m.nombre}</div>
-                      {m.rol && <div style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 11, color: 'rgba(255,255,255,.4)' }}>{m.rol}</div>}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 13, color: 'var(--ink)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{mem.nombre}</div>
+                      {mem.rol && <div style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 11, color: 'var(--mute)' }}>{mem.rol}</div>}
                     </div>
-                    <button className="gvm-p-chip-x" onClick={() => removeEquipoMember(i)}>×</button>
+                    <button className="gvm-chip-x" onClick={() => removeEquipoMember(i)}>×</button>
                   </div>
                 ))}
               </>
             )}
 
+            {/* Planes panel */}
             {panel === 'planes' && (
               <>
-                <div className="gvm-panel__title">PLANES DE ACCIÓN</div>
-                <input
-                  className="gvm-p-input"
-                  placeholder="Describe el paso..."
-                  value={editPlanText}
-                  onChange={e => setEditPlanText(e.target.value)}
-                  maxLength={120}
-                />
-                <input
-                  className="gvm-p-input"
-                  type="date"
-                  value={editPlanDate}
-                  onChange={e => setEditPlanDate(e.target.value)}
-                />
-                <button className="gvm-p-add" onClick={addPlan} disabled={!editPlanText.trim() || data.planes.length >= 5}>
+                <input className="gvm-input" placeholder="Describe el paso..." value={editPlanText} onChange={e => setEditPlanText(e.target.value)} maxLength={120} />
+                <input className="gvm-input" type="date" value={editPlanDate} onChange={e => setEditPlanDate(e.target.value)} />
+                <button className="gvm-add-btn" onClick={addPlan} disabled={!editPlanText.trim() || data.planes.length >= 5}>
                   + Agregar paso
                 </button>
                 {data.planes.map(p => (
-                  <div key={p.id} className="gvm-p-chip">
-                    <button
-                      className={`gvm-p-check${p.completado ? ' done' : ''}`}
-                      onClick={() => togglePlan(p.id)}
-                    >
+                  <div key={p.id} className="gvm-chip">
+                    <button className={`gvm-pcheck${p.completado ? ' done' : ''}`} onClick={() => togglePlan(p.id)}>
                       {p.completado && <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                     </button>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 12, color: p.completado ? 'rgba(255,255,255,.35)' : 'rgba(255,255,255,.8)', textDecoration: p.completado ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.texto}</div>
-                      {p.fecha && <div style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 10, color: 'rgba(255,255,255,.3)', marginTop: 2 }}>{new Date(p.fecha + 'T00:00:00').toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' })}</div>}
+                      <div style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 13, color: p.completado ? 'var(--mute)' : 'var(--ink)', textDecoration: p.completado ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.texto}</div>
+                      {p.fecha && <div style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 11, color: 'var(--mute)', marginTop: 2 }}>{fmtDate(p.fecha + 'T00:00:00')}</div>}
                     </div>
-                    <button className="gvm-p-chip-x" onClick={() => removePlan(p.id)}>×</button>
+                    <button className="gvm-chip-x" onClick={() => removePlan(p.id)}>×</button>
                   </div>
                 ))}
               </>
