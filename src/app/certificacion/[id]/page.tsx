@@ -618,19 +618,7 @@ export default function CertificacionPage() {
                 }}>
                   RECONOCIDO POR
                 </p>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
-                  {/* Mini pentagon — solo si tiene perfil de líder */}
-                  {data.leaderProfile && (
-                    <>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, flexShrink: 0 }}>
-                        <MiniPentagon profile={data.leaderProfile} />
-                        <span style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--mute,#6B6B6B)', whiteSpace: 'nowrap' }}>
-                          PERFIL DE LÍDER
-                        </span>
-                      </div>
-                      <div style={{ width: 1, height: 36, background: 'rgba(13,13,13,0.12)', flexShrink: 0 }} />
-                    </>
-                  )}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
                   <img src="/cognia.png"                               alt="Cognia"                   className="dp-val-logo" />
                   <img src="/International_Baccalaureate_Logo.svg.png" alt="International Baccalaureate" className="dp-val-logo" />
                   <img src="/tri.png"                                  alt="Tri-Association"          className="dp-val-logo" />
