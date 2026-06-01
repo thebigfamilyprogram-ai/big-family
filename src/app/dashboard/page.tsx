@@ -654,8 +654,19 @@ export default function DashboardPage() {
         .identity-stat__num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums;}
         .identity-stat__label{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);}
         .identity-divider{width:1px;height:28px;background:var(--line);flex-shrink:0;}
-        .identity-right{flex-shrink:0;width:160px;height:160px;}
-        @media(max-width:640px){.identity-right{display:none;}}
+        /* Right column: flex column so pills sit under the SVG, centered */
+        .identity-right{flex-shrink:0;width:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
+        /* Profile pills under SVG (desktop) */
+        .identity-pent-pills{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;}
+        .identity-pent-pill{padding:2px 8px;border-radius:999px;font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;}
+        .identity-pent-pill.strength{background:rgba(15,123,108,.1);color:var(--accent-teal,#0F7B6C);border:1px solid rgba(15,123,108,.2);}
+        .identity-pent-pill.growth{background:rgba(192,57,43,.08);color:#C0392B;border:1px solid rgba(192,57,43,.2);}
+        /* Mobile pills (shown under name when pentagon is hidden) */
+        .identity-mobile-pills{display:none;gap:5px;flex-wrap:wrap;margin-top:8px;}
+        @media(max-width:768px){
+          .identity-right{display:none;}
+          .identity-mobile-pills{display:flex;}
+        }
 
         /* ── Pillar pills ── */
         .pillar-pills{display:flex;gap:10px;flex-wrap:wrap;}
@@ -738,14 +749,27 @@ export default function DashboardPage() {
                       {(() => {
                         const lv = LEVEL_MAP[user?.school_level ?? 'senior'] ?? LEVEL_MAP['senior']
                         return (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
-                            <span style={{ padding: '2px 9px', borderRadius: 999, background: lv.bg, color: lv.color, fontSize: 11, fontWeight: 700, fontFamily: '"Satoshi",sans-serif', whiteSpace: 'nowrap' }}>
-                              {lv.label}
-                            </span>
-                            {leaderProfile && (
-                              <div className="identity-archetype">{leaderProfile.arquetipo}</div>
+                          <>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
+                              <span style={{ padding: '2px 9px', borderRadius: 999, background: lv.bg, color: lv.color, fontSize: 11, fontWeight: 700, fontFamily: '"Satoshi",sans-serif', whiteSpace: 'nowrap' }}>
+                                {lv.label}
+                              </span>
+                              {leaderProfile && (
+                                <div className="identity-archetype">{leaderProfile.arquetipo}</div>
+                              )}
+                            </div>
+                            {/* Mobile-only: pills de perfil bajo el nombre */}
+                            {(leaderProfile ?? (MOCK_MODE ? MOCK_LEADER_PROFILE : null)) && (
+                              <div className="identity-mobile-pills">
+                                {(leaderProfile ?? MOCK_LEADER_PROFILE)!.fortalezas.map(p => (
+                                  <span key={p} className="identity-pent-pill strength">{p} ↑</span>
+                                ))}
+                                {(leaderProfile ?? MOCK_LEADER_PROFILE)!.areas_crecimiento.map(p => (
+                                  <span key={p} className="identity-pent-pill growth">{p} ↓</span>
+                                ))}
+                              </div>
                             )}
-                          </div>
+                          </>
                         )
                       })()}
                     </>
@@ -789,10 +813,18 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Right: compact pentagon SVG — shows if profile loaded, or mock fallback */}
+            {/* Right: pentagon 220px + profile pills */}
             {!loading && (leaderProfile ?? (MOCK_MODE ? MOCK_LEADER_PROFILE : null)) && (
               <div className="identity-right">
-                <CompactPentagon profile={(leaderProfile ?? MOCK_LEADER_PROFILE)!} />
+                <CompactPentagon profile={(leaderProfile ?? MOCK_LEADER_PROFILE)!} size={220} />
+                <div className="identity-pent-pills">
+                  {(leaderProfile ?? MOCK_LEADER_PROFILE)!.fortalezas.map(p => (
+                    <span key={p} className="identity-pent-pill strength">{p} ↑</span>
+                  ))}
+                  {(leaderProfile ?? MOCK_LEADER_PROFILE)!.areas_crecimiento.map(p => (
+                    <span key={p} className="identity-pent-pill growth">{p} ↓</span>
+                  ))}
+                </div>
               </div>
             )}
           </m.div>
@@ -1461,7 +1493,7 @@ const PENT = [
   { key: 'Vínculo', angle:  198, getDim: (b: LeaderProfile['big_five']) => b.A  },
 ]
 
-function CompactPentagon({ profile }: { profile: LeaderProfile }) {
+function CompactPentagon({ profile, size = 160 }: { profile: LeaderProfile; size?: number }) {
   const CX = 100, CY = 100, R = 62
   const toRad = (d: number) => (d * Math.PI) / 180
   const pt = (angle: number, r: number) => ({
@@ -1477,7 +1509,7 @@ function CompactPentagon({ profile }: { profile: LeaderProfile }) {
   }).join(' ')
 
   return (
-    <svg viewBox="0 0 200 200" width={160} height={160} aria-hidden="true">
+    <svg viewBox="0 0 200 200" width={size} height={size} aria-hidden="true">
       {/* Grid lines */}
       {PENT.map(p => {
         const v = pt(p.angle, R)
