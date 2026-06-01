@@ -18,8 +18,8 @@ type NodeKey = 'meta' | 'creencias' | 'paradigma' | 'equipo' | 'planes'
 const W  = 900, H  = 780
 const CX = 450, CY = 390
 const CR = 80    // central node radius
-const SR = 56    // satellite node radius
-const SD = 200   // satellite distance from center
+const SR = 70    // satellite node radius
+const SD = 170   // satellite distance from center
 
 // Per-satellite accent colors (fill, stroke)
 const SAT_COLORS: Record<string, { fill: string; stroke: string }> = {
@@ -79,6 +79,7 @@ export default function GreatVentureMapaPage() {
 
   const [data,      setData]      = useState<GVData>(MOCK_GV)
   const [userId,    setUserId]    = useState('')
+  const [userName,  setUserName]  = useState('')
   const [loading,   setLoading]   = useState(true)
   const [ready,     setReady]     = useState(false)
   const [panel,     setPanel]     = useState<NodeKey | null>(null)
@@ -94,7 +95,10 @@ export default function GreatVentureMapaPage() {
   useEffect(() => {
     async function boot() {
       if (MOCK_MODE) {
-        setData(MOCK_GV); setUserId(MOCK.currentUser.id); setLoading(false)
+        setData(MOCK_GV)
+        setUserId(MOCK.currentUser.id)
+        setUserName(MOCK.currentUser.name.split(' ')[0])
+        setLoading(false)
         setTimeout(() => setReady(true), 100)
         return
       }
@@ -104,6 +108,8 @@ export default function GreatVentureMapaPage() {
       const { data: { user } } = await sb.auth.getUser()
       if (!user) { router.replace('/login'); return }
       setUserId(user.id)
+      const { data: prof } = await sb.from('profiles').select('display_name').eq('id', user.id).maybeSingle()
+      if (prof?.display_name) setUserName(prof.display_name.split(' ')[0])
       const { data: gv } = await sb.from('great_ventures').select('*').eq('user_id', user.id).maybeSingle()
       if (gv) {
         setData({
@@ -205,8 +211,9 @@ export default function GreatVentureMapaPage() {
         .gvm-top-btn:hover{border-color:rgba(255,255,255,.35);color:rgba(255,255,255,.85);}
         .gvm-export{background:none;border:1px solid rgba(192,57,43,.4);border-radius:999px;padding:7px 14px;font-family:"Satoshi",sans-serif;font-size:12px;font-weight:700;color:#C0392B;cursor:pointer;transition:border-color .2s,background .2s;}
         .gvm-export:hover{background:rgba(192,57,43,.08);}
-        .gvm-canvas{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
-        .gvm-svg-wrap{width:100%;max-width:900px;aspect-ratio:900/680;}
+        .gvm-canvas{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:68px 20px 60px;}
+        .gvm-map-title{font-family:"Instrument Serif",serif;font-style:italic;font-size:20px;color:rgba(255,255,255,0.7);text-align:center;flex-shrink:0;}
+        .gvm-svg-wrap{width:100%;max-width:860px;aspect-ratio:900/780;}
         .gvm-bottom{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);}
         .gvm-dash-btn{padding:12px 28px;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.35);border-radius:999px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#C0392B;cursor:pointer;transition:background .2s;white-space:nowrap;}
         .gvm-dash-btn:hover{background:rgba(192,57,43,.25);}
@@ -244,20 +251,36 @@ export default function GreatVentureMapaPage() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
       >
+        {/* Map title */}
+        {userName && (
+          <div className="gvm-map-title">
+            El Great Venture de {userName}
+          </div>
+        )}
+
         <div ref={mapRef} className="gvm-svg-wrap">
           <svg
             viewBox={`0 0 ${W} ${H}`}
             style={{ width: '100%', height: '100%' }}
             xmlns="http://www.w3.org/2000/svg"
           >
+            {/* Dot grid background */}
+            <defs>
+              <pattern id="gv-dots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+                <circle cx="12" cy="12" r="1" fill="rgba(255,255,255,0.04)" />
+              </pattern>
+            </defs>
+            <rect width={W} height={H} fill="url(#gv-dots)" />
+
             {/* Connection curves */}
             {ready && SATELLITES.map((s, i) => (
               <m.path
                 key={s.key}
                 d={curvePath(s.angle)}
-                stroke="rgba(192,57,43,0.4)"
-                strokeWidth={1.5}
+                stroke="rgba(192,57,43,0.6)"
+                strokeWidth={2}
                 fill="none"
+                opacity={0.6}
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
                 transition={{ type: 'spring', stiffness: 60, damping: 18, delay: 0.6 + i * 0.15 }}
@@ -344,7 +367,7 @@ export default function GreatVentureMapaPage() {
                   />
                   {/* Node label — prominent */}
                   <text
-                    x={x} y={y - 26}
+                    x={x} y={y - 38}
                     textAnchor="middle"
                     style={{
                       fontFamily: 'Satoshi, sans-serif',
@@ -356,22 +379,22 @@ export default function GreatVentureMapaPage() {
                   >
                     {s.label}
                   </text>
-                  {/* Node content */}
+                  {/* Node content — larger area thanks to SR=70 */}
                   {ready && (
                     <m.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 + i * 0.1 }}>
-                      <foreignObject x={x - 46} y={y - 8} width={92} height={52} style={{ pointerEvents: 'none' }}>
+                      <foreignObject x={x - 55} y={y - 20} width={110} height={64} style={{ pointerEvents: 'none' }}>
                         <div style={{
                           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                          width: 92, height: 52, padding: '4px 6px', textAlign: 'center', overflow: 'hidden',
+                          width: 110, height: 64, padding: '4px 8px', textAlign: 'center', overflow: 'hidden',
                         }}>
                           {s.key === 'equipo' && data.equipo.length > 0 ? (
-                            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
-                              {data.equipo.slice(0, 4).map((mem, mi) => (
+                            <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', justifyContent: 'center' }}>
+                              {data.equipo.slice(0, 5).map((mem, mi) => (
                                 <div key={mi} style={{
-                                  width: 22, height: 22, borderRadius: '50%',
+                                  width: 24, height: 24, borderRadius: '50%',
                                   background: '#C0392B',
                                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                  fontSize: 9, fontWeight: 700, color: '#FFFFFF',
+                                  fontSize: 10, fontWeight: 700, color: '#FFFFFF',
                                   fontFamily: 'Satoshi, sans-serif',
                                   flexShrink: 0,
                                 }}>
@@ -381,25 +404,25 @@ export default function GreatVentureMapaPage() {
                             </div>
                           ) : s.key === 'planes' && data.planes.length > 0 ? (
                             <div style={{ textAlign: 'left', width: '100%' }}>
-                              {data.planes.slice(0, 3).map((p, pi) => (
+                              {data.planes.slice(0, 4).map((p, pi) => (
                                 <div key={pi} style={{
-                                  fontFamily: 'Satoshi, sans-serif', fontSize: 9,
+                                  fontFamily: 'Satoshi, sans-serif', fontSize: 11,
                                   color: 'rgba(255,255,255,0.85)', lineHeight: 1.5,
                                   whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                                   marginBottom: 1,
                                 }}>
-                                  · {truncate(p.texto, 16)}
+                                  · {truncate(p.texto, 20)}
                                 </div>
                               ))}
                             </div>
                           ) : (
                             <span style={{
                               fontFamily: 'Satoshi, sans-serif',
-                              fontSize: 12,
+                              fontSize: 11,
                               color: 'rgba(255,255,255,0.85)',
                               lineHeight: 1.5,
                               display: '-webkit-box',
-                              WebkitLineClamp: 3,
+                              WebkitLineClamp: 4,
                               WebkitBoxOrient: 'vertical',
                               overflow: 'hidden',
                               textAlign: 'center',
