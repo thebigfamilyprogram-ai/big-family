@@ -27,10 +27,12 @@ interface ProgressRow {
 }
 
 interface UserData {
-  display_name:    string
-  total_xp:     number
-  role:         string | null
-  school_level: string | null
+  display_name:     string
+  total_xp:        number
+  role:            string | null
+  school_level:    string | null
+  username:        string | null
+  portfolio_public: boolean
 }
 
 interface DiplomaInfo {
@@ -252,7 +254,7 @@ export default function DashboardPage() {
         const u = MOCK.currentUser
         const s = MOCK.students[0]
         setUserId(u.id)
-        setUser({ display_name: u.name, total_xp: s.xp, role: 'student', school_level: 'senior' })
+        setUser({ display_name: u.name, total_xp: s.xp, role: 'student', school_level: 'senior', username: 'valentina-torres-ospino', portfolio_public: true })
         setModules(MOCK.modules.map(m => ({ id: m.id, title: m.title, description: '', xp_reward: m.xpReward, order_index: m.order })))
         setProgressRows([
           { module_id: 'm1', completed: true },
@@ -280,7 +282,7 @@ export default function DashboardPage() {
       setUserId(authUser.id)
 
       const [profileRes, xpRes, modsRes, progRes, projRes] = await Promise.all([
-        supabase.from('profiles').select('display_name, role, school_level, school_id, leadership_profile').eq('id', authUser.id).maybeSingle(),
+        supabase.from('profiles').select('display_name, role, school_level, school_id, leadership_profile, username, portfolio_public').eq('id', authUser.id).maybeSingle(),
         supabase.from('xp_log').select('amount').eq('user_id', authUser.id),
         supabase.from('modules').select('*').eq('status', 'published').order('order_index'),
         supabase.from('progress').select('module_id, completed').eq('user_id', authUser.id),
@@ -388,10 +390,12 @@ export default function DashboardPage() {
       }
 
       setUser({
-        display_name:    profile?.display_name ?? 'Líder Big Family',
+        display_name:     profile?.display_name ?? 'Líder Big Family',
         total_xp,
-        role:         profile?.role ?? null,
-        school_level: profile?.school_level ?? null,
+        role:            profile?.role ?? null,
+        school_level:    profile?.school_level ?? null,
+        username:        (profile as { username?: string | null } | null)?.username ?? null,
+        portfolio_public: (profile as { portfolio_public?: boolean } | null)?.portfolio_public ?? true,
       })
       if (profile?.leadership_profile) setLeaderProfile(profile.leadership_profile as LeaderProfile)
       setModules(mods ?? [])
@@ -828,6 +832,45 @@ export default function DashboardPage() {
               </div>
             )}
           </m.div>
+
+          {/* ── Portfolio public link ── */}
+          {!loading && user?.username && (
+            <m.div
+              initial={pref ? false : { opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 26 }}
+              style={{ display: 'flex', alignItems: 'center', gap: 12 }}
+            >
+              {user.portfolio_public ? (
+                <a
+                  href={`/p/${user.username}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                    padding: '8px 16px', border: '1px solid var(--line)',
+                    borderRadius: 999, fontFamily: '"Satoshi",sans-serif',
+                    fontSize: 13, fontWeight: 600, color: 'var(--ink)',
+                    textDecoration: 'none', transition: 'border-color .2s, color .2s',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = '#C0392B'; (e.currentTarget as HTMLAnchorElement).style.color = '#C0392B' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--line)'; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--ink)' }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                    <path d="M5 2H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8M8 1h4m0 0v4m0-4L5.5 7.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Ver mi portafolio público
+                </a>
+              ) : (
+                <span style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 12, color: 'var(--mute)' }}>
+                  Tu portafolio está privado —{' '}
+                  <a href="/dashboard/settings" style={{ color: '#C0392B', textDecoration: 'none', fontWeight: 600 }}>
+                    activarlo en Configuración
+                  </a>
+                </span>
+              )}
+            </m.div>
+          )}
 
           {/* ── KPI Bento ── */}
           <m.div

@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { useTheme, type Theme } from '@/contexts/ThemeContext'
 import { showToast } from '@/components/Toast'
-type Section = 'profile' | 'appearance' | 'account' | 'notifications'
+type Section = 'profile' | 'appearance' | 'account' | 'notifications' | 'portfolio'
 
 const SECTIONS: { id: Section; label: string; icon: React.ReactNode }[] = [
   {
@@ -25,6 +25,10 @@ const SECTIONS: { id: Section; label: string; icon: React.ReactNode }[] = [
   {
     id: 'notifications', label: 'Notificaciones',
     icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5A4.5 4.5 0 0 0 3.5 6v2.5L2 11h12l-1.5-2.5V6A4.5 4.5 0 0 0 8 1.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M6.5 11v.5a1.5 1.5 0 0 0 3 0V11" stroke="currentColor" strokeWidth="1.4"/></svg>,
+  },
+  {
+    id: 'portfolio', label: 'Portafolio',
+    icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 5V4a3 3 0 0 1 6 0v1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><circle cx="8" cy="10" r="1.5" stroke="currentColor" strokeWidth="1.2"/></svg>,
   },
 ]
 
@@ -56,6 +60,15 @@ export default function SettingsPage() {
   const [avatarPreview, setAvatarPreview] = useState('')
   const [avatarFile,    setAvatarFile]    = useState<File | null>(null)
   const [saving,        setSaving]        = useState(false)
+
+  // Portfolio privacy
+  const [portUsername,      setPortUsername]      = useState('')
+  const [portPublic,        setPortPublic]        = useState(true)
+  const [portCapstone,      setPortCapstone]      = useState(true)
+  const [portGV,            setPortGV]            = useState(false)
+  const [portXP,            setPortXP]            = useState(true)
+  const [portSaving,        setPortSaving]        = useState(false)
+  const [portCopied,        setPortCopied]        = useState(false)
 
   // Notifications (persisted in profiles.notification_preferences JSONB)
   const [notifEmail,    setNotifEmail]    = useState(true)
@@ -91,7 +104,7 @@ export default function SettingsPage() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('display_name, bio, avatar_url, school_id, role, user_badges, notification_preferences')
+        .select('display_name, bio, avatar_url, school_id, role, user_badges, notification_preferences, username, portfolio_public, portfolio_show_capstone, portfolio_show_great_venture, portfolio_show_xp')
         .eq('id', user.id)
         .maybeSingle()
 
@@ -103,6 +116,12 @@ export default function SettingsPage() {
       setAvatarUrl(profile?.avatar_url ?? '')
       setRole(profile?.role ?? 'student')
       setBadges(Array.isArray(profile?.user_badges) ? profile.user_badges : [])
+
+      if (profile?.username) setPortUsername(profile.username as string)
+      if (typeof profile?.portfolio_public === 'boolean') setPortPublic(profile.portfolio_public)
+      if (typeof profile?.portfolio_show_capstone === 'boolean') setPortCapstone(profile.portfolio_show_capstone)
+      if (typeof profile?.portfolio_show_great_venture === 'boolean') setPortGV(profile.portfolio_show_great_venture)
+      if (typeof profile?.portfolio_show_xp === 'boolean') setPortXP(profile.portfolio_show_xp)
 
       const prefs = profile?.notification_preferences as Record<string, boolean> | null
       if (prefs) {
@@ -218,6 +237,35 @@ export default function SettingsPage() {
     if (key === 'push')   setNotifPush(value)
     if (key === 'weekly') setNotifWeekly(value)
     saveNotifPreferences(next)
+  }
+
+  async function savePortfolioSettings(patch: Partial<{
+    portfolio_public: boolean; portfolio_show_capstone: boolean;
+    portfolio_show_great_venture: boolean; portfolio_show_xp: boolean;
+  }>) {
+    if (!supabaseRef.current || !userId) return
+    setPortSaving(true)
+    const { error } = await supabaseRef.current.from('profiles').update(patch).eq('id', userId)
+    setPortSaving(false)
+    if (error) showToast('error', 'Error al guardar')
+  }
+
+  function handlePortToggle(
+    key: 'portfolio_public' | 'portfolio_show_capstone' | 'portfolio_show_great_venture' | 'portfolio_show_xp',
+    value: boolean,
+  ) {
+    if (key === 'portfolio_public')           setPortPublic(value)
+    if (key === 'portfolio_show_capstone')    setPortCapstone(value)
+    if (key === 'portfolio_show_great_venture') setPortGV(value)
+    if (key === 'portfolio_show_xp')          setPortXP(value)
+    savePortfolioSettings({ [key]: value })
+  }
+
+  async function handleCopyPortLink() {
+    const url = `https://big-family-nu.vercel.app/p/${portUsername}`
+    await navigator.clipboard.writeText(url)
+    setPortCopied(true)
+    setTimeout(() => setPortCopied(false), 2000)
   }
 
   async function handleSignOutAll() {
@@ -651,6 +699,79 @@ export default function SettingsPage() {
                     </div>
                   )}
                 </div>
+              )}
+
+              {/* ── PORTFOLIO ── */}
+              {section === 'portfolio' && (
+                <>
+                  <div className="st-card">
+                    <div className="st-card-title">Mi Portafolio Público</div>
+                    <div className="st-card-sub">Controla qué ven las universidades y rectores cuando visitan tu portafolio.</div>
+
+                    {[
+                      { key: 'portfolio_public'              as const, label: 'Portafolio público', sub: 'Activa tu página en big-family-nu.vercel.app/p/' + (portUsername || '…'), val: portPublic },
+                      { key: 'portfolio_show_capstone'       as const, label: 'Mostrar proyecto capstone', sub: 'Incluye el título, descripción y resultados de tu proyecto', val: portCapstone },
+                      { key: 'portfolio_show_great_venture'  as const, label: 'Mostrar Great Venture', sub: 'Incluye tu meta núcleo y mapa de liderazgo', val: portGV },
+                      { key: 'portfolio_show_xp'             as const, label: 'Mostrar estadísticas XP', sub: 'Puntos de impacto, módulos y días en el programa', val: portXP },
+                    ].map(row => (
+                      <div key={row.key} className="notif-row">
+                        <div>
+                          <div className="notif-label">{row.label}</div>
+                          <div className="notif-sub">{row.sub}</div>
+                        </div>
+                        <label className="toggle" style={{ opacity: portSaving ? 0.6 : 1 }}>
+                          <input type="checkbox" checked={row.val} disabled={portSaving}
+                            onChange={e => handlePortToggle(row.key, e.target.checked)} />
+                          <div className="toggle-track" />
+                          <div className="toggle-thumb" />
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+
+                  {portUsername && (
+                    <div className="st-card">
+                      <div className="st-card-title">Link de tu portafolio</div>
+                      <div className="st-card-sub">Comparte este link en tus aplicaciones universitarias.</div>
+                      <div className="st-field">
+                        <label className="st-label">URL pública</label>
+                        <input
+                          className="st-input"
+                          readOnly
+                          value={`big-family-nu.vercel.app/p/${portUsername}`}
+                          onClick={e => (e.target as HTMLInputElement).select()}
+                          style={{ cursor: 'text' }}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        <button
+                          onClick={handleCopyPortLink}
+                          style={{
+                            padding: '9px 18px', border: '1px solid var(--line)', borderRadius: 999,
+                            fontFamily: '"Satoshi",sans-serif', fontSize: 13, fontWeight: 600,
+                            background: portCopied ? 'rgba(15,123,108,.1)' : 'none',
+                            color: portCopied ? 'var(--accent-teal,#0F7B6C)' : 'var(--ink)',
+                            cursor: 'pointer', transition: 'all .2s',
+                          }}
+                        >
+                          {portCopied ? '✓ ¡Copiado!' : 'Copiar link'}
+                        </button>
+                        <a
+                          href={`/p/${portUsername}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            padding: '9px 18px', border: '1px solid #C0392B', borderRadius: 999,
+                            fontFamily: '"Satoshi",sans-serif', fontSize: 13, fontWeight: 700,
+                            color: '#C0392B', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6,
+                          }}
+                        >
+                          Ver mi portafolio ↗
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
 
             </div>
