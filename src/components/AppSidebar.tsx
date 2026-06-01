@@ -24,6 +24,8 @@ type NavItem = {
   label: string
   icon: React.ReactNode
   badge?: number
+  badgeText?: string
+  badgeColor?: string
   href?: string
   tab?: string
 }
@@ -54,11 +56,12 @@ const I = {
   barChart:  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 13V8M6 13V4M10 13V6M14 13V10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
   key:       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.4"/><path d="M9 8h5M12 7v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
   building:  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1" stroke="currentColor" strokeWidth="1.4"/><path d="M6 14V9h4v5M2 7h12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  compass:   <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><path d="M8 2v1M8 13v1M2 8h1M13 8h1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><path d="M10.5 5.5L9 9l-3.5 1.5L7 7l3.5-1.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>,
 }
 
 // ── Nav definitions per role ──────────────────────────────────────────────────
 
-function getNav(role: 'student' | 'coordinator' | 'admin', unread: number): Section[] {
+function getNav(role: 'student' | 'coordinator' | 'admin', unread: number, ventureCompleted?: boolean | null): Section[] {
   if (role === 'student') return [
     {
       key: 'principal', label: 'Principal', items: [
@@ -68,6 +71,16 @@ function getNav(role: 'student' | 'coordinator' | 'admin', unread: number): Sect
         { label: 'Proyectos',       href: '/dashboard/projects',        icon: I.folder    },
         { label: 'Team Hub',        href: '/dashboard/team-hub',        icon: I.users     },
         { label: 'Mis Metas',       href: '/dashboard/goals',           icon: I.target    },
+        {
+          label: 'Great Venture',
+          href: '/dashboard/great-venture',
+          icon: I.compass,
+          ...(ventureCompleted === true
+            ? { badgeText: '✓', badgeColor: '#22c55e' }
+            : ventureCompleted === false
+              ? { badgeText: 'Pendiente', badgeColor: 'var(--accent-amber,#D4821A)' }
+              : {}),
+        },
         { label: 'Calendario',      href: '/dashboard/calendar',        icon: I.calendar  },
         { label: 'Configuración',   href: '/dashboard/settings',        icon: I.settings  },
       ],
@@ -145,9 +158,27 @@ export default function AppSidebar({
   const pathname    = usePathname()
   const { theme, setTheme } = useTheme()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerOpen,        setDrawerOpen]        = useState(false)
+  const [ventureCompleted,  setVentureCompleted]  = useState<boolean | null>(null)
 
-  const sections    = getNav(role, unreadAnnouncements)
+  // Load venture completion status for students
+  useEffect(() => {
+    if (role !== 'student') return
+    async function checkVenture() {
+      if (!supabaseRef.current) supabaseRef.current = createClient()
+      const sb = supabaseRef.current
+      if (!sb) return
+      const { data: { user } } = await sb.auth.getUser()
+      if (!user) return
+      const { data: gv } = await sb.from('great_ventures').select('meta_nucleo, planes').eq('user_id', user.id).maybeSingle()
+      if (!gv) { setVentureCompleted(false); return }
+      const hasContent = !!(gv.meta_nucleo?.trim()) && Array.isArray(gv.planes) && gv.planes.length > 0
+      setVentureCompleted(hasContent)
+    }
+    checkVenture()
+  }, [role])
+
+  const sections    = getNav(role, unreadAnnouncements, ventureCompleted)
   const defaultOpen = Object.fromEntries(sections.map(s => [s.key, true]))
 
   // useEffect reads localStorage to avoid SSR/client hydration mismatch
@@ -440,6 +471,18 @@ export default function AppSidebar({
                           {!!item.badge && (
                             <span className="app-sb__badge">
                               {item.badge > 9 ? '9+' : item.badge}
+                            </span>
+                          )}
+                          {item.badgeText && (
+                            <span style={{
+                              padding: '1px 6px', borderRadius: 999,
+                              fontSize: 10, fontWeight: 700, fontFamily: '"Satoshi",sans-serif',
+                              background: `${item.badgeColor ?? 'var(--mute)'}22`,
+                              color: item.badgeColor ?? 'var(--mute)',
+                              border: `1px solid ${item.badgeColor ?? 'var(--mute)'}44`,
+                              marginLeft: 'auto', flexShrink: 0, whiteSpace: 'nowrap',
+                            }}>
+                              {item.badgeText}
                             </span>
                           )}
                         </m.button>

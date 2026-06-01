@@ -23,6 +23,7 @@ interface StudentReport {
   goals_active: number
   goals_completed: number
   quiz_attempts: number
+  great_venture_done: boolean
 }
 
 function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?: number }) {
@@ -62,6 +63,7 @@ export default function CoordinatorReportPage() {
       const [
         { data: xpRows }, { data: progRows }, { data: badgeRows },
         { data: projRows }, { data: evalRows }, { data: goalRows }, { data: quizRows },
+        { data: gvRows },
       ] = await Promise.all([
         sb!.from('xp_log').select('user_id, amount').in('user_id', ids),
         sb!.from('progress').select('user_id').eq('completed', true).in('user_id', ids),
@@ -70,6 +72,7 @@ export default function CoordinatorReportPage() {
         sb!.from('capstone_evaluations').select('project_id, resultado, projects(user_id)').in('resultado', ['certificado','mencion_honor']),
         sb!.from('goals').select('user_id, status').in('user_id', ids),
         sb!.from('quiz_attempts').select('user_id').in('user_id', ids),
+        sb!.from('great_ventures').select('user_id, meta_nucleo, planes').in('user_id', ids),
       ])
 
       const xpMap: Record<string, number> = {}
@@ -98,6 +101,11 @@ export default function CoordinatorReportPage() {
       const quizMap: Record<string, number> = {}
       quizRows?.forEach((r: { user_id: string }) => { quizMap[r.user_id] = (quizMap[r.user_id] ?? 0) + 1 })
 
+      const gvMap: Record<string, boolean> = {}
+      gvRows?.forEach((r: { user_id: string; meta_nucleo: string | null; planes: unknown[] | null }) => {
+        gvMap[r.user_id] = !!(r.meta_nucleo?.trim()) && Array.isArray(r.planes) && r.planes.length > 0
+      })
+
       setStudents(studs.map((s: { id: string; display_name: string | null; email: string | null; school_level: string | null; created_at: string }) => ({
         id: s.id, display_name: s.display_name ?? '—', email: s.email ?? '—',
         school_name: school?.name ?? '—', school_level: s.school_level,
@@ -107,6 +115,7 @@ export default function CoordinatorReportPage() {
         capstone_resultado: evalMap[s.id] ?? null,
         goals_active: goalActive[s.id] ?? 0, goals_completed: goalDone[s.id] ?? 0,
         quiz_attempts: quizMap[s.id] ?? 0,
+        great_venture_done: gvMap[s.id] ?? false,
       })))
       setLoading(false)
     }
@@ -245,6 +254,7 @@ export default function CoordinatorReportPage() {
                   <th>Módulos</th>
                   <th>Proyecto</th>
                   <th>Capstone</th>
+                  <th>Great Venture</th>
                   {showAllCols && <><th>Email</th><th>Badges</th><th>Estado</th><th>Metas</th><th>Registro</th></>}
                 </tr>
               </thead>
@@ -257,6 +267,12 @@ export default function CoordinatorReportPage() {
                     <td style={{ textAlign: 'center' }}>{s.modules_completed}</td>
                     <td style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.project_title ?? '—'}</td>
                     <td>{s.capstone_resultado ? <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: 'rgba(34,197,94,.15)', color: '#065F46' }}>{s.capstone_resultado}</span> : '—'}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      {s.great_venture_done
+                        ? <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: 'rgba(15,123,108,.12)', color: '#0F7B6C' }}>✓ Completo</span>
+                        : <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: 'rgba(212,130,26,.1)', color: '#D4821A' }}>Pendiente</span>
+                      }
+                    </td>
                     {showAllCols && <>
                       <td style={{ color: 'var(--mute)', fontSize: 12 }}>{s.email}</td>
                       <td style={{ textAlign: 'center' }}>{s.badges_earned}</td>
