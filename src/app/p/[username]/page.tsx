@@ -410,15 +410,17 @@ export default function PortfolioPage() {
         .pf-gv-item{font-family:"Satoshi",sans-serif;font-size:13px;color:#6B6B6B;display:flex;align-items:flex-start;gap:8px;}
         .pf-gv-dot{width:6px;height:6px;border-radius:50%;background:#C0392B;flex-shrink:0;margin-top:4px;}
         /* Universities */
-        .pf-uni-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
-        .pf-uni-card{background:#FAF8F4;border:1px solid rgba(13,13,13,.07);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:8px;}
-        .pf-uni-initial{width:40px;height:40px;border-radius:8px;background:rgba(192,57,43,.08);display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-size:12px;font-weight:700;color:#C0392B;}
-        .pf-uni-logo{height:40px;width:auto;max-width:120px;object-fit:contain;filter:grayscale(20%);transition:filter 200ms ease;}
+        .pf-uni-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+        .pf-uni-card{background:#FAF8F4;border:1px solid rgba(13,13,13,.07);border-radius:14px;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:10px;min-height:160px;text-align:center;}
+        .pf-uni-initial{width:56px;height:56px;border-radius:10px;background:rgba(192,57,43,.08);display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-size:14px;font-weight:700;color:#C0392B;}
+        .pf-uni-logo{height:56px;width:100%;object-fit:contain;padding:8px;filter:grayscale(20%);transition:filter 200ms ease;}
         .pf-uni-card:hover .pf-uni-logo{filter:grayscale(0%);}
         .pf-uni-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#0D0D0D;line-height:1.3;}
-        .pf-uni-desc{font-family:"Satoshi",sans-serif;font-size:12px;color:#6B6B6B;line-height:1.5;flex:1;}
-        .pf-uni-btn{display:inline-flex;align-items:center;padding:6px 14px;border-radius:999px;border:1px solid rgba(13,13,13,.2);font-family:"Satoshi",sans-serif;font-size:12px;font-weight:600;color:#0D0D0D;text-decoration:none;width:fit-content;transition:border-color .2s,color .2s;}
+        .pf-uni-desc{font-family:"Satoshi",sans-serif;font-size:11px;color:#6B6B6B;line-height:1.5;flex:1;}
+        .pf-uni-btn{display:inline-flex;align-items:center;padding:6px 14px;border-radius:999px;border:1px solid rgba(13,13,13,.2);font-family:"Satoshi",sans-serif;font-size:12px;font-weight:600;color:#0D0D0D;text-decoration:none;transition:border-color .2s,color .2s;margin-top:auto;}
         .pf-uni-btn:hover{border-color:#0D0D0D;}
+        @media(max-width:768px){.pf-uni-grid{grid-template-columns:repeat(2,1fr);}}
+        @media(max-width:480px){.pf-uni-grid{grid-template-columns:1fr;}}
         /* Export card */
         .pf-export{background:#0D0D0D;border-radius:16px;padding:36px;margin-bottom:20px;}
         .pf-export-eyebrow{font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:14px;}
