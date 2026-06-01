@@ -1,7 +1,7 @@
 'use client'
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { m } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
@@ -100,21 +100,36 @@ function ProfilePentagon({ bf, size = 120 }: {
 }
 
 // ── Universities ──────────────────────────────────────────────────────────────
-// TODO: Agregar logos reales de universidades en /public/images/universities/
 const UNIVERSITIES = [
-  { name: 'Common App',               url: 'https://www.commonapp.org',              desc: 'Más de 1,000 universidades en Estados Unidos',              initial: 'CA' },
-  { name: 'UCAS',                     url: 'https://www.ucas.com',                   desc: 'Universidades del Reino Unido',                             initial: 'UC' },
-  { name: 'ESADE Business School',    url: 'https://www.esade.edu/admissions',       desc: 'Barcelona, España — donde estudian nuestros alumni',        initial: 'ES' },
-  { name: 'Concordia University',     url: 'https://www.concordia.ca/admissions',    desc: 'Montreal, Canadá — sede de nuestros alumni líderes',        initial: 'CO' },
-  { name: 'Universidad del Norte',    url: 'https://uninorte.edu.co/admissions',     desc: 'Barranquilla, Colombia — excelencia regional',              initial: 'UN' },
-  { name: 'Universidad de los Andes', url: 'https://uniandes.edu.co',               desc: 'Bogotá, Colombia — top 1 Colombia',                         initial: 'UA' },
-  { name: 'Universidad Javeriana',    url: 'https://www.javeriana.edu.co',           desc: 'Bogotá, Colombia — donde estudió Luis Barrios',             initial: 'UJ' },
-  { name: 'Universidad EAFIT',        url: 'https://www.eafit.edu.co/admisiones',    desc: 'Medellín, Colombia — innovación y emprendimiento',          initial: 'EF' },
-  { name: 'Universidad UPB',          url: 'https://www.upb.edu.co/admisiones',      desc: 'Medellín, Colombia — liderazgo y valores',                  initial: 'UP' },
-  { name: 'Universidad CESA',         url: 'https://www.cesa.edu.co/admisiones',     desc: 'Bogotá, Colombia — negocios y liderazgo',                   initial: 'CE' },
-  { name: 'Universidad Nacional',     url: 'https://www.unal.edu.co/admisiones',     desc: 'Colombia — la universidad pública más importante del país', initial: 'UN' },
-  { name: 'Universidad de Antioquia', url: 'https://www.udea.edu.co/admisiones',     desc: 'Medellín, Colombia — tradición e impacto social',           initial: 'UD' },
+  { name: 'Common App',               url: 'https://www.commonapp.org',              desc: 'Más de 1,000 universidades en Estados Unidos',              initial: 'CA', logo: '/commonapp.png' },
+  { name: 'UCAS',                     url: 'https://www.ucas.com',                   desc: 'Universidades del Reino Unido',                             initial: 'UC', logo: '/ucas.png'       },
+  { name: 'ESADE Business School',    url: 'https://www.esade.edu/admissions',       desc: 'Barcelona, España — donde estudian nuestros alumni',        initial: 'ES', logo: '/esade.png'      },
+  { name: 'Concordia University',     url: 'https://www.concordia.ca/admissions',    desc: 'Montreal, Canadá — sede de nuestros alumni líderes',        initial: 'CO', logo: '/concordia.png'  },
+  { name: 'Universidad del Norte',    url: 'https://uninorte.edu.co/admissions',     desc: 'Barranquilla, Colombia — excelencia regional',              initial: 'UN', logo: '/uninorte.png'   },
+  { name: 'Universidad de los Andes', url: 'https://uniandes.edu.co',               desc: 'Bogotá, Colombia — top 1 Colombia',                         initial: 'UA', logo: '/uniandes.png'   },
+  { name: 'Universidad Javeriana',    url: 'https://www.javeriana.edu.co',           desc: 'Bogotá, Colombia — donde estudió Luis Barrios',             initial: 'UJ', logo: '/javeriana.png'  },
+  { name: 'Universidad EAFIT',        url: 'https://www.eafit.edu.co/admisiones',    desc: 'Medellín, Colombia — innovación y emprendimiento',          initial: 'EF', logo: '/eafit.png'      },
+  { name: 'Universidad UPB',          url: 'https://www.upb.edu.co/admisiones',      desc: 'Medellín, Colombia — liderazgo y valores',                  initial: 'UP', logo: '/upb.png'        },
+  { name: 'Universidad CESA',         url: 'https://www.cesa.edu.co/admisiones',     desc: 'Bogotá, Colombia — negocios y liderazgo',                   initial: 'CE', logo: '/cesa.png'       },
+  { name: 'Universidad Nacional',     url: 'https://www.unal.edu.co/admisiones',     desc: 'Colombia — la universidad pública más importante del país', initial: 'UN', logo: '/unal.png'       },
+  { name: 'Universidad de Antioquia', url: 'https://www.udea.edu.co/admisiones',     desc: 'Medellín, Colombia — tradición e impacto social',           initial: 'UD', logo: '/udea.png'       },
 ]
+
+// Logo with initial-div fallback on load error
+function UniLogo({ src, alt, initial }: { src: string; alt: string; initial: string }) {
+  const [failed, setFailed] = React.useState(false)
+  if (failed) {
+    return <div className="pf-uni-initial">{initial}</div>
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="pf-uni-logo"
+      onError={() => setFailed(true)}
+    />
+  )
+}
 
 const sp = (delay = 0) => ({ type: 'spring' as const, stiffness: 120, damping: 22, delay })
 
@@ -397,7 +412,9 @@ export default function PortfolioPage() {
         /* Universities */
         .pf-uni-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
         .pf-uni-card{background:#FAF8F4;border:1px solid rgba(13,13,13,.07);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:8px;}
-        .pf-uni-initial{width:36px;height:36px;border-radius:8px;background:rgba(192,57,43,.08);display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-size:12px;font-weight:700;color:#C0392B;}
+        .pf-uni-initial{width:40px;height:40px;border-radius:8px;background:rgba(192,57,43,.08);display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-size:12px;font-weight:700;color:#C0392B;}
+        .pf-uni-logo{height:40px;width:auto;max-width:120px;object-fit:contain;filter:grayscale(20%);transition:filter 200ms ease;}
+        .pf-uni-card:hover .pf-uni-logo{filter:grayscale(0%);}
         .pf-uni-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#0D0D0D;line-height:1.3;}
         .pf-uni-desc{font-family:"Satoshi",sans-serif;font-size:12px;color:#6B6B6B;line-height:1.5;flex:1;}
         .pf-uni-btn{display:inline-flex;align-items:center;padding:6px 14px;border-radius:999px;border:1px solid rgba(13,13,13,.2);font-family:"Satoshi",sans-serif;font-size:12px;font-weight:600;color:#0D0D0D;text-decoration:none;width:fit-content;transition:border-color .2s,color .2s;}
@@ -576,7 +593,7 @@ export default function PortfolioPage() {
                   whileHover={{ y: -2, scale: 1.01 }}
                   transition={{ type: 'spring', stiffness: 200, damping: 22 }}
                 >
-                  <div className="pf-uni-initial">{u.initial}</div>
+                  <UniLogo src={u.logo} alt={u.name} initial={u.initial} />
                   <div className="pf-uni-name">{u.name}</div>
                   <div className="pf-uni-desc">{u.desc}</div>
                   <a href={u.url} target="_blank" rel="noreferrer" className="pf-uni-btn">
