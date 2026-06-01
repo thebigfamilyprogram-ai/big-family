@@ -7,6 +7,7 @@ import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring,
 
 import TimelineSection from '@/components/TimelineSection'
 import AprendizajeSection from '@/components/AprendizajeSection'
+import AlumniSection from '@/components/AlumniSection'
 import SchoolTicker from '@/components/SchoolTicker'
 import WorldMapPublic from '@/components/WorldMapPublic'
 import { createClient } from '@/lib/supabase'
@@ -1970,6 +1971,11 @@ export default function GlobeHero() {
           </div>
         </div>
       </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SECCIÓN — ALUMNI
+      ══════════════════════════════════════════════════════════════════ */}
+      <AlumniSection />
 
       {/* ══════════════════════════════════════════════════════════════════
           SECCIÓN — FAQ
