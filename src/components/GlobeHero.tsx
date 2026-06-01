@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
 
 import TimelineSection from '@/components/TimelineSection'
+import AprendizajeSection from '@/components/AprendizajeSection'
 import SchoolTicker from '@/components/SchoolTicker'
 import WorldMapPublic from '@/components/WorldMapPublic'
 import { createClient } from '@/lib/supabase'
@@ -1820,6 +1821,11 @@ export default function GlobeHero() {
 
         </div>
       </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SECCIÓN — APRENDIZAJE PERSONALIZADO
+      ══════════════════════════════════════════════════════════════════ */}
+      <AprendizajeSection />
 
       {/* ══════════════════════════════════════════════════════════════════
           SECCIÓN — VALORES
