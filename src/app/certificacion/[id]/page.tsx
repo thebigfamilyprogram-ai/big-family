@@ -11,6 +11,11 @@ import { MOCK_MODE, MOCK } from '@/lib/mockData'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+interface LeaderProfile {
+  arquetipo: string
+  big_five:  { O: number; C: number; E: number; A: number; N: number; ES: number }
+}
+
 interface DiplomaData {
   studentName:      string
   schoolName:       string
@@ -18,6 +23,7 @@ interface DiplomaData {
   certDate:         string
   totalXP:          number
   modulesCompleted: number
+  leaderProfile:    LeaderProfile | null
 }
 
 // ── Confetti ─────────────────────────────────────────────────────────────────
@@ -53,6 +59,42 @@ function certNumber(id: string, date: string): string {
   const hex = id.replace(/[^0-9a-f]/gi, '') || '0'
   const num = (parseInt(hex.slice(-6) || hex, 16) % 9000) + 1000 // always 1000–9999
   return `CERT-${new Date(date).getFullYear()}-${String(num).padStart(4, '0')}`
+}
+
+// Deterministic cert ID for QR/verification — first 8 chars of UUID + year
+function makeCertId(userId: string, date: string): string {
+  const year = new Date(date).getFullYear()
+  const part = userId.replace(/-/g, '').slice(0, 8).toUpperCase()
+  return `BF${year}${part}`
+}
+
+function arquetipoCode(arquetipo: string | undefined): string {
+  if (!arquetipo) return ''
+  const parts = arquetipo.trim().split(/\s+/)
+  return parts[parts.length - 1].toUpperCase()
+}
+
+// Mini 40×40 pentagon SVG — shows Big Five profile inline in diploma
+function MiniPentagon({ profile }: { profile: LeaderProfile }) {
+  const CX = 20, CY = 20, R = 14
+  const toRad = (d: number) => (d * Math.PI) / 180
+  const VERTS = [
+    { angle: -90,  score: profile.big_five.C  },
+    { angle: -18,  score: profile.big_five.O  },
+    { angle:  54,  score: profile.big_five.E  },
+    { angle: 126,  score: profile.big_five.ES },
+    { angle: 198,  score: profile.big_five.A  },
+  ]
+  const pt = (angle: number, r: number) =>
+    `${CX + r * Math.cos(toRad(angle))},${CY + r * Math.sin(toRad(angle))}`
+  const refPts  = VERTS.map(v => pt(v.angle, R)).join(' ')
+  const profPts = VERTS.map(v => pt(v.angle, ((v.score ?? 50) / 100) * R)).join(' ')
+  return (
+    <svg viewBox="0 0 40 40" width={40} height={40} aria-hidden="true" style={{ flexShrink: 0 }}>
+      <polygon points={refPts} fill="none" stroke="rgba(13,13,13,0.14)" strokeWidth={0.8} />
+      <polygon points={profPts} fill="rgba(192,57,43,0.15)" stroke="#C0392B" strokeWidth={1} />
+    </svg>
+  )
 }
 
 // ── Seal SVG ─────────────────────────────────────────────────────────────────
@@ -112,6 +154,7 @@ export default function CertificacionPage() {
   const [data,           setData]           = useState<DiplomaData | null>(null)
   const [confettiActive, setConfettiActive] = useState(false)
   const [authed,         setAuthed]         = useState(false)
+  const [qrDataUrl,      setQrDataUrl]      = useState<string | null>(null)
 
   // Remove confetti particles after animations complete
   useEffect(() => {
@@ -126,7 +169,18 @@ export default function CertificacionPage() {
 
     // MOCK_MODE: skip Supabase entirely
     if (MOCK_MODE) {
-      setData(MOCK.mockDiploma)
+      const d = {
+        ...MOCK.mockDiploma,
+        leaderProfile: {
+          arquetipo: 'Líder Visionaria',
+          big_five:  { O: 85, C: 42, E: 78, A: 38, N: 35, ES: 65 },
+        },
+      }
+      setData(d)
+      setAuthed(true)
+      const mockCertId = 'BF2026MOCKDATA'
+      const url = `https://big-family-nu.vercel.app/verify/${mockCertId}`
+      import('qrcode').then(QR => QR.default.toDataURL(url, { width: 128, margin: 1, color: { dark: '#0D0D0D', light: '#FFFFFF' } }).then(setQrDataUrl).catch(console.error))
       setLoading(false)
       return
     }
@@ -169,7 +223,7 @@ export default function CertificacionPage() {
         { data: progRows },
         { data: { user: viewer } },
       ] = await Promise.all([
-        sb!.from('profiles').select('display_name, school_id').eq('id', studentId).maybeSingle(),
+        sb!.from('profiles').select('display_name, school_id, leadership_profile').eq('id', studentId).maybeSingle(),
         sb!.from('xp_log').select('amount').eq('user_id', studentId),
         sb!.from('progress').select('id').eq('user_id', studentId).eq('completed', true),
         sb!.auth.getUser(),
@@ -185,14 +239,29 @@ export default function CertificacionPage() {
         schoolName = (school as { name: string } | null)?.name ?? ''
       }
 
-      setData({
-        studentName:      (profile as { display_name?: string | null } | null)?.display_name ?? 'Estudiante',
+      const rawProfile = profile as { display_name?: string | null; school_id?: string | null; leadership_profile?: unknown } | null
+      const lp = rawProfile?.leadership_profile as LeaderProfile | null ?? null
+      const resolvedData: DiplomaData = {
+        studentName:      rawProfile?.display_name ?? 'Estudiante',
         schoolName,
         resultado:        eval_.resultado as 'certificado' | 'mencion_honor',
         certDate:         eval_.created_at,
         totalXP:          (xpRows ?? []).reduce((s: number, r: { amount: number | null }) => s + (r.amount ?? 0), 0),
         modulesCompleted: progRows?.length ?? 0,
-      })
+        leaderProfile:    lp,
+      }
+      setData(resolvedData)
+
+      // Register cert for QR verification + generate QR
+      const cId = makeCertId(studentId, eval_.created_at)
+      // Fire-and-forget cert registration
+      sb!.from('issued_certificates')
+        .upsert({ cert_id: cId, user_id: studentId }, { onConflict: 'cert_id' })
+        .select()
+        .then(() => {})
+      const verifyUrl = `https://big-family-nu.vercel.app/verify/${cId}`
+      import('qrcode').then(QR => QR.default.toDataURL(verifyUrl, { width: 128, margin: 1, color: { dark: '#0D0D0D', light: '#FFFFFF' } }).then(setQrDataUrl).catch(console.error))
+
       setLoading(false)
     }
 
@@ -378,7 +447,7 @@ export default function CertificacionPage() {
             {/* 4 — Nombre del estudiante — Instrument Serif italic */}
             <m.h1
               style={{
-                textAlign: 'center', marginBottom: 20,
+                textAlign: 'center', marginBottom: data.leaderProfile ? 4 : 20,
                 fontFamily: '"Instrument Serif",serif', fontStyle: 'italic', fontWeight: 400,
                 fontSize: 'clamp(2.2rem,5vw,3.6rem)',
                 lineHeight: 1.1, color: 'var(--ink,#0D0D0D)', letterSpacing: '-0.02em',
@@ -389,6 +458,23 @@ export default function CertificacionPage() {
             >
               {data.studentName}
             </m.h1>
+
+            {/* 4b — Arquetipo de líder — solo si tiene perfil */}
+            {data.leaderProfile && (
+              <m.p
+                style={{
+                  textAlign: 'center', marginBottom: 20,
+                  fontFamily: '"Instrument Serif",serif', fontStyle: 'italic',
+                  fontSize: 'clamp(1rem,2vw,1.3rem)',
+                  color: '#C0392B', lineHeight: 1.2,
+                }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={sp(0.92)}
+              >
+                {data.leaderProfile.arquetipo}
+              </m.p>
+            )}
 
             {/* 5 — "por haber completado exitosamente..." */}
             <m.p
@@ -532,7 +618,19 @@ export default function CertificacionPage() {
                 }}>
                   RECONOCIDO POR
                 </p>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
+                  {/* Mini pentagon — solo si tiene perfil de líder */}
+                  {data.leaderProfile && (
+                    <>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                        <MiniPentagon profile={data.leaderProfile} />
+                        <span style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--mute,#6B6B6B)', whiteSpace: 'nowrap' }}>
+                          PERFIL DE LÍDER
+                        </span>
+                      </div>
+                      <div style={{ width: 1, height: 36, background: 'rgba(13,13,13,0.12)', flexShrink: 0 }} />
+                    </>
+                  )}
                   <img src="/cognia.png"                               alt="Cognia"                   className="dp-val-logo" />
                   <img src="/International_Baccalaureate_Logo.svg.png" alt="International Baccalaureate" className="dp-val-logo" />
                   <img src="/tri.png"                                  alt="Tri-Association"          className="dp-val-logo" />
@@ -577,17 +675,40 @@ export default function CertificacionPage() {
                 </p>
               </div>
 
-              {/* Número de certificado — centro */}
+              {/* Número de certificado + arquetipo code — centro */}
               <p style={{
                 fontFamily: '"Satoshi",sans-serif', fontSize: 11,
                 letterSpacing: '0.24em', color: 'var(--mute,#6B6B6B)',
-                alignSelf: 'flex-end', paddingBottom: 2,
+                alignSelf: 'flex-end', paddingBottom: 2, textAlign: 'center',
               }}>
                 {certNumber(studentId, data.certDate)}
+                {data.leaderProfile && (
+                  <span style={{ opacity: 0.6 }}>{` · ${arquetipoCode(data.leaderProfile.arquetipo)}`}</span>
+                )}
               </p>
 
-              {/* Sello circular */}
-              <Seal />
+              {/* Sello + QR side by side */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+                <Seal />
+                {qrDataUrl && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    <img
+                      src={qrDataUrl}
+                      alt="QR para verificar certificado"
+                      width={64}
+                      height={64}
+                      style={{ display: 'block', borderRadius: 4 }}
+                    />
+                    <span style={{
+                      fontFamily: '"Satoshi",sans-serif', fontSize: 8,
+                      letterSpacing: '0.1em', color: 'var(--mute,#6B6B6B)',
+                      textTransform: 'uppercase', whiteSpace: 'nowrap',
+                    }}>
+                      Verificar
+                    </span>
+                  </div>
+                )}
+              </div>
             </m.div>
 
           </div>
