@@ -15,11 +15,25 @@ interface GVData     { meta_nucleo: string; creencias: string; paradigma: string
 type NodeKey = 'meta' | 'creencias' | 'paradigma' | 'equipo' | 'planes'
 
 // ── SVG constants ─────────────────────────────────────────────────────────────
-const W  = 900, H  = 680
-const CX = 450, CY = 340
+const W  = 900, H  = 780
+const CX = 450, CY = 390
 const CR = 80    // central node radius
 const SR = 56    // satellite node radius
-const SD = 240   // satellite distance from center
+const SD = 200   // satellite distance from center
+
+// Per-satellite accent colors (fill, stroke)
+const SAT_COLORS: Record<string, { fill: string; stroke: string }> = {
+  creencias: { fill: 'rgba(15,123,108,0.22)',  stroke: 'rgba(15,123,108,0.55)'  },
+  paradigma: { fill: 'rgba(212,130,26,0.22)',  stroke: 'rgba(212,130,26,0.55)'  },
+  equipo:    { fill: 'rgba(192,57,43,0.30)',   stroke: 'rgba(192,57,43,0.60)'   },
+  planes:    { fill: 'rgba(255,255,255,0.08)', stroke: 'rgba(255,255,255,0.18)' },
+}
+
+// Truncate to first N words for node preview
+function first12Words(s: string): string {
+  const words = s.trim().split(/\s+/).filter(Boolean)
+  return words.length <= 12 ? s.trim() : words.slice(0, 12).join(' ') + '…'
+}
 
 const SATELLITES: { key: NodeKey; label: string; angle: number }[] = [
   { key: 'creencias', label: 'CREENCIAS', angle: -90  },
@@ -266,27 +280,34 @@ export default function GreatVentureMapaPage() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.8 }}
               >
-                <foreignObject x={CX - 62} y={CY - 50} width={124} height={100} style={{ cursor: 'pointer', pointerEvents: 'none' }}>
+                <foreignObject x={CX - 64} y={CY - 52} width={128} height={104} style={{ cursor: 'pointer', pointerEvents: 'none' }}>
                   <div
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      width: 124, height: 100, padding: '8px',
+                      width: 128, height: 104, padding: '10px',
                       textAlign: 'center', overflow: 'hidden',
                     }}
                   >
-                    <span style={{
-                      fontFamily: '"Instrument Serif", serif',
-                      fontStyle: 'italic',
-                      fontSize: 12,
-                      color: '#fff',
-                      lineHeight: 1.4,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 5,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}>
-                      {data.meta_nucleo || 'Tu Meta Núcleo'}
-                    </span>
+                    {(() => {
+                      const text = data.meta_nucleo || 'Tu Meta Núcleo'
+                      const wordCount = text.trim().split(/\s+/).length
+                      return (
+                        <span style={{
+                          fontFamily: '"Instrument Serif", serif',
+                          fontStyle: 'italic',
+                          fontSize: wordCount <= 6 ? 15 : 13,
+                          fontWeight: 600,
+                          color: '#FFFFFF',
+                          lineHeight: 1.4,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 5,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}>
+                          {text}
+                        </span>
+                      )
+                    })()}
                   </div>
                 </foreignObject>
               </m.g>
@@ -295,6 +316,13 @@ export default function GreatVentureMapaPage() {
             {/* Satellite nodes */}
             {SATELLITES.map((s, i) => {
               const { x, y } = sat(s.angle)
+              const col = SAT_COLORS[s.key]
+              const fullText =
+                s.key === 'creencias' ? data.creencias :
+                s.key === 'paradigma' ? data.paradigma :
+                s.key === 'equipo'    ? data.equipo.map(m => m.nombre).join(', ') :
+                data.planes.map(p => p.texto).join(' · ')
+
               return (
                 <m.g
                   key={s.key}
@@ -305,37 +333,47 @@ export default function GreatVentureMapaPage() {
                   transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 1.2 + i * 0.15 }}
                   whileHover={{ scale: 1.06 }}
                 >
+                  {/* Native SVG tooltip with full text */}
+                  <title>{fullText || s.label}</title>
+
                   <circle
                     cx={x} cy={y} r={SR}
-                    fill="rgba(255,255,255,0.05)"
-                    stroke={panel === s.key ? 'rgba(192,57,43,0.7)' : 'rgba(255,255,255,0.12)'}
+                    fill={col.fill}
+                    stroke={panel === s.key ? 'rgba(192,57,43,0.8)' : col.stroke}
                     strokeWidth={1.5}
                   />
-                  {/* Node label */}
+                  {/* Node label — prominent */}
                   <text
-                    x={x} y={y - 20}
+                    x={x} y={y - 26}
                     textAnchor="middle"
-                    style={{ fontFamily: 'Satoshi, sans-serif', fontSize: 8, fontWeight: 700, fill: 'rgba(255,255,255,0.45)', letterSpacing: '0.14em', textTransform: 'uppercase' }}
+                    style={{
+                      fontFamily: 'Satoshi, sans-serif',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      fill: 'rgba(255,255,255,0.9)',
+                      letterSpacing: '0.10em',
+                    }}
                   >
                     {s.label}
                   </text>
                   {/* Node content */}
                   {ready && (
                     <m.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 + i * 0.1 }}>
-                      <foreignObject x={x - 44} y={y - 12} width={88} height={48} style={{ pointerEvents: 'none' }}>
+                      <foreignObject x={x - 46} y={y - 8} width={92} height={52} style={{ pointerEvents: 'none' }}>
                         <div style={{
                           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                          width: 88, height: 48, padding: '4px', textAlign: 'center', overflow: 'hidden',
+                          width: 92, height: 52, padding: '4px 6px', textAlign: 'center', overflow: 'hidden',
                         }}>
                           {s.key === 'equipo' && data.equipo.length > 0 ? (
-                            <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
+                            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                               {data.equipo.slice(0, 4).map((mem, mi) => (
                                 <div key={mi} style={{
-                                  width: 20, height: 20, borderRadius: '50%',
-                                  background: 'rgba(192,57,43,0.7)',
+                                  width: 22, height: 22, borderRadius: '50%',
+                                  background: '#C0392B',
                                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                  fontSize: 8, fontWeight: 700, color: '#fff',
+                                  fontSize: 9, fontWeight: 700, color: '#FFFFFF',
                                   fontFamily: 'Satoshi, sans-serif',
+                                  flexShrink: 0,
                                 }}>
                                   {mem.nombre.charAt(0).toUpperCase()}
                                 </div>
@@ -344,17 +382,29 @@ export default function GreatVentureMapaPage() {
                           ) : s.key === 'planes' && data.planes.length > 0 ? (
                             <div style={{ textAlign: 'left', width: '100%' }}>
                               {data.planes.slice(0, 3).map((p, pi) => (
-                                <div key={pi} style={{ fontFamily: 'Satoshi, sans-serif', fontSize: 8, color: 'rgba(255,255,255,0.65)', lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 1 }}>
-                                  · {truncate(p.texto, 18)}
+                                <div key={pi} style={{
+                                  fontFamily: 'Satoshi, sans-serif', fontSize: 9,
+                                  color: 'rgba(255,255,255,0.85)', lineHeight: 1.5,
+                                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                                  marginBottom: 1,
+                                }}>
+                                  · {truncate(p.texto, 16)}
                                 </div>
                               ))}
                             </div>
                           ) : (
-                            <span style={{ fontFamily: 'Satoshi, sans-serif', fontSize: 9, color: 'rgba(255,255,255,0.55)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                              {truncate(
-                                s.key === 'creencias' ? data.creencias : data.paradigma,
-                                40
-                              )}
+                            <span style={{
+                              fontFamily: 'Satoshi, sans-serif',
+                              fontSize: 12,
+                              color: 'rgba(255,255,255,0.85)',
+                              lineHeight: 1.5,
+                              display: '-webkit-box',
+                              WebkitLineClamp: 3,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                              textAlign: 'center',
+                            }}>
+                              {first12Words(s.key === 'creencias' ? data.creencias : data.paradigma)}
                             </span>
                           )}
                         </div>
@@ -365,19 +415,7 @@ export default function GreatVentureMapaPage() {
               )
             })}
 
-            {/* Central node label */}
-            {ready && (
-              <m.text
-                x={CX} y={CY + CR + 16}
-                textAnchor="middle"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.9 }}
-                style={{ fontFamily: 'Satoshi, sans-serif', fontSize: 9, fill: 'rgba(255,255,255,0.3)', letterSpacing: '0.16em' }}
-              >
-                META NÚCLEO
-              </m.text>
-            )}
+            {/* Central node label removed per design — text inside node is sufficient */}
           </svg>
         </div>
       </m.div>
