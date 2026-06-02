@@ -859,7 +859,7 @@ export default function DashboardPage() {
                   target="_blank"
                   rel="noreferrer"
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                    display: 'inline-flex', alignItems: 'center',
                     padding: '8px 16px', border: '1px solid var(--line)',
                     borderRadius: 999, fontFamily: '"Satoshi",sans-serif',
                     fontSize: 13, fontWeight: 600, color: 'var(--mute)',
@@ -868,10 +868,7 @@ export default function DashboardPage() {
                   onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = '#C0392B'; (e.currentTarget as HTMLAnchorElement).style.color = '#C0392B' }}
                   onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--line)'; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--mute)' }}
                 >
-                  <svg width="12" height="12" viewBox="0 0 13 13" fill="none">
-                    <path d="M5 2H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8M8 1h4m0 0v4m0-4L5.5 7.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  Ver mi portafolio público ↗
+                  Ver mi portafolio ↗
                 </a>
               ) : (
                 /* Portafolio privado */

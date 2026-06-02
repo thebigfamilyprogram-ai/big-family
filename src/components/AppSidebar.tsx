@@ -28,6 +28,7 @@ type NavItem = {
   badgeColor?: string
   href?: string
   tab?: string
+  external?: boolean  // opens in new tab
 }
 
 type Section = { key: string; label: string; items: NavItem[] }
@@ -57,11 +58,18 @@ const I = {
   key:       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.4"/><path d="M9 8h5M12 7v2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
   building:  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1" stroke="currentColor" strokeWidth="1.4"/><path d="M6 14V9h4v5M2 7h12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
   compass:   <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><path d="M8 2v1M8 13v1M2 8h1M13 8h1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><path d="M10.5 5.5L9 9l-3.5 1.5L7 7l3.5-1.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>,
+  portcard:  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><circle cx="5.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M8.5 7h4M8.5 10h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
 }
 
 // ── Nav definitions per role ──────────────────────────────────────────────────
 
-function getNav(role: 'student' | 'coordinator' | 'admin', unread: number, ventureCompleted?: boolean | null): Section[] {
+function getNav(
+  role: 'student' | 'coordinator' | 'admin',
+  unread: number,
+  ventureCompleted?: boolean | null,
+  portfolioUsername?: string | null,
+  portfolioPublic?: boolean | null,
+): Section[] {
   if (role === 'student') return [
     {
       key: 'principal', label: 'Principal', items: [
@@ -80,6 +88,18 @@ function getNav(role: 'student' | 'coordinator' | 'admin', unread: number, ventu
             : ventureCompleted === false
               ? { badgeText: 'Pendiente', badgeColor: 'var(--accent-amber,#D4821A)' }
               : {}),
+        },
+        {
+          label: 'Mi Portafolio',
+          href: portfolioUsername ? `/p/${portfolioUsername}` : '/dashboard/settings',
+          icon: I.portcard,
+          external: !!portfolioUsername,
+          ...(portfolioUsername
+            ? portfolioPublic === true
+              ? { badgeText: 'Público', badgeColor: 'var(--accent-teal,#0F7B6C)' }
+              : { badgeText: 'Privado', badgeColor: 'var(--mute,#6B6B6B)' }
+            : { badgeText: 'Configurar', badgeColor: 'var(--accent-amber,#D4821A)' }
+          ),
         },
         { label: 'Calendario',      href: '/dashboard/calendar',        icon: I.calendar  },
         { label: 'Configuración',   href: '/dashboard/settings',        icon: I.settings  },
@@ -160,25 +180,36 @@ export default function AppSidebar({
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const [drawerOpen,        setDrawerOpen]        = useState(false)
   const [ventureCompleted,  setVentureCompleted]  = useState<boolean | null>(null)
+  const [portfolioUsername, setPortfolioUsername] = useState<string | null>(null)
+  const [portfolioPublic,   setPortfolioPublic]   = useState<boolean | null>(null)
 
-  // Load venture completion status for students
+  // Load venture + portfolio status for students (single effect, parallel queries)
   useEffect(() => {
     if (role !== 'student') return
-    async function checkVenture() {
+    async function checkStudentData() {
       if (!supabaseRef.current) supabaseRef.current = createClient()
       const sb = supabaseRef.current
       if (!sb) return
       const { data: { user } } = await sb.auth.getUser()
       if (!user) return
-      const { data: gv } = await sb.from('great_ventures').select('meta_nucleo, planes').eq('user_id', user.id).maybeSingle()
-      if (!gv) { setVentureCompleted(false); return }
-      const hasContent = !!(gv.meta_nucleo?.trim()) && Array.isArray(gv.planes) && gv.planes.length > 0
-      setVentureCompleted(hasContent)
+
+      const [{ data: gv }, { data: prof }] = await Promise.all([
+        sb.from('great_ventures').select('meta_nucleo, planes').eq('user_id', user.id).maybeSingle(),
+        sb.from('profiles').select('username, portfolio_public').eq('id', user.id).maybeSingle(),
+      ])
+
+      const hasContent = !!(gv?.meta_nucleo?.trim()) && Array.isArray(gv?.planes) && (gv.planes as unknown[]).length > 0
+      setVentureCompleted(gv ? hasContent : false)
+
+      if (prof) {
+        setPortfolioUsername((prof as { username?: string | null }).username ?? null)
+        setPortfolioPublic((prof as { portfolio_public?: boolean | null }).portfolio_public ?? null)
+      }
     }
-    checkVenture()
+    checkStudentData()
   }, [role])
 
-  const sections    = getNav(role, unreadAnnouncements, ventureCompleted)
+  const sections    = getNav(role, unreadAnnouncements, ventureCompleted, portfolioUsername, portfolioPublic)
   const defaultOpen = Object.fromEntries(sections.map(s => [s.key, true]))
 
   // useEffect reads localStorage to avoid SSR/client hydration mismatch
@@ -212,7 +243,11 @@ export default function AppSidebar({
     if (item.tab !== undefined) {
       onTabChange?.(item.tab)
     } else if (item.href) {
-      router.push(item.href)
+      if (item.external) {
+        window.open(item.href, '_blank', 'noreferrer')
+      } else {
+        router.push(item.href)
+      }
     }
     setDrawerOpen(false)
   }
