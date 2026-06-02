@@ -198,9 +198,12 @@ function AprendizajeSection() {
           .sp-step{border-right:none;border-bottom:1px solid var(--line);padding:20px 0;}
           .sp-step:last-child{border-bottom:none;}
           .sp-step:not(:first-child){padding-left:0;}
-          .sp-grid{grid-template-columns:1fr;gap:14px;}
+          .sp-grid{grid-template-columns:repeat(2,1fr);gap:14px;}
           .sp-card{grid-column:auto!important;}
           .sp-panel__inner{grid-template-columns:1fr;gap:28px;}
+        }
+        @media(max-width:480px){
+          .sp-grid{grid-template-columns:1fr;}
         }
         @media(max-width:640px){
           .sp-sub{font-size:16px;}

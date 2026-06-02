@@ -659,7 +659,7 @@ export default function DashboardPage() {
         .identity-stat__label{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);}
         .identity-divider{width:1px;height:28px;background:var(--line);flex-shrink:0;}
         /* Right column: flex column so pills sit under the SVG, centered */
-        .identity-right{flex-shrink:0;width:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
+        .identity-right{flex-shrink:0;width:auto;max-width:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
         /* Profile pills under SVG (desktop) */
         .identity-pent-pills{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;}
         .identity-pent-pill{padding:2px 8px;border-radius:999px;font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;}

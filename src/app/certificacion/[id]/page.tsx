@@ -353,6 +353,12 @@ export default function CertificacionPage() {
           .dp-stats-vsep{display:none;}
           .dp-val-logo{height:36px;}
         }
+        @media(max-width:480px){
+          .dp-card{padding:32px 20px;}
+          .dp-card::after{inset:5px;}
+          .dp-sig-line{width:100%;}
+          .dp-firma-row{flex-direction:column;gap:20px;align-items:center;}
+        }
         @media print{
           .no-print{display:none!important;}
           html,body{background:#fff!important;}
@@ -638,6 +644,7 @@ export default function CertificacionPage() {
 
             {/* 12 — Firma | Cert number | Sello */}
             <m.div
+              className="dp-firma-row"
               style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
                 marginTop: 22,

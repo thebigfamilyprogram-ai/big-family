@@ -53,6 +53,9 @@ function FounderSection() {
           .sf-badges{justify-content:center;}
           .sf-stat{text-align:center;}
         }
+        @media(max-width:480px){
+          .sf-avatar{width:120px;height:120px;font-size:2rem;}
+        }
       `}</style>
 
       <div className="sf-inner">

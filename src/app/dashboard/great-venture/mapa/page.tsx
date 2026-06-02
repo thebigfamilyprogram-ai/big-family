@@ -174,7 +174,7 @@ const MapSVG = memo(function MapSVG({
   return (
     <svg
       viewBox="0 0 800 600"
-      style={{ width: '100%', height: 'auto', display: 'block', minWidth: 600 }}
+      style={{ width: '100%', height: 'auto', display: 'block', minWidth: 0 }}
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
@@ -541,8 +541,8 @@ export default function GreatVentureMapaPage() {
         .gvm-pcheck{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--line);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,border-color .15s;}
         .gvm-pcheck.done{background:#22c55e;border-color:#22c55e;}
         @media(max-width:768px){
-          .gvm-inner{padding:24px 16px 60px;}
-          .gvm-card{padding:24px 16px;}
+          .gvm-inner{padding:20px 16px 60px;}
+          .gvm-card{padding:20px 12px;}
           .gvm-panel{top:auto;right:0;left:0;bottom:0;width:100%;border-left:none;border-top:1px solid var(--card-border);border-radius:20px 20px 0 0;padding:24px 20px 40px;}
         }
       `}</style>

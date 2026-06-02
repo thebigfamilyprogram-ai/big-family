@@ -66,7 +66,8 @@ function AlumniSection() {
         .sec-alumni__role{font-family:"Satoshi",sans-serif;font-size:13px;color:var(--mute);line-height:1.5;}
         .sec-alumni__quote{font-family:"Instrument Serif",serif;font-style:italic;font-size:15px;color:var(--ink-2,#2D2D2D);line-height:1.7;flex:1;position:relative;z-index:1;}
         .sec-alumni__year{font-family:"Satoshi",sans-serif;font-size:11px;color:var(--mute);letter-spacing:.08em;margin-top:auto;}
-        @media(max-width:960px){.sec-alumni{padding:80px 24px;}.sec-alumni__grid{grid-template-columns:1fr;gap:16px;}}
+        @media(max-width:960px){.sec-alumni{padding:80px 24px;}.sec-alumni__grid{grid-template-columns:repeat(2,1fr);gap:16px;}}
+        @media(max-width:600px){.sec-alumni__grid{grid-template-columns:1fr;}}
         @media(max-width:640px){.sec-alumni__sub{font-size:16px;}}
       `}</style>
 

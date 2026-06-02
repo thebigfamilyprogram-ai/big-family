@@ -224,6 +224,7 @@ export default function OnboardingTestPage() {
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+      <style>{`@media(max-width:480px){.ob-junior-faces{max-width:256px;}.ob-main-area{padding-top:80px!important;}}`}</style>
       {/* Header */}
       <header style={{
         position: 'fixed',
@@ -278,7 +279,7 @@ export default function OnboardingTestPage() {
       </header>
 
       {/* Question area */}
-      <main style={{
+      <main className="ob-main-area" style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
@@ -377,7 +378,7 @@ export default function OnboardingTestPage() {
               </div>
             ) : (
               /* Junior — large visual circles */
-              <div style={{
+              <div className="ob-junior-faces" style={{
                 display: 'flex',
                 flexWrap: 'wrap',
                 gap: 16,
@@ -445,7 +446,7 @@ export default function OnboardingTestPage() {
         {/* Navigation dots */}
         <div style={{
           position: 'fixed',
-          bottom: 32,
+          bottom: 'calc(32px + env(safe-area-inset-bottom, 0px))' as unknown as number,
           left: '50%',
           transform: 'translateX(-50%)',
           display: 'flex',
