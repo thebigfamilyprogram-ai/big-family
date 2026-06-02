@@ -254,7 +254,7 @@ export default function DashboardPage() {
         const u = MOCK.currentUser
         const s = MOCK.students[0]
         setUserId(u.id)
-        setUser({ display_name: u.name, total_xp: s.xp, role: 'student', school_level: 'senior', username: 'valentina-torres-ospino', portfolio_public: true })
+        setUser({ display_name: u.name, total_xp: s.xp, role: 'student', school_level: 'senior', username: u.username, portfolio_public: u.portfolio_public })
         setModules(MOCK.modules.map(m => ({ id: m.id, title: m.title, description: '', xp_reward: m.xpReward, order_index: m.order })))
         setProgressRows([
           { module_id: 'm1', completed: true },

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { m, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
+import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import { useTheme } from '@/contexts/ThemeContext'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -187,6 +188,14 @@ export default function AppSidebar({
   useEffect(() => {
     if (role !== 'student') return
     async function checkStudentData() {
+      // MOCK_MODE: use mock data directly, skip Supabase
+      if (MOCK_MODE) {
+        setVentureCompleted(true)
+        setPortfolioUsername(MOCK.currentUser.username)
+        setPortfolioPublic(MOCK.currentUser.portfolio_public)
+        return
+      }
+
       if (!supabaseRef.current) supabaseRef.current = createClient()
       const sb = supabaseRef.current
       if (!sb) return

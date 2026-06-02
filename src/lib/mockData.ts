@@ -7,15 +7,17 @@ export const MOCK = {
 
   // USUARIO ACTUAL
   currentUser: {
-    id:         'mock-user-1',
-    name:       'Valentina Torres Ospino',
-    email:      'valentina.torres@iemim.edu.co',
-    role:       'student',
-    school_id:  'MIM',
-    school_name:'IE Técnica María Inmaculada',
-    level:      'Senior Leader',
-    avatar_url: null,
-    created_at: '2026-01-15T08:00:00',
+    id:               'mock-user-1',
+    name:             'Valentina Torres Ospino',
+    email:            'valentina.torres@iemim.edu.co',
+    role:             'student',
+    school_id:        'MIM',
+    school_name:      'IE Técnica María Inmaculada',
+    level:            'Senior Leader',
+    avatar_url:       null,
+    created_at:       '2026-01-15T08:00:00',
+    username:         'valentina-torres-ospino',
+    portfolio_public: true,
   },
 
   currentCoordinator: {
