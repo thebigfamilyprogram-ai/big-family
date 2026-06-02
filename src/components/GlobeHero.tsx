@@ -179,10 +179,9 @@ const misionStats = [
 
 /* EDITAR AQUÍ — fundadores */
 const founders = [
-  { initials: 'LB', name: 'Luis Hernando Barrios', role: 'Fundador & Coordinador de Acción Social',  bio: 'M.S. Multidisciplinary Studies, University at Buffalo. Estudios en Liderazgo, Creatividad e Innovación en Javeriana, MIT, Uninorte y Unisabana.',              tags: ['Fundador', 'Liderazgo', 'Innovación'],      layout: 'featured' as const },
-  { initials: 'JV', name: 'Juan Felipe Visbal',    role: 'Director de Visión y Contenido',           bio: 'La cara y voz del programa. Lidera la estrategia de contenido y la comunicación del impacto de Big Family.',                                                tags: ['Contenido', 'Comunicación', 'Liderazgo'] },
-  { initials: 'AG', name: 'Alejandro Garcia',      role: 'Director de Arquitectura y Operaciones',   bio: 'Estructura y organización de todo el programa. Garantiza que cada pieza del sistema funcione con coherencia.',                                             tags: ['Operaciones', 'Estrategia', 'Estructura'] },
-  { initials: 'SG', name: 'Samuel Gomez',          role: 'Director de Tecnología',                   bio: 'Construye y mantiene la plataforma tecnológica que hace posible la certificación The Big Leader.',                                                         tags: ['Tecnología', 'Plataforma', 'Desarrollo'],   layout: 'wide' as const },
+  { initials: 'SG', name: 'Samuel Gomez',       role: 'Director de Tecnología',                   bio: 'Construye y mantiene la plataforma tecnológica que hace posible la certificación The Big Leader.',                                          tags: ['Tecnología', 'Plataforma', 'Desarrollo'] },
+  { initials: 'JV', name: 'Juan Felipe Visbal', role: 'Director de Visión y Contenido',           bio: 'La cara y voz del programa. Lidera la estrategia de contenido y la comunicación del impacto de Big Family.',                                tags: ['Contenido', 'Comunicación', 'Liderazgo'] },
+  { initials: 'AG', name: 'Alejandro Garcia',   role: 'Director de Arquitectura y Operaciones',   bio: 'Estructura y organización de todo el programa. Garantiza que cada pieza del sistema funcione con coherencia.',                             tags: ['Operaciones', 'Estrategia', 'Estructura'] },
 ]
 
 
@@ -650,13 +649,10 @@ export default function GlobeHero() {
         .equipo__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(36px,4vw,56px);color:#0D0D0D;letter-spacing:-0.03em;line-height:1.1;}
         .equipo__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:#C0392B;}
         .equipo__desc{font-family:"Satoshi",sans-serif;font-size:16px;color:#6B6B6B;line-height:1.65;}
-        .equipo__grid{display:grid;grid-template-columns:1.8fr 1fr 1fr;grid-template-rows:auto auto;gap:2px;background:rgba(13,13,13,.06);border:1px solid rgba(13,13,13,.06);border-radius:20px;overflow:hidden;}
+        .equipo__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(13,13,13,.06);border:1px solid rgba(13,13,13,.06);border-radius:20px;overflow:hidden;}
         .equipo__card{background:#F5F3EF;padding:40px 36px;display:flex;flex-direction:column;border:1px solid transparent;transition:box-shadow .3s cubic-bezier(0.22,1,0.36,1),transform .3s cubic-bezier(0.22,1,0.36,1),border-color .3s cubic-bezier(0.22,1,0.36,1);}
         .equipo__card:hover{box-shadow:0 16px 40px -8px rgba(13,13,13,.18),inset 0 2px 0 #C0392B;border-color:rgba(192,57,43,.3);}
         .equipo__card:active{transform:scale(0.99) translateY(-2px);}
-        .equipo__card--featured{grid-row:1/span 2;grid-column:1;}
-        .equipo__card--wide{grid-column:2/span 2;flex-direction:row;gap:28px;align-items:flex-start;}
-        .equipo__card--wide .equipo__avatar{margin-bottom:0;flex-shrink:0;}
         .equipo__card-content{display:flex;flex-direction:column;flex:1;}
         .equipo__avatar{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-weight:700;font-size:32px;color:#fff;margin-bottom:28px;flex-shrink:0;}
         .equipo__avatar--lg{width:144px;height:144px;font-size:44px;margin-bottom:36px;}
@@ -1895,39 +1891,28 @@ export default function GlobeHero() {
             <p className="equipo__desc">Un equipo multidisciplinario unido por una misma convicción: que el liderazgo se aprende, se practica y se mide en impacto real.</p>
           </m.div>
 
-          {/* Grid de cards */}
+          {/* Grid de cards — 3 columnas iguales */}
           <div className="equipo__grid">
-            {founders.map((f, i) => {
-              const isFeatured = f.layout === 'featured'
-              const isWide     = f.layout === 'wide'
-              const cardClass  = `equipo__card${isFeatured ? ' equipo__card--featured' : ''}${isWide ? ' equipo__card--wide' : ''}`
-              const avatarClass = `equipo__avatar${isFeatured ? ' equipo__avatar--lg' : ''}`
-              const cardContent = (
-                <>
-                  <div className="equipo__card-name">{f.name}</div>
-                  <div className="equipo__card-role">{f.role}</div>
-                  <div className="equipo__card-divider" />
-                  <div className="equipo__card-bio">{f.bio}</div>
-                  <div className="equipo__tags">
-                    {f.tags.map(t => <span key={t} className="equipo__tag">{t}</span>)}
-                  </div>
-                </>
-              )
-              return (
-                <m.div
-                  key={f.name}
-                  className={cardClass}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-80px' }}
-                  transition={{ type: 'spring', stiffness: 180, damping: 22, delay: i * 0.12 }}
-                  whileHover={{ y: -4, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
-                >
-                  <div className={avatarClass} style={{ background: 'linear-gradient(135deg,#C0392B,#922b21)' }}>{f.initials}</div>
-                  {isWide ? <div className="equipo__card-content">{cardContent}</div> : cardContent}
-                </m.div>
-              )
-            })}
+            {founders.map((f, i) => (
+              <m.div
+                key={f.name}
+                className="equipo__card"
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-80px' }}
+                transition={{ type: 'spring', stiffness: 180, damping: 22, delay: i * 0.12 }}
+                whileHover={{ y: -4, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
+              >
+                <div className="equipo__avatar" style={{ background: 'linear-gradient(135deg,#C0392B,#922b21)' }}>{f.initials}</div>
+                <div className="equipo__card-name">{f.name}</div>
+                <div className="equipo__card-role">{f.role}</div>
+                <div className="equipo__card-divider" />
+                <div className="equipo__card-bio">{f.bio}</div>
+                <div className="equipo__tags">
+                  {f.tags.map(t => <span key={t} className="equipo__tag">{t}</span>)}
+                </div>
+              </m.div>
+            ))}
           </div>
 
         </div>
