@@ -33,7 +33,7 @@ function Progress({ step }: { step: 1 | 2 | 3 }) {
 
 function Spinner() {
   return (
-    <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'#F5F3EF', gap:14, fontFamily:'Satoshi,sans-serif', color:'#6B6B6B' }}>
+    <div style={{ minHeight:'100dvh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'var(--bg,#F5F3EF)', gap:14, fontFamily:'Satoshi,sans-serif', color:'var(--mute,#6B6B6B)' }}>
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ animation:'spin 1s linear infinite' }}>
         <circle cx="12" cy="12" r="10" stroke="rgba(13,13,13,.12)" strokeWidth="3"/>
         <path d="M12 2a10 10 0 0 1 10 10" stroke="#C0392B" strokeWidth="3" strokeLinecap="round"/>

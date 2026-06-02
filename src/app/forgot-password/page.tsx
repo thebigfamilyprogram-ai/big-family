@@ -40,16 +40,16 @@ export default function ForgotPasswordPage() {
         .page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
         .logo-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:32px;}
         .logo-mark{width:52px;height:52px;}
-        .logo-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:15px;letter-spacing:.06em;color:#0D0D0D;}
-        .card{background:rgba(255,255,255,0.72);backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,0.9);border-radius:20px;box-shadow:0 30px 80px -20px rgba(13,13,13,0.14),0 8px 24px -8px rgba(13,13,13,0.08);padding:40px 36px;width:100%;max-width:420px;}
-        .card-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:24px;letter-spacing:-0.02em;color:#0D0D0D;text-align:center;}
-        .card-sub{font-size:14px;color:#6B6B6B;text-align:center;margin-top:6px;margin-bottom:28px;line-height:1.5;}
+        .logo-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:15px;letter-spacing:.06em;color:var(--ink,#0D0D0D);}
+        .card{background:var(--card-bg,rgba(255,255,255,0.92));backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--card-border,rgba(13,13,13,.08));border-radius:20px;box-shadow:0 30px 80px -20px rgba(13,13,13,0.14),0 8px 24px -8px rgba(13,13,13,0.08);padding:40px 36px;width:100%;max-width:420px;}
+        .card-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:24px;letter-spacing:-0.02em;color:var(--ink,#0D0D0D);text-align:center;}
+        .card-sub{font-size:14px;color:var(--mute,#6B6B6B);text-align:center;margin-top:6px;margin-bottom:28px;line-height:1.5;}
         .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
-        .field label{font-size:12.5px;font-weight:500;color:#2D2D2D;letter-spacing:.02em;}
-        .field input{padding:12px 16px;border:1px solid #e0ddd8;border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:#0D0D0D;outline:none;transition:border-color .2s,box-shadow .2s;}
-        .field input:focus{border-color:#0D0D0D;box-shadow:0 0 0 3px rgba(192,57,43,.12);}
-        .field input::placeholder{color:#b0ada8;}
-        .btn-main{width:100%;padding:13px;background:#0D0D0D;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:"Satoshi",sans-serif;cursor:pointer;transition:background .25s ease;margin-top:4px;overflow:hidden;}
+        .field label{font-size:12.5px;font-weight:500;color:var(--ink-2,#2D2D2D);letter-spacing:.02em;}
+        .field input{padding:12px 16px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;background:var(--bg-2,#EFECE6);color:var(--ink,#0D0D0D);outline:none;transition:border-color .2s,box-shadow .2s;}
+        .field input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(192,57,43,.12);}
+        .field input::placeholder{color:var(--mute);}
+        .btn-main{width:100%;padding:13px;background:var(--ink,#0D0D0D);color:var(--bg,#fff);border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:"Satoshi",sans-serif;cursor:pointer;transition:background .25s ease;margin-top:4px;overflow:hidden;}
         .btn-main:hover:not(:disabled){background:#C0392B;}
         .btn-main:disabled{opacity:0.6;cursor:not-allowed;}
         @keyframes btnShimmer{0%{background-position:200% center}100%{background-position:-200% center}}
@@ -59,8 +59,8 @@ export default function ForgotPasswordPage() {
         .success-icon{font-size:32px;margin-bottom:10px;}
         .success-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:#065F46;margin-bottom:6px;}
         .success-sub{font-size:13px;color:#047857;line-height:1.5;}
-        .footer-links{margin-top:24px;text-align:center;font-size:13px;color:#6B6B6B;}
-        .footer-links a{color:#0D0D0D;font-weight:500;text-decoration:none;}
+        .footer-links{margin-top:24px;text-align:center;font-size:13px;color:var(--mute,#6B6B6B);}
+        .footer-links a{color:var(--ink,#0D0D0D);font-weight:500;text-decoration:none;}
         .footer-links a:hover{color:#C0392B;}
       `}</style>
 

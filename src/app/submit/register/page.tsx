@@ -183,7 +183,7 @@ export default function SubmitRegisterPage() {
         .sr-track-sub{font-size:11.5px;color:#6B6B6B;line-height:1.4;}
         .sr-back{background:none;border:none;cursor:pointer;color:#6B6B6B;font-size:13px;font-family:inherit;padding:0;margin-bottom:20px;display:flex;align-items:center;gap:5px;transition:color .15s;}
         .sr-back:hover{color:#0D0D0D;}
-        .sr-terms{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:#F5F3EF;border-radius:10px;margin-bottom:16px;cursor:pointer;}
+        .sr-terms{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--bg-2,#EFECE6);border-radius:10px;margin-bottom:16px;cursor:pointer;}
         .sr-terms input[type=checkbox]{width:16px;height:16px;flex-shrink:0;margin-top:2px;accent-color:#C0392B;cursor:pointer;}
         .sr-terms-text{font-size:12.5px;color:#444;line-height:1.5;}
         .sr-terms-text a{color:#C0392B;font-weight:600;text-decoration:none;}

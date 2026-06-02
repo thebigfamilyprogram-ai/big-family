@@ -53,7 +53,7 @@ function Sk({ w = '100%', h = 16, r = 6 }: { w?: string | number; h?: number; r?
   return (
     <div style={{
       width: w, height: h, borderRadius: r,
-      background: 'linear-gradient(90deg,#EFEDE9 25%,#F5F3EF 50%,#EFEDE9 75%)',
+      background: 'linear-gradient(90deg,var(--bg-2,#EFECE6) 25%,var(--card-bg,#fff) 50%,var(--bg-2,#EFECE6) 75%)',
       backgroundSize: '400% 100%', animation: 'vfy-shimmer 1.4s ease infinite',
     }} />
   )
@@ -177,39 +177,39 @@ export default function VerifyPage() {
       <style>{`
         @keyframes vfy-shimmer{0%{background-position:100% 50%}100%{background-position:0% 50%}}
         *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{font-family:"Satoshi",sans-serif;-webkit-font-smoothing:antialiased;background:#FAF8F4;}
-        .vfy-page{min-height:100dvh;background:#FAF8F4;display:flex;flex-direction:column;align-items:center;padding:60px 24px 80px;}
+        html,body{font-family:"Satoshi",sans-serif;-webkit-font-smoothing:antialiased;background:var(--bg,#FAF8F4);}
+        .vfy-page{min-height:100dvh;background:var(--bg,#FAF8F4);display:flex;flex-direction:column;align-items:center;padding:60px 24px 80px;}
         .vfy-inner{width:100%;max-width:680px;}
         .vfy-header{text-align:center;margin-bottom:40px;}
         .vfy-brand{font-family:"Satoshi",sans-serif;font-weight:700;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink,#0D0D0D);margin-bottom:16px;}
         .vfy-divider{height:1px;background:#C0392B;opacity:.35;margin-bottom:40px;}
-        .vfy-card{background:#FFFFFF;border:1px solid rgba(13,13,13,.08);border-radius:16px;padding:40px;box-shadow:0 4px 24px rgba(13,13,13,.06);}
+        .vfy-card{background:var(--card-bg,#FFFFFF);border:1px solid var(--card-border,rgba(13,13,13,.08));border-radius:16px;padding:40px;box-shadow:0 4px 24px rgba(13,13,13,.06);}
         .vfy-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;font-family:"Satoshi",sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px;}
         .vfy-pill.ok{background:#D1FAE5;color:#065F46;border:1px solid #6EE7B7;}
         .vfy-pill.fail{background:#FEE2E2;color:#991B1B;border:1px solid #FCA5A5;}
         .vfy-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);color:var(--ink,#0D0D0D);margin-bottom:10px;letter-spacing:-0.02em;}
         .vfy-sub{font-family:"Satoshi",sans-serif;font-size:15px;color:var(--mute,#6B6B6B);line-height:1.65;margin-bottom:28px;}
-        .vfy-sep{height:1px;background:rgba(13,13,13,.1);margin:28px 0;}
+        .vfy-sep{height:1px;background:var(--line);margin:28px 0;}
         .vfy-name{font-family:"Instrument Serif",serif;font-style:italic;font-size:clamp(1.6rem,5vw,2.2rem);color:var(--ink,#0D0D0D);text-align:center;margin-bottom:6px;line-height:1.2;}
         .vfy-arquetipo{font-family:"Instrument Serif",serif;font-style:italic;font-size:1rem;color:#C0392B;text-align:center;margin-bottom:16px;}
         .vfy-meta{text-align:center;font-family:"Satoshi",sans-serif;font-size:13.5px;color:var(--mute,#6B6B6B);margin-bottom:8px;}
         .vfy-badge{display:inline-block;padding:4px 12px;border-radius:999px;font-family:"Satoshi",sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;}
         .vfy-badge.cert{background:#D1FAE5;color:#065F46;}
         .vfy-badge.honor{background:rgba(212,130,26,.12);color:#92400E;}
-        .vfy-stats{display:flex;justify-content:center;gap:0;margin-top:16px;border-top:1px solid rgba(13,13,13,.08);padding-top:16px;}
+        .vfy-stats{display:flex;justify-content:center;gap:0;margin-top:16px;border-top:1px solid var(--line,rgba(13,13,13,.08));padding-top:16px;}
         .vfy-stat{flex:1;text-align:center;padding:0 16px;}
-        .vfy-stat:not(:last-child){border-right:1px solid rgba(13,13,13,.08);}
+        .vfy-stat:not(:last-child){border-right:1px solid var(--line,rgba(13,13,13,.08));}
         .vfy-stat__num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:24px;color:#C0392B;font-variant-numeric:tabular-nums;}
         .vfy-stat__lbl{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute,#6B6B6B);margin-top:3px;}
         .vfy-logos{display:flex;align-items:center;justify-content:center;gap:20px;margin:24px 0 0;}
         .vfy-logo{height:36px;object-fit:contain;filter:grayscale(1);opacity:.55;}
         .vfy-footer{margin-top:32px;text-align:center;}
         .vfy-footer-date{font-family:"Satoshi",sans-serif;font-size:12px;color:var(--mute,#6B6B6B);margin-bottom:6px;}
-        .vfy-footer-certid{font-family:"Satoshi",sans-serif;font-size:10px;letter-spacing:.2em;color:rgba(13,13,13,.35);text-transform:uppercase;margin-bottom:16px;}
+        .vfy-footer-certid{font-family:"Satoshi",sans-serif;font-size:10px;letter-spacing:.2em;color:var(--mute,rgba(13,13,13,.35));text-transform:uppercase;margin-bottom:16px;}
         .vfy-cta{display:inline-flex;align-items:center;gap:4px;font-family:"Satoshi",sans-serif;font-size:13px;font-weight:600;color:#C0392B;text-decoration:none;margin-bottom:20px;}
         .vfy-cta:hover{text-decoration:underline;}
-        .vfy-legal{font-family:"Satoshi",sans-serif;font-size:11px;color:rgba(13,13,13,.3);line-height:1.6;max-width:480px;margin:0 auto;}
-        @media(max-width:480px){.vfy-card{padding:28px 20px;}.vfy-stats{flex-direction:column;gap:12px;}.vfy-stat:not(:last-child){border-right:none;border-bottom:1px solid rgba(13,13,13,.08);padding-bottom:12px;}}
+        .vfy-legal{font-family:"Satoshi",sans-serif;font-size:11px;color:var(--mute,rgba(13,13,13,.3));line-height:1.6;max-width:480px;margin:0 auto;}
+        @media(max-width:480px){.vfy-card{padding:28px 20px;}.vfy-stats{flex-direction:column;gap:12px;}.vfy-stat:not(:last-child){border-right:none;border-bottom:1px solid var(--line,rgba(13,13,13,.08));padding-bottom:12px;}}
       `}</style>
 
       <div className="vfy-page">
@@ -239,7 +239,7 @@ export default function VerifyPage() {
                 <Sk w={180} h={28} r={999} />
                 <Sk w="60%" h={32} r={6} />
                 <Sk w="80%" h={16} r={5} />
-                <div style={{ height: 1, background: 'rgba(13,13,13,.08)', width: '100%', margin: '8px 0' }} />
+                <div style={{ height: 1, background: 'var(--line,rgba(13,13,13,.08))', width: '100%', margin: '8px 0' }} />
                 <Sk w={160} h={36} r={6} />
                 <Sk w={120} h={18} r={5} />
                 <Sk w="40%" h={13} r={5} />

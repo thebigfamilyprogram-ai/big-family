@@ -412,9 +412,9 @@ export default function CoordinatorModulesPage() {
         .cm-tabs{display:flex;gap:8px;margin-bottom:24px;}
         .cm-tab{padding:8px 20px;border-radius:999px;border:none;font-family:"Satoshi",sans-serif;font-weight:600;font-size:13.5px;cursor:pointer;transition:all .18s;background:rgba(13,13,13,.06);color:#6B6B6B;}
         .cm-tab:hover{background:rgba(13,13,13,.1);color:#0D0D0D;}
-        .cm-tab.active{background:#0D0D0D;color:#fff;}
+        .cm-tab.active{background:var(--ink,#0D0D0D);color:var(--bg,#fff);}
         .cm-feed{display:flex;flex-direction:column;gap:18px;}
-        .cm-empty{background:#fff;border:1px dashed rgba(13,13,13,.15);border-radius:20px;padding:56px 40px;text-align:center;color:#9a9690;}
+        .cm-empty{background:var(--card-bg,#fff);border:1px dashed var(--line);border-radius:20px;padding:56px 40px;text-align:center;color:var(--mute);}
         @media(max-width:860px){.cm-main{padding:28px 20px 60px;}}
       `}</style>
 

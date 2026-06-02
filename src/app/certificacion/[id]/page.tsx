@@ -273,13 +273,13 @@ export default function CertificacionPage() {
   if (loading) {
     return (
       <div style={{
-        minHeight: '100dvh', background: '#FAF8F4',
+        minHeight: '100dvh', background: 'var(--bg,#FAF8F4)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
         <style>{`@keyframes shimmer{0%{background-position:100% 50%}100%{background-position:0% 50%}}`}</style>
         <div style={{
           width: '100%', maxWidth: 720, margin: '0 24px',
-          background: '#fff', borderRadius: 4,
+          background: 'var(--card-bg,#fff)', borderRadius: 4,
           outline: '2px solid #C0392B',
           padding: '56px 64px',
           display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center',
@@ -287,7 +287,7 @@ export default function CertificacionPage() {
           {[140, 36, 260, 72, 180, 48, 120, 36].map((w, i) => (
             <div key={i} style={{
               width: w, height: 14, borderRadius: 6,
-              background: 'linear-gradient(90deg,#F0EDE7 25%,#FAF8F4 50%,#F0EDE7 75%)',
+              background: 'linear-gradient(90deg,var(--bg-2,#EFECE6) 25%,var(--card-bg,#fff) 50%,var(--bg-2,#EFECE6) 75%)',
               backgroundSize: '400% 100%',
               animation: 'shimmer 1.4s ease infinite',
             }} />
@@ -319,12 +319,12 @@ export default function CertificacionPage() {
           100%{opacity:0;transform:translateY(110vh) translateX(var(--tx)) rotate(var(--rot));}
         }
         .dp-page{
-          min-height:100dvh;background:#FAF8F4;
+          min-height:100dvh;background:var(--bg,#FAF8F4);
           display:flex;flex-direction:column;align-items:center;justify-content:center;
           padding:40px 24px 60px;
         }
         .dp-card{
-          background:#FFFFFF;border-radius:4px;
+          background:var(--card-bg,#FFFFFF);border-radius:4px;
           padding:48px 72px;
           position:relative;width:100%;max-width:900px;
           box-shadow:0 20px 60px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);
@@ -340,7 +340,7 @@ export default function CertificacionPage() {
           border:1px solid rgba(192,57,43,.25);pointer-events:none;
         }
         .dp-sep{height:1px;background:rgba(192,57,43,.22);}
-        .dp-sig-line{height:1px;background:rgba(13,13,13,.14);margin-bottom:9px;width:200px;}
+        .dp-sig-line{height:1px;background:var(--line,rgba(13,13,13,.14));margin-bottom:9px;width:200px;}
         .dp-val-logo{height:48px;object-fit:contain;}
         /* Stats+val row collapses to column on mobile */
         .dp-stats-row{display:flex;justify-content:center;align-items:center;margin:22px 0;flex-wrap:wrap;gap:0;}
@@ -361,8 +361,8 @@ export default function CertificacionPage() {
         }
         @media print{
           .no-print{display:none!important;}
-          html,body{background:#fff!important;}
-          .dp-page{background:#fff!important;padding:0!important;min-height:auto!important;}
+          html,body{background:#FAF8F4!important;}
+          .dp-page{background:#FAF8F4!important;padding:0!important;min-height:auto!important;}
           .dp-card{box-shadow:none!important;max-width:100%!important;}
         }
       `}</style>
