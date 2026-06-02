@@ -8,6 +8,7 @@ import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring,
 import TimelineSection from '@/components/TimelineSection'
 import AprendizajeSection from '@/components/AprendizajeSection'
 import AlumniSection from '@/components/AlumniSection'
+import FounderSection from '@/components/FounderSection'
 import SchoolTicker from '@/components/SchoolTicker'
 import WorldMapPublic from '@/components/WorldMapPublic'
 import { createClient } from '@/lib/supabase'
@@ -1866,6 +1867,11 @@ export default function GlobeHero() {
           </div>
         </div>
       </section>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SECCIÓN — EL FUNDADOR
+      ══════════════════════════════════════════════════════════════════ */}
+      <FounderSection />
 
       {/* ══════════════════════════════════════════════════════════════════
           SECCIÓN — EQUIPO
