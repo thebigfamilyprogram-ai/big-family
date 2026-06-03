@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { m } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE, MOCK } from '@/lib/mockData'
-import AppSidebar from '@/components/AppSidebar'
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -311,7 +311,6 @@ export default function ModulesListPage() {
         @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Satoshi",sans-serif;color:var(--ink);}
-        .mod-layout{display:flex;min-height:100dvh;}
         .mod-main{flex:1;display:flex;flex-direction:column;min-width:0;}
         .mod-header{position:sticky;top:0;z-index:10;background:var(--bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:20px 40px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
         .mod-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:22px;letter-spacing:-.02em;color:var(--ink);}
@@ -328,16 +327,7 @@ export default function ModulesListPage() {
         }
       `}</style>
 
-      <div className="mod-layout">
-        <AppSidebar
-          role="student"
-          userName={userInfo.name}
-          userInitial={userInfo.initial}
-          schoolName={userInfo.school}
-          unreadAnnouncements={userInfo.unread}
-        />
-
-        <main className="mod-main">
+      <main className="mod-main">
           {/* Header */}
           <div className="mod-header">
             <div>
@@ -427,8 +417,7 @@ export default function ModulesListPage() {
               )}
             </div>
           </div>
-        </main>
-      </div>
+      </main>
     </>
   )
 }
