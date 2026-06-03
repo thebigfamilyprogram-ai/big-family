@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
+import ModulePersonalization from '@/components/ModulePersonalization'
 
 interface Module {
   id: string
@@ -27,6 +28,12 @@ interface AttemptData {
   count: number
   bestScore: number | null
   passed: boolean
+}
+
+// Module order_index → Big Leader Model pilar
+const MODULE_PILAR: Record<number, string> = {
+  1: 'Yo', 2: 'Norte', 3: 'Vínculo',
+  4: 'Vínculo', 5: 'Acción', 6: 'Acción', 7: 'Legado',
 }
 
 const PHASES = [
@@ -158,6 +165,12 @@ export default function LeadershipPathPage() {
   const [loading,         setLoading]         = useState(true)
   const [nodes,           setNodes]           = useState<PathNode[]>([])
   const [userName,        setUserName]        = useState('Líder Big Family')
+  const [userId,          setUserId]          = useState('')
+  const [userTrack,       setUserTrack]       = useState<'junior'|'senior'>('senior')
+  const [leaderProfile,   setLeaderProfile]   = useState<{
+    arquetipo: string; fortalezas: string[]; areasCrecimiento: string[];
+    big_five: { O: number; C: number; E: number; A: number; ES: number }
+  } | null>(null)
   const [totalXP,         setTotalXP]         = useState(0)
   const [streak,          setStreak]          = useState(0)
   const [attMap,          setAttMap]          = useState<Record<string, AttemptData>>({})
@@ -173,9 +186,26 @@ export default function LeadershipPathPage() {
       const { data: { user: au } } = await supabase.auth.getUser()
       if (!au) { router.replace('/login'); return }
 
+      setUserId(au.id)
       const { data: profile } = await supabase
-        .from('profiles').select('display_name, school_level').eq('id', au.id).maybeSingle()
+        .from('profiles').select('display_name, school_level, leadership_profile').eq('id', au.id).maybeSingle()
       const level = profile?.school_level ?? 'senior'
+      const track: 'junior'|'senior' = level?.toLowerCase().includes('junior') ? 'junior' : 'senior'
+      setUserTrack(track)
+      if (profile?.leadership_profile) {
+        const lp = profile.leadership_profile as {
+          arquetipo?: string; fortalezas?: string[]; areas_crecimiento?: string[];
+          big_five?: { O: number; C: number; E: number; A: number; N: number; ES: number }
+        }
+        if (lp?.arquetipo && lp?.big_five) {
+          setLeaderProfile({
+            arquetipo:        lp.arquetipo,
+            fortalezas:       lp.fortalezas ?? [],
+            areasCrecimiento: lp.areas_crecimiento ?? [],
+            big_five:         { O: lp.big_five.O, C: lp.big_five.C, E: lp.big_five.E, A: lp.big_five.A, ES: lp.big_five.ES },
+          })
+        }
+      }
 
       const { data: mods } = await supabase
         .from('modules').select('*').eq('level', level).order('order_index')
@@ -714,6 +744,21 @@ export default function LeadershipPathPage() {
                 {selected.module.description}
               </div>
 
+              {/* ── Intro personalizada (before "video") ── */}
+              {leaderProfile && userId && (
+                <div style={{ marginBottom: 16 }}>
+                  <ModulePersonalization
+                    moduleId={selected.module.id}
+                    moduleName={selected.module.title}
+                    modulePilar={MODULE_PILAR[selected.module.order_index] ?? 'Yo'}
+                    leadershipProfile={leaderProfile}
+                    track={userTrack}
+                    userId={userId}
+                    variant="intro"
+                  />
+                </div>
+              )}
+
               {/* Stats */}
               <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600, color: '#C0392B', background: 'rgba(192,57,43,0.08)', padding: '5px 10px', borderRadius: 999 }}>
@@ -746,6 +791,21 @@ export default function LeadershipPathPage() {
 
               {/* Divider */}
               <div style={{ height: 1, background: 'rgba(13,13,13,0.08)', marginBottom: 18 }} />
+
+              {/* ── Reflexiones + Entregable + Autoevaluación (after "video") ── */}
+              {leaderProfile && userId && (
+                <div style={{ marginBottom: 16 }}>
+                  <ModulePersonalization
+                    moduleId={selected.module.id}
+                    moduleName={selected.module.title}
+                    modulePilar={MODULE_PILAR[selected.module.order_index] ?? 'Yo'}
+                    leadershipProfile={leaderProfile}
+                    track={userTrack}
+                    userId={userId}
+                    variant="main"
+                  />
+                </div>
+              )}
 
               {/* Attempts info */}
               {selAtt && (
