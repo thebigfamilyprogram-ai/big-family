@@ -204,25 +204,39 @@ Expositor code: `EXPO-BF-2026`
 | `src/components/GlobeHero.tsx` | Landing page completa — Hero, Misión, Visión, Historia, Impacto, Metodología, Valores, Equipo, navbar pill |
 | `src/components/Globe/GlobeCanvas.tsx` | Globe React wrapper + flag overlays |
 | `src/components/Globe/GlobeWorker.ts` | Three.js in Web Worker (OffscreenCanvas) |
-| `src/components/Globe/GlobeFallback.ts` | Three.js fallback for Safari < 16.4 |
-| `src/components/SchoolTicker.tsx` | Ticker horizontal infinito de los 8 colegios — CSS animation, logos desde `school-logos` |
-| `src/components/HeroCollage.tsx` | Cards flotantes países aliados con parallax mouse — Framer Motion |
-| `src/components/WorldMapPublic.tsx` | Mapa mundial público — 6 layers SVG, cards flotantes España/EEUU/Canadá, modal para 7 países red |
-| `src/components/AppSidebar.tsx` | Sidebar unificado — acepta `role` prop, `layoutId` spring indicator |
-| `src/components/datos/DatosPage.tsx` | Centro de Datos compartido — 3 tabs: Resumen, Constructor, IA Insights |
+| `src/components/Globe/GlobeFallback.ts` | Three.js fallback for Safari < 16.4 — DOM API (no innerHTML) |
+| `src/components/SchoolTicker.tsx` | Ticker horizontal infinito de los 8 colegios |
+| `src/components/HeroCollage.tsx` | Cards flotantes países aliados con parallax mouse |
+| `src/components/WorldMapPublic.tsx` | Mapa mundial público — 6 layers SVG |
+| `src/components/AppSidebar.tsx` | Sidebar unificado — role, Kashi/GV/portafolio badges, drawer mobile |
+| `src/components/AprendizajeSection.tsx` | Landing — 5 arquetipos Big Five con panel inferior expandible |
+| `src/components/AlumniSection.tsx` | Landing — sección Alumni con 3 cards |
+| `src/components/FounderSection.tsx` | Landing — El Fundador split 55/45 |
+| `src/components/NotificationDrawer.tsx` | Hub notificaciones — panel x:380→0, Realtime, 6 tipos, MOCK |
+| `src/components/ModulePersonalization.tsx` | Personalización módulos — intro + reflexiones + entregable + autoevaluación |
+| `src/components/datos/DatosPage.tsx` | Centro de Datos compartido — 3 tabs |
 | `src/components/DashboardSidebar.tsx` | Student sidebar |
-| `src/components/ExpositorSidebar.tsx` | Expositor sidebar |
 | `src/components/ProjectEditor.tsx` | Capstone IDEMR editor |
-| `src/components/ModuleEditor.tsx` | Module editor for expositores |
-| `src/components/NewsEditor.tsx` | News editor with live preview |
-| `src/components/ProjectReactions.tsx` | 5-emoji reaction system |
-| `src/components/AnimatedNumber.tsx` | Counter animado desde 0, easing cúbico |
+| `src/components/NewsEditor.tsx` | News editor — DOMPurify, MIME validation |
 | `src/components/Toast.tsx` | Toast notifications |
+| `src/app/onboarding/test/page.tsx` | Test BFI-44 (44 senior / 20 junior), auto-advance 300ms |
+| `src/app/onboarding/resultado/page.tsx` | Resultado ceremonial — pentagon SVG pathLength, stagger |
+| `src/app/dashboard/great-venture/page.tsx` | Great Venture wizard 5 pasos — autosave 800ms |
+| `src/app/dashboard/great-venture/mapa/page.tsx` | Mapa Hoshin Kanri SVG — Editorial Luxury, edit panel |
+| `src/app/dashboard/kashi/page.tsx` | Kashi iframe — luishernandobarrios.com/kashi/splash |
+| `src/app/p/[username]/page.tsx` | Portafolio público — sidebar sticky, 7 secciones, export PDF |
+| `src/app/verify/[certId]/page.tsx` | Verificación pública de diplomas — DESIGN_VARIANCE:9 |
 | `src/app/coordinator/datos/page.tsx` | Centro de datos coordinador |
 | `src/app/admin/datos/page.tsx` | Centro de datos admin |
-| `src/app/api/ai/insights/route.ts` | Route Handler Claude API — seguro, server-side, max 10 msgs/sesión |
-| `src/lib/mockData.ts` | `MOCK_MODE` flag + datos mock completos (estudiantes, colegios, proyectos, módulos) |
-| `src/proxy.ts` | Middleware (auth protection) |
+| `src/app/api/leadership/assess/route.ts` | Assessment Big Five → Claude → profiles — auth + rate limit 3/h |
+| `src/app/api/modules/personalize/route.ts` | Personalización modular — auth + rate limit 20/h |
+| `src/app/api/ai/insights/route.ts` | IA Insights coordinador — auth + rate limit 10/h |
+| `src/lib/bigFiveQuestions.ts` | BFI-44 questions, calcBigFive, getArchetype, getPillarScores |
+| `src/lib/createNotification.ts` | createNotification + createNotificationBatch helpers |
+| `src/lib/rateLimit.ts` | In-memory rate limiting (Map-based, Vercel-safe) |
+| `src/lib/username.ts` | generateUsername() — normaliza tildes, espacios→guiones |
+| `src/lib/mockData.ts` | `MOCK_MODE` flag + datos mock completos |
+| `src/proxy.ts` | Middleware — auth, role checks, onboarding gate (null→false) |
 | `src/lib/supabase.ts` | Supabase client (lazy init) |
 | `src/lib/animations.ts` | Shared Framer Motion variants |
 
@@ -285,34 +299,56 @@ Expositor code: `EXPO-BF-2026`
 
 ---
 
-## Recent Commits
-- `6bb06db` — Redesign: WorldMapPublic full visual hierarchy + dual info system (Sesión 3)
-- `ad897c2` — Feat: WorldMapPublic dual info system — floating cards + modal (Sesión 3)
-- `47b452f` — Fix: WorldMapPublic z-index + country tint (Sesión 3)
-- `ca542f7` — Quiz damping, evaluate animation, goals CSS, dashboard grid
-- `99a395a` — PageSpeed: local fonts, browserslistrc, reflow fix
-- `66cdedb` — Fix crash: removed optimizeCss, Framer Motion SSR guard, Three.js ES Module
-- `f0a22f4` — Fix: shared dashboard layout to prevent sidebar remount on navigation
-- `3c9728f` — Feat: redesign all 3 dashboards — Soft Structuralism + bento charts
-- `81f5e93` — Feat: add Historia, Impacto, Metodología, Valores sections to GlobeHero
-- `bf00a6c` — Docs: update context.md with Sesión 2 features
+## Recent Commits (Sesión 5)
+- `e1f65f6` — fix: seguridad completa — 12 issues (DOMPurify, rate limiting, CSP headers, RLS)
+- `778e0a4` — feat: portafolio módulos — 2 cols + panel perfil de líder (pilares, recomendado, stats)
+- `07ef6df` — feat: personalización de módulos — UI completa + Route Handler
+- `25eabd5` — feat: hub de notificaciones — panel deslizante + sistema completo
+- `c67ac83` — feat: Kashi — página iframe + sidebar + landing
+- `391da59` — fix: portafolio /p/[username] — dark mode completo
+- `524590c` — fix: dark mode completo — CSS variables en 11 archivos
+- `3b41019` — feat: portafolio público del estudiante (FASE 3)
+- `0e77a5b` — fix: NotificationDrawer — MOCK_MODE no cargaba notificaciones
+- `c797abc` — feat: diploma con arquetipo + QR verificable + página /verify pública
 
 ---
 
 ## Routes Structure
 ```
-/ → Landing (GlobeHero)
+/ → Landing (GlobeHero — con AprendizajeSection, AlumniSection, FounderSection)
 /login, /register, /forgot-password
 /submit/* → Día de Liderazgo special flow
-/dia-de-liderazgo → Evento especial (countdown + info)
-/dashboard/* → Student area
+/onboarding/test → Test BFI-44 (sin sidebar — fullscreen)
+/onboarding/resultado → Resultado ceremonial del perfil
+/dashboard/* → Student area (con NotificationDrawer, identity card + pentagon)
+/dashboard/leadership-path → Ruta de liderazgo (zigzag path)
+/dashboard/modules → Lista módulos con panel perfil derecho
+/dashboard/modules/[id] → Módulo individual (con ModulePersonalization)
+/dashboard/modules/[id]/quiz → Quiz del módulo
+/dashboard/great-venture → Wizard 5 pasos Hoshin Kanri
+/dashboard/great-venture/mapa → Mapa SVG Editorial Luxury
+/dashboard/kashi → Kashi iframe (red educativa)
 /coordinator/* → Coordinator area
-/coordinator/datos → Centro de datos coordinador (Sesión 2)
+/coordinator/datos → Centro de datos coordinador
 /admin/* → Admin area (Luis Barrios only)
-/admin/datos → Centro de datos admin (Sesión 2)
+/admin/datos → Centro de datos admin
 /expositor/* → Module creators
 /news, /news/[slug] → Public blog
 /timeline → Public timeline
 /success-stories, /success-stories/[id] → Public stories
-/certificacion/[id] → Diploma page
+/certificacion/[id] → Diploma page (con arquetipo + QR)
+/verify/[certId] → Verificación pública de diplomas (sin auth)
+/p/[username] → Portafolio público del estudiante (sin auth)
 ```
+
+---
+
+## Security (Sesión 5)
+- **DOMPurify** — NewsEditor sanitiza HTML antes de guardar + antes de renderizar
+- **Rate limiting** — `src/lib/rateLimit.ts` Map-based: assess 3/h, personalize 20/h, insights 10/h
+- **Security headers** — `next.config.mjs`: CSP, HSTS, X-Frame-Options(SAMEORIGIN), X-Content-Type-Options
+- **Auth en todas las APIs** — `/api/modules/personalize` y `/api/ai/insights` ahora requieren auth
+- **RLS fixes** — `20260603200000_rls_fixes.sql`: activity_feed, calendar_events (school_id), project_reactions
+- **GlobeFallback** — DOM API (createElement) en vez de innerHTML con datos interpolados
+- **Verify page** — ilike fallback removido, solo exact match via `issued_certificates`
+- **Proxy** — `onboarding_completed null → false` (antes asumía true)

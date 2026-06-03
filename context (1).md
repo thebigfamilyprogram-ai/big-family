@@ -1,6 +1,6 @@
 # context.md — Big Family Platform — Decision Log
 
-## Last updated: Junio 2026 (Sesión 4)
+## Last updated: Junio 2026 (Sesión 5)
 
 ---
 
