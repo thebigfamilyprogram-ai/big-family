@@ -94,20 +94,9 @@ export default function VerifyPage() {
 
       let userId: string | null = issuedRow?.user_id ?? null
 
-      // Fallback: derive userId from certId format BF{year}{uuid8}
-      if (!userId) {
-        const uuid8 = extractUuid8(certId)
-        if (!uuid8) { setInvalid(true); setLoading(false); return }
-
-        const { data: profiles } = await sb
-          .from('profiles')
-          .select('id')
-          .ilike('id', `${uuid8}%`)
-          .limit(1)
-
-        userId = (profiles as { id: string }[] | null)?.[0]?.id ?? null
-      }
-
+      // Fallback removed: ilike partial UUID search has collision risk.
+      // Certs are registered in issued_certificates when the diploma is first opened.
+      // If not found, the cert hasn't been activated yet — mark invalid.
       if (!userId) { setInvalid(true); setLoading(false); return }
 
       // Parallel: verify capstone + fetch student data

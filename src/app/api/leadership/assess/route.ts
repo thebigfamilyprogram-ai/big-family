@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit } from '@/lib/rateLimit'
 import {
   calcBigFive,
   getArchetype,
@@ -55,6 +56,15 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
+  // ── Rate limit: 3 requests per hour per user ─────────────────────────────────
+  const rl = checkRateLimit(`assess-${user.id}`, 3, 60 * 60 * 1000)
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'Demasiadas solicitudes. Intenta más tarde.' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } },
+    )
+  }
+
   // ── Parse request ────────────────────────────────────────────────────────────
   let body: AssessBody
   try {
@@ -66,6 +76,12 @@ export async function POST(req: NextRequest) {
   const { answers, track, name = 'Estudiante' } = body
   if (!answers || !track) {
     return NextResponse.json({ error: 'answers y track son requeridos' }, { status: 400 })
+  }
+  // Validate that every answer is an integer between 1 and 5
+  const validAnswers = typeof answers === 'object' && !Array.isArray(answers) &&
+    Object.values(answers).every((v) => Number.isInteger(v) && (v as number) >= 1 && (v as number) <= 5)
+  if (!validAnswers) {
+    return NextResponse.json({ error: 'Respuestas inválidas' }, { status: 400 })
   }
 
   // ── Calculate Big Five ───────────────────────────────────────────────────────
@@ -120,8 +136,8 @@ Lenguaje claro y traducible — el programa es global.`
     if (!jsonMatch) throw new Error('Respuesta de Claude no contiene JSON válido')
     claudeResult = JSON.parse(jsonMatch[0]) as ClaudeProfile
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Error al generar perfil'
-    return NextResponse.json({ error: msg }, { status: 500 })
+    console.error('[assess] Claude error:', err)
+    return NextResponse.json({ error: 'Error al generar perfil. Intenta de nuevo.' }, { status: 500 })
   }
 
   // ── Build result ─────────────────────────────────────────────────────────────

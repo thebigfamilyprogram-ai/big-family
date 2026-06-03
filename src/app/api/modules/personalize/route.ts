@@ -1,56 +1,51 @@
+import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit } from '@/lib/rateLimit'
+import { MOCK_MODE } from '@/lib/mockData'
 
 export async function POST(req: NextRequest) {
-  const {
-    moduleName, modulePilar, arquetipo, track,
-  } = await req.json()
+  // ── MOCK_MODE bypass ─────────────────────────────────────────────────────────
+  if (MOCK_MODE) {
+    const body = await req.json().catch(() => ({}))
+    return NextResponse.json(getMockPersonalization(body.arquetipo ?? '—', body.modulePilar ?? '—', body.track ?? 'senior'))
+  }
+
+  // ── Auth ─────────────────────────────────────────────────────────────────────
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { getAll: () => req.cookies.getAll(), setAll: () => {} } },
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
+  // ── Rate limit: 20 requests per hour per user ────────────────────────────────
+  const rl = checkRateLimit(`personalize-${user.id}`, 20, 60 * 60 * 1000)
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'Demasiadas solicitudes. Intenta más tarde.' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } },
+    )
+  }
+
+  // ── Parse ────────────────────────────────────────────────────────────────────
+  let moduleName: string, modulePilar: string, arquetipo: string, track: string
+  try {
+    const body = await req.json()
+    moduleName = body.moduleName ?? ''
+    modulePilar = body.modulePilar ?? ''
+    arquetipo = body.arquetipo ?? ''
+    track = body.track ?? 'senior'
+  } catch {
+    return NextResponse.json({ error: 'JSON inválido' }, { status: 400 })
+  }
 
   // ANTHROPIC_API_KEY pendiente — retornar mock hasta que llegue
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(getMockPersonalization(arquetipo, modulePilar, track))
   }
 
-  // TODO: descomentar cuando llegue la API key
-  /*
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      messages: [{
-        role: 'user',
-        content: `Eres el sistema de personalización del programa The Big Family — Big Leader Model.
-        Estudiante: ${track}, arquetipo: ${arquetipo}
-        Módulo: ${moduleName} — Pilar: ${modulePilar}
-        Genera en JSON exacto sin markdown:
-        {
-          "intro": "2-3 oraciones personalizadas...",
-          "reflexiones": [
-            {"pregunta": "...", "placeholder": "..."},
-            {"pregunta": "...", "placeholder": "..."},
-            {"pregunta": "...", "placeholder": "..."}
-          ],
-          "entregable_enfoque": "1-2 oraciones...",
-          "autoevaluacion": [
-            {"pregunta": "...", "escala": "1-4"},
-            {"pregunta": "...", "escala": "1-4"},
-            {"pregunta": "...", "escala": "1-4"},
-            {"pregunta": "...", "escala": "1-4"}
-          ]
-        }`
-      }],
-    }),
-  })
-  const data = await response.json()
-  const text = data.content?.[0]?.text ?? ''
-  const match = text.match(/\{[\s\S]*\}/)
-  if (match) return NextResponse.json(JSON.parse(match[0]))
-  */
+  // TODO: descomentar cuando llegue la API key — ver comentario en assess/route.ts
 
   return NextResponse.json(getMockPersonalization(arquetipo, modulePilar, track))
 }
@@ -69,7 +64,6 @@ function getMockPersonalization(
         ? 'una oportunidad de profundizar tu fortaleza natural'
         : 'tu mayor área de crecimiento en el programa'
     }. ${esJunior ? 'Tómate tu tiempo con cada actividad.' : 'Conecta cada concepto con tu proyecto de liderazgo.'} Presta especial atención a cómo cada idea transforma tu manera de liderar desde La Guajira.`,
-
     reflexiones: [
       {
         pregunta: esFortaleza
@@ -82,13 +76,11 @@ function getMockPersonalization(
         placeholder: 'Piensa en alguien específico...',
       },
       {
-        pregunta: `¿Cómo aplicarías lo aprendido en este módulo a tu Great Venture?`,
+        pregunta: '¿Cómo aplicarías lo aprendido en este módulo a tu Great Venture?',
         placeholder: 'Conecta con tu meta núcleo...',
       },
     ],
-
     entregable_enfoque: `Para tu perfil de ${arquetipo}, enfoca tu entregable en cómo ${pilar} se manifiesta en el contexto específico de tu comunidad en La Guajira.`,
-
     autoevaluacion: [
       { pregunta: `¿Qué tan claro está para mí el concepto de ${pilar}?`,          escala: '1-4' },
       { pregunta: '¿Puedo aplicar esto en mi proyecto esta semana?',                escala: '1-4' },

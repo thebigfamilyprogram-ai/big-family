@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { m, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
+import DOMPurify from 'isomorphic-dompurify'
 
 // SQL to run in Supabase:
 // ALTER TABLE news ADD COLUMN IF NOT EXISTS layout_options jsonb DEFAULT '{"coverStyle":"full","galleryStyle":"grid"}';
@@ -135,7 +136,11 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
     const v = valuesRef.current
-    const content = editorRef.current?.innerHTML ?? ''
+    const rawContent = editorRef.current?.innerHTML ?? ''
+    const content = DOMPurify.sanitize(rawContent, {
+      ALLOWED_TAGS: ['p','b','i','strong','em','h2','h3','ul','ol','li','blockquote','a','br','img'],
+      ALLOWED_ATTR: ['href','src','alt','target','rel'],
+    })
     setSaveStatus('saving')
     const { error } = await supabase.from('news').update({
       title:          v.title,
@@ -174,8 +179,12 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
     document.execCommand(cmd, false, val)
   }
 
+  const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml']
+  const MAX_IMG_SIZE = 5 * 1024 * 1024 // 5 MB
+
   async function uploadCover(file: File) {
-    if (!file.type.startsWith('image/')) return
+    if (!ALLOWED_MIME.includes(file.type)) return
+    if (file.size > MAX_IMG_SIZE) return
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
     setUploading(true)
@@ -197,6 +206,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
   }
 
   async function uploadGalleryFile(file: File) {
+    if (!ALLOWED_MIME.includes(file.type) || file.size > MAX_IMG_SIZE) return null
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
     const path = `${userId}/${newsId}/gallery-${Date.now()}-${file.name}`
@@ -208,7 +218,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
   async function addGalleryFiles(files: FileList | null) {
     if (!files) return
     setGalleryUpl(true)
-    const imgs = Array.from(files).filter(f => f.type.startsWith('image/')).slice(0, 20 - galleryUrls.length)
+    const imgs = Array.from(files).filter(f => ALLOWED_MIME.includes(f.type) && f.size <= MAX_IMG_SIZE).slice(0, 20 - galleryUrls.length)
     const urls = (await Promise.all(imgs.map(uploadGalleryFile))).filter(Boolean) as string[]
     setGalleryUrls(prev => [...prev, ...urls])
     setGalleryUpl(false)
@@ -647,7 +657,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
                                   {highlightStat.description && <div className="ne-pv-stat-desc">{highlightStat.description}</div>}
                                 </div>
                               )}
-                              <div className="ne-pv-content" dangerouslySetInnerHTML={{ __html: previewContent }} />
+                              <div className="ne-pv-content" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(previewContent) }} />
                             </div>
                             {coverUrl ? (
                               <div className="ne-pv-lateral-img">
@@ -676,7 +686,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
                                 {featuredQuote}
                               </blockquote>
                             )}
-                            <div className="ne-pv-content" dangerouslySetInnerHTML={{ __html: previewContent }} />
+                            <div className="ne-pv-content" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(previewContent) }} />
                           </div>
                         )}
 

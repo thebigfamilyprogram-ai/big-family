@@ -38,8 +38,10 @@ export async function proxy(request: NextRequest) {
       .maybeSingle()
 
     const role = profile?.role ?? 'student'
-    // Default true so existing users (pre-onboarding feature) are not blocked
-    const onboardingCompleted = profile?.onboarding_completed ?? true
+    // Default true for existing users (pre-onboarding feature) who have no row yet.
+    // profile === null means middleware couldn't load the profile (auth issue) — treat as incomplete.
+    // profile?.onboarding_completed === null is treated as false (explicit null = not set yet).
+    const onboardingCompleted = profile?.onboarding_completed === true
 
     // Authenticated → redirect away from auth pages to their home
     if (isAuthPage) {

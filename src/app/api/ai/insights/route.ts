@@ -1,5 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 const SYSTEM_PROMPT = `Eres un analista de datos experto en programas de liderazgo juvenil.
 Analiza estos datos del programa Big Family en La Guajira, Colombia y genera insights accionables en español.
@@ -9,9 +11,27 @@ Responde en formato estructurado usando markdown: ## encabezados, **negrita** pa
 Máximo 600 palabras.`
 
 export async function POST(req: NextRequest) {
+  // ── Auth ─────────────────────────────────────────────────────────────────────
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { getAll: () => req.cookies.getAll(), setAll: () => {} } },
+  )
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
+  // ── Rate limit: 10 requests per hour per user ────────────────────────────────
+  const rl = checkRateLimit(`insights-${user.id}`, 10, 60 * 60 * 1000)
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'Demasiadas solicitudes. Intenta más tarde.' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } },
+    )
+  }
+
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
-    return NextResponse.json({ error: 'ANTHROPIC_API_KEY no configurada' }, { status: 500 })
+    return NextResponse.json({ error: 'Servicio no disponible' }, { status: 503 })
   }
 
   let body: { messages: { role: 'user' | 'assistant'; content: string }[]; dataContext: object }
@@ -43,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ text })
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Error desconocido'
-    return NextResponse.json({ error: msg }, { status: 500 })
+    console.error('[ai/insights] error:', err)
+    return NextResponse.json({ error: 'Error al generar insights. Intenta de nuevo.' }, { status: 500 })
   }
 }

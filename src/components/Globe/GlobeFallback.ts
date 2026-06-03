@@ -177,7 +177,11 @@ export async function initGlobeFallback(
 
     const flagEl = document.createElement('div')
     flagEl.className = 'flag-pin'
-    flagEl.innerHTML = `<img class="flag-pin__img" alt="${c.name}" src="https://flagcdn.com/w80/${c.code}.png" />`
+    const imgEl = document.createElement('img')
+    imgEl.className = 'flag-pin__img'
+    imgEl.alt = c.name          // textContent equivalent — no innerHTML injection
+    imgEl.src = `https://flagcdn.com/w80/${c.code}.png`
+    flagEl.appendChild(imgEl)
     flagEl.addEventListener('mouseenter', () => {
       const r = flagsLayer.getBoundingClientRect(), fr = flagEl.getBoundingClientRect()
       tipEl.style.left = (fr.left + fr.width / 2 - r.left) + 'px'
