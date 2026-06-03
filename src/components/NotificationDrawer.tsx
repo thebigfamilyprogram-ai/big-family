@@ -132,8 +132,9 @@ export default function NotificationDrawer({ isOpen, onClose, userId }: Notifica
 
   // ── Realtime subscription ──────────────────────────────────────────────────
   useEffect(() => {
-    if (!isOpen || !userId || MOCK_MODE) return
-    fetchNotifs()
+    if (!isOpen || !userId) return
+    fetchNotifs()               // always call — mock branch inside handles MOCK_MODE
+    if (MOCK_MODE) return       // skip realtime subscription in mock mode
 
     if (!sbRef.current) sbRef.current = createClient()
     const sb = sbRef.current
