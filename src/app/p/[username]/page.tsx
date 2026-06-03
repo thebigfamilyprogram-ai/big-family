@@ -326,7 +326,7 @@ export default function PortfolioPage() {
 
   if (!data && !private_) return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg,#F5F3EF)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', textAlign: 'center' }}>
-      <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 10, color: 'rgba(13,13,13,.4)', letterSpacing: '.24em', textTransform: 'uppercase', marginBottom: 16 }}>THE BIG FAMILY PROGRAM</p>
+      <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 10, color: 'var(--mute,#6B6B6B)', letterSpacing: '.24em', textTransform: 'uppercase', marginBottom: 16 }}>THE BIG FAMILY PROGRAM</p>
       <h1 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: '2rem', color: 'var(--ink,#0D0D0D)', marginBottom: 12 }}>Portafolio no encontrado</h1>
       <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 15, color: 'var(--mute,#6B6B6B)' }}>El usuario <strong>@{username}</strong> no existe o no tiene un portafolio activo.</p>
       <a href="/" style={{ marginTop: 28, fontFamily: '"Satoshi",sans-serif', fontSize: 13, fontWeight: 700, color: '#C0392B', textDecoration: 'none' }}>← Volver al sitio principal</a>
@@ -335,7 +335,7 @@ export default function PortfolioPage() {
 
   if (private_) return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg,#F5F3EF)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', textAlign: 'center' }}>
-      <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 10, color: 'rgba(13,13,13,.4)', letterSpacing: '.24em', textTransform: 'uppercase', marginBottom: 16 }}>THE BIG FAMILY PROGRAM</p>
+      <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 10, color: 'var(--mute,#6B6B6B)', letterSpacing: '.24em', textTransform: 'uppercase', marginBottom: 16 }}>THE BIG FAMILY PROGRAM</p>
       <h1 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: '1.8rem', color: 'var(--ink,#0D0D0D)', marginBottom: 12 }}>Este portafolio es privado</h1>
       <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 15, color: 'var(--mute,#6B6B6B)' }}>El estudiante ha configurado su portafolio como privado.</p>
     </div>
@@ -428,7 +428,7 @@ export default function PortfolioPage() {
         .pfl-uni-card:hover .pfu-logo{transform:scale(1.05);}
         .pfl-uni-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:12px;color:var(--ink,#0D0D0D);line-height:1.3;}
         .pfl-uni-desc{font-family:"Satoshi",sans-serif;font-size:11px;color:var(--mute,#6B6B6B);line-height:1.4;flex:1;}
-        .pfl-uni-btn{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;border:1px solid rgba(13,13,13,.18);font-family:"Satoshi",sans-serif;font-size:11px;font-weight:600;color:var(--ink,#0D0D0D);text-decoration:none;transition:border-color .15s;margin-top:auto;}
+        .pfl-uni-btn{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;border:1px solid var(--line);font-family:"Satoshi",sans-serif;font-size:11px;font-weight:600;color:var(--ink,#0D0D0D);text-decoration:none;transition:border-color .15s;margin-top:auto;}
         .pfl-uni-btn:hover{border-color:var(--ink);}
         /* Export */
         .pfl-exp-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:1.4rem;color:#fff;margin-bottom:10px;}
@@ -436,7 +436,7 @@ export default function PortfolioPage() {
         .pfl-exp-btn{padding:11px 26px;background:#C0392B;border:none;border-radius:999px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;color:#fff;cursor:pointer;transition:background .2s;}
         .pfl-exp-btn:hover{background:#a93226;}
         /* Footer */
-        .pfl-footer{text-align:center;font-family:"Satoshi",sans-serif;font-size:12px;color:rgba(13,13,13,.35);line-height:1.6;}
+        .pfl-footer{text-align:center;font-family:"Satoshi",sans-serif;font-size:12px;color:var(--mute,#6B6B6B);line-height:1.6;}
         .pfl-footer a{color:#C0392B;text-decoration:none;}
         .pfl-footer a:hover{text-decoration:underline;}
         /* Responsive */
@@ -519,7 +519,7 @@ export default function PortfolioPage() {
                 </span>
                 <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 12, color: 'var(--mute,#6B6B6B)', marginBottom: 4 }}>{fmtDate(d.certDate)}</p>
                 {certId && (
-                  <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 10, color: 'rgba(13,13,13,.35)', letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 8 }}>{certId}</p>
+                  <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 10, color: 'var(--mute,rgba(13,13,13,.35))', letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 8 }}>{certId}</p>
                 )}
                 {(qrUrl || certId) && (
                   <div className="pfl-qr-row">
