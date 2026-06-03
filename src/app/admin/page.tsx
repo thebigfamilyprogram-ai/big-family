@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import { showToast, ToastContainer } from '@/components/Toast'
+import NotificationDrawer from '@/components/NotificationDrawer'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import AppSidebar from '@/components/AppSidebar'
 import Badge from '@/components/shared/Badge'
@@ -100,7 +101,10 @@ export default function AdminPage() {
 
   const [tab,       setTab]       = useState<Tab>('stats')
   const [booting,   setBooting]   = useState(true)
-  const [adminName, setAdminName] = useState('Admin')
+  const [adminName,    setAdminName]    = useState('Admin')
+  const [adminUserId,  setAdminUserId]  = useState('')
+  const [notifOpen,    setNotifOpen]    = useState(false)
+  const [notifCount,   setNotifCount]   = useState(0)
 
   const [users,       setUsers]       = useState<UserRow[]>([])
   const [projects,    setProjects]    = useState<ProjectRow[]>([])
@@ -177,6 +181,7 @@ export default function AdminPage() {
       }
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.replace('/login'); return }
+      setAdminUserId(user.id)
 
       const { data: profile } = await supabase
         .from('profiles').select('display_name, role').eq('id', user.id).maybeSingle()
@@ -184,6 +189,10 @@ export default function AdminPage() {
       if (profile?.role !== 'admin') { router.replace('/dashboard'); return }
 
       setAdminName(profile?.display_name ?? 'Admin')
+      try {
+        const { count } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('read', false)
+        setNotifCount(count ?? 0)
+      } catch { /* non-fatal */ }
       await fetchStats(supabase)
       setBooting(false)
     }
@@ -713,9 +722,24 @@ export default function AdminPage() {
 
       <main className="adm-main">
         {/* Header */}
-        <div className="adm-header">
-          <h1>Panel de Administración</h1>
-          <p>Vista global del programa · Solo accesible para administradores</p>
+        <div className="adm-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div>
+            <h1>Panel de Administración</h1>
+            <p>Vista global del programa · Solo accesible para administradores</p>
+          </div>
+          <button
+            onClick={() => setNotifOpen(true)}
+            title={notifCount > 0 ? `${notifCount} notificaciones` : 'Notificaciones'}
+            style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 8, color: 'var(--mute)', transition: 'color .15s', flexShrink: 0, marginTop: 2 }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--ink)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--mute)' }}
+          >
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+              <path d="M10 2A5 5 0 0 0 5 7v3l-1.5 2.5h13L15 10V7A5 5 0 0 0 10 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+              <path d="M8 15a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            {notifCount > 0 && <span style={{ position: 'absolute', top: 2, right: 2, width: 8, height: 8, borderRadius: '50%', background: '#C0392B', border: '2px solid var(--bg)' }} />}
+          </button>
         </div>
 
         {/* ── ESTADÍSTICAS ── */}
@@ -1345,6 +1369,11 @@ export default function AdminPage() {
       </div>
 
       <ToastContainer />
+      <NotificationDrawer
+        isOpen={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        userId={adminUserId}
+      />
     </>
   )
 }

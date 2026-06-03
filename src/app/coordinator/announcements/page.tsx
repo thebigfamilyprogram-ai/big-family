@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { m, AnimatePresence } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
+import { createNotificationBatch } from '@/lib/createNotification'
 
 interface Announcement {
   id: string
@@ -84,7 +85,25 @@ export default function CoordinatorAnnouncementsPage() {
       setEditing(null)
     } else {
       const { data } = await sb.from('announcements').insert(payload).select().maybeSingle()
-      if (data) setAnnouncements(prev => [data, ...prev])
+      if (data) {
+        setAnnouncements(prev => [data, ...prev])
+        // Create notifications for all targeted students (fire-and-forget)
+        try {
+          const schoolFilter = payload.target === 'all'
+            ? { role: 'student' }
+            : { role: 'student', school_id: payload.target }
+          const { data: students } = await sb.from('profiles').select('id').match(schoolFilter)
+          if (students && students.length > 0) {
+            const ids = (students as { id: string }[]).map(s => s.id)
+            await createNotificationBatch(sb, ids, {
+              type:  'announcement',
+              title: payload.title,
+              body:  payload.content?.slice(0, 120),
+              link:  '/dashboard/announcements',
+            })
+          }
+        } catch { /* non-fatal: notification creation shouldn't break the UI */ }
+      }
     }
     setForm(EMPTY_FORM); setShowForm(false); setSaving(false)
   }

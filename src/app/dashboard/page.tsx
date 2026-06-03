@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE, MOCK } from '@/lib/mockData'
+import NotificationDrawer from '@/components/NotificationDrawer'
 import { m, useReducedMotion } from 'framer-motion'
 import { fadeUp } from '@/lib/animations'
 import {
@@ -236,6 +237,8 @@ export default function DashboardPage() {
   const [annBanner,    setAnnBanner]    = useState<{ id: string; title: string; content: string; category: string } | null>(null)
   const [annBannerDismissed, setAnnBannerDismissed] = useState(false)
   const [unreadAnnCount, setUnreadAnnCount] = useState(0)
+  const [notifOpen,    setNotifOpen]    = useState(false)
+  const [notifCount,   setNotifCount]   = useState(0)
   const [userId,       setUserId]       = useState('')
   const [weeklyXP,     setWeeklyXP]     = useState<WeeklyXP[]>([])
   const [streak,       setStreak]       = useState(0)
@@ -270,6 +273,7 @@ export default function DashboardPage() {
         setUnreadAnnCount(MOCK.announcements.length)
         setDiploma({ projectId: 'mock-project-1', resultado: 'certificado' })
         setLeaderProfile(MOCK_LEADER_PROFILE)
+        setNotifCount(2) // 2 unread notifications in mock
         setLoading(false)
         return
       }
@@ -398,6 +402,17 @@ export default function DashboardPage() {
         portfolio_public: (profile as { portfolio_public?: boolean } | null)?.portfolio_public ?? true,
       })
       if (profile?.leadership_profile) setLeaderProfile(profile.leadership_profile as LeaderProfile)
+
+      // Unread notifications count
+      try {
+        const { count } = await supabase
+          .from('notifications')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', authUser.id)
+          .eq('read', false)
+        setNotifCount(count ?? 0)
+      } catch { /* non-fatal */ }
+
       setModules(mods ?? [])
       setProgressRows(prog ?? [])
       setLoading(false)
@@ -788,12 +803,16 @@ export default function DashboardPage() {
                   {user?.role === 'expositor' && (
                     <button className="btn-coordinator" onClick={() => router.push('/expositor')}>Panel Expositor</button>
                   )}
-                  <button className="bell-btn" onClick={() => router.push('/dashboard/announcements')} title={`${unreadAnnCount} anuncios sin leer`}>
+                  <button
+                    className="bell-btn"
+                    onClick={() => setNotifOpen(true)}
+                    title={notifCount > 0 ? `${notifCount} notificaciones sin leer` : 'Notificaciones'}
+                  >
                     <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                       <path d="M10 2A5 5 0 0 0 5 7v3l-1.5 2.5h13L15 10V7A5 5 0 0 0 10 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
                       <path d="M8 15a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
-                    {unreadAnnCount > 0 && <span className="bell-badge" />}
+                    {notifCount > 0 && <span className="bell-badge" />}
                   </button>
                 </div>
               </div>
@@ -1532,6 +1551,13 @@ export default function DashboardPage() {
           </div>
 
         </m.main>
+
+      {/* Notification Drawer */}
+      <NotificationDrawer
+        isOpen={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        userId={userId}
+      />
     </>
   )
 }

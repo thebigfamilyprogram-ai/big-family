@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { m, useReducedMotion } from 'framer-motion'
 import ProjectCard, { type Project, type ProjectComment } from '@/components/ProjectCard'
+import { createNotification } from '@/lib/createNotification'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -149,6 +150,13 @@ export default function CoordinatorProjectsPage() {
       ? { ...p, status: 'approved', approved_at: new Date().toISOString() }
       : p
     ))
+    // Notify student
+    const proj = projects.find(p => p.id === projectId)
+    if (proj?.user_id) {
+      try {
+        await createNotification(supabase, { userId: proj.user_id, type: 'project_evaluated', title: 'Tu proyecto fue aprobado', body: `El proyecto "${proj.title}" fue aprobado. ¡Felicidades!`, link: '/dashboard/projects' })
+      } catch { /* non-fatal */ }
+    }
   }
 
   async function handleReject(projectId: string, reason: string) {
@@ -162,6 +170,13 @@ export default function CoordinatorProjectsPage() {
       ? { ...p, status: 'rejected', rejection_reason: reason }
       : p
     ))
+    // Notify student
+    const proj = projects.find(p => p.id === projectId)
+    if (proj?.user_id) {
+      try {
+        await createNotification(supabase, { userId: proj.user_id, type: 'project_evaluated', title: 'Tu proyecto recibió retroalimentación', body: reason ? `Motivo: ${reason.slice(0, 80)}` : 'El coordinador revisó tu proyecto.', link: '/dashboard/projects' })
+      } catch { /* non-fatal */ }
+    }
   }
 
   const filtered = useMemo(() => {

@@ -9,6 +9,7 @@ import {
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import { m, useReducedMotion } from 'framer-motion'
+import NotificationDrawer from '@/components/NotificationDrawer'
 
 interface CoordProfile {
   display_name:   string
@@ -61,6 +62,9 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
 
   const [loading,      setLoading]      = useState(true)
   const [coord,        setCoord]        = useState<CoordProfile | null>(null)
+  const [notifOpen,    setNotifOpen]    = useState(false)
+  const [notifCount,   setNotifCount]   = useState(0)
+  const [coordUserId,  setCoordUserId]  = useState('')
   const [students,     setStudents]     = useState<StudentData[]>([])
   const [weeklyData,   setWeeklyData]   = useState<WeekActivity[]>([])
   const [prevActive,   setPrevActive]   = useState(0)
@@ -81,6 +85,8 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
       if (MOCK_MODE) {
         const mockSchool = MOCK.schools[0]
         setCoord({ display_name: MOCK.currentCoordinator.name, school_id: mockSchool.id, school_name: mockSchool.name })
+        setCoordUserId(MOCK.currentCoordinator.id)
+        setNotifCount(0)
         setStudents(MOCK.students.map(s => ({
           id:                s.id,
           display_name:         s.name,
@@ -98,6 +104,14 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
         return
       }
       const schoolId = initialSchoolId
+      const { data: { user: coordUser } } = await supabase.auth.getUser()
+      if (coordUser) {
+        setCoordUserId(coordUser.id)
+        try {
+          const { count } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', coordUser.id).eq('read', false)
+          setNotifCount(count ?? 0)
+        } catch { /* non-fatal */ }
+      }
 
       const { data: schoolRow } = await supabase
         .from('schools').select('name').eq('id', schoolId).maybeSingle()
@@ -301,9 +315,24 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 220, damping: 28 }}
         >
-          <div className="page-hd">
-            <h1>Panel del Coordinador</h1>
-            <p>Seguimiento de tus estudiantes · {coord?.school_name}</p>
+          <div className="page-hd" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <div>
+              <h1>Panel del Coordinador</h1>
+              <p>Seguimiento de tus estudiantes · {coord?.school_name}</p>
+            </div>
+            <button
+              onClick={() => setNotifOpen(true)}
+              title={notifCount > 0 ? `${notifCount} notificaciones` : 'Notificaciones'}
+              style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 8, color: 'var(--mute)', transition: 'color .15s', flexShrink: 0, marginTop: 2 }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--ink)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--mute)' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                <path d="M10 2A5 5 0 0 0 5 7v3l-1.5 2.5h13L15 10V7A5 5 0 0 0 10 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                <path d="M8 15a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              {notifCount > 0 && <span style={{ position: 'absolute', top: 2, right: 2, width: 8, height: 8, borderRadius: '50%', background: '#C0392B', border: '2px solid var(--bg)' }} />}
+            </button>
           </div>
 
           {/* ── KPI Grid ── */}
@@ -598,6 +627,12 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
             )}
           </div>
         </m.main>
+
+      <NotificationDrawer
+        isOpen={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        userId={coordUserId}
+      />
     </>
   )
 }

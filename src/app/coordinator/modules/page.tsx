@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { m, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { showToast, ToastContainer } from '@/components/Toast'
+import { createNotification } from '@/lib/createNotification'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface RetryRequest {
@@ -389,6 +390,10 @@ export default function CoordinatorModulesPage() {
     setRetryRequests(prev => prev.filter(r => r.id !== req.id))
     setApprovingRetry(null)
     showToast('success', `Reintento aprobado para ${req.student_name} ✓`)
+    // Notify student
+    try {
+      await createNotification(supabase, { userId: req.user_id, type: 'quiz_retry_approved', title: 'Reintento de quiz aprobado', body: `Tu coordinador aprobó un reintento para el módulo ${req.module_id}.`, link: '/dashboard/leadership-path' })
+    } catch { /* non-fatal */ }
   }
 
   async function handleLogout() {
