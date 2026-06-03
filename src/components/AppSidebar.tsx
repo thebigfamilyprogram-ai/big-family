@@ -60,9 +60,14 @@ const I = {
   building:  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1" stroke="currentColor" strokeWidth="1.4"/><path d="M6 14V9h4v5M2 7h12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
   compass:   <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><path d="M8 2v1M8 13v1M2 8h1M13 8h1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><path d="M10.5 5.5L9 9l-3.5 1.5L7 7l3.5-1.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>,
   portcard:  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><circle cx="5.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M8.5 7h4M8.5 10h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  moon:      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.5 9.5A6 6 0 0 1 6.5 2.5a6 6 0 1 0 7 7z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
 }
 
 // ── Nav definitions per role ──────────────────────────────────────────────────
+
+// Kashi "Nuevo" badge expires 30 days from launch (2026-06-03)
+const KASHI_NEW_UNTIL = new Date('2026-07-03').getTime()
+const kashiIsNew = Date.now() < KASHI_NEW_UNTIL
 
 function getNav(
   role: 'student' | 'coordinator' | 'admin',
@@ -80,6 +85,12 @@ function getNav(
         { label: 'Proyectos',       href: '/dashboard/projects',        icon: I.folder    },
         { label: 'Team Hub',        href: '/dashboard/team-hub',        icon: I.users     },
         { label: 'Mis Metas',       href: '/dashboard/goals',           icon: I.target    },
+        {
+          label: 'Kashi',
+          href: '/dashboard/kashi',
+          icon: I.moon,
+          ...(kashiIsNew ? { badgeText: 'Nuevo', badgeColor: 'var(--accent-teal,#0F7B6C)' } : {}),
+        },
         {
           label: 'Great Venture',
           href: '/dashboard/great-venture',

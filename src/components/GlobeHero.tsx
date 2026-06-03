@@ -1804,6 +1804,31 @@ export default function GlobeHero() {
                   <span className="sec-prog__tag">{c.tag}</span>
                   <h3 className="sec-prog__name">{c.name}</h3>
                   <p className="sec-prog__desc">{c.desc}</p>
+                  {c.name === 'Kashi' && (
+                    <a
+                      href="https://luishernandobarrios.com/kashi/splash"
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        padding: '9px 20px',
+                        borderRadius: 999,
+                        border: '1.5px solid #C0392B',
+                        fontFamily: '"Satoshi",sans-serif',
+                        fontWeight: 700,
+                        fontSize: 13,
+                        color: '#C0392B',
+                        textDecoration: 'none',
+                        width: 'fit-content',
+                        transition: 'background .2s, color .2s',
+                      }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = '#C0392B'; (e.currentTarget as HTMLAnchorElement).style.color = '#fff' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'transparent'; (e.currentTarget as HTMLAnchorElement).style.color = '#C0392B' }}
+                    >
+                      Explorar Kashi →
+                    </a>
+                  )}
                 </div>
 
                 {/* Placeholder de imagen */}
