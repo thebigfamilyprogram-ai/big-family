@@ -1,15 +1,33 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { i18nMiddleware } from './middleware-i18n'
+
+// Non-default locale prefixes ('es' has no prefix with localePrefix:'as-needed')
+const LOCALE_PREFIXES = ['en', 'fr', 'pt', 'ar'] as const
+
+function stripLocale(pathname: string): string {
+  for (const prefix of LOCALE_PREFIXES) {
+    if (pathname === `/${prefix}` || pathname.startsWith(`/${prefix}/`)) {
+      return pathname.slice(prefix.length + 1) || '/'
+    }
+  }
+  return pathname
+}
 
 export async function proxy(request: NextRequest) {
+  // Step 1: i18n routing — handles locale detection and URL normalization
+  const i18nResponse = i18nMiddleware(request)
+  if (i18nResponse.status !== 200) return i18nResponse
+
   const { pathname } = request.nextUrl
+  const path = stripLocale(pathname)
 
-  const isProtected = ['/dashboard', '/coordinator', '/admin', '/expositor', '/onboarding'].some(p => pathname.startsWith(p))
-  const isAuthPage  = pathname === '/login' || pathname === '/register' || pathname === '/forgot-password'
-  const isOnboarding = pathname.startsWith('/onboarding')
+  const isProtected  = ['/dashboard', '/coordinator', '/admin', '/expositor', '/onboarding'].some(p => path.startsWith(p))
+  const isAuthPage   = path === '/login' || path === '/register' || path === '/forgot-password'
+  const isOnboarding = path.startsWith('/onboarding')
 
-  if (!isProtected && !isAuthPage) return NextResponse.next()
+  if (!isProtected && !isAuthPage) return i18nResponse
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,13 +42,16 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Preserve locale prefix in all redirects
+  const localeMatch = pathname.match(/^\/(en|fr|pt|ar)/)
+  const localePref  = localeMatch ? `/${localeMatch[1]}` : ''
+
   // Unauthenticated → send to login
   if (!user && isProtected) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return NextResponse.redirect(new URL(`${localePref}/login`, request.url))
   }
 
   if (user) {
-    // Fetch role + onboarding status in one query
     const { data: profile } = await supabase
       .from('profiles')
       .select('role, onboarding_completed')
@@ -38,56 +59,42 @@ export async function proxy(request: NextRequest) {
       .maybeSingle()
 
     const role = profile?.role ?? 'student'
-    // Default true for existing users (pre-onboarding feature) who have no row yet.
-    // profile === null means middleware couldn't load the profile (auth issue) — treat as incomplete.
-    // profile?.onboarding_completed === null is treated as false (explicit null = not set yet).
     const onboardingCompleted = profile?.onboarding_completed === true
 
     // Authenticated → redirect away from auth pages to their home
     if (isAuthPage) {
       const dest = role === 'admin' ? '/admin' : role === 'coordinator' ? '/coordinator' : role === 'expositor' ? '/expositor' : '/dashboard'
-      return NextResponse.redirect(new URL(dest, request.url))
+      return NextResponse.redirect(new URL(`${localePref}${dest}`, request.url))
     }
 
     // Student onboarding gate: incomplete onboarding → send to test
-    if (
-      role === 'student' &&
-      !onboardingCompleted &&
-      !isOnboarding &&
-      pathname.startsWith('/dashboard')
-    ) {
-      return NextResponse.redirect(new URL('/onboarding/test', request.url))
+    if (role === 'student' && !onboardingCompleted && !isOnboarding && path.startsWith('/dashboard')) {
+      return NextResponse.redirect(new URL(`${localePref}/onboarding/test`, request.url))
     }
 
     // Student completed onboarding → skip /onboarding/* back to dashboard
     if (role === 'student' && onboardingCompleted && isOnboarding) {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+      return NextResponse.redirect(new URL(`${localePref}/dashboard`, request.url))
     }
 
     // Role-based protection
-    if (pathname.startsWith('/admin') && role !== 'admin') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+    if (path.startsWith('/admin') && role !== 'admin') {
+      return NextResponse.redirect(new URL(`${localePref}/dashboard`, request.url))
     }
-    if (pathname.startsWith('/coordinator') && role !== 'coordinator' && role !== 'admin') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+    if (path.startsWith('/coordinator') && role !== 'coordinator' && role !== 'admin') {
+      return NextResponse.redirect(new URL(`${localePref}/dashboard`, request.url))
     }
-    if (pathname.startsWith('/expositor') && role !== 'expositor' && role !== 'admin') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+    if (path.startsWith('/expositor') && role !== 'expositor' && role !== 'admin') {
+      return NextResponse.redirect(new URL(`${localePref}/dashboard`, request.url))
     }
   }
 
-  return NextResponse.next()
+  return i18nResponse
 }
 
+export default proxy
+
 export const config = {
-  matcher: [
-    '/dashboard/:path*',
-    '/coordinator/:path*',
-    '/admin/:path*',
-    '/expositor/:path*',
-    '/onboarding/:path*',
-    '/login',
-    '/register',
-    '/forgot-password',
-  ]
+  // Run on all routes except Next.js internals, API routes, and static files
+  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)']
 }

@@ -1,5 +1,8 @@
 import bundleAnalyzer from '@next/bundle-analyzer'
+import createNextIntlPlugin from 'next-intl/plugin'
+
 const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === 'true' })
+const withNextIntl = createNextIntlPlugin('./src/i18n.ts')
 
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control',    value: 'on' },
@@ -56,4 +59,4 @@ const nextConfig = {
   },
 }
 
-export default withBundleAnalyzer(nextConfig)
+export default withNextIntl(withBundleAnalyzer(nextConfig))

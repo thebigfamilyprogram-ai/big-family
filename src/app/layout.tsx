@@ -5,6 +5,7 @@ import { ViewTransitions } from 'next-view-transitions'
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastContainer } from "@/components/Toast";
 import { LazyMotion, domAnimation } from 'framer-motion'
+import { getLocale } from 'next-intl/server'
 
 const geistMono = Geist_Mono({
   subsets: ['latin'],
@@ -77,13 +78,14 @@ const CSS_VARS = `
 
 const ANTI_FLASH = `(function(){try{var t=localStorage.getItem('bf-theme');var d=document.documentElement;if(t==='dark'){d.classList.add('dark')}else if(t==='auto'){if(window.matchMedia('(prefers-color-scheme:dark)').matches){d.classList.add('dark')}else{d.classList.add('light')}}else{d.classList.add('light')}}catch(e){document.documentElement.classList.add('light')}})()`;
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
   return (
-    <html lang="es" suppressHydrationWarning className={geistMono.variable}>
+    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning className={geistMono.variable}>
       <head>
         <style dangerouslySetInnerHTML={{ __html: CSS_VARS }} />
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
