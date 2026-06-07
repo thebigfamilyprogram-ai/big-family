@@ -229,6 +229,8 @@ const LanguageSelector = memo(function LanguageSelector() {
   }, [open])
 
   function changeLocale(newLocale: string) {
+    document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000`
+
     const locales = ['en', 'fr', 'pt', 'ar'] // 'es' no tiene prefijo
     let cleanPath = pathname
     for (const locale of locales) {
