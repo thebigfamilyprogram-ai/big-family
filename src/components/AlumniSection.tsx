@@ -47,6 +47,12 @@ const ALUMNI = [
 function AlumniSection() {
   const t    = useTranslations()
   const pref = useReducedMotion()
+  // Roles mapped to existing keys — order matches ALUMNI array: ESADE, Concordia, MUN
+  const alumniRoles = [
+    t('landing.alumni.card2Program'),
+    t('landing.alumni.card3Role'),
+    t('landing.alumni.card1Role'),
+  ]
 
   return (
     <section className="sec-alumni">
@@ -95,7 +101,7 @@ function AlumniSection() {
           viewport={{ once: true, margin: '-60px' }}
           variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.15 } } }}
         >
-          {ALUMNI.map(a => (
+          {ALUMNI.map((a, i) => (
             <m.div
               key={a.badge}
               className="sec-alumni__card"
@@ -118,7 +124,7 @@ function AlumniSection() {
                 </span>
               </div>
 
-              <div className="sec-alumni__role">{a.role}</div>
+              <div className="sec-alumni__role">{alumniRoles[i]}</div>
 
               {/* Quote */}
               <p className="sec-alumni__quote">
