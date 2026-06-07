@@ -482,6 +482,29 @@ export default function GlobeHero() {
     'creatividad':       'creatividad',
   }
 
+  // Impacto stats labels — module-level array has animation data, text comes from i18n
+  const impactoLabels = [
+    t('landing.impacto.stat1Label'),
+    t('landing.impacto.stat2Label'),
+    t('landing.impacto.stat3Label'),
+    t('landing.impacto.stat4Label'),
+  ]
+
+  // Program components text — names stay untranslated (program names)
+  const programTexts = [
+    { tag: t('landing.metodologia.bigLeader.subtitle'),    desc: t('landing.metodologia.bigLeader.body')    },
+    { tag: t('landing.metodologia.leadersGame.subtitle'),  desc: t('landing.metodologia.leadersGame.body')  },
+    { tag: t('landing.metodologia.greatVenture.subtitle'), desc: t('landing.metodologia.greatVenture.body') },
+    { tag: t('landing.metodologia.kashi.subtitle'),        desc: t('landing.metodologia.kashi.body')        },
+  ]
+
+  // Validaciones descriptions — 3 items matching cognia, ib, triAssociation order
+  const validacionesDescs = [
+    t('landing.acreditaciones.cognia.description'),
+    t('landing.acreditaciones.ib.description'),
+    t('landing.acreditaciones.triAssociation.description'),
+  ]
+
   const mouseX  = useMotionValue(0)
   const mouseY  = useMotionValue(0)
   const springX = useSpring(mouseX, { stiffness: 100, damping: 25 })
@@ -1085,7 +1108,7 @@ export default function GlobeHero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.1 }}
           >
-            Liderazgo juvenil<br/>que <em>transforma</em><br/>comunidades<span className="dot-end">.</span>
+            {t('landing.hero.title')}<br/><em>{t('landing.hero.titleAccent')}</em><span className="dot-end">.</span>
           </m.h1>
           <m.p
             className="lede"
@@ -1093,7 +1116,7 @@ export default function GlobeHero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.2 }}
           >
-            Un programa global que conecta a una generación decidida a cambiar el rumbo de sus ciudades — con módulos, mentorías y una comunidad que trasciende fronteras.
+            {t('landing.hero.subtitle')}
           </m.p>
           <CountryScramble />
 
@@ -1103,8 +1126,8 @@ export default function GlobeHero() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.3 }}
           >
-            <Link href="/submit" className="btn btn--solid">Soy estudiante →</Link>
-            <button className="btn btn--ghost" onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}>Conocer el programa</button>
+            <Link href="/submit" className="btn btn--solid">{t('landing.hero.cta')} <span aria-hidden="true">→</span></Link>
+            <button className="btn btn--ghost" onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}>{t('landing.hero.ctaSecondary')}</button>
           </m.div>
           <m.p
             style={{ marginTop: 14, fontSize: 13, color: 'var(--mute)', fontFamily: '"Satoshi",sans-serif' }}
@@ -1185,7 +1208,7 @@ export default function GlobeHero() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 120, damping: 18 }}
           >
-            <span className="mision__eyebrow-pill">NUESTRA MISIÓN</span>
+            <span className="mision__eyebrow-pill">{t('landing.mision.eyebrow')}</span>
           </m.div>
 
           {/* Título en 3 líneas — stagger con blur */}
@@ -1196,11 +1219,10 @@ export default function GlobeHero() {
             viewport={{ once: true, margin: '-80px' }}
             variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.15 } } }}
           >
-            {([
-              { text: 'Queremos cambiar',   accent: false },
-              { text: 'el mundo a través',  accent: false },
-              { text: 'del liderazgo.',     accent: true  },
-            ] as const).map((line, i) => (
+            {[
+              { text: t('landing.hero.title'),       accent: false },
+              { text: t('landing.hero.titleAccent'), accent: true  },
+            ].map((line, i) => (
               <m.span
                 key={i}
                 className={`mision__title-line${line.accent ? ' mision__title-line--accent' : ''}`}
@@ -1220,7 +1242,7 @@ export default function GlobeHero() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.5 }}
           >
-            Formando individuos capacitados en habilidades intra e interpersonales capaces de generar impacto real y construir comunidades más unidas.
+            {t('landing.mision.body')}
           </m.p>
 
         </div>
@@ -1276,7 +1298,7 @@ export default function GlobeHero() {
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.35, ease: 'easeOut' }}
             >
-              VISIÓN 2036
+              {t('landing.vision.eyebrow')} 2036
             </m.p>
             <m.div
               className="vision__eyebrow-line"
@@ -1500,7 +1522,7 @@ export default function GlobeHero() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ type: 'spring', stiffness: 120, damping: 18 }}
-              >NUESTRA HISTORIA</m.p>
+              >{t('landing.historia.eyebrow')}</m.p>
               {/* EDITAR: título principal */}
               <m.h2
                 className="historia__title"
@@ -1750,7 +1772,7 @@ export default function GlobeHero() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 120, damping: 22, delay: 0.1 }}
           >
-            <p className="sec-historia__eyebrow">NUESTRA HISTORIA</p>
+            <p className="sec-historia__eyebrow">{t('landing.historia.eyebrow')}</p>
             <h2 className="sec-historia__title">
               Una idea que <em>nació</em><br />en La Guajira.
             </h2>
@@ -1784,7 +1806,7 @@ export default function GlobeHero() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-60px' }}
             transition={{ type: 'spring', stiffness: 130, damping: 20 }}
-          >IMPACTO EN NÚMEROS</m.p>
+          >{t('landing.impacto.eyebrow')}</m.p>
           <m.h2
             className="sec-impacto__title"
             initial={prefersReduced ? false : { opacity: 0, y: 20 }}
@@ -1818,7 +1840,7 @@ export default function GlobeHero() {
                 <div className="sec-impacto__num">
                   <ImpactoNum to={stat.to} duration={stat.duration} delayMs={stat.delayMs} comma={stat.comma} suffix={stat.suffix} />
                 </div>
-                <div className="sec-impacto__label">{stat.label}</div>
+                <div className="sec-impacto__label">{impactoLabels[i]}</div>
                 <div className="sec-impacto__sub">{stat.sub}</div>
               </m.div>,
             ])}
@@ -1850,8 +1872,8 @@ export default function GlobeHero() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 120, damping: 20 }}
           >
-            <p className="sec-valid__eyebrow">RECONOCIMIENTOS</p>
-            <h2 className="sec-valid__title">Validado por los mejores.</h2>
+            <p className="sec-valid__eyebrow">{t('landing.acreditaciones.eyebrow')}</p>
+            <h2 className="sec-valid__title">{t('landing.acreditaciones.title')}</h2>
             <p className="sec-valid__sub">
               Organizaciones internacionales de excelencia educativa han reconocido Big Family como un programa innovador y de impacto social real.
             </p>
@@ -1883,7 +1905,7 @@ export default function GlobeHero() {
                 </div>
                 <span className="sec-valid__tag">{v.tag}</span>
                 <p className="sec-valid__name">{v.name}</p>
-                <p className="sec-valid__desc">{v.desc}</p>
+                <p className="sec-valid__desc">{validacionesDescs[i]}</p>
               </m.div>
             ))}
           </div>
@@ -1905,7 +1927,7 @@ export default function GlobeHero() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 120, damping: 20 }}
           >
-            <p className="sec-prog__eyebrow">LOS 4 COMPONENTES</p>
+            <p className="sec-prog__eyebrow">{t('landing.metodologia.eyebrow')}</p>
             <h2 className="sec-prog__title">
               Un programa<br />que <em>transforma</em>.
             </h2>
@@ -1927,9 +1949,9 @@ export default function GlobeHero() {
 
                 {/* Contenido */}
                 <div className="sec-prog__body">
-                  <span className="sec-prog__tag">{c.tag}</span>
+                  <span className="sec-prog__tag">{programTexts[i].tag}</span>
                   <h3 className="sec-prog__name">{c.name}</h3>
-                  <p className="sec-prog__desc">{c.desc}</p>
+                  <p className="sec-prog__desc">{programTexts[i].desc}</p>
                   {c.name === 'Kashi' && (
                     <a
                       href="https://luishernandobarrios.com/kashi/splash"
@@ -1952,7 +1974,7 @@ export default function GlobeHero() {
                       onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = '#C0392B'; (e.currentTarget as HTMLAnchorElement).style.color = '#fff' }}
                       onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'transparent'; (e.currentTarget as HTMLAnchorElement).style.color = '#C0392B' }}
                     >
-                      Explorar Kashi →
+                      {t('landing.metodologia.kashi.exploreBtn')}
                     </a>
                   )}
                 </div>
@@ -2043,13 +2065,10 @@ export default function GlobeHero() {
             transition={{ type: 'spring', stiffness: 120, damping: 22 }}
           >
             <div>
-              <p className="equipo__eyebrow">EL EQUIPO</p>
-              <h2 className="equipo__title">
-                Las personas detrás<br />del <em>impacto</em>.
-              </h2>
+              <p className="equipo__eyebrow">{t('landing.equipo.eyebrow')}</p>
+              <h2 className="equipo__title">{t('landing.equipo.title')}</h2>
             </div>
-            {/* EDITAR AQUÍ — descripción del equipo */}
-            <p className="equipo__desc">Un equipo multidisciplinario unido por una misma convicción: que el liderazgo se aprende, se practica y se mide en impacto real.</p>
+            <p className="equipo__desc">{t('landing.equipo.body')}</p>
           </m.div>
 
           {/* Grid de cards — 3 columnas iguales */}
@@ -2091,7 +2110,7 @@ export default function GlobeHero() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 120, damping: 20 }}
           >
-            <p className="sec-test__eyebrow">LO QUE DICEN</p>
+            <p className="sec-test__eyebrow">{t('landing.testimonial.eyebrow')}</p>
             <h2 className="sec-test__title">Voces de nuestra <em>familia</em>.</h2>
           </m.div>
           <div className="sec-test__grid">
