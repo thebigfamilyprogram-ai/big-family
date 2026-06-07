@@ -4,6 +4,7 @@ import { memo, useEffect, useRef, useState } from 'react'
 import { Link } from 'next-view-transitions'
 import dynamic from 'next/dynamic'
 import { useRouter, usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
 
 import TimelineSection from '@/components/TimelineSection'
@@ -460,6 +461,27 @@ const PROGRAM_COMPONENTS = [
 ] as const
 
 export default function GlobeHero() {
+  const t = useTranslations()
+
+  // Nav label lookup — avoids calling t() inside module-level const
+  const navLabels: Record<string, string> = {
+    '#historia':    t('nav.historia'),
+    '#impacto':     t('nav.impacto'),
+    '#nuestra-red': t('nav.nuestraRed'),
+    '#equipo':      t('nav.equipo'),
+    '/news':        t('nav.noticias'),
+  }
+
+  // Slug → translation key for VALORES (slug uses kebab-case, keys use camelCase)
+  const valorKeyMap: Record<string, string> = {
+    'etica':             'etica',
+    'compromiso':        'compromiso',
+    'trascendencia':     'trascendencia',
+    'conciencia-social': 'concienciaSocial',
+    'innovacion':        'innovacion',
+    'creatividad':       'creatividad',
+  }
+
   const mouseX  = useMotionValue(0)
   const mouseY  = useMotionValue(0)
   const springX = useSpring(mouseX, { stiffness: 100, damping: 25 })
@@ -959,17 +981,17 @@ export default function GlobeHero() {
                     className={`pill-nav__link${link.href === `#${activeSection}` ? ' pill-nav__link--active' : ''}`}
                     onClick={e => handleNavLink(e, link.href)}
                   >
-                    {link.label}
+                    {navLabels[link.href] ?? link.label}
                   </a>
                 ))}
               </div>
               <LanguageSelector />
               <Link href="/login" className="pill-nav__cta">
-                Ingresar <span className="pill-nav__cta-arrow" aria-hidden="true">→</span>
+                {t('nav.ingresar')} <span className="pill-nav__cta-arrow" aria-hidden="true">→</span>
               </Link>
               <button
                 className="pill-nav__hamburger"
-                aria-label={mobileNavOpen ? 'Cerrar menú' : 'Abrir menú'}
+                aria-label={mobileNavOpen ? t('nav.menuClose') : t('nav.menuOpen')}
                 onClick={() => setMobileNavOpen(o => !o)}
               >
                 <AnimatePresence mode="wait">
@@ -1023,10 +1045,10 @@ export default function GlobeHero() {
                   className="pill-nav-drawer__link"
                   onClick={e => handleNavLink(e, link.href)}
                 >
-                  {link.label}
+                  {navLabels[link.href] ?? link.label}
                 </a>
               ))}
-              <Link href="/login" className="pill-nav-drawer__cta">Ingresar →</Link>
+              <Link href="/login" className="pill-nav-drawer__cta">{t('nav.ingresar')} →</Link>
             </m.div>
           </>
         )}
@@ -1993,8 +2015,8 @@ export default function GlobeHero() {
                   data-value={v.slug}
                   aria-hidden="true"
                 />
-                <div className="sec-valores__name">{v.name}</div>
-                <div className="sec-valores__desc">{v.desc}</div>
+                <div className="sec-valores__name">{t('landing.valores.' + valorKeyMap[v.slug] + '.title')}</div>
+                <div className="sec-valores__desc">{t('landing.valores.' + valorKeyMap[v.slug] + '.body')}</div>
               </m.div>
             ))}
           </div>
@@ -2167,20 +2189,20 @@ export default function GlobeHero() {
           <div>
             <p className="bf-footer__col-title">Programa</p>
             <div className="bf-footer__links">
-              <a href="#historia" className="bf-footer__link">Historia</a>
-              <a href="#impacto" className="bf-footer__link">Impacto</a>
-              <a href="#nuestra-red" className="bf-footer__link">Nuestra Red</a>
-              <a href="#metodologia" className="bf-footer__link">Metodología</a>
-              <a href="#equipo" className="bf-footer__link">Equipo</a>
+              <a href="#historia" className="bf-footer__link">{t('nav.historia')}</a>
+              <a href="#impacto" className="bf-footer__link">{t('nav.impacto')}</a>
+              <a href="#nuestra-red" className="bf-footer__link">{t('nav.nuestraRed')}</a>
+              <a href="#metodologia" className="bf-footer__link">{t('nav.metodologia')}</a>
+              <a href="#equipo" className="bf-footer__link">{t('nav.equipo')}</a>
             </div>
           </div>
           <div>
-            <p className="bf-footer__col-title">Acceso</p>
+            <p className="bf-footer__col-title">Acceso</p>{/* TODO: i18n */}
             <div className="bf-footer__links">
-              <Link href="/login" className="bf-footer__link">Ingresar</Link>
-              <Link href="/submit" className="bf-footer__link">Registro estudiante</Link>
-              <Link href="/register" className="bf-footer__link">Registro coordinador</Link>
-              <Link href="/news" className="bf-footer__link">Noticias</Link>
+              <Link href="/login" className="bf-footer__link">{t('nav.ingresar')}</Link>
+              <Link href="/submit" className="bf-footer__link">Registro estudiante</Link>{/* TODO: i18n */}
+              <Link href="/register" className="bf-footer__link">Registro coordinador</Link>{/* TODO: i18n */}
+              <Link href="/news" className="bf-footer__link">{t('nav.noticias')}</Link>
               <Link href="/success-stories" className="bf-footer__link">Historias de Éxito</Link>
             </div>
           </div>
