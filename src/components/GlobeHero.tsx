@@ -486,6 +486,13 @@ export default function GlobeHero() {
     t('landing.impacto.stat4Label'),
   ]
 
+  const impactoSubs = [
+    t('landing.impacto.stat1Sub'),
+    t('landing.impacto.stat2Sub'),
+    t('landing.impacto.stat3Sub'),
+    t('landing.impacto.stat4Sub'),
+  ]
+
   // Program components text — names stay untranslated (program names)
   const programTexts = [
     { tag: t('landing.metodologia.bigLeader.subtitle'),    desc: t('landing.metodologia.bigLeader.body')    },
@@ -1216,8 +1223,8 @@ export default function GlobeHero() {
             variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.15 } } }}
           >
             {[
-              { text: t('landing.hero.title'),       accent: false },
-              { text: t('landing.hero.titleAccent'), accent: true  },
+              { text: t('landing.mision.titleLine1'), accent: false },
+              { text: t('landing.mision.titleLine2'), accent: true  },
             ].map((line, i) => (
               <m.span
                 key={i}
@@ -1280,7 +1287,7 @@ export default function GlobeHero() {
           viewport={{ once: true }}
           transition={{ duration: 3, ease: 'easeOut', delay: 1 }}
         >
-          2036
+          {t('landing.vision.meta')}
         </m.div>
 
         <div className="vision__inner">
@@ -1294,7 +1301,7 @@ export default function GlobeHero() {
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.35, ease: 'easeOut' }}
             >
-              {t('landing.vision.eyebrow')} 2036
+              {t('landing.vision.eyebrow')} {t('landing.vision.meta')}
             </m.p>
             <m.div
               className="vision__eyebrow-line"
@@ -1334,12 +1341,8 @@ export default function GlobeHero() {
             viewport={{ once: true, margin: '-100px' }}
             transition={{ type: 'spring', stiffness: 120, damping: 20, delay: 0.6 }}
           >
-            <p className="vision__para">
-              Aspiramos a expandir nuestra red de liderazgo escolar para que tenga presencia en más de 50 países, conectando a más de 5.000 estudiantes que generen impacto positivo en sus comunidades.
-            </p>
-            <p className="vision__para">
-              Buscamos que la certificación The Big Leader sea una señal clara y confiable de habilidades reales — que una empresa u organización la vea y entienda inmediatamente el valor de la persona: su capacidad de liderar, trabajar en equipo, tomar decisiones y generar impacto.
-            </p>
+            <p className="vision__para">{t('landing.vision.para1')}</p>
+            <p className="vision__para">{t('landing.vision.para2')}</p>
           </m.div>
 
           {/* Row 4 — CTA */}
@@ -1527,22 +1530,14 @@ export default function GlobeHero() {
                 viewport={{ once: true, margin: '-60px' }}
                 variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.05 } } }}
               >
-                {(['Cuatro', 'años'] as const).map((w, i) => (
-                  <m.span
-                    key={i}
-                    variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 18 } } }}
-                    style={{ display: 'inline-block', marginRight: '0.22em' }}
-                  >{w}</m.span>
-                ))}
-                <br />
                 <m.span
                   variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 18 } } }}
-                  style={{ display: 'inline-block', marginRight: '0.22em' }}
-                >construyendo</m.span>
+                  style={{ display: 'block' }}
+                >{t('landing.historia.titleLine1')}</m.span>
                 <m.em
                   variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 18 } } }}
                   style={{ display: 'inline-block' }}
-                >líderes</m.em>
+                >{t('landing.historia.titleLine2')}</m.em>
                 <m.span
                   variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 120, damping: 18 } } }}
                   style={{ display: 'inline-block' }}
@@ -1556,7 +1551,7 @@ export default function GlobeHero() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ type: 'spring', stiffness: 120, damping: 18, delay: 0.2 }}
-            >Cómo nació Big Family</m.p>
+            >{t('landing.historia.subtitle')}</m.p>
           </div>
 
           {/* Timeline — live data from timeline_events table */}
@@ -1742,7 +1737,7 @@ export default function GlobeHero() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 120, damping: 22 }}
           >
-            <div className="sec-historia__watermark-yr" aria-hidden="true">2015</div>
+            <div className="sec-historia__watermark-yr" aria-hidden="true">{t('landing.historia.watermark')}</div>
             <div className="sec-historia__img">
               <div style={{ height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:14, opacity:.3 }}>
                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
@@ -1754,8 +1749,8 @@ export default function GlobeHero() {
               </div>
             </div>
             <div className="sec-historia__badge">
-              <div className="sec-historia__badge-est">DESDE</div>
-              <div className="sec-historia__badge-label">2015</div>
+              <div className="sec-historia__badge-est">{t('landing.historia.since')}</div>
+              <div className="sec-historia__badge-label">{t('landing.historia.stat1Value')}</div>
             </div>
           </m.div>
 
@@ -1772,13 +1767,8 @@ export default function GlobeHero() {
             <h2 className="sec-historia__title">
               Una idea que <em>nació</em><br />en La Guajira.
             </h2>
-            <p className="sec-historia__subtitle">El inicio de un movimiento de liderazgo juvenil.</p>
-            <p className="sec-historia__para">
-              En 2015, Luis Barrios fundó Big Family con la convicción de que los jóvenes de La Guajira
-              tenían el potencial para transformar su región. Lo que comenzó como un proyecto piloto
-              en un colegio hoy se ha convertido en una red de liderazgo que impacta a cientos de
-              estudiantes en toda Colombia y más allá.
-            </p>
+            <p className="sec-historia__subtitle">{t('landing.historia.secSubtitle')}</p>
+            <p className="sec-historia__para">{t('landing.historia.secBody')}</p>
             <div className="sec-historia__recono">
               <span className="sec-historia__recono-label">RECONOCIMIENTOS</span>
               <div className="sec-historia__pills">
@@ -1810,7 +1800,7 @@ export default function GlobeHero() {
             viewport={{ once: true, margin: '-60px' }}
             transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.06 }}
           >
-            Una década construyendo <em>líderes</em>.
+            {t('landing.impacto.titlePre')} <em>{t('landing.impacto.titleEm')}</em>.
           </m.h2>
           <div className="sec-impacto__grid">
             {IMPACTO_STATS.flatMap((stat, i) => [
@@ -1837,7 +1827,7 @@ export default function GlobeHero() {
                   <ImpactoNum to={stat.to} duration={stat.duration} delayMs={stat.delayMs} comma={stat.comma} suffix={stat.suffix} />
                 </div>
                 <div className="sec-impacto__label">{impactoLabels[i]}</div>
-                <div className="sec-impacto__sub">{stat.sub}</div>
+                <div className="sec-impacto__sub">{impactoSubs[i]}</div>
               </m.div>,
             ])}
           </div>

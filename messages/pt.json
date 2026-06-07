@@ -82,14 +82,18 @@
       "title": "Por que existimos",
       "body": "Promover nos estudantes o desenvolvimento contínuo de habilidades de liderança e fortalecer seus talentos, preparando-os para alcançar uma melhor atitude, aptidão (excelência acadêmica) e um papel global na sociedade; guiados pelo empreendedorismo, inovação, consciência social e respeito pelo meio ambiente.",
       "focus": "Foco",
-      "focusValues": "Liderança transformacional · Consciência social · Criatividade · Inovação"
+      "focusValues": "Liderança transformacional · Consciência social · Criatividade · Inovação",
+      "titleLine1": "Queremos mudar o mundo",
+      "titleLine2": "através da liderança."
     },
 
     "vision": {
       "eyebrow": "Visão",
       "title": "Para onde vamos",
       "body": "Até 2030, o programa Big Family será reconhecido nacional e internacionalmente como uma iniciativa inovadora através da qual os estudantes participantes potencializam sua liderança dentro de um marco de excelência educacional, valores e princípios.",
-      "meta": "2030"
+      "meta": "2036",
+      "para1": "Aspiramos a expandir nossa rede de liderança escolar para ter presença em mais de 50 países, conectando mais de 5.000 estudantes que geram impacto positivo em suas comunidades.",
+      "para2": "Buscamos que a certificação The Big Leader seja um sinal claro e confiável de habilidades reais — para que uma empresa ou organização a veja e entenda imediatamente o valor da pessoa: sua capacidade de liderar, trabalhar em equipe, tomar decisões e gerar impacto."
     },
 
     "historia": {
@@ -102,7 +106,13 @@
       "stat2Label": "Estudantes ativos",
       "stat2Value": "98",
       "stat3Label": "Egressos reconhecidos",
-      "stat3Value": "23"
+      "stat3Value": "23",
+      "titleLine1": "Quatro anos construindo",
+      "titleLine2": "líderes",
+      "subtitle": "Como nasceu o Big Family",
+      "since": "Desde",
+      "secSubtitle": "O início de um movimento de liderança jovem.",
+      "secBody": "Em 2015, Luis Barrios fundou o Big Family com a convicção de que os jovens de La Guajira tinham o potencial de transformar sua região. O que começou como um projeto piloto em uma escola hoje se tornou uma rede de liderança que impacta centenas de estudantes em toda a Colômbia e além."
     },
 
     "impacto": {
@@ -115,7 +125,13 @@
       "stat3Value": "10",
       "stat3Label": "Países da rede",
       "stat4Value": "3.300",
-      "stat4Label": "Meta 2030"
+      "stat4Label": "Meta 2030",
+      "titlePre": "Uma década construindo",
+      "titleEm": "líderes",
+      "stat1Sub": "desde 2015",
+      "stat2Sub": "aliados do programa",
+      "stat3Sub": "rede internacional",
+      "stat4Sub": "20% líderes transformacionais"
     },
 
     "metodologia": {

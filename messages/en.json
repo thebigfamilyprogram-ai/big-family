@@ -82,14 +82,18 @@
       "title": "Why we exist",
       "body": "To promote continuous development of leadership skills in students and strengthen their talents, preparing them to achieve a better attitude, aptitude (academic excellence) and a global role in society; guided by entrepreneurship, innovation, social awareness, and respect for the environment.",
       "focus": "Focus",
-      "focusValues": "Transformational leadership · Social awareness · Creativity · Innovation"
+      "focusValues": "Transformational leadership · Social awareness · Creativity · Innovation",
+      "titleLine1": "We want to change the world",
+      "titleLine2": "through leadership."
     },
 
     "vision": {
       "eyebrow": "Vision",
       "title": "Where we are heading",
       "body": "By 2030, the Big Family program will be recognized nationally and internationally as an innovative initiative through which participating students enhance their leadership within a framework of educational excellence, values, and principles.",
-      "meta": "2030"
+      "meta": "2036",
+      "para1": "We aspire to expand our school leadership network to have a presence in more than 50 countries, connecting more than 5,000 students who generate a positive impact in their communities.",
+      "para2": "We seek for The Big Leader certification to be a clear and reliable signal of real skills — so that a company or organization sees it and immediately understands the value of the person: their ability to lead, work as a team, make decisions, and generate impact."
     },
 
     "historia": {
@@ -102,7 +106,13 @@
       "stat2Label": "Active students",
       "stat2Value": "98",
       "stat3Label": "Recognized graduates",
-      "stat3Value": "23"
+      "stat3Value": "23",
+      "titleLine1": "Four years building",
+      "titleLine2": "leaders",
+      "subtitle": "How Big Family was born",
+      "since": "Since",
+      "secSubtitle": "The beginning of a youth leadership movement.",
+      "secBody": "In 2015, Luis Barrios founded Big Family with the conviction that the youth of La Guajira had the potential to transform their region. What started as a pilot project in one school has today become a leadership network that impacts hundreds of students across Colombia and beyond."
     },
 
     "impacto": {
@@ -115,7 +125,13 @@
       "stat3Value": "10",
       "stat3Label": "Countries in the network",
       "stat4Value": "3,300",
-      "stat4Label": "Goal 2030"
+      "stat4Label": "Goal 2030",
+      "titlePre": "A decade building",
+      "titleEm": "leaders",
+      "stat1Sub": "since 2015",
+      "stat2Sub": "program allies",
+      "stat3Sub": "international network",
+      "stat4Sub": "20% transformational leaders"
     },
 
     "metodologia": {
