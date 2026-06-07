@@ -209,6 +209,7 @@
       "stepArchetypeDesc": "Uno de 5 perfiles basados en ciencia",
       "stepRouteTitle": "Tu ruta se adapta",
       "stepRouteDesc": "Módulos, reflexiones y entregables personalizados para ti",
+      "routeLabel": "TU RUTA EN EL PROGRAMA",
 
       "archetypes": {
         "visionario": {
@@ -358,6 +359,9 @@
       },
       "modalTitle": "Alianza en",
       "modalClose": "Cerrar",
+      "floatingCard1Eyebrow": "🎤 Presentación oficial",
+      "floatingCard2Eyebrow": "🎓 Alumni destacado",
+      "floatingCard3Eyebrow": "🏆 3er Lugar",
       "growTitle": "Una red que crece.",
       "growSubtitle": "Conectando líderes de La Guajira con aliados en todo el mundo.",
       "statPaises": "Países",
@@ -419,6 +423,7 @@
 
     "testimonial": {
       "eyebrow": "Testimonio",
+      "sectionTitle": "Voces de nuestra familia",
       "quote": "Muchas gracias señor Barrios por brindar a nuestros estudiantes esta oportunidad. Disfrutaron enormemente la posibilidad de interactuar con estudiantes de todo el mundo, y su retroalimentación ha sido excelente. Esperamos que puedan incorporar las lecciones aprendidas para convertirse en líderes transformacionales.",
       "author": "Jonathan Smith",
       "role": "Docente visitante",

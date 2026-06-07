@@ -209,6 +209,7 @@
       "stepArchetypeDesc": "أحد 5 ملفات شخصية مستندة إلى العلم",
       "stepRouteTitle": "مسارك يتكيف",
       "stepRouteDesc": "وحدات وتأملات ومهام مخصصة لك",
+      "routeLabel": "مسارك في البرنامج",
 
       "archetypes": {
         "visionario": {
@@ -358,6 +359,9 @@
       },
       "modalTitle": "الشراكة في",
       "modalClose": "إغلاق",
+      "floatingCard1Eyebrow": "🎤 عرض رسمي",
+      "floatingCard2Eyebrow": "🎓 خريج متميز",
+      "floatingCard3Eyebrow": "🏆 المركز الثالث",
       "growTitle": "شبكة تتوسع.",
       "growSubtitle": "ربط قادة لا غواخيرا بحلفاء في جميع أنحاء العالم.",
       "statPaises": "دول",
@@ -419,6 +423,7 @@
 
     "testimonial": {
       "eyebrow": "شهادة",
+      "sectionTitle": "أصوات عائلتنا",
       "quote": "شكراً جزيلاً يا سيد Barrios على منح طلابنا هذه الفرصة. استمتعوا كثيراً بإمكانية التفاعل مع طلاب من جميع أنحاء العالم، وكانت ملاحظاتهم رائعة. نأمل أن يتمكنوا من دمج الدروس المستخلصة ليصبحوا قادة تحويليين.",
       "author": "Jonathan Smith",
       "role": "معلم زائر",

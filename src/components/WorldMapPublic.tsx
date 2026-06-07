@@ -150,6 +150,11 @@ export default memo(function WorldMapPublic() {
   const prefersReduced = useReducedMotion()
   const wmpStatLabels  = [t('landing.red.statPaises'), t('landing.red.statAlianzas'), t('landing.red.statOrigen')]
   const titleWords     = t('landing.red.growTitle').split(' ')
+  const floatingCardEyebrows: Record<string, string> = {
+    us: t('landing.red.floatingCard1Eyebrow'),
+    ca: t('landing.red.floatingCard2Eyebrow'),
+    es: t('landing.red.floatingCard3Eyebrow'),
+  }
 
   const [colombiaPath, setColombiaPath] = useState('')
   const [countryPaths, setCountryPaths] = useState<{ d: string; connected: boolean }[]>([])
@@ -675,7 +680,7 @@ export default memo(function WorldMapPublic() {
                 transition={{ type: 'spring', stiffness: 180, damping: 22, delay: 2.0 + i * 0.20 }}
                 whileHover={{ y: -2, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
               >
-                <p className="wmp-card-ey">{fc.eyebrow}</p>
+                <p className="wmp-card-ey">{floatingCardEyebrows[fc.code] ?? fc.eyebrow}</p>
                 <p className="wmp-card-ttl">{fc.title}</p>
                 <p className="wmp-card-sub">{fc.sub}</p>
               </m.div>
@@ -708,7 +713,7 @@ export default memo(function WorldMapPublic() {
                       whileHover={{ rotate: 90, scale: 1.1, transition: { type: 'spring', stiffness: 400, damping: 20 } }}
                       aria-label={t('landing.red.modalClose')}
                     >✕</m.button>
-                    <p className="wmp-modal-name">{modalCountry.flag} {modalCountry.name}</p>
+                    <p className="wmp-modal-name">{t('landing.red.modalTitle')} {modalCountry.flag} {modalCountry.name}</p>
                     <span className="wmp-modal-tag">{t('landing.red.modalTag')}</span>
                     <div className="wmp-modal-sep" />
                     <p className="wmp-modal-txt">

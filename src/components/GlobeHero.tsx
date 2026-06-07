@@ -2123,7 +2123,7 @@ export default function GlobeHero() {
             transition={{ type: 'spring', stiffness: 120, damping: 20 }}
           >
             <p className="sec-test__eyebrow">{t('landing.testimonial.eyebrow')}</p>
-            <h2 className="sec-test__title">Voces de nuestra <em>familia</em>.</h2>
+            <h2 className="sec-test__title">{t('landing.testimonial.sectionTitle')}</h2>
           </m.div>
           <div className="sec-test__grid">
             {testimonios.map((item, i) => (

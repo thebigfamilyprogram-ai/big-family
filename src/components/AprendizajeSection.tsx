@@ -332,7 +332,7 @@ function AprendizajeSection() {
                     <p className="sp-panel__desc">{selected.desc}</p>
 
                     <div>
-                      <p className="sp-panel__route-lbl">TU RUTA EN EL PROGRAMA</p>
+                      <p className="sp-panel__route-lbl">{t('landing.aprendizaje.routeLabel')}</p>
                       <div className="sp-panel__mods">
                         {selected.modules.map(mod => (
                           <div key={mod} className="sp-panel__mod">{mod}</div>
