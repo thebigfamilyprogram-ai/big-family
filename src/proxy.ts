@@ -16,9 +16,8 @@ function stripLocale(pathname: string): string {
 }
 
 export async function proxy(request: NextRequest) {
-  // Step 1: i18n routing — handles locale detection and URL normalization
   const i18nResponse = i18nMiddleware(request)
-  if (i18nResponse.status !== 200) return i18nResponse
+  if (i18nResponse) return i18nResponse
 
   const { pathname } = request.nextUrl
   const path = stripLocale(pathname)
