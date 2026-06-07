@@ -74,7 +74,14 @@
       "titleAccent": "with global purpose",
       "subtitle": "We develop the leadership skills of students from third to eleventh grade, preparing them to transform their communities with innovation, ethics, and an international vision.",
       "cta": "Discover the program",
-      "ctaSecondary": "Sign in to the platform"
+      "ctaSecondary": "Sign in to the platform",
+      "connectingWith": "CONNECTING WITH",
+      "metaActive": "Active program · Class of 2026",
+      "coordinatorPrompt": "Are you a coordinator?",
+      "registerLink": "Register here →",
+      "statStudents": "Students",
+      "statSchools": "Schools",
+      "statBadges": "Badges"
     },
 
     "mision": {
@@ -84,7 +91,11 @@
       "focus": "Focus",
       "focusValues": "Transformational leadership · Social awareness · Creativity · Innovation",
       "titleLine1": "We want to change the world",
-      "titleLine2": "through leadership."
+      "titleLine2": "through leadership.",
+      "stat1Label": "Leaders to train",
+      "stat2Label": "Countries by 2036",
+      "stat3Label": "Partner institutions",
+      "stat4Label": "Global goal"
     },
 
     "vision": {
@@ -93,7 +104,8 @@
       "body": "By 2030, the Big Family program will be recognized nationally and internationally as an innovative initiative through which participating students enhance their leadership within a framework of educational excellence, values, and principles.",
       "meta": "2036",
       "para1": "We aspire to expand our school leadership network to have a presence in more than 50 countries, connecting more than 5,000 students who generate a positive impact in their communities.",
-      "para2": "We seek for The Big Leader certification to be a clear and reliable signal of real skills — so that a company or organization sees it and immediately understands the value of the person: their ability to lead, work as a team, make decisions, and generate impact."
+      "para2": "We seek for The Big Leader certification to be a clear and reliable signal of real skills — so that a company or organization sees it and immediately understands the value of the person: their ability to lead, work as a team, make decisions, and generate impact.",
+      "cta": "Be part of the story"
     },
 
     "historia": {
@@ -112,7 +124,9 @@
       "subtitle": "How Big Family was born",
       "since": "Since",
       "secSubtitle": "The beginning of a youth leadership movement.",
-      "secBody": "In 2015, Luis Barrios founded Big Family with the conviction that the youth of La Guajira had the potential to transform their region. What started as a pilot project in one school has today become a leadership network that impacts hundreds of students across Colombia and beyond."
+      "secBody": "In 2015, Luis Barrios founded Big Family with the conviction that the youth of La Guajira had the potential to transform their region. What started as a pilot project in one school has today become a leadership network that impacts hundreds of students across Colombia and beyond.",
+      "secTitle": "An idea born in La Guajira.",
+      "reconoLabel": "RECOGNITIONS"
     },
 
     "impacto": {
@@ -389,6 +403,55 @@
         "caminoFuturo": "IE Camino al Futuro",
         "colombiaMia": "IE Colombia Mía",
         "elCarmelo": "IE El Carmelo"
+      }
+    },
+
+    "cert": {
+      "eyebrow": "OFFICIAL CERTIFICATION",
+      "title": "An achievement that opens doors."
+    },
+
+    "cta": {
+      "eyebrow": "THE NEXT STEP IS YOURS",
+      "title": "Your leadership starts here.",
+      "subtitle": "Join hundreds of young people already transforming their communities.",
+      "btnStudent": "I'm a student — Join →",
+      "btnCoordinator": "I'm a coordinator →"
+    },
+
+    "faq": {
+      "eyebrow": "FREQUENTLY ASKED QUESTIONS",
+      "title": "Everything you need to know.",
+      "q1": "Who can participate in the program?",
+      "a1": "Students from third to eleventh grade at participating schools in La Guajira.",
+      "q2": "Is there any cost?",
+      "a2": "No. The program is completely free for students at participating schools.",
+      "q3": "How much time does it require?",
+      "a3": "40 annual hours in extracurricular format — in-person, virtual, and asynchronous.",
+      "q4": "What do I get upon completion?",
+      "a4": "A verifiable QR certificate, a public leadership portfolio, and institutional recognition.",
+      "q5": "How do I register?",
+      "a5": "Your coordinator gives you an access code. With that code you create your account on the platform."
+    },
+
+    "testimonios": {
+      "t1": {
+        "quote": "The program changed the way I see the world. I learned that to lead is to serve.",
+        "name": "Big Family Student",
+        "role": "Junior CEO 2024",
+        "school": "IE Técnica María Inmaculada"
+      },
+      "t2": {
+        "quote": "Thanks to the program, I represented Colombia at an international conference.",
+        "name": "Big Family Student",
+        "role": "Junior CEO 2023",
+        "school": "IE Paulo VI"
+      },
+      "t3": {
+        "quote": "The leadership test helped me understand my real strengths.",
+        "name": "Big Family Student",
+        "role": "MiniJunior CEO 2024",
+        "school": "IE Colombia Mía"
       }
     }
   },

@@ -74,7 +74,14 @@
       "titleAccent": "avec un objectif global",
       "subtitle": "Nous développons les compétences en leadership des élèves de la troisième à la onzième année, en les préparant à transformer leur environnement avec innovation, éthique et vision internationale.",
       "cta": "Découvrir le programme",
-      "ctaSecondary": "Accéder à la plateforme"
+      "ctaSecondary": "Accéder à la plateforme",
+      "connectingWith": "CONNEXION AVEC",
+      "metaActive": "Programme actif · Cohorte 2026",
+      "coordinatorPrompt": "Êtes-vous coordinateur ?",
+      "registerLink": "Inscrivez-vous ici →",
+      "statStudents": "Élèves",
+      "statSchools": "Écoles",
+      "statBadges": "Badges"
     },
 
     "mision": {
@@ -84,7 +91,11 @@
       "focus": "Orientation",
       "focusValues": "Leadership transformationnel · Conscience sociale · Créativité · Innovation",
       "titleLine1": "Nous voulons changer le monde",
-      "titleLine2": "grâce au leadership."
+      "titleLine2": "grâce au leadership.",
+      "stat1Label": "Leaders à former",
+      "stat2Label": "Pays d'ici 2036",
+      "stat3Label": "Institutions partenaires",
+      "stat4Label": "Objectif mondial"
     },
 
     "vision": {
@@ -93,7 +104,8 @@
       "body": "D'ici 2030, le programme Big Family sera reconnu nationalement et internationalement comme une initiative innovante à travers laquelle les élèves participants renforcent leur leadership dans un cadre d'excellence éducative, de valeurs et de principes.",
       "meta": "2036",
       "para1": "Nous aspirons à étendre notre réseau de leadership scolaire pour avoir une présence dans plus de 50 pays, en connectant plus de 5 000 élèves qui génèrent un impact positif dans leurs communautés.",
-      "para2": "Nous cherchons à faire de la certification The Big Leader un signal clair et fiable de compétences réelles — afin qu'une entreprise ou organisation la voie et comprenne immédiatement la valeur de la personne : sa capacité à diriger, travailler en équipe, prendre des décisions et générer un impact."
+      "para2": "Nous cherchons à faire de la certification The Big Leader un signal clair et fiable de compétences réelles — afin qu'une entreprise ou organisation la voie et comprenne immédiatement la valeur de la personne : sa capacité à diriger, travailler en équipe, prendre des décisions et générer un impact.",
+      "cta": "Faites partie de l'histoire"
     },
 
     "historia": {
@@ -112,7 +124,9 @@
       "subtitle": "Comment Big Family est né",
       "since": "Depuis",
       "secSubtitle": "Le début d'un mouvement de leadership jeunesse.",
-      "secBody": "En 2015, Luis Barrios a fondé Big Family avec la conviction que les jeunes de La Guajira avaient le potentiel pour transformer leur région. Ce qui a commencé comme un projet pilote dans une école est aujourd'hui devenu un réseau de leadership qui touche des centaines d'élèves à travers la Colombie et au-delà."
+      "secBody": "En 2015, Luis Barrios a fondé Big Family avec la conviction que les jeunes de La Guajira avaient le potentiel pour transformer leur région. Ce qui a commencé comme un projet pilote dans une école est aujourd'hui devenu un réseau de leadership qui touche des centaines d'élèves à travers la Colombie et au-delà.",
+      "secTitle": "Une idée née à La Guajira.",
+      "reconoLabel": "RECONNAISSANCES"
     },
 
     "impacto": {
@@ -389,6 +403,55 @@
         "caminoFuturo": "IE Camino al Futuro",
         "colombiaMia": "IE Colombia Mía",
         "elCarmelo": "IE El Carmelo"
+      }
+    },
+
+    "cert": {
+      "eyebrow": "CERTIFICATION OFFICIELLE",
+      "title": "Un accomplissement qui ouvre des portes."
+    },
+
+    "cta": {
+      "eyebrow": "LA PROCHAINE ÉTAPE EST LA VÔTRE",
+      "title": "Votre leadership commence ici.",
+      "subtitle": "Rejoignez des centaines de jeunes qui transforment déjà leurs communautés.",
+      "btnStudent": "Je suis élève — Rejoindre →",
+      "btnCoordinator": "Je suis coordinateur →"
+    },
+
+    "faq": {
+      "eyebrow": "QUESTIONS FRÉQUENTES",
+      "title": "Tout ce que vous devez savoir.",
+      "q1": "Qui peut participer au programme ?",
+      "a1": "Les élèves de la troisième à la onzième année des écoles participantes en La Guajira.",
+      "q2": "Y a-t-il un coût ?",
+      "a2": "Non. Le programme est entièrement gratuit pour les élèves des écoles participantes.",
+      "q3": "Combien de temps cela prend-il ?",
+      "a3": "40 heures annuelles en format parascolaire — présentiel, virtuel et asynchrone.",
+      "q4": "Qu'est-ce que j'obtiens à la fin ?",
+      "a4": "Un certificat vérifiable avec QR, un portfolio public de leadership et une reconnaissance institutionnelle.",
+      "q5": "Comment puis-je m'inscrire ?",
+      "a5": "Votre coordinateur vous remet un code d'accès. Avec ce code, vous créez votre compte sur la plateforme."
+    },
+
+    "testimonios": {
+      "t1": {
+        "quote": "Le programme a changé ma façon de voir le monde. J'ai appris que diriger, c'est servir.",
+        "name": "Élève Big Family",
+        "role": "CEO Junior 2024",
+        "school": "IE Técnica María Inmaculada"
+      },
+      "t2": {
+        "quote": "Grâce au programme, j'ai représenté la Colombie lors d'un congrès international.",
+        "name": "Élève Big Family",
+        "role": "CEO Junior 2023",
+        "school": "IE Paulo VI"
+      },
+      "t3": {
+        "quote": "Le test de leadership m'a aidé à comprendre mes vraies forces.",
+        "name": "Élève Big Family",
+        "role": "CEO MiniJunior 2024",
+        "school": "IE Colombia Mía"
       }
     }
   },

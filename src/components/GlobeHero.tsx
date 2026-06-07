@@ -25,6 +25,7 @@ const SCRAMBLE_WORDS = [
   'COSTA RICA','PARAGUAY','FRANCIA','ALEMANIA','ESPAÑA','EMIRATOS','CANADÁ',
 ]
 function CountryScramble() {
+  const t = useTranslations()
   const [text, setText] = useState(SCRAMBLE_WORDS[0])
   const idxRef = useRef(0)
 
@@ -74,7 +75,7 @@ function CountryScramble() {
       alignItems: 'center',
       gap: 8,
     }}>
-      <span style={{ opacity: 0.5 }}>→ CONECTANDO CON</span>
+      <span style={{ opacity: 0.5 }}>→ {t('landing.hero.connectingWith')}</span>
       <span style={{ color: 'var(--accent,#C0392B)', minWidth: '12ch', display: 'inline-block' }}>{text}</span>
     </div>
   )
@@ -364,7 +365,15 @@ const FAQ_ITEMS = [
 ]
 
 const FAQSection = memo(function FAQSection({ reduced }: { reduced: boolean }) {
+  const t = useTranslations()
   const [open, setOpen] = useState<number | null>(null)
+  const faqItems = [
+    { q: t('landing.faq.q1'), a: t('landing.faq.a1') },
+    { q: t('landing.faq.q2'), a: t('landing.faq.a2') },
+    { q: t('landing.faq.q3'), a: t('landing.faq.a3') },
+    { q: t('landing.faq.q4'), a: t('landing.faq.a4') },
+    { q: t('landing.faq.q5'), a: t('landing.faq.a5') },
+  ]
   return (
     <section className="sec-faq">
       <div className="sec-faq__inner">
@@ -375,11 +384,11 @@ const FAQSection = memo(function FAQSection({ reduced }: { reduced: boolean }) {
           viewport={{ once: true, margin: '-80px' }}
           transition={{ type: 'spring', stiffness: 120, damping: 20 }}
         >
-          <p className="sec-faq__eyebrow">PREGUNTAS FRECUENTES</p>
-          <h2 className="sec-faq__title">Todo lo que necesitas <em>saber</em>.</h2>
+          <p className="sec-faq__eyebrow">{t('landing.faq.eyebrow')}</p>
+          <h2 className="sec-faq__title">{t('landing.faq.title')}</h2>
         </m.div>
         <div>
-          {FAQ_ITEMS.map((faq, i) => (
+          {faqItems.map((faq, i) => (
             <m.div
               key={i}
               className="sec-faq__item"
@@ -491,6 +500,19 @@ export default function GlobeHero() {
     t('landing.impacto.stat2Sub'),
     t('landing.impacto.stat3Sub'),
     t('landing.impacto.stat4Sub'),
+  ]
+
+  const misionStatLabels = [
+    t('landing.mision.stat1Label'),
+    t('landing.mision.stat2Label'),
+    t('landing.mision.stat3Label'),
+    t('landing.mision.stat4Label'),
+  ]
+
+  const testimonios = [
+    { quote: t('landing.testimonios.t1.quote'), name: t('landing.testimonios.t1.name'), role: t('landing.testimonios.t1.role'), school: t('landing.testimonios.t1.school'), init: 'BF' },
+    { quote: t('landing.testimonios.t2.quote'), name: t('landing.testimonios.t2.name'), role: t('landing.testimonios.t2.role'), school: t('landing.testimonios.t2.school'), init: 'BF' },
+    { quote: t('landing.testimonios.t3.quote'), name: t('landing.testimonios.t3.name'), role: t('landing.testimonios.t3.role'), school: t('landing.testimonios.t3.school'), init: 'BF' },
   ]
 
   // Program components text — names stay untranslated (program names)
@@ -1082,7 +1104,7 @@ export default function GlobeHero() {
 
       <section className="hero" id="hero">
         <div className="meta">
-          <span><span className="dot"></span>Programa activo · Cohorte 2026</span>
+          <span><span className="dot"></span>{t('landing.hero.metaActive')}</span>
           <span>N 04°42′ · W 74°04′ · Bogotá</span>
         </div>
 
@@ -1138,9 +1160,9 @@ export default function GlobeHero() {
             animate={{ opacity: 1 }}
             transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.42 }}
           >
-            ¿Eres coordinador?{' '}
+            {t('landing.hero.coordinatorPrompt')}{' '}
             <Link href="/register" style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>
-              Regístrate aquí →
+              {t('landing.hero.registerLink')}
             </Link>
           </m.p>
           <m.div
@@ -1153,19 +1175,19 @@ export default function GlobeHero() {
               <div className="stat__num">
                 <AnimatedNumber value={liveStats.totalStudents} loading={statsLoading} suffix="+" skeletonWidth={48} />
               </div>
-              <div className="stat__label">Estudiantes</div>
+              <div className="stat__label">{t('landing.hero.statStudents')}</div>
             </div>
             <div className="stat">
               <div className="stat__num">
                 <AnimatedNumber value={liveStats.totalSchools} loading={statsLoading} skeletonWidth={40} />
               </div>
-              <div className="stat__label">Colegios</div>
+              <div className="stat__label">{t('landing.hero.statSchools')}</div>
             </div>
             <div className="stat">
               <div className="stat__num">
                 <AnimatedNumber value={liveStats.totalBadges} loading={statsLoading} skeletonWidth={40} />
               </div>
-              <div className="stat__label">Insignias</div>
+              <div className="stat__label">{t('landing.hero.statBadges')}</div>
             </div>
           </m.div>
         </div>
@@ -1258,16 +1280,16 @@ export default function GlobeHero() {
           viewport={{ once: true, margin: '-80px' }}
           variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
         >
-          {misionStats.map((s) => (
+          {misionStats.map((s, i) => (
             <m.div
-              key={s.label}
+              key={i}
               className="mision__stat"
               variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 140, damping: 20 } } }}
             >
               <div className="mision__stat-num">
                 <CountNumber to={s.to} />{s.suffix && <em>{s.suffix}</em>}
               </div>
-              <div className="mision__stat-label">{s.label}</div>
+              <div className="mision__stat-label">{misionStatLabels[i]}</div>
             </m.div>
           ))}
         </m.div>
@@ -1368,7 +1390,7 @@ export default function GlobeHero() {
                   textDecoration: 'none',
                 }}
               >
-                Sé parte de la historia <span aria-hidden="true">→</span>
+                {t('landing.vision.cta')} <span aria-hidden="true">→</span>
               </Link>
             </m.div>
           </m.div>
@@ -1389,10 +1411,8 @@ export default function GlobeHero() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 100, damping: 22 }}
           >
-            <span className="sec-cert__eyebrow">CERTIFICACIÓN OFICIAL</span>
-            <h2 className="sec-cert__title">
-              Un logro que<br /><em>abre puertas</em>.
-            </h2>
+            <span className="sec-cert__eyebrow">{t('landing.cert.eyebrow')}</span>
+            <h2 className="sec-cert__title">{t('landing.cert.title')}</h2>
             <p className="sec-cert__para">
               Al completar los 12 módulos y el proyecto capstone, cada estudiante recibe la certificación The Big Leader — reconocida por Cognia, IB y Tri-Association.
             </p>
@@ -1764,13 +1784,11 @@ export default function GlobeHero() {
             transition={{ type: 'spring', stiffness: 120, damping: 22, delay: 0.1 }}
           >
             <p className="sec-historia__eyebrow">{t('landing.historia.eyebrow')}</p>
-            <h2 className="sec-historia__title">
-              Una idea que <em>nació</em><br />en La Guajira.
-            </h2>
+            <h2 className="sec-historia__title">{t('landing.historia.secTitle')}</h2>
             <p className="sec-historia__subtitle">{t('landing.historia.secSubtitle')}</p>
             <p className="sec-historia__para">{t('landing.historia.secBody')}</p>
             <div className="sec-historia__recono">
-              <span className="sec-historia__recono-label">RECONOCIMIENTOS</span>
+              <span className="sec-historia__recono-label">{t('landing.historia.reconoLabel')}</span>
               <div className="sec-historia__pills">
                 <span className="sec-historia__pill">MIT Leadership</span>
                 <span className="sec-historia__pill">Universidad Javeriana</span>
@@ -2100,7 +2118,7 @@ export default function GlobeHero() {
             <h2 className="sec-test__title">Voces de nuestra <em>familia</em>.</h2>
           </m.div>
           <div className="sec-test__grid">
-            {TESTIMONIOS.map((t, i) => (
+            {testimonios.map((item, i) => (
               <m.div
                 key={i}
                 className="sec-test__card"
@@ -2109,12 +2127,12 @@ export default function GlobeHero() {
                 viewport={{ once: true, margin: '-40px' }}
                 transition={{ type: 'spring', stiffness: 120, damping: 20, delay: i * 0.1 }}
               >
-                <p className="sec-test__quote">{t.quote}</p>
+                <p className="sec-test__quote">{item.quote}</p>
                 <div className="sec-test__author">
-                  <div className="sec-test__avatar">{t.init}</div>
+                  <div className="sec-test__avatar">{item.init}</div>
                   <div>
-                    <div className="sec-test__name">{t.name}</div>
-                    <div className="sec-test__role">{t.role} · {t.school}</div>
+                    <div className="sec-test__name">{item.name}</div>
+                    <div className="sec-test__role">{item.role} · {item.school}</div>
                   </div>
                 </div>
               </m.div>
@@ -2144,7 +2162,7 @@ export default function GlobeHero() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 140, damping: 20 }}
-          >EL SIGUIENTE PASO ES TUYO</m.p>
+          >{t('landing.cta.eyebrow')}</m.p>
           <m.h2
             className="sec-cta__title"
             initial={prefersReduced ? false : { opacity: 0, y: 24 }}
@@ -2152,7 +2170,7 @@ export default function GlobeHero() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 120, damping: 20, delay: 0.08 }}
           >
-            Tu liderazgo<br />empieza <em>aquí</em>.
+            {t('landing.cta.title')}
           </m.h2>
           <m.p
             className="sec-cta__sub"
@@ -2161,7 +2179,7 @@ export default function GlobeHero() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 120, damping: 20, delay: 0.16 }}
           >
-            Únete a cientos de jóvenes que transforman sus comunidades. El programa es gratuito y abierto para estudiantes de los colegios aliados.
+            {t('landing.cta.subtitle')}
           </m.p>
           <m.div
             className="sec-cta__btns"
@@ -2170,8 +2188,8 @@ export default function GlobeHero() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.24 }}
           >
-            <Link href="/submit" className="sec-cta__btn-p">Soy estudiante — Únete →</Link>
-            <Link href="/register" className="sec-cta__btn-g">Soy coordinador →</Link>
+            <Link href="/submit" className="sec-cta__btn-p">{t('landing.cta.btnStudent')}</Link>
+            <Link href="/register" className="sec-cta__btn-g">{t('landing.cta.btnCoordinator')}</Link>
           </m.div>
         </div>
       </section>

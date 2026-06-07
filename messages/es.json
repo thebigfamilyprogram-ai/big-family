@@ -74,7 +74,14 @@
       "titleAccent": "con propósito global",
       "subtitle": "Desarrollamos las capacidades de liderazgo de estudiantes desde grado tercero hasta once, preparándolos para transformar su entorno con innovación, ética y visión internacional.",
       "cta": "Conoce el programa",
-      "ctaSecondary": "Ingresar a la plataforma"
+      "ctaSecondary": "Ingresar a la plataforma",
+      "connectingWith": "CONECTANDO CON",
+      "metaActive": "Programa activo · Cohorte 2026",
+      "coordinatorPrompt": "¿Eres coordinador?",
+      "registerLink": "Regístrate aquí →",
+      "statStudents": "Estudiantes",
+      "statSchools": "Colegios",
+      "statBadges": "Insignias"
     },
 
     "mision": {
@@ -84,7 +91,11 @@
       "focus": "Enfoque",
       "focusValues": "Liderazgo transformacional · Conciencia social · Creatividad · Innovación",
       "titleLine1": "Queremos cambiar el mundo",
-      "titleLine2": "a través del liderazgo."
+      "titleLine2": "a través del liderazgo.",
+      "stat1Label": "Líderes a formar",
+      "stat2Label": "Países para 2036",
+      "stat3Label": "Instituciones aliadas",
+      "stat4Label": "Meta global"
     },
 
     "vision": {
@@ -93,7 +104,8 @@
       "body": "Para 2030, el programa Big Family será reconocido nacional e internacionalmente como una iniciativa innovadora a través de la cual los estudiantes participantes potencian su liderazgo dentro de un marco de excelencia educativa, valores y principios.",
       "meta": "2036",
       "para1": "Aspiramos a expandir nuestra red de liderazgo escolar para que tenga presencia en más de 50 países, conectando a más de 5.000 estudiantes que generen impacto positivo en sus comunidades.",
-      "para2": "Buscamos que la certificación The Big Leader sea una señal clara y confiable de habilidades reales — que una empresa u organización la vea y entienda inmediatamente el valor de la persona: su capacidad de liderar, trabajar en equipo, tomar decisiones y generar impacto."
+      "para2": "Buscamos que la certificación The Big Leader sea una señal clara y confiable de habilidades reales — que una empresa u organización la vea y entienda inmediatamente el valor de la persona: su capacidad de liderar, trabajar en equipo, tomar decisiones y generar impacto.",
+      "cta": "Sé parte de la historia"
     },
 
     "historia": {
@@ -112,7 +124,9 @@
       "subtitle": "Cómo nació Big Family",
       "since": "Desde",
       "secSubtitle": "El inicio de un movimiento de liderazgo juvenil.",
-      "secBody": "En 2015, Luis Barrios fundó Big Family con la convicción de que los jóvenes de La Guajira tenían el potencial para transformar su región. Lo que comenzó como un proyecto piloto en un colegio hoy se ha convertido en una red de liderazgo que impacta a cientos de estudiantes en toda Colombia y más allá."
+      "secBody": "En 2015, Luis Barrios fundó Big Family con la convicción de que los jóvenes de La Guajira tenían el potencial para transformar su región. Lo que comenzó como un proyecto piloto en un colegio hoy se ha convertido en una red de liderazgo que impacta a cientos de estudiantes en toda Colombia y más allá.",
+      "secTitle": "Una idea que nació en La Guajira.",
+      "reconoLabel": "RECONOCIMIENTOS"
     },
 
     "impacto": {
@@ -389,6 +403,55 @@
         "caminoFuturo": "IE Camino al Futuro",
         "colombiaMia": "IE Colombia Mía",
         "elCarmelo": "IE El Carmelo"
+      }
+    },
+
+    "cert": {
+      "eyebrow": "CERTIFICACIÓN OFICIAL",
+      "title": "Un logro que abre puertas."
+    },
+
+    "cta": {
+      "eyebrow": "EL SIGUIENTE PASO ES TUYO",
+      "title": "Tu liderazgo empieza aquí.",
+      "subtitle": "Únete a cientos de jóvenes que ya están transformando sus comunidades.",
+      "btnStudent": "Soy estudiante — Únete →",
+      "btnCoordinator": "Soy coordinador →"
+    },
+
+    "faq": {
+      "eyebrow": "PREGUNTAS FRECUENTES",
+      "title": "Todo lo que necesitas saber.",
+      "q1": "¿Quién puede participar en el programa?",
+      "a1": "Estudiantes desde grado tercero hasta grado once de los colegios participantes en La Guajira.",
+      "q2": "¿Tiene algún costo?",
+      "a2": "No. El programa es completamente gratuito para los estudiantes de los colegios participantes.",
+      "q3": "¿Cuánto tiempo requiere?",
+      "a3": "40 horas anuales en formato extracurricular — presencial, virtual y asíncrono.",
+      "q4": "¿Qué obtengo al completarlo?",
+      "a4": "Un certificado verificable con QR, un portafolio público de liderazgo y reconocimiento institucional.",
+      "q5": "¿Cómo me registro?",
+      "a5": "Tu coordinador te entrega un código de acceso. Con ese código creas tu cuenta en la plataforma."
+    },
+
+    "testimonios": {
+      "t1": {
+        "quote": "El programa cambió mi forma de ver el mundo. Aprendí que liderar es servir.",
+        "name": "Estudiante Big Family",
+        "role": "CEO Junior 2024",
+        "school": "IE Técnica María Inmaculada"
+      },
+      "t2": {
+        "quote": "Gracias al programa representé a Colombia en un congreso internacional.",
+        "name": "Estudiante Big Family",
+        "role": "CEO Junior 2023",
+        "school": "IE Paulo VI"
+      },
+      "t3": {
+        "quote": "El test de liderazgo me ayudó a entender mis fortalezas reales.",
+        "name": "Estudiante Big Family",
+        "role": "CEO MiniJunior 2024",
+        "school": "IE Colombia Mía"
       }
     }
   },
