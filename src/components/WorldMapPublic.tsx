@@ -3,6 +3,7 @@
 import React, { memo, useEffect, useRef, useState } from 'react'
 import { m, AnimatePresence, useInView, useReducedMotion } from 'framer-motion'
 import * as topojson from 'topojson-client'
+import { useTranslations } from 'next-intl'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Country {
@@ -143,9 +144,12 @@ function StatNum({ to }: { to: number }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default memo(function WorldMapPublic() {
+  const t              = useTranslations()
   const sectionRef     = useRef<HTMLElement>(null)
   const inView         = useInView(sectionRef, { once: true, margin: '-15% 0px' })
   const prefersReduced = useReducedMotion()
+  const wmpStatLabels  = [t('landing.red.statPaises'), t('landing.red.statAlianzas'), t('landing.red.statOrigen')]
+  const titleWords     = t('landing.red.growTitle').split(' ')
 
   const [colombiaPath, setColombiaPath] = useState('')
   const [countryPaths, setCountryPaths] = useState<{ d: string; connected: boolean }[]>([])
@@ -421,10 +425,10 @@ export default memo(function WorldMapPublic() {
           initial={prefersReduced ? false : { opacity: 0, y: 12 }}
           animate={shouldAnim ? { opacity: 1, y: 0 } : {}}
           transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-        >ALCANCE GLOBAL</m.p>
+        >{t('landing.red.eyebrow')}</m.p>
 
-        <h2 className="wmp-title" aria-label="Una red que crece.">
-          {TITLE_WORDS.map((word, i) => (
+        <h2 className="wmp-title" aria-label={t('landing.red.growTitle')}>
+          {titleWords.map((word, i) => (
             <m.span
               key={i}
               style={{ display: 'inline-block', marginRight: '0.28em' }}
@@ -441,7 +445,7 @@ export default memo(function WorldMapPublic() {
           animate={shouldAnim ? { opacity: 1, y: 0 } : {}}
           transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.44 }}
         >
-          Conectando líderes de La Guajira con aliados en todo el mundo.
+          {t('landing.red.growSubtitle')}
         </m.p>
       </div>
 
@@ -702,15 +706,13 @@ export default memo(function WorldMapPublic() {
                       className="wmp-modal-x"
                       onClick={() => setModalCountry(null)}
                       whileHover={{ rotate: 90, scale: 1.1, transition: { type: 'spring', stiffness: 400, damping: 20 } }}
-                      aria-label="Cerrar"
+                      aria-label={t('landing.red.modalClose')}
                     >✕</m.button>
                     <p className="wmp-modal-name">{modalCountry.flag} {modalCountry.name}</p>
-                    <span className="wmp-modal-tag">Red de colegios aliados</span>
+                    <span className="wmp-modal-tag">{t('landing.red.modalTag')}</span>
                     <div className="wmp-modal-sep" />
                     <p className="wmp-modal-txt">
-                      Big Family mantiene conexión activa con instituciones educativas
-                      en {modalCountry.name}, expandiendo la red de liderazgo juvenil
-                      a nivel internacional.
+                      {t('landing.red.modalBody', { country: modalCountry.name })}
                     </p>
                   </m.div>
                 </m.div>
@@ -725,14 +727,14 @@ export default memo(function WorldMapPublic() {
         {WMP_STATS.flatMap((s, i) => [
           i > 0 ? <div key={`sep-${i}`} className="wmp-stat-sep" aria-hidden="true" /> : null,
           <m.div
-            key={s.label}
+            key={i}
             className="wmp-stat"
             initial={prefersReduced ? false : { opacity: 0, y: 8 }}
             animate={shouldAnim ? { opacity: 1, y: 0 } : {}}
             transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.5 + i * 0.12 }}
           >
             <div className="wmp-stat-num"><StatNum to={s.value} /></div>
-            <div className="wmp-stat-lbl">{s.label}</div>
+            <div className="wmp-stat-lbl">{wmpStatLabels[i]}</div>
           </m.div>,
         ])}
       </div>

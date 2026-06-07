@@ -197,6 +197,11 @@
       "step2Body": "تُولّد الخوارزمية مُضلَّعك القيادي وتُصنّفك ضمن أحد النماذج الخمسة في Big Leader Model.",
       "step3Title": "تعلم بأسلوب مختلف",
       "step3Body": "تُخصَّص الوحدات والتأملات ومشروعك The Great Venture وفق نقاط قوتك ومجالات نموك.",
+      "strengthsLabel": "نقاط القوة",
+      "growthLabel": "للتطوير",
+      "exampleLabel": "مثال:",
+      "discoverCta": "ما نوع القائد الذي أنت عليه؟",
+      "archetypeCta": "اكتشف إن كنت هذا القائد ←",
 
       "archetypes": {
         "visionario": {
@@ -345,6 +350,13 @@
       },
       "modalTitle": "الشراكة في",
       "modalClose": "إغلاق",
+      "growTitle": "شبكة تتوسع.",
+      "growSubtitle": "ربط قادة لا غواخيرا بحلفاء في جميع أنحاء العالم.",
+      "statPaises": "دول",
+      "statAlianzas": "تحالفات",
+      "statOrigen": "الأصل",
+      "modalTag": "شبكة مدارس متحالفة",
+      "modalBody": "يحافظ Big Family على اتصال نشط مع المؤسسات التعليمية في {country}، موسّعاً شبكة القيادة الشبابية على الصعيد الدولي.",
       "countries": {
         "espana": {
           "name": "إسبانيا",

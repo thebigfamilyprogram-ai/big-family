@@ -2,6 +2,7 @@
 
 import React, { memo, useState } from 'react'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const STEPS = [
@@ -10,65 +11,23 @@ const STEPS = [
   { num: '03', title: 'Tu ruta se adapta',                desc: 'Módulos, reflexiones y entregables personalizados para ti'   },
 ] as const
 
-const ARQUETIPOS = [
-  {
-    id:         'visionario',
-    name:       'Líder Visionario/a',
-    tagline:    'Piensas en grande y ejecutas con energía',
-    fortalezas: ['Norte', 'Acción'],
-    crec:       ['Yo', 'Vínculo'],
-    scores:     { Yo: 42, Norte: 85, Acción: 78, Legado: 65, Vínculo: 38 },
-    desc:       'Piensas en grande y ejecutas con energía. Tu capacidad de ver hacia dónde ir y mover a otros en esa dirección es tu mayor activo. Tu reto es conocerte a ti mismo antes de liderar a otros — el Pilar I del Big Leader Model.',
-    modules:    ['Módulo 02 · Propósito y Visión', 'Módulo 04 · Comunicación y Oratoria'],
-    ejemplo:    'Tu módulo de Vínculo incluye reflexiones sobre cómo construir confianza sin perder tu visión de largo plazo.',
-  },
-  {
-    id:         'constructor',
-    name:       'Líder Constructor/a',
-    tagline:    'Construyes relaciones sólidas con disciplina',
-    fortalezas: ['Yo', 'Vínculo'],
-    crec:       ['Acción', 'Legado'],
-    scores:     { Yo: 82, Norte: 45, Acción: 48, Legado: 70, Vínculo: 85 },
-    desc:       'Construyes relaciones sólidas con disciplina y empatía. Tu combinación de autoconocimiento y habilidad para conectar con otros genera confianza natural. Tu reto es ejecutar más rápido bajo incertidumbre — el Pilar IV del Big Leader Model.',
-    modules:    ['Módulo 01 · Inteligencia Emocional', 'Módulo 03 · Relaciones y Conflictos'],
-    ejemplo:    'Tu módulo de Acción incluye ejercicios para tomar decisiones más rápido sin perder la calidad de tus relaciones.',
-  },
-  {
-    id:         'resiliente',
-    name:       'Líder Resiliente',
-    tagline:    'Te conoces a ti mismo y sostienes bajo presión',
-    fortalezas: ['Yo', 'Legado'],
-    crec:       ['Norte', 'Vínculo'],
-    scores:     { Yo: 80, Norte: 40, Acción: 45, Legado: 88, Vínculo: 55 },
-    desc:       'Te conoces a ti mismo y sostienes bajo presión. Tu capacidad de mantener el rumbo cuando todo se complica y de pensar en el impacto a largo plazo te hace invaluable. Tu reto es definir una visión más ambiciosa — el Pilar II del Big Leader Model.',
-    modules:    ['Módulo 01 · Inteligencia Emocional', 'Módulo 07 · Legado y Escalabilidad'],
-    ejemplo:    'Tu módulo de Norte incluye ejercicios para conectar tu disciplina interna con una visión más ambiciosa.',
-  },
-  {
-    id:         'conector',
-    name:       'Líder Conector/a',
-    tagline:    'Movilizas personas con energía y empatía',
-    fortalezas: ['Vínculo', 'Acción'],
-    crec:       ['Yo', 'Legado'],
-    scores:     { Yo: 45, Norte: 60, Acción: 82, Legado: 50, Vínculo: 88 },
-    desc:       'Movilizas personas con energía y empatía. Tu capacidad de crear equipos y ejecutar en comunidad genera impacto visible. Tu reto es hacer que ese impacto perdure más allá de tu presencia — el Pilar V del Big Leader Model.',
-    modules:    ['Módulos 03–04 · Vínculo', 'Módulo 06 · Adaptabilidad'],
-    ejemplo:    'Tu módulo de Legado incluye reflexiones sobre cómo hacer que tu impacto persista más allá de tu energía personal.',
-  },
-  {
-    id:         'estratega',
-    name:       'Líder Estratega',
-    tagline:    'Combinas visión de largo plazo con estabilidad',
-    fortalezas: ['Norte', 'Legado'],
-    crec:       ['Vínculo', 'Acción'],
-    scores:     { Yo: 65, Norte: 82, Acción: 40, Legado: 85, Vínculo: 48 },
-    desc:       'Combinas visión de largo plazo con estabilidad. Tu capacidad de pensar sistémicamente y de construir cosas que duran es tu mayor fortaleza. Tu reto es conectar con las personas que van a ejecutar tu visión — el Pilar III del Big Leader Model.',
-    modules:    ['Módulo 02 · Propósito y Visión', 'Módulo 07 · Legado'],
-    ejemplo:    'Tu módulo de Acción incluye ejercicios para ejecutar tus estrategias sin quedarte en la planificación.',
-  },
+// Visual/animation data — text comes from translations
+const ARCHETYPE_VISUAL = [
+  { id: 'visionario',  fortalezas: ['Norte', 'Acción'],    crec: ['Yo', 'Vínculo'],    scores: { Yo: 42, Norte: 85, Acción: 78, Legado: 65, Vínculo: 38 } },
+  { id: 'conector',    fortalezas: ['Vínculo', 'Acción'],  crec: ['Yo', 'Legado'],     scores: { Yo: 45, Norte: 60, Acción: 82, Legado: 50, Vínculo: 88 } },
+  { id: 'ejecutor',    fortalezas: ['Acción', 'Norte'],    crec: ['Vínculo', 'Legado'],scores: { Yo: 68, Norte: 70, Acción: 88, Legado: 55, Vínculo: 48 } },
+  { id: 'catalizador', fortalezas: ['Legado', 'Vínculo'],  crec: ['Yo', 'Norte'],      scores: { Yo: 55, Norte: 65, Acción: 72, Legado: 88, Vínculo: 75 } },
+  { id: 'guardian',    fortalezas: ['Yo', 'Legado'],       crec: ['Acción', 'Norte'],  scores: { Yo: 88, Norte: 65, Acción: 55, Legado: 75, Vínculo: 68 } },
 ] as const
 
-type Arquetipo = (typeof ARQUETIPOS)[number]
+type ArchetypeVisual = (typeof ARCHETYPE_VISUAL)[number]
+type Arquetipo = ArchetypeVisual & {
+  name: string
+  tagline: string
+  desc: string
+  ejemplo: string
+  modules: string[]
+}
 
 // ── Pentagon SVG ──────────────────────────────────────────────────────────────
 const VERTS = [
@@ -123,10 +82,24 @@ function ArchPentagon({
 
 // ── Section ───────────────────────────────────────────────────────────────────
 function AprendizajeSection() {
+  const t    = useTranslations()
   const pref = useReducedMotion()
   const [sel, setSel] = useState<string | null>(null)
   const toggle = (id: string) => setSel(p => (p === id ? null : id))
-  const selected = ARQUETIPOS.find(a => a.id === sel) ?? null
+
+  const arquetipos: Arquetipo[] = ARCHETYPE_VISUAL.map(a => ({
+    ...a,
+    name:    t(`landing.aprendizaje.archetypes.${a.id}.name`    as Parameters<typeof t>[0]),
+    tagline: t(`landing.aprendizaje.archetypes.${a.id}.trait`   as Parameters<typeof t>[0]),
+    desc:    t(`landing.aprendizaje.archetypes.${a.id}.description` as Parameters<typeof t>[0]),
+    ejemplo: t(`landing.aprendizaje.archetypes.${a.id}.example` as Parameters<typeof t>[0]),
+    modules: [
+      t(`landing.aprendizaje.archetypes.${a.id}.modules.0` as Parameters<typeof t>[0]),
+      t(`landing.aprendizaje.archetypes.${a.id}.modules.1` as Parameters<typeof t>[0]),
+    ],
+  }))
+
+  const selected = arquetipos.find(a => a.id === sel) ?? null
 
   return (
     <section id="aprendizaje" className="sp-wrap">
@@ -220,13 +193,9 @@ function AprendizajeSection() {
           viewport={{ once: true, margin: '-80px' }}
           transition={{ type: 'spring', stiffness: 120, damping: 20 }}
         >
-          <span className="sp-eyebrow">APRENDIZAJE PERSONALIZADO</span>
-          <h2 className="sp-title">Tu ruta, diseñada para ti.</h2>
-          <p className="sp-sub">
-            Antes de empezar, descubres tu perfil de líder con un diagnóstico
-            basado en el Big Five — el modelo de personalidad más respaldado por
-            la ciencia. Tu ruta se adapta desde el primer día.
-          </p>
+          <span className="sp-eyebrow">{t('landing.aprendizaje.eyebrow')}</span>
+          <h2 className="sp-title">{t('landing.aprendizaje.title')}</h2>
+          <p className="sp-sub">{t('landing.aprendizaje.subtitle')}</p>
         </m.div>
 
         {/* ── Steps ── */}
@@ -250,7 +219,7 @@ function AprendizajeSection() {
         </div>
 
         {/* ── Archetype cards — FIXED SIZE ── */}
-        <p className="sp-arch-label">¿Cuál tipo de líder eres tú?</p>
+        <p className="sp-arch-label">{t('landing.aprendizaje.discoverCta')}</p>
 
         <m.div
           className="sp-grid"
@@ -259,7 +228,7 @@ function AprendizajeSection() {
           viewport={{ once: true, margin: '-80px' }}
           variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
         >
-          {ARQUETIPOS.map((a: Arquetipo) => {
+          {arquetipos.map((a: Arquetipo) => {
             const isActive = sel === a.id
             const isDimmed = !!sel && sel !== a.id
             return (
@@ -334,7 +303,7 @@ function AprendizajeSection() {
                     <div className="sp-panel__tagline">{selected.tagline}</div>
                     <div className="sp-panel__pills-row">
                       <div className="sp-panel__pill-group">
-                        <div className="sp-panel__pill-lbl">FORTALEZAS</div>
+                        <div className="sp-panel__pill-lbl">{t('landing.aprendizaje.strengthsLabel')}</div>
                         <div className="sp-panel__pills">
                           {selected.fortalezas.map(f => (
                             <span key={f} className="sp-panel__pill-str">{f}</span>
@@ -342,7 +311,7 @@ function AprendizajeSection() {
                         </div>
                       </div>
                       <div className="sp-panel__pill-group">
-                        <div className="sp-panel__pill-lbl">A DESARROLLAR</div>
+                        <div className="sp-panel__pill-lbl">{t('landing.aprendizaje.growthLabel')}</div>
                         <div className="sp-panel__pills">
                           {selected.crec.map(c => (
                             <span key={c} className="sp-panel__pill-crec">{c}</span>
@@ -366,11 +335,11 @@ function AprendizajeSection() {
                     </div>
 
                     <div className="sp-panel__ej">
-                      <strong>Ejemplo: </strong>{selected.ejemplo}
+                      <strong>{t('landing.aprendizaje.exampleLabel')} </strong>{selected.ejemplo}
                     </div>
 
                     <a href="/register" className="sp-panel__cta">
-                      Descubre si eres este líder →
+                      {t('landing.aprendizaje.archetypeCta')}
                     </a>
                   </div>
                 </div>

@@ -197,6 +197,11 @@
       "step2Body": "El algoritmo genera tu pentágono de liderazgo y te ubica en uno de los 5 arquetipos del Big Leader Model.",
       "step3Title": "Aprende diferente",
       "step3Body": "Los módulos, reflexiones y tu Great Venture se personalizan según tus fortalezas y áreas de crecimiento.",
+      "strengthsLabel": "FORTALEZAS",
+      "growthLabel": "A DESARROLLAR",
+      "exampleLabel": "Ejemplo:",
+      "discoverCta": "¿Cuál tipo de líder eres tú?",
+      "archetypeCta": "Descubre si eres este líder →",
 
       "archetypes": {
         "visionario": {
@@ -345,6 +350,13 @@
       },
       "modalTitle": "Alianza en",
       "modalClose": "Cerrar",
+      "growTitle": "Una red que crece.",
+      "growSubtitle": "Conectando líderes de La Guajira con aliados en todo el mundo.",
+      "statPaises": "Países",
+      "statAlianzas": "Alianzas",
+      "statOrigen": "Origen",
+      "modalTag": "Red de colegios aliados",
+      "modalBody": "Big Family mantiene conexión activa con instituciones educativas en {country}, expandiendo la red de liderazgo juvenil a nivel internacional.",
       "countries": {
         "espana": {
           "name": "España",

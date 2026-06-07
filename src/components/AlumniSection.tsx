@@ -2,6 +2,7 @@
 
 import { memo } from 'react'
 import { m, useReducedMotion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 // TODO: Reemplazar placeholders con datos reales de Luis Barrios:
@@ -44,6 +45,7 @@ const ALUMNI = [
 
 // ── Component ─────────────────────────────────────────────────────────────────
 function AlumniSection() {
+  const t    = useTranslations()
   const pref = useReducedMotion()
 
   return (
@@ -80,14 +82,9 @@ function AlumniSection() {
           viewport={{ once: true, margin: '-80px' }}
           transition={{ type: 'spring', stiffness: 120, damping: 20 }}
         >
-          <span className="sec-alumni__eyebrow">ALUMNI</span>
-          <h2 className="sec-alumni__title">
-            Líderes que dejaron <em>huella</em>.
-          </h2>
-          <p className="sec-alumni__sub">
-            Estos son algunos de los estudiantes que pasaron por Big Family
-            y hoy impactan el mundo desde sus propios escenarios.
-          </p>
+          <span className="sec-alumni__eyebrow">{t('landing.alumni.eyebrow')}</span>
+          <h2 className="sec-alumni__title">{t('landing.alumni.title')}</h2>
+          <p className="sec-alumni__sub">{t('landing.alumni.subtitle')}</p>
         </m.div>
 
         {/* Cards */}

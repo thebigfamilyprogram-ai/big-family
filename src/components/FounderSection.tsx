@@ -2,6 +2,7 @@
 
 import { memo } from 'react'
 import { m, useReducedMotion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 const CREDENTIALS = [
   'M.S. Multidisciplinary Studies — University at Buffalo',
@@ -12,7 +13,12 @@ const CREDENTIALS = [
 const SCHOOL_BADGES = ['University at Buffalo', 'MIT', 'Javeriana University', 'Uninorte', 'Unisabana']
 
 function FounderSection() {
+  const t    = useTranslations()
   const pref = useReducedMotion()
+  const credentials = [
+    t('landing.fundador.education.degree1'),
+    t('landing.fundador.education.degree2'),
+  ]
 
   return (
     <section className="sf-wrap">
@@ -94,14 +100,14 @@ function FounderSection() {
           viewport={{ once: true, margin: '-80px' }}
           transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.15 }}
         >
-          <span className="sf-eyebrow">EL FUNDADOR</span>
-          <h2 className="sf-name">Luis Hernando Barrios</h2>
-          <p className="sf-role">Fundador &amp; Coordinador de Acción Social</p>
+          <span className="sf-eyebrow">{t('landing.fundador.eyebrow')}</span>
+          <h2 className="sf-name">{t('landing.fundador.title')}</h2>
+          <p className="sf-role">{t('landing.fundador.role')}</p>
 
           <div className="sf-sep" />
 
           <div className="sf-creds">
-            {CREDENTIALS.map(c => (
+            {credentials.map(c => (
               <div key={c} className="sf-cred">{c}</div>
             ))}
           </div>
@@ -109,21 +115,16 @@ function FounderSection() {
           {/* Quote */}
           <div className="sf-quote-wrap">
             <span className="sf-quote-mark" aria-hidden="true">&ldquo;</span>
-            <p className="sf-quote">
-              Empezamos con 15 estudiantes en 2015.
-              Hoy somos una familia de líderes en 10 países.
-              La misión siempre fue la misma: que cada joven
-              descubra que puede cambiar su mundo desde donde está.
-            </p>
-            <p className="sf-quote-attr">— Luis Barrios, Fundador de The Big Family Program</p>
+            <p className="sf-quote">{t('landing.fundador.quote')}</p>
+            <p className="sf-quote-attr">— {t('landing.fundador.title')}, {t('landing.fundador.subtitle')}</p>
           </div>
 
           {/* Contacto */}
           <div className="sf-contact">
-            <a href="mailto:luis.barrios@colegioalbania.edu.co">
-              luis.barrios@colegioalbania.edu.co
+            <a href={`mailto:${t('landing.fundador.contact.email')}`}>
+              {t('landing.fundador.contact.email')}
             </a>
-            <span className="sf-contact-phone">(+57) 310 848 6706</span>
+            <span className="sf-contact-phone">{t('landing.fundador.contact.phone')}</span>
           </div>
         </m.div>
 
