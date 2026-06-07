@@ -85,7 +85,7 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
   return (
-    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning className={geistMono.variable}>
+    <html key={locale} lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning className={geistMono.variable}>
       <head>
         <style dangerouslySetInnerHTML={{ __html: CSS_VARS }} />
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}

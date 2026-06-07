@@ -57,6 +57,14 @@
 /* ── Design tokens ────────────────────────────────────────────────────────── */
 
 :root {
+  direction: ltr;
+}
+
+:lang(ar) {
+  direction: rtl;
+}
+
+:root {
   /* Accent palette */
   --accent: #C0392B;
   --accent-amber: #D4821A;

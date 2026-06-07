@@ -229,12 +229,11 @@ const LanguageSelector = memo(function LanguageSelector() {
   }, [open])
 
   function changeLocale(newLocale: string) {
-    // Strip the current locale prefix — 'es' has no prefix (localePrefix: 'as-needed')
-    const locales = ['en', 'fr', 'pt', 'ar']
+    const locales = ['en', 'fr', 'pt', 'ar'] // 'es' no tiene prefijo
     let cleanPath = pathname
     for (const locale of locales) {
-      if (cleanPath.startsWith(`/${locale}`)) {
-        cleanPath = cleanPath.slice(`/${locale}`.length) || '/'
+      if (pathname.startsWith(`/${locale}`)) {
+        cleanPath = pathname.slice(`/${locale}`.length) || '/'
         break
       }
     }
