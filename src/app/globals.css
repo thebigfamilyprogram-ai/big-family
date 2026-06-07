@@ -64,6 +64,10 @@
   direction: rtl;
 }
 
+[dir="rtl"] .pill-nav {
+  direction: ltr;
+}
+
 :root {
   /* Accent palette */
   --accent: #C0392B;

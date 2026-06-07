@@ -982,7 +982,7 @@ export default function GlobeHero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 260, damping: 28, delay: 0.3 }}
           >
-            <nav className={`pill-nav${navScrolled ? ' pill-nav--scrolled' : ''}`}>
+            <nav dir="ltr" className={`pill-nav${navScrolled ? ' pill-nav--scrolled' : ''}`}>
               <Link href="/" className="pill-nav__brand">
                 <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
                   <circle cx="12" cy="5" r="2.4" fill="currentColor"/>
