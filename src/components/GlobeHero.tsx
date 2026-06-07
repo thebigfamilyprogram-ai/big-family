@@ -3,6 +3,7 @@
 import { memo, useEffect, useRef, useState } from 'react'
 import { Link } from 'next-view-transitions'
 import dynamic from 'next/dynamic'
+import { useRouter, usePathname } from 'next/navigation'
 import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
 
 import TimelineSection from '@/components/TimelineSection'
@@ -200,6 +201,99 @@ const NAV_LINKS = [
   { href: '#equipo',      label: 'Equipo'      },
   { href: '/news',        label: 'Noticias'    },
 ]
+
+const LOCALES = [
+  { code: 'es', label: 'Español',   short: 'ES', dir: 'ltr'  as const },
+  { code: 'en', label: 'English',   short: 'EN', dir: 'ltr'  as const },
+  { code: 'fr', label: 'Français',  short: 'FR', dir: 'ltr'  as const },
+  { code: 'pt', label: 'Português', short: 'PT', dir: 'ltr'  as const },
+  { code: 'ar', label: 'العربية',   short: 'AR', dir: 'rtl'  as const },
+]
+
+const LanguageSelector = memo(function LanguageSelector() {
+  const router   = useRouter()
+  const pathname = usePathname()
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  // Detect current locale from URL prefix
+  const currentLocale = LOCALES.slice(1).reduce<string>(
+    (found, loc) =>
+      pathname === `/${loc.code}` || pathname.startsWith(`/${loc.code}/`) ? loc.code : found,
+    'es'
+  )
+
+  // Close on click outside
+  useEffect(() => {
+    if (!open) return
+    function onDown(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [open])
+
+  function navigate(code: string) {
+    // Strip existing non-default locale prefix (es has no prefix)
+    let stripped = pathname
+    for (const loc of LOCALES.slice(1)) {
+      if (pathname === `/${loc.code}` || pathname.startsWith(`/${loc.code}/`)) {
+        stripped = pathname.slice(loc.code.length + 1) || '/'
+        break
+      }
+    }
+    const newPath = code === 'es' ? stripped : `/${code}${stripped === '/' ? '' : stripped}`
+    router.push(newPath)
+    setOpen(false)
+  }
+
+  return (
+    <div className="lang-sel" ref={ref}>
+      <button
+        className="lang-sel__btn"
+        onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+      >
+        {currentLocale.toUpperCase()}
+        <svg
+          width="10" height="7" viewBox="0 0 10 7" aria-hidden="true"
+          style={{
+            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s cubic-bezier(0.22,1,0.36,1)',
+          }}
+        >
+          <path d="M1 1L5 5.5L9 1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+        </svg>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <m.div
+            className="lang-sel__drop"
+            role="listbox"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+          >
+            {LOCALES.map(lang => (
+              <button
+                key={lang.code}
+                className={`lang-sel__opt${lang.code === currentLocale ? ' lang-sel__opt--active' : ''}`}
+                onClick={() => navigate(lang.code)}
+                role="option"
+                aria-selected={lang.code === currentLocale}
+                dir={lang.dir}
+              >
+                {lang.label}
+              </button>
+            ))}
+          </m.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+})
 
 const particles = [
   { x: 15, y: 25, size: 3, dur: 5.2, delay: 0   },
@@ -496,6 +590,15 @@ export default function GlobeHero() {
         .pill-nav-drawer{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--bg,#F5F3EF);border-bottom:1px solid var(--line);padding:72px 24px 28px;display:flex;flex-direction:column;gap:4px;}
         .pill-nav-drawer__link{font-family:"Satoshi",sans-serif;font-size:18px;font-weight:500;color:var(--ink);text-decoration:none;padding:12px 0;border-bottom:1px solid rgba(13,13,13,0.06);}
         .pill-nav-drawer__cta{margin-top:16px;padding:14px 24px;background:var(--ink);color:var(--bg,#F5F3EF);font-family:"Satoshi",sans-serif;font-size:15px;font-weight:600;border-radius:999px;text-decoration:none;text-align:center;}
+        .lang-sel{position:relative;margin:0 4px;}
+        .lang-sel__btn{font-family:"Satoshi",sans-serif;font-size:12px;font-weight:600;letter-spacing:0.06em;color:var(--ink-2);background:none;border:1px solid var(--line);border-radius:999px;padding:5px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:color 0.2s cubic-bezier(0.22,1,0.36,1),background 0.2s cubic-bezier(0.22,1,0.36,1);}
+        .lang-sel__btn:hover{color:var(--ink);background:rgba(13,13,13,0.06);}
+        .lang-sel__drop{position:absolute;top:calc(100% + 8px);right:0;min-width:130px;background:var(--card-bg,#fff);border:1px solid var(--card-border,rgba(13,13,13,0.08));border-radius:12px;box-shadow:var(--shadow-raised,0 4px 16px rgba(13,13,13,0.08));overflow:hidden;z-index:200;display:flex;flex-direction:column;}
+        .lang-sel__opt{width:100%;background:none;border:none;padding:9px 16px;font-family:"Satoshi",sans-serif;font-size:13.5px;color:var(--ink);text-align:left;cursor:pointer;transition:background 0.15s cubic-bezier(0.22,1,0.36,1);}
+        .lang-sel__opt:hover{background:rgba(13,13,13,0.05);}
+        .lang-sel__opt--active{color:var(--accent,#C0392B);font-weight:600;}
+        .lang-sel__opt[dir="rtl"]{text-align:right;}
+        @media(max-width:760px){.lang-sel{display:none;}}
         .btn{font-family:"Satoshi",sans-serif;font-size:13px;font-weight:500;padding:10px 16px;border-radius:999px;border:1px solid transparent;cursor:pointer;transition:all .25s ease;}
         .btn--ghost{background:transparent;color:var(--ink);border-color:var(--line);}
         .btn--ghost:hover{border-color:var(--ink-2);background:rgba(13,13,13,.04);}
@@ -860,6 +963,7 @@ export default function GlobeHero() {
                   </a>
                 ))}
               </div>
+              <LanguageSelector />
               <Link href="/login" className="pill-nav__cta">
                 Ingresar <span className="pill-nav__cta-arrow" aria-hidden="true">→</span>
               </Link>
