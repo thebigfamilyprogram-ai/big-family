@@ -305,26 +305,7 @@ const particles = [
 ]
 
 // ── Visión section ───────────────────────────────────────────────────────────
-type VisionWord = { text: string; italic: boolean }
-const VISION_WORDS: VisionWord[] = [
-  { text: 'Para',        italic: false },
-  { text: 'el',          italic: false },
-  { text: 'año',         italic: false },
-  { text: '2036,',       italic: false },
-  { text: 'The',         italic: false },
-  { text: 'Big',         italic: false },
-  { text: 'Family',      italic: false },
-  { text: 'será',        italic: false },
-  { text: 'reconocido',  italic: false },
-  { text: 'globalmente', italic: false },
-  { text: 'como',        italic: false },
-  { text: 'un',          italic: false },
-  { text: 'referente',   italic: true  },
-  { text: 'de',          italic: false },
-  { text: 'excelencia',  italic: false },
-  { text: 'en',          italic: false },
-  { text: 'liderazgo.',  italic: true  },
-]
+type VisionWord = { word: string; italic: boolean }
 const visionWordV = {
   hidden:  { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 120, damping: 20 } },
@@ -501,6 +482,10 @@ export default function GlobeHero() {
     t('landing.impacto.stat3Sub'),
     t('landing.impacto.stat4Sub'),
   ]
+
+  const visionWords: VisionWord[] = t('landing.vision.animatedWords')
+    .split(' ')
+    .map(w => ({ word: w.replace(/\*/g, ''), italic: w.startsWith('*') && w.endsWith('*') }))
 
   const aboutStatLabels = [
     t('landing.about.stat1Label'),
@@ -1357,13 +1342,13 @@ export default function GlobeHero() {
               viewport={{ once: true, margin: '-100px' }}
               variants={visionStaggerV}
             >
-              {VISION_WORDS.map((word, i) => (
+              {visionWords.map((word, i) => (
                 <m.span
                   key={i}
                   variants={visionWordV}
                   style={{ display: 'inline-block', marginRight: '0.28em' }}
                 >
-                  {word.italic ? <em>{word.text}</em> : word.text}
+                  {word.italic ? <em>{word.word}</em> : word.word}
                 </m.span>
               ))}
             </m.span>
