@@ -75,7 +75,7 @@
       "subtitle": "Nous développons les compétences en leadership des élèves de la troisième à la onzième année, en les préparant à transformer leur environnement avec innovation, éthique et vision internationale.",
       "cta": "Découvrir le programme",
       "ctaSecondary": "Accéder à la plateforme",
-      "connectingWith": "CONNEXION AVEC",
+      "connectingWith": "CONNECTÉ AVEC",
       "metaActive": "Programme actif · Cohorte 2026",
       "coordinatorPrompt": "Êtes-vous coordinateur ?",
       "registerLink": "Inscrivez-vous ici →",
@@ -226,7 +226,7 @@
         "conector": {
           "name": "Le Connecteur",
           "pillar": "Lien",
-          "trait": "Agréabilité",
+          "trait": "Amabilité",
           "strengths": ["Empathie", "Travail d'équipe", "Communication"],
           "growth": ["Assertivité", "Prise de décision"],
           "description": "Vous construisez des ponts entre les personnes. Vous savez lire l'atmosphère, médiatiser les conflits et faire en sorte que chaque voix compte. Votre leadership multiplie le potentiel de l'équipe.",
@@ -298,7 +298,7 @@
     "alumni": {
       "eyebrow": "Alumni",
       "title": "Des leaders qui ont déjà laissé leur marque",
-      "subtitle": "Des diplômés du programme qui dirigent aujourd'hui des universités et des organisations dans le monde entier.",
+      "subtitle": "Des diplômés du programme qui se distinguent aujourd'hui dans des universités et des organisations du monde entier.",
       "card1Role": "Président · Modèle des Nations Unies",
       "card2Role": "Étudiant · ESADE University, Barcelone",
       "card2Program": "Licence en Leadership Transformationnel et Impact Social",
@@ -396,7 +396,7 @@
     "equipo": {
       "eyebrow": "Équipe de Formation",
       "title": "Qui forme nos leaders",
-      "body": "L'équipe de formation est composée de facilitateurs bénévoles spécialisés dans diverses domaines : parents de la communauté scolaire, enseignants, diplômés, personnel et cadres d'entreprise, formateurs indépendants, professeurs d'université et représentants de fondations.",
+      "body": "L'équipe de formation est composée de facilitateurs bénévoles spécialisés dans divers domaines : parents de la communauté scolaire, enseignants, diplômés, personnel et cadres d'entreprise, formateurs indépendants, professeurs d'université et représentants de fondations.",
       "roles": {
         "padres": "Parents",
         "docentes": "Enseignants",
@@ -447,7 +447,7 @@
       },
       "tickerEyebrow": "NOTRE RÉSEAU",
       "tickerTitle": "8 écoles. Une seule famille.",
-      "tickerSub": "Depuis La Guajira, construire des leaders qui transforment la Colombie.",
+      "tickerSub": "Depuis La Guajira, construisant des leaders qui transforment la Colombie.",
       "statColegios": "Écoles",
       "statMunicipios": "Municipalités",
       "statPrimeraGen": "Première génération"
