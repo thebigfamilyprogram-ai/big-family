@@ -6,10 +6,12 @@ import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 const expoOut = [0.22, 1, 0.36, 1] as const
 
 export default function LoginPage() {
+  const t           = useTranslations('auth.login')
   const router      = useRouter()
   const pref        = useReducedMotion()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
@@ -122,7 +124,7 @@ export default function LoginPage() {
                 <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
                 <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
               </svg>
-              Continuar con Google
+              {t('googleBtn')}
             </button>
           </m.div>
 
@@ -144,8 +146,8 @@ export default function LoginPage() {
 
           <form onSubmit={handleEmail}>
             {[
-              { id: 'email', type: 'email', label: 'Correo electrónico', placeholder: 'tu@correo.com', value: email, onChange: (v: string) => setEmail(v) },
-              { id: 'password', type: 'password', label: 'Contraseña', placeholder: '••••••••', value: password, onChange: (v: string) => setPassword(v) },
+              { id: 'email',    type: 'email',    label: t('emailLabel'),    placeholder: t('emailPlaceholder'),    value: email,    onChange: (v: string) => setEmail(v)    },
+              { id: 'password', type: 'password', label: t('passwordLabel'), placeholder: t('passwordPlaceholder'), value: password, onChange: (v: string) => setPassword(v) },
             ].map((f, i) => (
               <m.div
                 key={f.id}
@@ -167,14 +169,14 @@ export default function LoginPage() {
               transition={{ duration: 0.2, ease: expoOut, delay: 0.3 }}
             >
               <button className={`btn-main${loading ? ' shimmer' : ''}`} type="submit" disabled={loading}>
-                {loading ? 'Ingresando…' : 'Ingresar'}
+                {loading ? 'Ingresando…' /* TODO: i18n */ : t('submitBtn')}
               </button>
             </m.div>
           </form>
 
           <div className="footer-links">
-            <span>¿Olvidaste tu contraseña? <a href="/forgot-password">Recupérala</a></span>
-            <span>¿No tienes cuenta? <a href="/register">Regístrate</a></span>
+            <span>{t('forgotPassword')} <a href="/forgot-password">Recupérala</a>{/* TODO: i18n link text */}</span>
+            <span>{t('noAccount')} <a href="/register">{t('register')}</a></span>
           </div>
         </m.div>
       </div>

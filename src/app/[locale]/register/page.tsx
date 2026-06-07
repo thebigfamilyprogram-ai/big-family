@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { useTranslations } from 'next-intl'
 
 type Step     = 1 | 'level' | 2
 type UserType = 'student' | 'coordinator' | 'expositor'
@@ -41,6 +42,7 @@ const TRACKS: { id: Level; emoji: string; iconBg: string; title: string; sub: st
 ]
 
 export default function RegisterPage() {
+  const t           = useTranslations('auth.register')
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
@@ -119,7 +121,7 @@ export default function RegisterPage() {
       return
     }
 
-    setCodeError('Código inválido. Verifica con tu coordinador.')
+    setCodeError(t('error.codeInvalid'))
   }
 
   function buildCallbackUrl(extra: Record<string, string>) {
@@ -149,7 +151,7 @@ export default function RegisterPage() {
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault()
     setFormError('')
-    if (password.length < 8) { setFormError('La contraseña debe tener al menos 8 caracteres.'); return }
+    if (password.length < 8) { setFormError(t('error.weakPassword')); return }
     if (password !== confirmPass) { setFormError('Las contraseñas no coinciden.'); return }
     setFormLoading(true)
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -288,14 +290,14 @@ export default function RegisterPage() {
           {/* ── Step 1: Code verification ── */}
           {step === 1 && (
             <>
-              <h1 className="card-title">Crear cuenta</h1>
-              <p className="card-sub">Ingresa el código que te dio tu coordinador</p>
+              <h1 className="card-title">{t('title')}</h1>
+              <p className="card-sub">Ingresa el código que te dio tu coordinador</p>{/* TODO: i18n */}
 
               {codeError && <div className="err">{codeError}</div>}
 
               <form onSubmit={verifyCode}>
                 <div className="field">
-                  <label htmlFor="code">Código de acceso</label>
+                  <label htmlFor="code">{t('codeLabel')}</label>
                   <input
                     id="code" type="text" placeholder="BF-COL-2026"
                     value={schoolCode}
@@ -310,7 +312,7 @@ export default function RegisterPage() {
               </form>
 
               <div className="footer-links" style={{ marginTop: 20 }}>
-                ¿Ya tienes cuenta? <a href="/login">Inicia sesión</a>
+                {t('haveAccount')} <a href="/login">{t('loginLink')}</a>
               </div>
             </>
           )}
@@ -388,8 +390,8 @@ export default function RegisterPage() {
                 ← {resolved.userType === 'student' ? 'Cambiar nivel' : 'Cambiar código'}
               </button>
 
-              <h1 className="card-title">Crear cuenta</h1>
-              <p className="card-sub" style={{ marginBottom: 20 }}>Completa tu registro</p>
+              <h1 className="card-title">{t('title')}</h1>
+              <p className="card-sub" style={{ marginBottom: 20 }}>Completa tu registro</p>{/* TODO: i18n */}
 
               <div className={`badge ${isCoord ? 'coordinator' : isExpo ? 'expositor' : 'student'}`}>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -401,7 +403,7 @@ export default function RegisterPage() {
 
               <button className="btn-google" onClick={handleGoogle} type="button">
                 {GOOGLE_SVG}
-                Registrarse con Google
+                {t('googleBtn')}
               </button>
 
               <div className="divider">o</div>
@@ -410,41 +412,42 @@ export default function RegisterPage() {
 
               <form onSubmit={handleEmail}>
                 <div className="field">
-                  <label htmlFor="name">Nombre completo</label>
+                  <label htmlFor="name">{t('displayNameLabel')}</label>
+                  {/* TODO: i18n placeholder */}
                   <input
                     id="name" type="text" placeholder="Juan García"
                     value={fullName} onChange={e => setFullName(e.target.value)} required
                   />
                 </div>
                 <div className="field">
-                  <label htmlFor="email">Correo electrónico</label>
+                  <label htmlFor="email">{t('emailLabel')}</label>
                   <input
                     id="email" type="email" placeholder="tu@correo.com"
                     value={email} onChange={e => setEmail(e.target.value)} required
                   />
                 </div>
                 <div className="field">
-                  <label htmlFor="password">Contraseña</label>
+                  <label htmlFor="password">{t('passwordLabel')}</label>
                   <input
                     id="password" type="password" placeholder="••••••••"
                     value={password} onChange={e => setPassword(e.target.value)} required
                   />
-                  <span className="hint">Mínimo 8 caracteres</span>
+                  <span className="hint">{t('passwordHint')}</span>
                 </div>
                 <div className="field">
-                  <label htmlFor="confirm">Confirmar contraseña</label>
+                  <label htmlFor="confirm">Confirmar contraseña</label>{/* TODO: i18n */}
                   <input
                     id="confirm" type="password" placeholder="••••••••"
                     value={confirmPass} onChange={e => setConfirmPass(e.target.value)} required
                   />
                 </div>
                 <button className="btn-main" type="submit" disabled={formLoading}>
-                  {formLoading ? 'Creando cuenta…' : 'Crear cuenta'}
+                  {formLoading ? 'Creando cuenta…' /* TODO: i18n */ : t('submitBtn')}
                 </button>
               </form>
 
               <div className="footer-links">
-                ¿Ya tienes cuenta? <a href="/login">Inicia sesión</a>
+                {t('haveAccount')} <a href="/login">{t('loginLink')}</a>
               </div>
             </>
           )}
