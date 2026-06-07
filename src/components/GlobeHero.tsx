@@ -4,7 +4,7 @@ import { memo, useEffect, useRef, useState } from 'react'
 import { Link } from 'next-view-transitions'
 import dynamic from 'next/dynamic'
 import { useRouter, usePathname } from 'next/navigation'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
 
 import TimelineSection from '@/components/TimelineSection'
@@ -212,17 +212,11 @@ const LOCALES = [
 ]
 
 const LanguageSelector = memo(function LanguageSelector() {
-  const router   = useRouter()
-  const pathname = usePathname()
+  const router        = useRouter()
+  const pathname      = usePathname()
+  const currentLocale = useLocale()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-
-  // Detect current locale from URL prefix
-  const currentLocale = LOCALES.slice(1).reduce<string>(
-    (found, loc) =>
-      pathname === `/${loc.code}` || pathname.startsWith(`/${loc.code}/`) ? loc.code : found,
-    'es'
-  )
 
   // Close on click outside
   useEffect(() => {
@@ -234,16 +228,17 @@ const LanguageSelector = memo(function LanguageSelector() {
     return () => document.removeEventListener('mousedown', onDown)
   }, [open])
 
-  function navigate(code: string) {
-    // Strip existing non-default locale prefix (es has no prefix)
-    let stripped = pathname
-    for (const loc of LOCALES.slice(1)) {
-      if (pathname === `/${loc.code}` || pathname.startsWith(`/${loc.code}/`)) {
-        stripped = pathname.slice(loc.code.length + 1) || '/'
+  function changeLocale(newLocale: string) {
+    // Strip the current locale prefix — 'es' has no prefix (localePrefix: 'as-needed')
+    const locales = ['en', 'fr', 'pt', 'ar']
+    let cleanPath = pathname
+    for (const locale of locales) {
+      if (cleanPath.startsWith(`/${locale}`)) {
+        cleanPath = cleanPath.slice(`/${locale}`.length) || '/'
         break
       }
     }
-    const newPath = code === 'es' ? stripped : `/${code}${stripped === '/' ? '' : stripped}`
+    const newPath = newLocale === 'es' ? cleanPath : `/${newLocale}${cleanPath}`
     router.push(newPath)
     setOpen(false)
   }
@@ -281,7 +276,7 @@ const LanguageSelector = memo(function LanguageSelector() {
               <button
                 key={lang.code}
                 className={`lang-sel__opt${lang.code === currentLocale ? ' lang-sel__opt--active' : ''}`}
-                onClick={() => navigate(lang.code)}
+                onClick={() => changeLocale(lang.code)}
                 role="option"
                 aria-selected={lang.code === currentLocale}
                 dir={lang.dir}
