@@ -184,7 +184,8 @@
         "body": "Kashi est un mot Wayuu qui signifie « lune ». Cette initiative est née de la Journée du Leadership Scolaire, lorsque les élèves ont eu l'opportunité d'agir en tant qu'enseignants, administrateurs et facilitateurs. Leurs forces dans des domaines spécifiques sont partagées avec des pairs qui souhaitent apprendre sur un sujet.",
         "badge": "Wayuu · Réseau éducatif",
         "exploreBtn": "Explorer Kashi →"
-      }
+      },
+      "programTitle": "Un programme qui transforme."
     },
 
     "aprendizaje": {
@@ -202,6 +203,12 @@
       "exampleLabel": "Exemple :",
       "discoverCta": "Quel type de leader êtes-vous ?",
       "archetypeCta": "Découvrez si vous êtes ce leader →",
+      "stepDiagnosisTitle": "Vous complétez l'évaluation",
+      "stepDiagnosisDesc": "20 questions pour Junior, 44 pour Senior",
+      "stepArchetypeTitle": "Vous découvrez votre archétype de leader",
+      "stepArchetypeDesc": "Un profil parmi 5 basés sur la science",
+      "stepRouteTitle": "Votre parcours s'adapte",
+      "stepRouteDesc": "Modules, réflexions et livrables personnalisés pour vous",
 
       "archetypes": {
         "visionario": {
@@ -299,6 +306,7 @@
     "acreditaciones": {
       "eyebrow": "Validation Internationale",
       "title": "Reconnu par les meilleures organisations éducatives du monde",
+      "sub": "Des organisations internationales d'excellence éducative ont reconnu Big Family comme un programme innovant à impact social réel.",
       "cognia": {
         "name": "Cognia",
         "formerly": "formerly AdvancED",
@@ -391,7 +399,22 @@
         "corporativos": "Cadres d'entreprise",
         "universitarios": "Professeurs d'université",
         "fundaciones": "Représentants de fondations"
-      }
+      },
+      "founder1Role": "Directeur Technologie",
+      "founder2Role": "Directeur Vision et Contenu",
+      "founder3Role": "Directeur Architecture et Opérations",
+      "founder1Bio": "Construit et maintient la plateforme technologique qui rend possible la certification The Big Leader.",
+      "founder2Bio": "Le visage et la voix du programme. Dirige la stratégie de contenu et la communication de l'impact de Big Family.",
+      "founder3Bio": "Structure et organisation de l'ensemble du programme. Garantit que chaque pièce du système fonctionne de manière cohérente.",
+      "tagTecnologia": "Technologie",
+      "tagPlataforma": "Plateforme",
+      "tagDesarrollo": "Développement",
+      "tagContenido": "Contenu",
+      "tagComunicacion": "Communication",
+      "tagLiderazgo": "Leadership",
+      "tagOperaciones": "Opérations",
+      "tagEstrategia": "Stratégie",
+      "tagEstructura": "Structure"
     },
 
     "testimonial": {
@@ -415,12 +438,23 @@
         "caminoFuturo": "IE Camino al Futuro",
         "colombiaMia": "IE Colombia Mía",
         "elCarmelo": "IE El Carmelo"
-      }
+      },
+      "tickerEyebrow": "NOTRE RÉSEAU",
+      "tickerTitle": "8 écoles. Une seule famille.",
+      "tickerSub": "Depuis La Guajira, construire des leaders qui transforment la Colombie.",
+      "statColegios": "Écoles",
+      "statMunicipios": "Municipalités",
+      "statPrimeraGen": "Première génération"
     },
 
     "cert": {
       "eyebrow": "CERTIFICATION OFFICIELLE",
-      "title": "Un accomplissement qui ouvre des portes."
+      "title": "Un accomplissement qui ouvre des portes.",
+      "para": "À l'issue des 12 modules et du projet capstone, chaque élève reçoit la certification The Big Leader — reconnue par Cognia, IB et Tri-Association.",
+      "cta": "Voir l'exemple de diplôme →",
+      "bullet1": "Reconnu internationalement",
+      "bullet2": "Imprimable et vérifiable",
+      "bullet3": "Mention d'honneur pour les meilleurs"
     },
 
     "cta": {
@@ -465,6 +499,19 @@
         "role": "CEO MiniJunior 2024",
         "school": "IE Colombia Mía"
       }
+    },
+
+    "about": {
+      "eyebrow": "À PROPOS DE NOUS",
+      "title": "Leaders qui transforment La Guajira",
+      "para1": "Big Family est un programme de leadership jeunesse qui accompagne des élèves de 8 écoles en La Guajira, Colombie, dans leur parcours pour devenir des agents de changement dans leurs communautés.",
+      "para2": "À travers des modules, des projets réels et du mentorat, les jeunes développent les compétences et la vision dont ils ont besoin pour diriger l'avenir de leur région.",
+      "badgeNum": "11 Pays",
+      "badgeLabel": "actifs en 2026",
+      "stat1Label": "Écoles participantes",
+      "stat2Label": "Élèves actifs",
+      "stat3Label": "Première génération",
+      "cta": "Découvrir le programme →"
     }
   },
 

@@ -184,7 +184,8 @@
         "body": "Kashi كلمة Wayuu تعني «القمر». نشأت هذه المبادرة من يوم القيادة المدرسية، حين أتيحت للطلاب فرصة العمل كمعلمين ومديرين وميسّرين. تُشارَك نقاط قوتهم في مجالات محددة مع زملاء يرغبون في التعلم.",
         "badge": "Wayuu · شبكة تعليمية",
         "exploreBtn": "استكشاف Kashi ←"
-      }
+      },
+      "programTitle": "برنامج يُحدث التحول."
     },
 
     "aprendizaje": {
@@ -202,6 +203,12 @@
       "exampleLabel": "مثال:",
       "discoverCta": "ما نوع القائد الذي أنت عليه؟",
       "archetypeCta": "اكتشف إن كنت هذا القائد ←",
+      "stepDiagnosisTitle": "تُكمل التشخيص",
+      "stepDiagnosisDesc": "20 سؤالاً للمستوى الأول، 44 للمستوى المتقدم",
+      "stepArchetypeTitle": "تكتشف نموذجك القيادي",
+      "stepArchetypeDesc": "أحد 5 ملفات شخصية مستندة إلى العلم",
+      "stepRouteTitle": "مسارك يتكيف",
+      "stepRouteDesc": "وحدات وتأملات ومهام مخصصة لك",
 
       "archetypes": {
         "visionario": {
@@ -299,6 +306,7 @@
     "acreditaciones": {
       "eyebrow": "الاعتراف الدولي",
       "title": "معترف به من أفضل المنظمات التعليمية في العالم",
+      "sub": "اعترفت منظمات دولية للتميز التعليمي بـBig Family بوصفه برنامجاً مبتكراً ذا أثر اجتماعي حقيقي.",
       "cognia": {
         "name": "Cognia",
         "formerly": "formerly AdvancED",
@@ -391,7 +399,22 @@
         "corporativos": "المديرون التنفيذيون",
         "universitarios": "أساتذة الجامعات",
         "fundaciones": "ممثلو المؤسسات"
-      }
+      },
+      "founder1Role": "مدير التكنولوجيا",
+      "founder2Role": "مدير الرؤية والمحتوى",
+      "founder3Role": "مدير الهندسة والعمليات",
+      "founder1Bio": "يبني ويحافظ على المنصة التكنولوجية التي تجعل شهادة The Big Leader ممكنة.",
+      "founder2Bio": "وجه البرنامج وصوته. يقود استراتيجية المحتوى والتواصل حول أثر Big Family.",
+      "founder3Bio": "هيكل وتنظيم البرنامج بأكمله. يضمن أن كل جزء من النظام يعمل بتناسق.",
+      "tagTecnologia": "التكنولوجيا",
+      "tagPlataforma": "المنصة",
+      "tagDesarrollo": "التطوير",
+      "tagContenido": "المحتوى",
+      "tagComunicacion": "التواصل",
+      "tagLiderazgo": "القيادة",
+      "tagOperaciones": "العمليات",
+      "tagEstrategia": "الاستراتيجية",
+      "tagEstructura": "الهيكل"
     },
 
     "testimonial": {
@@ -415,12 +438,23 @@
         "caminoFuturo": "IE Camino al Futuro",
         "colombiaMia": "IE Colombia Mía",
         "elCarmelo": "IE El Carmelo"
-      }
+      },
+      "tickerEyebrow": "شبكتنا",
+      "tickerTitle": "8 مدارس. عائلة واحدة.",
+      "tickerSub": "من لا غواخيرا، نبني قادة يحوّلون كولومبيا.",
+      "statColegios": "مدارس",
+      "statMunicipios": "بلديات",
+      "statPrimeraGen": "الجيل الأول"
     },
 
     "cert": {
       "eyebrow": "الشهادة الرسمية",
-      "title": "إنجاز يفتح الأبواب."
+      "title": "إنجاز يفتح الأبواب.",
+      "para": "عند إكمال الوحدات الـ12 ومشروع Capstone، يحصل كل طالب على شهادة The Big Leader — المعترف بها من Cognia وIB وTri-Association.",
+      "cta": "اعرض مثالاً للدبلوم ←",
+      "bullet1": "معترف به دولياً",
+      "bullet2": "قابل للطباعة والتحقق",
+      "bullet3": "ذكر شرفي لأفضل الطلاب"
     },
 
     "cta": {
@@ -465,6 +499,19 @@
         "role": "CEO MiniJunior 2024",
         "school": "IE Colombia Mía"
       }
+    },
+
+    "about": {
+      "eyebrow": "عن البرنامج",
+      "title": "قادة يحوّلون لا غواخيرا",
+      "para1": "Big Family برنامج قيادة شبابية يرافق طلاباً من 8 مدارس في لا غواخيرا، كولومبيا، في مسيرتهم ليصبحوا عوامل تغيير في مجتمعاتهم.",
+      "para2": "من خلال الوحدات والمشاريع الحقيقية والتوجيه، يطوّر الشباب المهارات والرؤية التي يحتاجونها لقيادة مستقبل منطقتهم.",
+      "badgeNum": "11 دولة",
+      "badgeLabel": "نشطون في 2026",
+      "stat1Label": "مدارس مشاركة",
+      "stat2Label": "طلاب نشطون",
+      "stat3Label": "الجيل الأول",
+      "cta": "اكتشف البرنامج ←"
     }
   },
 

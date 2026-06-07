@@ -85,6 +85,12 @@ function AprendizajeSection() {
   const t    = useTranslations()
   const pref = useReducedMotion()
   const [sel, setSel] = useState<string | null>(null)
+
+  const steps = [
+    { num: '01', title: t('landing.aprendizaje.stepDiagnosisTitle'), desc: t('landing.aprendizaje.stepDiagnosisDesc') },
+    { num: '02', title: t('landing.aprendizaje.stepArchetypeTitle'), desc: t('landing.aprendizaje.stepArchetypeDesc') },
+    { num: '03', title: t('landing.aprendizaje.stepRouteTitle'),     desc: t('landing.aprendizaje.stepRouteDesc')     },
+  ]
   const toggle = (id: string) => setSel(p => (p === id ? null : id))
 
   const arquetipos: Arquetipo[] = ARCHETYPE_VISUAL.map(a => ({
@@ -200,7 +206,7 @@ function AprendizajeSection() {
 
         {/* ── Steps ── */}
         <div className="sp-steps">
-          {STEPS.map((step, i) => (
+          {steps.map((step, i) => (
             <m.div
               key={step.num}
               className="sp-step"

@@ -182,18 +182,18 @@ const misionStats = [
 
 
 /* EDITAR AQUÍ — fundadores */
-const founders = [
-  { initials: 'SG', name: 'Samuel Gomez',       role: 'Director de Tecnología',                   bio: 'Construye y mantiene la plataforma tecnológica que hace posible la certificación The Big Leader.',                                          tags: ['Tecnología', 'Plataforma', 'Desarrollo'] },
-  { initials: 'JV', name: 'Juan Felipe Visbal', role: 'Director de Visión y Contenido',           bio: 'La cara y voz del programa. Lidera la estrategia de contenido y la comunicación del impacto de Big Family.',                                tags: ['Contenido', 'Comunicación', 'Liderazgo'] },
-  { initials: 'AG', name: 'Alejandro Garcia',   role: 'Director de Arquitectura y Operaciones',   bio: 'Estructura y organización de todo el programa. Garantiza que cada pieza del sistema funcione con coherencia.',                             tags: ['Operaciones', 'Estrategia', 'Estructura'] },
+const FOUNDERS_STATIC = [
+  { initials: 'SG', name: 'Samuel Gomez',       roleKey: 'landing.equipo.founder1Role' as const, bioKey: 'landing.equipo.founder1Bio' as const, tagKeys: ['landing.equipo.tagTecnologia', 'landing.equipo.tagPlataforma', 'landing.equipo.tagDesarrollo'] as const },
+  { initials: 'JV', name: 'Juan Felipe Visbal', roleKey: 'landing.equipo.founder2Role' as const, bioKey: 'landing.equipo.founder2Bio' as const, tagKeys: ['landing.equipo.tagContenido',   'landing.equipo.tagComunicacion', 'landing.equipo.tagLiderazgo']  as const },
+  { initials: 'AG', name: 'Alejandro Garcia',   roleKey: 'landing.equipo.founder3Role' as const, bioKey: 'landing.equipo.founder3Bio' as const, tagKeys: ['landing.equipo.tagOperaciones', 'landing.equipo.tagEstrategia',  'landing.equipo.tagEstructura']  as const },
 ]
 
 
 /* EDITAR AQUÍ — estadísticas del About */
 const aboutStats = [
-  { num: '8',    label: 'Colegios participantes' },
-  { num: '200+', label: 'Estudiantes activos'    },
-  { num: '2026', label: 'Primera generación'     },
+  { num: '8'    },
+  { num: '200+' },
+  { num: '2026' },
 ]
 
 const NAV_LINKS = [
@@ -501,6 +501,20 @@ export default function GlobeHero() {
     t('landing.impacto.stat3Sub'),
     t('landing.impacto.stat4Sub'),
   ]
+
+  const aboutStatLabels = [
+    t('landing.about.stat1Label'),
+    t('landing.about.stat2Label'),
+    t('landing.about.stat3Label'),
+  ]
+
+  const founders = FOUNDERS_STATIC.map(f => ({
+    initials: f.initials,
+    name:     f.name,
+    role:     t(f.roleKey),
+    bio:      t(f.bioKey),
+    tags:     f.tagKeys.map(k => t(k)),
+  }))
 
   const misionStatLabels = [
     t('landing.mision.stat1Label'),
@@ -1413,14 +1427,12 @@ export default function GlobeHero() {
           >
             <span className="sec-cert__eyebrow">{t('landing.cert.eyebrow')}</span>
             <h2 className="sec-cert__title">{t('landing.cert.title')}</h2>
-            <p className="sec-cert__para">
-              Al completar los 12 módulos y el proyecto capstone, cada estudiante recibe la certificación The Big Leader — reconocida por Cognia, IB y Tri-Association.
-            </p>
+            <p className="sec-cert__para">{t('landing.cert.para')}</p>
             <button className="sec-cert__cta" onClick={() => setShowDiplomaModal(true)}>
-              Ver ejemplo de diploma <span aria-hidden="true">→</span>
+              {t('landing.cert.cta')} <span aria-hidden="true">→</span>
             </button>
             <div className="sec-cert__bullets">
-              {(['Reconocido internacionalmente', 'Imprimible y verificable', 'Mención de Honor para los mejores'] as const).map(text => (
+              {([t('landing.cert.bullet1'), t('landing.cert.bullet2'), t('landing.cert.bullet3')]).map(text => (
                 <div key={text} className="sec-cert__bullet">
                   <div className="sec-cert__check">
                     <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden="true">
@@ -1610,8 +1622,8 @@ export default function GlobeHero() {
             {/* Badge flotante */}
             <div className="about-dark__badge">
               {/* EDITAR: número y subtexto del badge */}
-              <div className="about-dark__badge-num">11 Países</div>
-              <div className="about-dark__badge-label">activos en 2026</div>
+              <div className="about-dark__badge-num">{t('landing.about.badgeNum')}</div>
+              <div className="about-dark__badge-label">{t('landing.about.badgeLabel')}</div>
             </div>
           </div>
 
@@ -1622,28 +1634,28 @@ export default function GlobeHero() {
               initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0 }}
-            >SOBRE NOSOTROS</m.p>
+            >{t('landing.about.eyebrow')}</m.p>
 
             <m.h2
               className="about-dark__title"
               initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.08 }}
-            >Líderes que transforman La Guajira</m.h2>
+            >{t('landing.about.title')}</m.h2>
 
             <m.p
               className="about-dark__para"
               initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.16 }}
-            >Big Family es un programa de liderazgo juvenil que acompaña a estudiantes de 8 colegios en La Guajira, Colombia, en su camino hacia convertirse en agentes de cambio en sus comunidades.</m.p>
+            >{t('landing.about.para1')}</m.p>
 
             <m.p
               className="about-dark__para"
               initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.24 }}
-            >A través de módulos, proyectos reales y mentoría, los jóvenes desarrollan las habilidades y la visión que necesitan para liderar el futuro de su región.</m.p>
+            >{t('landing.about.para2')}</m.p>
 
             <m.div
               className="about-dark__divider"
@@ -1664,7 +1676,7 @@ export default function GlobeHero() {
                 <div key={i} className="about-dark__stat">
                   {/* EDITAR: número y label */}
                   <div className="about-dark__stat-num">{s.num}</div>
-                  <div className="about-dark__stat-label">{s.label}</div>
+                  <div className="about-dark__stat-label">{aboutStatLabels[i]}</div>
                 </div>,
               ])}
             </m.div>
@@ -1675,7 +1687,7 @@ export default function GlobeHero() {
               viewport={{ once: true, margin: '-80px' }}
               transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.48 }}
               onClick={() => document.getElementById('metodologia')?.scrollIntoView({ behavior: 'smooth' })}
-            >Conocer el programa →</m.button>
+            >{t('landing.about.cta')}</m.button>
           </div>
 
         </div>
@@ -1878,9 +1890,7 @@ export default function GlobeHero() {
           >
             <p className="sec-valid__eyebrow">{t('landing.acreditaciones.eyebrow')}</p>
             <h2 className="sec-valid__title">{t('landing.acreditaciones.title')}</h2>
-            <p className="sec-valid__sub">
-              Organizaciones internacionales de excelencia educativa han reconocido Big Family como un programa innovador y de impacto social real.
-            </p>
+            <p className="sec-valid__sub">{t('landing.acreditaciones.sub')}</p>
           </m.div>
 
           {/* Cards */}
@@ -1932,9 +1942,7 @@ export default function GlobeHero() {
             transition={{ type: 'spring', stiffness: 120, damping: 20 }}
           >
             <p className="sec-prog__eyebrow">{t('landing.metodologia.eyebrow')}</p>
-            <h2 className="sec-prog__title">
-              Un programa<br />que <em>transforma</em>.
-            </h2>
+            <h2 className="sec-prog__title">{t('landing.metodologia.programTitle')}</h2>
           </m.div>
 
           {/* Rows */}
@@ -2093,7 +2101,7 @@ export default function GlobeHero() {
                 <div className="equipo__card-divider" />
                 <div className="equipo__card-bio">{f.bio}</div>
                 <div className="equipo__tags">
-                  {f.tags.map(t => <span key={t} className="equipo__tag">{t}</span>)}
+                  {f.tags.map(tag => <span key={tag} className="equipo__tag">{tag}</span>)}
                 </div>
               </m.div>
             ))}

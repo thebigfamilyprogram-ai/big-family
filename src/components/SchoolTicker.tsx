@@ -4,6 +4,7 @@ import { memo, useEffect, useRef, useState } from 'react'
 import { m, useInView, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE } from '@/lib/mockData'
+import { useTranslations } from 'next-intl'
 
 // ── School data ────────────────────────────────────────────────────────────────
 const SCHOOLS = [
@@ -84,10 +85,13 @@ const SchoolCard = memo(function SchoolCard({
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default memo(function SchoolTicker() {
+  const t              = useTranslations()
   const sectionRef     = useRef<HTMLElement>(null)
   const supabaseRef    = useRef<ReturnType<typeof createClient> | null>(null)
   const inView         = useInView(sectionRef, { once: true, margin: '-20% 0px' })
   const prefersReduced = useReducedMotion()
+  const tickerWords    = t('landing.colegios.tickerTitle').split(' ')
+  const statLabels     = [t('landing.colegios.statColegios'), t('landing.colegios.statMunicipios'), t('landing.colegios.statPrimeraGen')]
 
   // logoMap: school name → resolved public URL
   const [logoMap, setLogoMap] = useState<Record<string, string>>({})
@@ -332,10 +336,10 @@ export default memo(function SchoolTicker() {
           initial={prefersReduced ? false : { opacity: 0, y: 12 }}
           animate={shouldAnim ? { opacity: 1, y: 0 } : {}}
           transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-        >NUESTRA RED</m.p>
+        >{t('landing.colegios.tickerEyebrow')}</m.p>
 
-        <h2 className="stk-title" aria-label="8 colegios. Una sola familia.">
-          {TITLE_WORDS.map((word, i) => (
+        <h2 className="stk-title" aria-label={t('landing.colegios.tickerTitle')}>
+          {tickerWords.map((word, i) => (
             <m.span
               key={i}
               style={{ display: 'inline-block', marginRight: '0.28em' }}
@@ -352,7 +356,7 @@ export default memo(function SchoolTicker() {
           animate={shouldAnim ? { opacity: 1, y: 0 } : {}}
           transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.48 }}
         >
-          Desde La Guajira, construyendo líderes que transforman Colombia.
+          {t('landing.colegios.tickerSub')}
         </m.p>
       </div>
 
@@ -396,14 +400,14 @@ export default memo(function SchoolTicker() {
         {STATS.flatMap((s, i) => [
           i > 0 ? <div key={`sep-${i}`} className="stk-stat-sep" aria-hidden="true" /> : null,
           <m.div
-            key={s.label}
+            key={i}
             className="stk-stat"
             initial={prefersReduced ? false : { opacity: 0, y: 8 }}
             animate={shouldAnim ? { opacity: 1, y: 0 } : {}}
             transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.4 + i * 0.10 }}
           >
             <div className="stk-stat-num"><StatNum to={s.value} /></div>
-            <div className="stk-stat-label">{s.label}</div>
+            <div className="stk-stat-label">{statLabels[i]}</div>
           </m.div>,
         ])}
       </div>

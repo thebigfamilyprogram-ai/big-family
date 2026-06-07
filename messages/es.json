@@ -184,7 +184,8 @@
         "body": "Kashi es una palabra Wayuu que significa \"luna\". Esta iniciativa surgió del Día de Liderazgo Escolar, cuando los estudiantes tuvieron la oportunidad de actuar como maestros, administradores y facilitadores. Sus fortalezas en áreas específicas se comparten con compañeros que desean aprender sobre un tema.",
         "badge": "Wayuu · Red educativa",
         "exploreBtn": "Explorar Kashi →"
-      }
+      },
+      "programTitle": "Un programa que transforma."
     },
 
     "aprendizaje": {
@@ -202,6 +203,12 @@
       "exampleLabel": "Ejemplo:",
       "discoverCta": "¿Cuál tipo de líder eres tú?",
       "archetypeCta": "Descubre si eres este líder →",
+      "stepDiagnosisTitle": "Completas el diagnóstico",
+      "stepDiagnosisDesc": "20 preguntas para Junior, 44 para Senior",
+      "stepArchetypeTitle": "Descubres tu arquetipo de líder",
+      "stepArchetypeDesc": "Uno de 5 perfiles basados en ciencia",
+      "stepRouteTitle": "Tu ruta se adapta",
+      "stepRouteDesc": "Módulos, reflexiones y entregables personalizados para ti",
 
       "archetypes": {
         "visionario": {
@@ -299,6 +306,7 @@
     "acreditaciones": {
       "eyebrow": "Validación Internacional",
       "title": "Reconocido por las mejores organizaciones educativas del mundo",
+      "sub": "Organizaciones internacionales de excelencia educativa han reconocido Big Family como un programa innovador y de impacto social real.",
       "cognia": {
         "name": "Cognia",
         "formerly": "formerly AdvancED",
@@ -391,7 +399,22 @@
         "corporativos": "Ejecutivos corporativos",
         "universitarios": "Profesores universitarios",
         "fundaciones": "Representantes de fundaciones"
-      }
+      },
+      "founder1Role": "Director de Tecnología",
+      "founder2Role": "Director de Visión y Contenido",
+      "founder3Role": "Director de Arquitectura y Operaciones",
+      "founder1Bio": "Construye y mantiene la plataforma tecnológica que hace posible la certificación The Big Leader.",
+      "founder2Bio": "La cara y voz del programa. Lidera la estrategia de contenido y la comunicación del impacto de Big Family.",
+      "founder3Bio": "Estructura y organización de todo el programa. Garantiza que cada pieza del sistema funcione con coherencia.",
+      "tagTecnologia": "Tecnología",
+      "tagPlataforma": "Plataforma",
+      "tagDesarrollo": "Desarrollo",
+      "tagContenido": "Contenido",
+      "tagComunicacion": "Comunicación",
+      "tagLiderazgo": "Liderazgo",
+      "tagOperaciones": "Operaciones",
+      "tagEstrategia": "Estrategia",
+      "tagEstructura": "Estructura"
     },
 
     "testimonial": {
@@ -415,12 +438,23 @@
         "caminoFuturo": "IE Camino al Futuro",
         "colombiaMia": "IE Colombia Mía",
         "elCarmelo": "IE El Carmelo"
-      }
+      },
+      "tickerEyebrow": "NUESTRA RED",
+      "tickerTitle": "8 colegios. Una sola familia.",
+      "tickerSub": "Desde La Guajira, construyendo líderes que transforman Colombia.",
+      "statColegios": "Colegios",
+      "statMunicipios": "Municipios",
+      "statPrimeraGen": "Primera generación"
     },
 
     "cert": {
       "eyebrow": "CERTIFICACIÓN OFICIAL",
-      "title": "Un logro que abre puertas."
+      "title": "Un logro que abre puertas.",
+      "para": "Al completar los 12 módulos y el proyecto capstone, cada estudiante recibe la certificación The Big Leader — reconocida por Cognia, IB y Tri-Association.",
+      "cta": "Ver ejemplo de diploma →",
+      "bullet1": "Reconocido internacionalmente",
+      "bullet2": "Imprimible y verificable",
+      "bullet3": "Mención de Honor para los mejores"
     },
 
     "cta": {
@@ -465,6 +499,19 @@
         "role": "CEO MiniJunior 2024",
         "school": "IE Colombia Mía"
       }
+    },
+
+    "about": {
+      "eyebrow": "SOBRE NOSOTROS",
+      "title": "Líderes que transforman La Guajira",
+      "para1": "Big Family es un programa de liderazgo juvenil que acompaña a estudiantes de 8 colegios en La Guajira, Colombia, en su camino hacia convertirse en agentes de cambio en sus comunidades.",
+      "para2": "A través de módulos, proyectos reales y mentoría, los jóvenes desarrollan las habilidades y la visión que necesitan para liderar el futuro de su región.",
+      "badgeNum": "11 Países",
+      "badgeLabel": "activos en 2026",
+      "stat1Label": "Colegios participantes",
+      "stat2Label": "Estudiantes activos",
+      "stat3Label": "Primera generación",
+      "cta": "Conocer el programa →"
     }
   },
 
