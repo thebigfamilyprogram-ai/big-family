@@ -1,1 +1,995 @@
-{}
+{
+  "_meta": {
+    "lang": "ar",
+    "dir": "rtl",
+    "version": "1.0.0",
+    "lastUpdated": "2026-06",
+    "translators": {
+      "en": "",
+      "fr": "",
+      "pt": "",
+      "ar": ""
+    }
+  },
+
+  "common": {
+    "appName": "Big Family",
+    "tagline": "تنشئة قادة بهدف عالمي ومبتكر",
+    "loading": "جارٍ التحميل...",
+    "error": "حدث خطأ ما. يرجى المحاولة مجدداً.",
+    "retry": "إعادة المحاولة",
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ...",
+    "saved": "تم الحفظ",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "view": "عرض",
+    "close": "إغلاق",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "submit": "إرسال",
+    "search": "بحث",
+    "filter": "تصفية",
+    "export": "تصدير",
+    "download": "تنزيل",
+    "share": "مشاركة",
+    "copy": "نسخ",
+    "copied": "تم النسخ",
+    "print": "طباعة",
+    "logout": "تسجيل الخروج",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "notifications": "الإشعارات",
+    "noResults": "لا توجد نتائج",
+    "noData": "لا توجد بيانات لهذه الفترة",
+    "optional": "اختياري",
+    "required": "مطلوب",
+    "seeAll": "عرض الكل",
+    "seeMore": "عرض المزيد",
+    "seeLess": "عرض أقل",
+    "learnMore": "اعرف أكثر",
+    "getStarted": "ابدأ الآن",
+    "comingSoon": "قريباً"
+  },
+
+  "nav": {
+    "historia": "التاريخ",
+    "metodologia": "المنهجية",
+    "impacto": "الأثر",
+    "nuestraRed": "شبكتنا",
+    "equipo": "الفريق",
+    "noticias": "الأخبار",
+    "ingresar": "تسجيل الدخول",
+    "menuOpen": "فتح القائمة",
+    "menuClose": "إغلاق القائمة"
+  },
+
+  "landing": {
+    "hero": {
+      "eyebrow": "برنامج القيادة الشبابية · لا غواخيرا، كولومبيا",
+      "title": "تنشئة قادة",
+      "titleAccent": "بهدف عالمي",
+      "subtitle": "نطور مهارات القيادة لدى الطلاب من الصف الثالث إلى الحادي عشر، نُعِدّهم لتحويل بيئتهم بالابتكار والأخلاق والرؤية الدولية.",
+      "cta": "اكتشف البرنامج",
+      "ctaSecondary": "الدخول إلى المنصة"
+    },
+
+    "mision": {
+      "eyebrow": "الرسالة",
+      "title": "لماذا نحن هنا",
+      "body": "تعزيز التطوير المستمر لمهارات القيادة لدى الطلاب وتقوية مواهبهم، وإعدادهم لتحقيق موقف أفضل وكفاءة أكاديمية ودور عالمي في المجتمع؛ بتوجيه من ريادة الأعمال والابتكار والوعي الاجتماعي واحترام البيئة.",
+      "focus": "المحور",
+      "focusValues": "القيادة التحويلية · الوعي الاجتماعي · الإبداع · الابتكار"
+    },
+
+    "vision": {
+      "eyebrow": "الرؤية",
+      "title": "إلى أين نتجه",
+      "body": "بحلول عام 2030، سيُعترف ببرنامج Big Family على الصعيدين الوطني والدولي بوصفه مبادرة مبتكرة يُطوّر من خلالها الطلاب المشاركون قيادتهم في إطار من التميز التعليمي والقيم والمبادئ.",
+      "meta": "2030"
+    },
+
+    "historia": {
+      "eyebrow": "تاريخنا",
+      "title": "منذ عام 2015",
+      "body": "انطلق برنامج Big Family في أغسطس 2015 بـ15 طالباً من الصفوف الثاني والثالث والرابع الابتدائي. يضم اليوم 98 مشاركاً نشطاً. وهو برنامج مستمر يتلقى فيه الطلاب تدريباً ويُنفّذون أنشطة كل عام.",
+      "watermark": "2015",
+      "stat1Label": "سنة التأسيس",
+      "stat1Value": "2015",
+      "stat2Label": "طلاب نشطون",
+      "stat2Value": "98",
+      "stat3Label": "خريجون معترف بهم",
+      "stat3Value": "23"
+    },
+
+    "impacto": {
+      "eyebrow": "الأثر بالأرقام",
+      "title": "مدى البرنامج",
+      "stat1Value": "876",
+      "stat1Label": "طلاب تلقوا التدريب",
+      "stat2Value": "22",
+      "stat2Label": "مدرسة في كولومبيا",
+      "stat3Value": "10",
+      "stat3Label": "دول في الشبكة",
+      "stat4Value": "3.300",
+      "stat4Label": "هدف 2030"
+    },
+
+    "metodologia": {
+      "eyebrow": "المنهجية",
+      "title": "كيف نُشكّل القادة",
+      "subtitle": "أربعة مكونات متكاملة تُنمّي القيادة من الداخل إلى الخارج.",
+      "hoursLabel": "40 ساعة سنوية في صيغة اللامنهجية",
+      "formatLabel": "حضوري · افتراضي · غير متزامن",
+      "gradesLabel": "من الصف الثالث إلى الصف الحادي عشر",
+
+      "bigLeader": {
+        "number": "01",
+        "title": "The Big Leader",
+        "subtitle": "ملف القيادة الشخصي",
+        "body": "تدريب شخصي مُصمَّم لكل طالب، يُركّز على المهارات الشخصية والاجتماعية. يشمل جلسات تدريب (كوتشينغ) تُرشد الطلاب نحو مشاريع حياتهم.",
+        "badge": "Big Five · 44 سؤالاً"
+      },
+      "leadersGame": {
+        "number": "02",
+        "title": "The Leader's Game",
+        "subtitle": "التعلم القائم على التحديات",
+        "body": "لعبة تحديات بالمحطات تتراكم فيها نقاط الفرق عبر الإجابات الصحيحة. بتحديد نقاط القوة ومجالات النمو لكل مشارك، يمكن تصميم ورش عمل مُكثَّفة وموجَّهة.",
+        "badge": "التلعيب · العمل الجماعي"
+      },
+      "greatVenture": {
+        "number": "03",
+        "title": "The Great Venture",
+        "subtitle": "خارطة الطريق الاستراتيجية الشخصية",
+        "body": "تطبيق بخوارزمية تُساعد الطلاب على تحديد اتجاههم وأولوياتهم لتحقيق مشروعهم الكبير كرواد أعمال مبتكرين عالميين. يُرشدهم في اختيار هدفهم المحوري والمعتقدات التمكينية والنموذج الإيجابي وفريق القوة وخطط العمل، باستخدام مصفوفة Hoshin Kanri.",
+        "badge": "Hoshin Kanri · الاستراتيجية"
+      },
+      "kashi": {
+        "number": "04",
+        "title": "Kashi",
+        "subtitle": "الشبكة الاجتماعية التعليمية",
+        "body": "Kashi كلمة Wayuu تعني «القمر». نشأت هذه المبادرة من يوم القيادة المدرسية، حين أتيحت للطلاب فرصة العمل كمعلمين ومديرين وميسّرين. تُشارَك نقاط قوتهم في مجالات محددة مع زملاء يرغبون في التعلم.",
+        "badge": "Wayuu · شبكة تعليمية",
+        "exploreBtn": "استكشاف Kashi ←"
+      }
+    },
+
+    "aprendizaje": {
+      "eyebrow": "التعلم الشخصي",
+      "title": "ملف قيادتك",
+      "subtitle": "يُكيّف البرنامج كل تجربة وفق نمطك القيادي الفريد.",
+      "step1Title": "اكتشف ملفك الشخصي",
+      "step1Body": "تُكمل اختبار Big Five (BFI-44) عند الانضمام إلى البرنامج. 44 سؤالاً مُعايَراً علمياً.",
+      "step2Title": "احصل على خريطتك",
+      "step2Body": "تُولّد الخوارزمية مُضلَّعك القيادي وتُصنّفك ضمن أحد النماذج الخمسة في Big Leader Model.",
+      "step3Title": "تعلم بأسلوب مختلف",
+      "step3Body": "تُخصَّص الوحدات والتأملات ومشروعك The Great Venture وفق نقاط قوتك ومجالات نموك.",
+
+      "archetypes": {
+        "visionario": {
+          "name": "صاحب الرؤية",
+          "pillar": "الاتجاه",
+          "trait": "الانفتاح على التجربة",
+          "strengths": ["التفكير الاستراتيجي", "الإبداع", "الرؤية طويلة المدى"],
+          "growth": ["التنفيذ", "الاهتمام بالتفاصيل"],
+          "description": "ترى أنماطاً حيث يرى الآخرون فوضى. عقلك يربط أفكاراً متباعدة ويبني مستقبلاً لم يوجد بعد. يُزوّدك البرنامج بالأدوات اللازمة لتحويل تلك الرؤية إلى مشاريع ملموسة.",
+          "modules": ["القيادة في الابتكار", "The Great Venture", "Design Thinking"],
+          "example": "تُصمّم مشروع ريادة أعمال اجتماعية يربط مدرستك بشركاء في 3 دول."
+        },
+        "conector": {
+          "name": "الرابط",
+          "pillar": "الترابط",
+          "trait": "الطيبة",
+          "strengths": ["التعاطف", "العمل الجماعي", "التواصل"],
+          "growth": ["الحزم", "اتخاذ القرار"],
+          "description": "تبني جسوراً بين الناس. تعرف كيف تقرأ المواقف وتُوسّط في النزاعات وتجعل كل صوت مسموعاً. قيادتك تُضاعف إمكانيات الفريق.",
+          "modules": ["التواصل الفعّال", "Kashi", "القيادة التعاونية"],
+          "example": "تقود فريق مدرستك في اللقاء بين المؤسسات وتضمن مشاركة الجميع."
+        },
+        "ejecutor": {
+          "name": "المنفّذ",
+          "pillar": "العمل",
+          "trait": "الضمير",
+          "strengths": ["الانضباط", "التنظيم", "المسؤولية"],
+          "growth": ["المرونة", "التفويض"],
+          "description": "تحوّل الخطط إلى واقع. حيث يرى الآخرون عقبات، أنت ترى خطوات. اتساقك وصرامتك هما المحرك الذي يُوصل المشاريع إلى هدفها.",
+          "modules": ["إدارة المشاريع", "The Leader's Game", "Hoshin Kanri"],
+          "example": "تُنفّذ مشروع IDEMR الختامي بخطة مفصّلة وتُكمل جميع المراحل وتُقدّم نتائج قابلة للقياس."
+        },
+        "catalizador": {
+          "name": "المحفّز",
+          "pillar": "الإرث",
+          "trait": "الانبساط",
+          "strengths": ["الطاقة", "التأثير", "التحفيز"],
+          "growth": ["الاستماع الفعّال", "الصبر"],
+          "description": "طاقتك معدية. تُلهم الآخرين على التحرك والجرأة والإيمان. يُوجّه البرنامج تلك القوة نحو أثر دائم في مجتمعك.",
+          "modules": ["الخطابة والإقناع", "القيادة الاجتماعية", "Alumni Network"],
+          "example": "تُنظّم يوم القيادة في مدرستك وتجمع 200 طالب من 5 مؤسسات."
+        },
+        "guardian": {
+          "name": "الحارس",
+          "pillar": "الذات",
+          "trait": "الاستقرار العاطفي",
+          "strengths": ["المرونة", "النزاهة", "الموثوقية"],
+          "growth": ["التكيّف", "المبادرة"],
+          "description": "أنت مرساة الفريق. وجودك يُنشئ أماناً نفسياً يُتيح للآخرين المخاطرة. يُطوّر البرنامج قدرتك على القيادة عبر الاتساق والقيم.",
+          "modules": ["الذكاء العاطفي", "أخلاقيات القائد", "Big Leader Model"],
+          "example": "أنت المرجع في النزاهة بمدرستك — يثق المنسقون والزملاء في حكمتك."
+        }
+      }
+    },
+
+    "valores": {
+      "eyebrow": "قيمنا",
+      "title": "ما يهدينا",
+      "etica": {
+        "title": "الأخلاق",
+        "body": "نتصرف بنزاهة في كل قرار، نبني الثقة من الداخل."
+      },
+      "compromiso": {
+        "title": "الالتزام",
+        "body": "نُنجز ما نعد به ونُقدّم أفضل ما لدينا في كل عمل."
+      },
+      "trascendencia": {
+        "title": "التسامي",
+        "body": "نسعى لترك أثر إيجابي يتجاوز جيلنا."
+      },
+      "concienciaSocial": {
+        "title": "الوعي الاجتماعي",
+        "body": "ندرك تأثيرنا في المجتمع ونتصرف بمسؤولية."
+      },
+      "innovacion": {
+        "title": "الابتكار",
+        "body": "نبحث عن حلول إبداعية لتحديات بيئتنا."
+      },
+      "creatividad": {
+        "title": "الإبداع",
+        "body": "نستكشف أساليب تفكير وعمل جديدة لإيجاد قيمة فريدة."
+      }
+    },
+
+    "alumni": {
+      "eyebrow": "الخريجون",
+      "title": "قادة تركوا بصمتهم بالفعل",
+      "subtitle": "خريجو البرنامج يقودون اليوم في جامعات ومنظمات حول العالم.",
+      "card1Role": "رئيس · نموذج الأمم المتحدة",
+      "card2Role": "طالب · ESADE University، برشلونة",
+      "card2Program": "بكالوريوس في القيادة التحويلية والأثر الاجتماعي",
+      "card3Role": "نائب رئيس الطلاب اللاتينيين · Concordia University، كندا"
+    },
+
+    "acreditaciones": {
+      "eyebrow": "الاعتراف الدولي",
+      "title": "معترف به من أفضل المنظمات التعليمية في العالم",
+      "cognia": {
+        "name": "Cognia",
+        "formerly": "formerly AdvancED",
+        "description": "اعترفت بالبرنامج بوصفه مبتكراً ذا صلة اجتماعية خلال زيارة الاعتماد."
+      },
+      "ib": {
+        "name": "IB Americas Conference",
+        "location": "أورلاندو، فلوريدا",
+        "description": "قُدّم البرنامج أمام المجتمع التعليمي الدولي للبكالوريا الدولية."
+      },
+      "triAssociation": {
+        "name": "Tri-Association",
+        "fullName": "Association of American Schools",
+        "description": "سلّطت الضوء على أهمية البرنامج عام 2024 واختارته للمشاركة في فعالية TRIHEROES في مايو 2025."
+      },
+      "iberoamericano": {
+        "name": "Congreso Iberoamericano",
+        "location": "مدريد، إسبانيا",
+        "achievement": "المركز الثالث",
+        "description": "حصلت مقترحة «كيف تحقق عملية ناجحة لتطوير القيادة في المدارس» على المركز الثالث."
+      }
+    },
+
+    "fundador": {
+      "eyebrow": "المؤسس",
+      "title": "Luis Hernando Barrios",
+      "role": "منسق العمل الاجتماعي والتعلم",
+      "subtitle": "المؤسس، The Big Family Program",
+      "bio": "مُربٍّ يُمتد تجربته في تنشئة القادة في لا غواخيرا لأكثر من عقد. أفضت رؤيته لقيادة تحويلية ذات هدف عالمي إلى اعتراف دولي بالبرنامج في 10 دول.",
+      "education": {
+        "label": "التعليم",
+        "degree1": "ماجستير في الدراسات متعددة التخصصات — University at Buffalo",
+        "degree2": "القيادة والإبداع والابتكار وريادة الأعمال — Javeriana، MIT، Uninorte، Unisabana"
+      },
+      "contact": {
+        "email": "luis.barrios@colegioalbania.edu.co",
+        "phone": "(+57) 310 848 6706"
+      },
+      "quote": "نترك بصمات بهدف اجتماعي."
+    },
+
+    "red": {
+      "eyebrow": "شبكتنا العالمية",
+      "title": "كولومبيا في قلب العالم",
+      "subtitle": "شراكات فاعلة مع مؤسسات في 10 دول توسّع آفاق طلابنا.",
+      "colombia": {
+        "label": "كولومبيا",
+        "detail": "8 مدارس نشطة في لا غواخيرا"
+      },
+      "modalTitle": "الشراكة في",
+      "modalClose": "إغلاق",
+      "countries": {
+        "espana": {
+          "name": "إسبانيا",
+          "achievement": "Congreso Iberoamericano — المركز الثالث في مدريد"
+        },
+        "eeuu": {
+          "name": "الولايات المتحدة",
+          "achievement": "IB Americas Conference — أورلاندو"
+        },
+        "canada": {
+          "name": "كندا",
+          "achievement": "Concordia University — نائب الرئيس اللاتيني"
+        },
+        "mexico": { "name": "المكسيك" },
+        "venezuela": { "name": "فنزويلا" },
+        "brasil": { "name": "البرازيل" },
+        "argentina": { "name": "الأرجنتين" },
+        "francia": { "name": "فرنسا" },
+        "guatemala": { "name": "غواتيمالا" },
+        "india": { "name": "الهند" }
+      }
+    },
+
+    "equipo": {
+      "eyebrow": "فريق التدريب",
+      "title": "من يُشكّل قادتنا",
+      "body": "يتكوّن فريق التدريب من ميسّرين متطوعين متخصصين في مجالات متعددة: أولياء أمور المجتمع المدرسي والمعلمين والخريجين والكوادر والمديرين التنفيذيين للشركات والمدرّبين المستقلين وأساتذة الجامعات وممثلي المؤسسات.",
+      "roles": {
+        "padres": "أولياء الأمور",
+        "docentes": "المعلمون",
+        "egresados": "خريجو البرنامج",
+        "corporativos": "المديرون التنفيذيون",
+        "universitarios": "أساتذة الجامعات",
+        "fundaciones": "ممثلو المؤسسات"
+      }
+    },
+
+    "testimonial": {
+      "eyebrow": "شهادة",
+      "quote": "شكراً جزيلاً يا سيد Barrios على منح طلابنا هذه الفرصة. استمتعوا كثيراً بإمكانية التفاعل مع طلاب من جميع أنحاء العالم، وكانت ملاحظاتهم رائعة. نأمل أن يتمكنوا من دمج الدروس المستخلصة ليصبحوا قادة تحويليين.",
+      "author": "Jonathan Smith",
+      "role": "معلم زائر",
+      "institution": "Colegio Bilingüe de Santa Marta",
+      "event": "ورشة عمل دولية — مايو 2022"
+    },
+
+    "colegios": {
+      "eyebrow": "المدارس المشاركة",
+      "title": "8 مؤسسات في لا غواخيرا",
+      "schools": {
+        "mariaInmaculada": "IE Técnica María Inmaculada",
+        "pedagogico": "Instituto Pedagógico",
+        "comfamiliar": "IE Comfamiliar",
+        "wareWaren": "Centro Etnoeducativo Ware Waren",
+        "pauloVI": "IE Paulo VI",
+        "caminoFuturo": "IE Camino al Futuro",
+        "colombiaMia": "IE Colombia Mía",
+        "elCarmelo": "IE El Carmelo"
+      }
+    }
+  },
+
+  "auth": {
+    "login": {
+      "title": "تسجيل الدخول إلى Big Family",
+      "subtitle": "منصتك للقيادة",
+      "emailLabel": "البريد الإلكتروني",
+      "emailPlaceholder": "بريدك@الإلكتروني.com",
+      "passwordLabel": "كلمة المرور",
+      "passwordPlaceholder": "كلمة مرورك",
+      "submitBtn": "تسجيل الدخول",
+      "googleBtn": "المتابعة مع Google",
+      "forgotPassword": "هل نسيت كلمة المرور؟",
+      "noAccount": "ليس لديك حساب؟",
+      "register": "سجّل هنا",
+      "error": {
+        "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+        "emailNotFound": "لم نجد حساباً بهذا البريد الإلكتروني.",
+        "tooManyAttempts": "محاولات كثيرة جداً. انتظر بضع دقائق."
+      }
+    },
+
+    "register": {
+      "title": "إنشاء حساب",
+      "subtitle": "انضم إلى برنامج Big Family",
+      "codeLabel": "رمز الوصول",
+      "codePlaceholder": "مثال: COORD-BF-COL-MIM-2026",
+      "codeHint": "زوّدك منسقك أو مديرك بهذا الرمز.",
+      "displayNameLabel": "الاسم الكامل",
+      "displayNamePlaceholder": "كيف ستظهر على المنصة",
+      "emailLabel": "البريد الإلكتروني",
+      "passwordLabel": "كلمة المرور",
+      "passwordHint": "8 أحرف على الأقل",
+      "guardianEmailLabel": "بريد ولي الأمر",
+      "guardianEmailHint": "مطلوب للطلاب القاصرين",
+      "termsText": "بالتسجيل توافق على",
+      "termsLink": "الشروط والأحكام",
+      "termsAnd": "و",
+      "privacyLink": "سياسة الخصوصية",
+      "submitBtn": "إنشاء حساب",
+      "googleBtn": "التسجيل عبر Google",
+      "haveAccount": "لديك حساب بالفعل؟",
+      "loginLink": "تسجيل الدخول",
+      "error": {
+        "codeInvalid": "رمز الوصول غير صالح أو مستخدم بالفعل.",
+        "emailInUse": "يوجد حساب بهذا البريد الإلكتروني مسبقاً.",
+        "weakPassword": "يجب أن تتكوّن كلمة المرور من 8 أحرف على الأقل."
+      }
+    },
+
+    "forgotPassword": {
+      "title": "استعادة كلمة المرور",
+      "subtitle": "سنرسل لك رابطاً لإعادة تعيين كلمة مرورك.",
+      "emailLabel": "البريد الإلكتروني",
+      "submitBtn": "إرسال الرابط",
+      "successTitle": "تم إرسال البريد",
+      "successBody": "تحقق من صندوق الوارد. ينتهي صلاحية الرابط خلال ساعة واحدة.",
+      "backToLogin": "العودة إلى تسجيل الدخول"
+    }
+  },
+
+  "onboarding": {
+    "test": {
+      "title": "اكتشف ملف قيادتك",
+      "subtitle": "44 سؤالاً · ~10 دقائق",
+      "subtitleJunior": "20 سؤالاً · ~5 دقائق",
+      "instruction": "أشر إلى مدى موافقتك على كل عبارة.",
+      "scale": {
+        "1": "أرفض تماماً",
+        "2": "أرفض",
+        "3": "محايد",
+        "4": "أوافق",
+        "5": "أوافق تماماً"
+      },
+      "progress": "السؤال {current} من {total}",
+      "submitting": "جارٍ حساب ملفك الشخصي...",
+      "submitBtn": "عرض ملفي الشخصي"
+    },
+
+    "resultado": {
+      "eyebrow": "ملف قيادتك",
+      "title": "أنت {archetype}",
+      "pillarLabel": "الركيزة المهيمنة",
+      "traitLabel": "السمة الرئيسية",
+      "strengthsTitle": "نقاط قوتك",
+      "growthTitle": "مجالات النمو",
+      "ctaBtn": "الذهاب إلى لوحتي",
+      "savingProfile": "جارٍ حفظ ملفك الشخصي...",
+      "profileSaved": "تم حفظ الملف الشخصي"
+    }
+  },
+
+  "dashboard": {
+    "greeting": "مرحباً، {name}",
+    "greetingMorning": "صباح الخير، {name}",
+    "greetingAfternoon": "مساء الخير، {name}",
+    "greetingEvening": "مساء النور، {name}",
+
+    "identity": {
+      "track": {
+        "senior": "CEO Junior",
+        "junior": "CEO MiniJunior"
+      },
+      "archetype": "النموذج القيادي",
+      "viewPortfolio": "عرض محفظتي العامة",
+      "portfolioPrivate": "محفظتك خاصة",
+      "pillarsTitle": "ركائز قيادتك"
+    },
+
+    "kpis": {
+      "xpTotal": "مجموع XP",
+      "modulesCompleted": "الوحدات المُكتملة",
+      "currentStreak": "السلسلة الحالية",
+      "streakDays": "{days} أيام",
+      "network": "الشبكة",
+      "connections": "{count} اتصالات"
+    },
+
+    "modules": {
+      "title": "وحداتك",
+      "progress": "{completed} من {total} مكتملة",
+      "strengthBadge": "نقطة قوتك",
+      "growthBadge": "مجال أساسي",
+      "locked": "مقفل",
+      "available": "متاح",
+      "inProgress": "قيد التنفيذ",
+      "completed": "مكتمل",
+      "startBtn": "ابدأ",
+      "continueBtn": "متابعة",
+      "reviewBtn": "مراجعة",
+      "xpReward": "+{xp} XP عند الإكمال"
+    },
+
+    "capstone": {
+      "title": "مشروع الختام",
+      "subtitle": "IDEMR — مشروعك ذو الأثر الاجتماعي",
+      "phases": {
+        "identificar": "تحديد",
+        "disenar": "تصميم",
+        "ejecutar": "تنفيذ",
+        "medir": "قياس",
+        "reflexionar": "تأمل"
+      },
+      "status": {
+        "draft": "مسودة",
+        "pending": "قيد المراجعة",
+        "approved": "مقبول",
+        "rejected": "يتطلب تعديلات"
+      },
+      "editBtn": "تعديل المشروع",
+      "viewFeedback": "عرض التغذية الراجعة",
+      "submitBtn": "إرسال للمراجعة"
+    },
+
+    "greatVenture": {
+      "title": "The Great Venture",
+      "subtitle": "خارطة طريقك الاستراتيجية الشخصية",
+      "startBtn": "ابدأ مشروعي The Great Venture",
+      "viewMapBtn": "عرض الخريطة كاملة ←",
+      "status": {
+        "pending": "معلّق",
+        "inProgress": "قيد التنفيذ",
+        "complete": "مكتمل"
+      },
+      "steps": {
+        "metaNucleo": "الهدف المحوري",
+        "creencias": "المعتقدات التمكينية",
+        "paradigma": "النموذج الإيجابي",
+        "equipo": "فريق القوة",
+        "planes": "خطط العمل"
+      }
+    },
+
+    "leadershipPath": {
+      "title": "مسار القيادة",
+      "subtitle": "تقدمك في الركائز الخمس",
+      "pillars": {
+        "yo": "الذات",
+        "norte": "الاتجاه",
+        "vinculo": "الترابط",
+        "accion": "العمل",
+        "legado": "الإرث"
+      },
+      "levelLabel": "المستوى {level}",
+      "nextMilestone": "المعلم التالي"
+    },
+
+    "goals": {
+      "title": "الأهداف الشخصية",
+      "addGoal": "إضافة هدف",
+      "noGoals": "ليس لديك أهداف بعد. أنشئ أولها!",
+      "complete": "إكمال",
+      "completed": "تم تحقيق الهدف",
+      "xpEarned": "+{xp} XP مكتسبة"
+    },
+
+    "kashi": {
+      "title": "Kashi",
+      "subtitle": "الشبكة التعليمية — Wayuu: القمر",
+      "description": "شارك معرفتك وتعلم من طلاب حول العالم.",
+      "exploreBtn": "استكشاف Kashi",
+      "badge": "جديد",
+      "developer": "طوّره Luis Barrios"
+    },
+
+    "portfolio": {
+      "title": "محفظتي",
+      "viewPublic": "عرض المحفظة العامة",
+      "editPrivacy": "تعديل الخصوصية",
+      "sections": {
+        "identidad": "الهوية",
+        "certificacion": "الشهادة",
+        "capstone": "مشروع الختام",
+        "estadisticas": "الإحصاءات",
+        "greatVenture": "The Great Venture",
+        "universidades": "الجامعات",
+        "exportar": "تصدير"
+      },
+      "privacy": {
+        "public": "عامة",
+        "private": "خاصة",
+        "showCapstone": "عرض مشروع الختام",
+        "showGreatVenture": "عرض The Great Venture",
+        "showStats": "عرض الإحصاءات",
+        "showProfile": "عرض ملف القيادة"
+      },
+      "export": {
+        "btn": "تصدير PDF",
+        "format": "تنسيق Common App",
+        "exporting": "جارٍ إنشاء PDF..."
+      }
+    }
+  },
+
+  "modules": {
+    "videoSection": "فيديو الوحدة",
+    "quizSection": "الاختبار",
+    "quizAttempts": "المحاولة {current} من {max}",
+    "quizStart": "بدء الاختبار",
+    "quizSubmit": "إرسال الإجابات",
+    "quizScore": "حصلت على {score}%",
+    "quizPassed": "اجتزت الاختبار! +{xp} XP",
+    "quizFailed": "لم تجتز الاختبار هذه المرة.",
+    "quizRetryRequest": "طلب إعادة المحاولة",
+    "quizRetryRequested": "تم إرسال الطلب إلى المنسق",
+    "badgeEarned": "حصلت على شارة: {badge}!",
+    "tabSwitch": {
+      "warning": "غادرت علامة تبويب الاختبار.",
+      "count": "مغادرات مُكتشَفة: {count}/3",
+      "blocked": "تم حجب الاختبار بسبب مغادرات متكررة."
+    },
+    "personalization": {
+      "title": "نسختك الشخصية",
+      "intro": "مقدمة مُكيَّفة وفق ملفك الشخصي",
+      "reflections": "تأملات",
+      "deliverable": "المُخرَج",
+      "selfAssessment": "التقييم الذاتي",
+      "saveDeliverable": "حفظ المُخرَج",
+      "scale": {
+        "1": "أساسي",
+        "2": "في طور التطور",
+        "3": "كفؤ",
+        "4": "خبير"
+      },
+      "completeBtn": "إكمال التقييم الذاتي"
+    }
+  },
+
+  "coordinator": {
+    "nav": {
+      "dashboard": "لوحة القيادة",
+      "projects": "المشاريع",
+      "modules": "الوحدات",
+      "students": "الطلاب",
+      "announcements": "الإعلانات",
+      "calendar": "التقويم",
+      "feed": "الموجز",
+      "stories": "القصص",
+      "leadersGame": "Leader's Game",
+      "datos": "مركز البيانات",
+      "settings": "الإعدادات"
+    },
+
+    "projects": {
+      "title": "المشاريع",
+      "pending": "في انتظار المراجعة",
+      "all": "جميع المشاريع",
+      "evaluate": "تقييم",
+      "rubric": {
+        "title": "مقياس التقييم",
+        "bigLeaderModel": "Big Leader Model",
+        "scores": {
+          "1": "أساسي",
+          "2": "في طور التطور",
+          "3": "كفؤ",
+          "4": "متميز"
+        },
+        "submitEvaluation": "إرسال التقييم",
+        "outcomes": {
+          "certificate": "شهادة",
+          "honorMention": "ذكر شرفي",
+          "feedback": "تغذية راجعة",
+          "noCertificate": "بدون شهادة"
+        }
+      }
+    },
+
+    "announcements": {
+      "title": "الإعلانات",
+      "create": "إنشاء إعلان",
+      "categories": {
+        "operative": "تشغيلي",
+        "motivational": "تحفيزي",
+        "event": "فعالية",
+        "achievement": "إنجاز"
+      },
+      "scope": {
+        "global": "جميع المدارس",
+        "school": "مدرستي"
+      },
+      "expiresLabel": "تنتهي صلاحيته في"
+    },
+
+    "quizRetries": {
+      "title": "طلبات إعادة المحاولة",
+      "approve": "الموافقة على إعادة المحاولة",
+      "deny": "الرفض",
+      "approved": "تمت الموافقة على إعادة المحاولة",
+      "denied": "تم رفض الطلب"
+    },
+
+    "datos": {
+      "title": "مركز البيانات",
+      "tabs": {
+        "resumen": "ملخص",
+        "constructor": "منشئ",
+        "insights": "IA Insights"
+      },
+      "insights": {
+        "placeholder": "اطرح سؤالاً عن بيانات مدرستك...",
+        "analyzing": "جارٍ تحليل البيانات...",
+        "rateLimitWarning": "الحد الأقصى 10 أسئلة لكل جلسة"
+      }
+    }
+  },
+
+  "admin": {
+    "nav": {
+      "dashboard": "لوحة القيادة",
+      "users": "المستخدمون",
+      "projects": "المشاريع",
+      "modules": "الوحدات",
+      "schools": "المدارس",
+      "datos": "مركز البيانات"
+    },
+    "confirmEvaluation": "تأكيد التقييم",
+    "secondReview": "المراجعة الثانية"
+  },
+
+  "expositor": {
+    "nav": {
+      "dashboard": "لوحة القيادة",
+      "modules": "وحداتي",
+      "create": "إنشاء وحدة"
+    },
+    "moduleStatus": {
+      "draft": "مسودة",
+      "pending": "قيد المراجعة",
+      "published": "منشور",
+      "rejected": "مرفوض"
+    },
+    "submitForReview": "إرسال للمراجعة",
+    "editModule": "تعديل الوحدة"
+  },
+
+  "notifications": {
+    "title": "الإشعارات",
+    "markAllRead": "وضع علامة مقروء على الكل",
+    "noNotifications": "ليس لديك إشعارات جديدة",
+    "groups": {
+      "today": "اليوم",
+      "yesterday": "أمس",
+      "thisWeek": "هذا الأسبوع",
+      "earlier": "سابقاً"
+    },
+    "types": {
+      "announcement": "إعلان",
+      "projectEvaluated": "تم تقييم المشروع",
+      "modulePublished": "تم نشر الوحدة",
+      "badgeEarned": "تم الحصول على شارة",
+      "quizRetry": "تمت الموافقة على إعادة المحاولة",
+      "system": "النظام"
+    }
+  },
+
+  "certification": {
+    "title": "شهادة القيادة",
+    "subtitle": "The Big Family Program",
+    "certifiedText": "لإتمامه بنجاح برنامج التدريب على القيادة التحويلية",
+    "issuedBy": "صادرة عن",
+    "issuedDate": "تاريخ الإصدار",
+    "certNumber": "رقم الشهادة",
+    "archetype": "نموذج القائد",
+    "verifyText": "التحقق من الأصالة",
+    "verifyUrl": "big-family-nu.vercel.app/verify",
+    "downloadBtn": "تنزيل PDF",
+    "printBtn": "طباعة",
+    "shareBtn": "مشاركة",
+    "confetti": "مبروك!"
+  },
+
+  "verify": {
+    "eyebrow": "التحقق من الدبلوم",
+    "title": "التحقق من الشهادة",
+    "subtitle": "نظام التحقق الرسمي — The Big Family Program",
+    "valid": {
+      "badge": "شهادة صالحة",
+      "title": "تم التحقق من الدبلوم",
+      "body": "صدرت هذه الشهادة رسمياً عن The Big Family Program."
+    },
+    "invalid": {
+      "badge": "غير موجود",
+      "title": "الشهادة غير موجودة",
+      "body": "لم نتمكن من العثور على شهادة بهذا المعرّف. تأكد من صحة الرابط أو الرمز."
+    },
+    "fields": {
+      "student": "الطالب",
+      "school": "المؤسسة",
+      "date": "تاريخ الإصدار",
+      "certId": "معرّف الشهادة",
+      "archetype": "النموذج القيادي"
+    },
+    "verifiedAt": "تم التحقق في {date}",
+    "legalNote": "هذه الوثيقة صادرة عن The Big Family Program. للاستفسارات، تواصل مع luis.barrios@colegioalbania.edu.co"
+  },
+
+  "portfolio": {
+    "publicBadge": "محفظة عامة",
+    "sections": {
+      "identity": "الهوية",
+      "certification": "الشهادة",
+      "capstone": "مشروع الختام",
+      "stats": "الإحصاءات",
+      "greatVenture": "The Great Venture",
+      "universities": "الجامعات"
+    },
+    "stats": {
+      "xp": "مجموع XP",
+      "modules": "الوحدات",
+      "streak": "السلسلة",
+      "rank": "الترتيب"
+    },
+    "capstone": {
+      "phases": "المراحل المُكتملة",
+      "viewProject": "عرض المشروع كاملاً"
+    },
+    "universities": {
+      "title": "الجامعات المتوافقة",
+      "subtitle": "ملفك يلبي متطلبات هذه المؤسسات",
+      "international": "دولية",
+      "colombian": "كولومبية"
+    },
+    "export": {
+      "btn": "تصدير PDF",
+      "format": "تنسيق Common App",
+      "share": "مشاركة المحفظة"
+    }
+  },
+
+  "news": {
+    "title": "الأخبار",
+    "subtitle": "مستجدات البرنامج",
+    "readMore": "اقرأ المزيد",
+    "readTime": "{minutes} دقائق قراءة",
+    "publishedAt": "نُشر في {date}",
+    "markRead": "وضع علامة مقروء",
+    "read": "مقروء",
+    "share": "مشاركة",
+    "noArticles": "لم تُنشر أي مقالات بعد."
+  },
+
+  "timeline": {
+    "title": "تاريخنا",
+    "subtitle": "مسيرة البرنامج منذ عام 2015",
+    "noEvents": "لا توجد أحداث في الجدول الزمني."
+  },
+
+  "successStories": {
+    "title": "قصص النجاح",
+    "subtitle": "قادة يُحوّلون بيئتهم",
+    "nominateBtn": "ترشيح قائد",
+    "readStory": "اقرأ القصة",
+    "noStories": "لم تُنشر أي قصص بعد."
+  },
+
+  "calendar": {
+    "title": "التقويم",
+    "createEvent": "إنشاء فعالية",
+    "eventFields": {
+      "title": "عنوان الفعالية",
+      "description": "الوصف",
+      "date": "التاريخ",
+      "location": "الموقع",
+      "link": "الرابط (اختياري)"
+    },
+    "noEvents": "لا توجد فعاليات هذا الشهر.",
+    "months": {
+      "1": "يناير", "2": "فبراير", "3": "مارس", "4": "أبريل",
+      "5": "مايو", "6": "يونيو", "7": "يوليو", "8": "أغسطس",
+      "9": "سبتمبر", "10": "أكتوبر", "11": "نوفمبر", "12": "ديسمبر"
+    },
+    "days": {
+      "short": ["أح", "إث", "ثل", "أر", "خم", "جم", "سب"],
+      "long": ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"]
+    }
+  },
+
+  "teamHub": {
+    "title": "Team Hub",
+    "chat": "دردشة الفريق",
+    "ranking": "الترتيب",
+    "messagePlaceholder": "اكتب رسالة...",
+    "send": "إرسال",
+    "rankingStudents": "أفضل الطلاب",
+    "rankingSchools": "أفضل المدارس"
+  },
+
+  "settings": {
+    "title": "الإعدادات",
+    "sections": {
+      "profile": "الملف الشخصي",
+      "account": "الحساب",
+      "portfolio": "المحفظة",
+      "notifications": "الإشعارات",
+      "security": "الأمان",
+      "danger": "منطقة الخطر"
+    },
+    "profile": {
+      "displayName": "اسم العرض",
+      "avatar": "الصورة الشخصية",
+      "changeAvatar": "تغيير الصورة",
+      "bio": "السيرة الذاتية"
+    },
+    "portfolio": {
+      "urlLabel": "رابط محفظتك",
+      "copyLink": "نسخ الرابط",
+      "viewPortfolio": "عرض المحفظة",
+      "toggles": {
+        "public": "محفظة عامة",
+        "showCapstone": "عرض مشروع الختام",
+        "showGreatVenture": "عرض The Great Venture",
+        "showStats": "عرض الإحصاءات",
+        "showProfile": "عرض ملف القيادة"
+      }
+    },
+    "security": {
+      "changePassword": "تغيير كلمة المرور",
+      "currentPassword": "كلمة المرور الحالية",
+      "newPassword": "كلمة المرور الجديدة",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "updatePassword": "تحديث كلمة المرور"
+    },
+    "danger": {
+      "deleteAccount": "حذف الحساب",
+      "deleteWarning": "هذا الإجراء دائم ولا رجعة فيه. سيتم حذف جميع بياناتك.",
+      "deleteConfirmPlaceholder": "اكتب حذف للتأكيد",
+      "deleteConfirmWord": "حذف",
+      "deleteBtn": "حذف حسابي نهائياً"
+    }
+  },
+
+  "diploma": {
+    "loading": "جارٍ تحضير دبلومك...",
+    "confetti": "مبروك!",
+    "shareTitle": "مشاركة الدبلوم",
+    "downloadBtn": "تنزيل PDF",
+    "verifyBtn": "التحقق من الأصالة"
+  },
+
+  "errors": {
+    "404": {
+      "title": "الصفحة غير موجودة",
+      "body": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+      "btn": "العودة إلى الرئيسية"
+    },
+    "401": {
+      "title": "وصول مرفوض",
+      "body": "ليس لديك إذن بعرض هذه الصفحة.",
+      "btn": "تسجيل الدخول"
+    },
+    "500": {
+      "title": "خطأ في الخادم",
+      "body": "حدث خطأ ما. نحن نعمل على إصلاحه.",
+      "btn": "إعادة المحاولة"
+    },
+    "offline": {
+      "title": "لا يوجد اتصال",
+      "body": "تحقق من اتصالك بالإنترنت وحاول مجدداً.",
+      "btn": "إعادة المحاولة"
+    }
+  },
+
+  "footer": {
+    "tagline": "تنشئة قادة بهدف عالمي ومبتكر",
+    "location": "لا غواخيرا، كولومبيا",
+    "links": {
+      "noticias": "الأخبار",
+      "timeline": "التاريخ",
+      "verify": "التحقق من الدبلوم",
+      "login": "تسجيل الدخول"
+    },
+    "legal": {
+      "privacy": "سياسة الخصوصية",
+      "terms": "الشروط والأحكام"
+    },
+    "copyright": "© {year} The Big Family Program. جميع الحقوق محفوظة."
+  }
+}

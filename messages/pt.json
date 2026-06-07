@@ -1,1 +1,995 @@
-{}
+{
+  "_meta": {
+    "lang": "pt",
+    "dir": "ltr",
+    "version": "1.0.0",
+    "lastUpdated": "2026-06",
+    "translators": {
+      "en": "",
+      "fr": "",
+      "pt": "",
+      "ar": ""
+    }
+  },
+
+  "common": {
+    "appName": "Big Family",
+    "tagline": "Formando líderes com propósito global e inovador",
+    "loading": "Carregando...",
+    "error": "Algo deu errado. Tente novamente.",
+    "retry": "Tentar novamente",
+    "save": "Salvar",
+    "saving": "Salvando...",
+    "saved": "Salvo",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "view": "Ver",
+    "close": "Fechar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "download": "Baixar",
+    "share": "Compartilhar",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "print": "Imprimir",
+    "logout": "Sair",
+    "settings": "Configurações",
+    "profile": "Perfil",
+    "notifications": "Notificações",
+    "noResults": "Sem resultados",
+    "noData": "Sem dados para este período",
+    "optional": "Opcional",
+    "required": "Obrigatório",
+    "seeAll": "Ver tudo",
+    "seeMore": "Ver mais",
+    "seeLess": "Ver menos",
+    "learnMore": "Saiba mais",
+    "getStarted": "Começar",
+    "comingSoon": "Em breve"
+  },
+
+  "nav": {
+    "historia": "História",
+    "metodologia": "Metodologia",
+    "impacto": "Impacto",
+    "nuestraRed": "Nossa Rede",
+    "equipo": "Equipe",
+    "noticias": "Notícias",
+    "ingresar": "Entrar",
+    "menuOpen": "Abrir menu",
+    "menuClose": "Fechar menu"
+  },
+
+  "landing": {
+    "hero": {
+      "eyebrow": "Programa de Liderança Jovem · La Guajira, Colômbia",
+      "title": "Formando líderes",
+      "titleAccent": "com propósito global",
+      "subtitle": "Desenvolvemos as habilidades de liderança de estudantes do terceiro ao décimo primeiro ano, preparando-os para transformar seu entorno com inovação, ética e visão internacional.",
+      "cta": "Conheça o programa",
+      "ctaSecondary": "Entrar na plataforma"
+    },
+
+    "mision": {
+      "eyebrow": "Missão",
+      "title": "Por que existimos",
+      "body": "Promover nos estudantes o desenvolvimento contínuo de habilidades de liderança e fortalecer seus talentos, preparando-os para alcançar uma melhor atitude, aptidão (excelência acadêmica) e um papel global na sociedade; guiados pelo empreendedorismo, inovação, consciência social e respeito pelo meio ambiente.",
+      "focus": "Foco",
+      "focusValues": "Liderança transformacional · Consciência social · Criatividade · Inovação"
+    },
+
+    "vision": {
+      "eyebrow": "Visão",
+      "title": "Para onde vamos",
+      "body": "Até 2030, o programa Big Family será reconhecido nacional e internacionalmente como uma iniciativa inovadora através da qual os estudantes participantes potencializam sua liderança dentro de um marco de excelência educacional, valores e princípios.",
+      "meta": "2030"
+    },
+
+    "historia": {
+      "eyebrow": "Nossa História",
+      "title": "Desde 2015",
+      "body": "O programa Big Family começou em agosto de 2015 com 15 estudantes do segundo, terceiro e quarto ano do ensino fundamental. Hoje conta com 98 participantes ativos. É um programa contínuo no qual os estudantes recebem formação e executam ações a cada ano.",
+      "watermark": "2015",
+      "stat1Label": "Ano de fundação",
+      "stat1Value": "2015",
+      "stat2Label": "Estudantes ativos",
+      "stat2Value": "98",
+      "stat3Label": "Egressos reconhecidos",
+      "stat3Value": "23"
+    },
+
+    "impacto": {
+      "eyebrow": "Impacto em Números",
+      "title": "O alcance do programa",
+      "stat1Value": "876",
+      "stat1Label": "Estudantes formados",
+      "stat2Value": "22",
+      "stat2Label": "Escolas na Colômbia",
+      "stat3Value": "10",
+      "stat3Label": "Países da rede",
+      "stat4Value": "3.300",
+      "stat4Label": "Meta 2030"
+    },
+
+    "metodologia": {
+      "eyebrow": "Metodologia",
+      "title": "Como formamos líderes",
+      "subtitle": "Quatro componentes integrados que desenvolvem a liderança de dentro para fora.",
+      "hoursLabel": "40 horas anuais em formato extracurricular",
+      "formatLabel": "Presencial · Virtual · Assíncrono",
+      "gradesLabel": "Do 3° ao 11° ano",
+
+      "bigLeader": {
+        "number": "01",
+        "title": "The Big Leader",
+        "subtitle": "Perfil de liderança personalizado",
+        "body": "Formação personalizada adaptada a cada estudante, focada em habilidades intrapessoais e interpessoais. Inclui sessões de coaching que guiam os estudantes em direção aos seus projetos de vida.",
+        "badge": "Big Five · 44 perguntas"
+      },
+      "leadersGame": {
+        "number": "02",
+        "title": "The Leader's Game",
+        "subtitle": "Aprendizagem baseada em desafios",
+        "body": "Jogo de desafios por estações onde as equipes acumulam pontos por respostas corretas. Ao identificar os pontos fortes e áreas de crescimento de cada participante, é possível projetar oficinas específicas de maior intensidade.",
+        "badge": "Gamificação · Trabalho em equipe"
+      },
+      "greatVenture": {
+        "number": "03",
+        "title": "The Great Venture",
+        "subtitle": "Mapa estratégico pessoal",
+        "body": "Uma aplicação com um algoritmo que ajuda os estudantes a definir sua direção e prioridades para alcançar sua grande empresa como empreendedores globais inovadores. Os guia na seleção de seu objetivo central, crenças empoderadoras, paradigma apreciativo, equipe de poder e planos de ação, usando a matriz Hoshin Kanri.",
+        "badge": "Hoshin Kanri · Estratégia"
+      },
+      "kashi": {
+        "number": "04",
+        "title": "Kashi",
+        "subtitle": "Rede social educativa",
+        "body": "Kashi é uma palavra Wayuu que significa \"lua\". Esta iniciativa surgiu do Dia de Liderança Escolar, quando os estudantes tiveram a oportunidade de atuar como professores, administradores e facilitadores. Seus pontos fortes em áreas específicas são compartilhados com colegas que desejam aprender sobre um tema.",
+        "badge": "Wayuu · Rede educativa",
+        "exploreBtn": "Explorar Kashi →"
+      }
+    },
+
+    "aprendizaje": {
+      "eyebrow": "Aprendizagem Personalizada",
+      "title": "Seu perfil de líder",
+      "subtitle": "O programa adapta cada experiência ao seu arquétipo único de liderança.",
+      "step1Title": "Descubra seu perfil",
+      "step1Body": "Você completa o teste Big Five (BFI-44) ao ingressar no programa. 44 perguntas calibradas cientificamente.",
+      "step2Title": "Receba seu mapa",
+      "step2Body": "O algoritmo gera seu pentágono de liderança e o posiciona em um dos 5 arquétipos do Big Leader Model.",
+      "step3Title": "Aprenda diferente",
+      "step3Body": "Os módulos, reflexões e seu Great Venture são personalizados de acordo com seus pontos fortes e áreas de crescimento.",
+
+      "archetypes": {
+        "visionario": {
+          "name": "O Visionário",
+          "pillar": "Norte",
+          "trait": "Abertura à experiência",
+          "strengths": ["Pensamento estratégico", "Criatividade", "Visão de longo prazo"],
+          "growth": ["Execução", "Atenção aos detalhes"],
+          "description": "Você vê padrões onde outros veem caos. Sua mente conecta ideias distantes e constrói futuros que ainda não existem. O programa fornece as ferramentas para concretizar essa visão em projetos tangíveis.",
+          "modules": ["Liderança em Inovação", "The Great Venture", "Design Thinking"],
+          "example": "Você projeta um projeto de empreendedorismo social que conecta sua escola com parceiros em 3 países."
+        },
+        "conector": {
+          "name": "O Conector",
+          "pillar": "Vínculo",
+          "trait": "Amabilidade",
+          "strengths": ["Empatia", "Trabalho em equipe", "Comunicação"],
+          "growth": ["Assertividade", "Tomada de decisão"],
+          "description": "Você constrói pontes entre pessoas. Sabe ler o ambiente, mediar conflitos e fazer com que cada voz conte. Sua liderança multiplica o potencial da equipe.",
+          "modules": ["Comunicação Eficaz", "Kashi", "Liderança Colaborativa"],
+          "example": "Você lidera a equipe da sua escola no encontro interinstitucional e garante que todos participem."
+        },
+        "ejecutor": {
+          "name": "O Executor",
+          "pillar": "Ação",
+          "trait": "Conscienciosidade",
+          "strengths": ["Disciplina", "Organização", "Responsabilidade"],
+          "growth": ["Flexibilidade", "Delegação"],
+          "description": "Você transforma planos em realidade. Onde outros veem obstáculos, você vê etapas. Sua consistência e rigor são o motor que faz os projetos chegarem à meta.",
+          "modules": ["Gestão de Projetos", "The Leader's Game", "Hoshin Kanri"],
+          "example": "Você executa seu capstone IDEMR com um plano detalhado, cumpre todas as etapas e apresenta resultados mensuráveis."
+        },
+        "catalizador": {
+          "name": "O Catalisador",
+          "pillar": "Legado",
+          "trait": "Extroversão",
+          "strengths": ["Energia", "Influência", "Motivação"],
+          "growth": ["Escuta ativa", "Paciência"],
+          "description": "Sua energia é contagiante. Você inspira outras pessoas a se mover, a ousar, a acreditar. O programa canaliza essa força para um impacto duradouro na sua comunidade.",
+          "modules": ["Oratória e Persuasão", "Liderança Social", "Alumni Network"],
+          "example": "Você organiza o Dia de Liderança na sua escola e reúne 200 estudantes de 5 instituições."
+        },
+        "guardian": {
+          "name": "O Guardião",
+          "pillar": "Eu",
+          "trait": "Estabilidade emocional",
+          "strengths": ["Resiliência", "Integridade", "Confiabilidade"],
+          "growth": ["Adaptabilidade", "Iniciativa"],
+          "description": "Você é a âncora da equipe. Sua presença cria segurança psicológica para que outros se arrisquem. O programa desenvolve sua capacidade de liderar através da consistência e dos valores.",
+          "modules": ["Inteligência Emocional", "Ética do Líder", "Big Leader Model"],
+          "example": "Você é a referência de integridade na sua escola — coordenadores e colegas confiam no seu julgamento."
+        }
+      }
+    },
+
+    "valores": {
+      "eyebrow": "Nossos Valores",
+      "title": "O que nos guia",
+      "etica": {
+        "title": "Ética",
+        "body": "Agimos com integridade em cada decisão, construindo confiança de dentro para fora."
+      },
+      "compromiso": {
+        "title": "Compromisso",
+        "body": "Cumprimos o que prometemos e damos o melhor de nós em cada ação."
+      },
+      "trascendencia": {
+        "title": "Transcendência",
+        "body": "Buscamos deixar uma marca positiva além da nossa geração."
+      },
+      "concienciaSocial": {
+        "title": "Consciência Social",
+        "body": "Reconhecemos nosso impacto na comunidade e agimos com responsabilidade."
+      },
+      "innovacion": {
+        "title": "Inovação",
+        "body": "Buscamos soluções criativas para os desafios do nosso entorno."
+      },
+      "creatividad": {
+        "title": "Criatividade",
+        "body": "Exploramos novas formas de pensar e fazer para gerar valor único."
+      }
+    },
+
+    "alumni": {
+      "eyebrow": "Alumni",
+      "title": "Líderes que já deixaram sua marca",
+      "subtitle": "Egressos do programa que hoje lideram em universidades e organizações do mundo.",
+      "card1Role": "Presidente · Modelo de Nações Unidas",
+      "card2Role": "Estudante · ESADE University, Barcelona",
+      "card2Program": "Bacharelado em Liderança Transformacional e Impacto Social",
+      "card3Role": "Vice-Presidente de Estudantes Latinos · Concordia University, Canadá"
+    },
+
+    "acreditaciones": {
+      "eyebrow": "Validação Internacional",
+      "title": "Reconhecido pelas melhores organizações educacionais do mundo",
+      "cognia": {
+        "name": "Cognia",
+        "formerly": "formerly AdvancED",
+        "description": "Reconheceu o programa como inovador e socialmente relevante durante sua visita de acreditação."
+      },
+      "ib": {
+        "name": "IB Americas Conference",
+        "location": "Orlando, Flórida",
+        "description": "O programa foi apresentado à comunidade educacional internacional do Bacharelado Internacional."
+      },
+      "triAssociation": {
+        "name": "Tri-Association",
+        "fullName": "Association of American Schools",
+        "description": "Destacou a importância do programa em 2024 e o selecionou para participar do evento TRIHEROES em maio de 2025."
+      },
+      "iberoamericano": {
+        "name": "Congreso Iberoamericano",
+        "location": "Madri, Espanha",
+        "achievement": "3º lugar",
+        "description": "A proposta 'Como alcançar um processo bem-sucedido de desenvolvimento de liderança nas escolas' obteve o terceiro lugar."
+      }
+    },
+
+    "fundador": {
+      "eyebrow": "O Fundador",
+      "title": "Luis Hernando Barrios",
+      "role": "Coordenador de Ação Social e Aprendizagem",
+      "subtitle": "Fundador, The Big Family Program",
+      "bio": "Educador com mais de uma década formando líderes em La Guajira. Sua visão de uma liderança transformacional com propósito global levou o programa a ser reconhecido em 10 países.",
+      "education": {
+        "label": "Formação",
+        "degree1": "M.S. Estudos Multidisciplinares — University at Buffalo",
+        "degree2": "Liderança, Criatividade, Inovação e Empreendedorismo — Javeriana, MIT, Uninorte, Unisabana"
+      },
+      "contact": {
+        "email": "luis.barrios@colegioalbania.edu.co",
+        "phone": "(+57) 310 848 6706"
+      },
+      "quote": "Deixando pegadas com propósito social."
+    },
+
+    "red": {
+      "eyebrow": "Nossa Rede Global",
+      "title": "A Colômbia no centro do mundo",
+      "subtitle": "Parcerias ativas com instituições em 10 países que ampliam o horizonte dos nossos estudantes.",
+      "colombia": {
+        "label": "Colômbia",
+        "detail": "8 escolas ativas em La Guajira"
+      },
+      "modalTitle": "Parceria em",
+      "modalClose": "Fechar",
+      "countries": {
+        "espana": {
+          "name": "Espanha",
+          "achievement": "Congreso Iberoamericano — 3º lugar em Madri"
+        },
+        "eeuu": {
+          "name": "Estados Unidos",
+          "achievement": "IB Americas Conference — Orlando"
+        },
+        "canada": {
+          "name": "Canadá",
+          "achievement": "Concordia University — Vice-Presidente Latino"
+        },
+        "mexico": { "name": "México" },
+        "venezuela": { "name": "Venezuela" },
+        "brasil": { "name": "Brasil" },
+        "argentina": { "name": "Argentina" },
+        "francia": { "name": "França" },
+        "guatemala": { "name": "Guatemala" },
+        "india": { "name": "Índia" }
+      }
+    },
+
+    "equipo": {
+      "eyebrow": "Equipe de Formação",
+      "title": "Quem forma nossos líderes",
+      "body": "A equipe de formação é composta por facilitadores voluntários especializados em diversas áreas: pais da comunidade escolar, docentes, egressos, funcionários e executivos corporativos, formadores independentes, professores universitários e representantes de fundações.",
+      "roles": {
+        "padres": "Pais de família",
+        "docentes": "Professores",
+        "egresados": "Egressos do programa",
+        "corporativos": "Executivos corporativos",
+        "universitarios": "Professores universitários",
+        "fundaciones": "Representantes de fundações"
+      }
+    },
+
+    "testimonial": {
+      "eyebrow": "Depoimento",
+      "quote": "Muito obrigado, senhor Barrios, por proporcionar esta oportunidade aos nossos estudantes. Eles aproveitaram imensamente a possibilidade de interagir com estudantes de todo o mundo, e seus comentários foram excelentes. Esperamos que possam incorporar as lições aprendidas para se tornarem líderes transformacionais.",
+      "author": "Jonathan Smith",
+      "role": "Professor visitante",
+      "institution": "Colegio Bilingüe de Santa Marta",
+      "event": "Oficina Internacional — Maio 2022"
+    },
+
+    "colegios": {
+      "eyebrow": "Escolas participantes",
+      "title": "8 instituições em La Guajira",
+      "schools": {
+        "mariaInmaculada": "IE Técnica María Inmaculada",
+        "pedagogico": "Instituto Pedagógico",
+        "comfamiliar": "IE Comfamiliar",
+        "wareWaren": "Centro Etnoeducativo Ware Waren",
+        "pauloVI": "IE Paulo VI",
+        "caminoFuturo": "IE Camino al Futuro",
+        "colombiaMia": "IE Colombia Mía",
+        "elCarmelo": "IE El Carmelo"
+      }
+    }
+  },
+
+  "auth": {
+    "login": {
+      "title": "Entrar no Big Family",
+      "subtitle": "Sua plataforma de liderança",
+      "emailLabel": "Endereço de e-mail",
+      "emailPlaceholder": "voce@email.com",
+      "passwordLabel": "Senha",
+      "passwordPlaceholder": "Sua senha",
+      "submitBtn": "Entrar",
+      "googleBtn": "Continuar com Google",
+      "forgotPassword": "Esqueceu sua senha?",
+      "noAccount": "Não tem uma conta?",
+      "register": "Cadastre-se aqui",
+      "error": {
+        "invalidCredentials": "E-mail ou senha incorretos.",
+        "emailNotFound": "Não encontramos uma conta com esse e-mail.",
+        "tooManyAttempts": "Muitas tentativas. Aguarde alguns minutos."
+      }
+    },
+
+    "register": {
+      "title": "Criar conta",
+      "subtitle": "Junte-se ao programa Big Family",
+      "codeLabel": "Código de acesso",
+      "codePlaceholder": "Ex: COORD-BF-COL-MIM-2026",
+      "codeHint": "Seu coordenador ou administrador forneceu este código.",
+      "displayNameLabel": "Nome completo",
+      "displayNamePlaceholder": "Como você aparecerá na plataforma",
+      "emailLabel": "Endereço de e-mail",
+      "passwordLabel": "Senha",
+      "passwordHint": "Mínimo 8 caracteres",
+      "guardianEmailLabel": "E-mail do responsável",
+      "guardianEmailHint": "Obrigatório para estudantes menores de idade",
+      "termsText": "Ao se cadastrar, você aceita os",
+      "termsLink": "termos e condições",
+      "termsAnd": "e a",
+      "privacyLink": "política de privacidade",
+      "submitBtn": "Criar conta",
+      "googleBtn": "Cadastrar com Google",
+      "haveAccount": "Já tem uma conta?",
+      "loginLink": "Entrar",
+      "error": {
+        "codeInvalid": "Código de acesso inválido ou já utilizado.",
+        "emailInUse": "Já existe uma conta com esse e-mail.",
+        "weakPassword": "A senha deve ter pelo menos 8 caracteres."
+      }
+    },
+
+    "forgotPassword": {
+      "title": "Recuperar senha",
+      "subtitle": "Enviaremos um link para redefinir sua senha.",
+      "emailLabel": "Endereço de e-mail",
+      "submitBtn": "Enviar link",
+      "successTitle": "E-mail enviado",
+      "successBody": "Verifique sua caixa de entrada. O link expira em 1 hora.",
+      "backToLogin": "Voltar ao login"
+    }
+  },
+
+  "onboarding": {
+    "test": {
+      "title": "Descubra seu perfil de líder",
+      "subtitle": "44 perguntas · ~10 minutos",
+      "subtitleJunior": "20 perguntas · ~5 minutos",
+      "instruction": "Indique o quanto você concorda com cada afirmação.",
+      "scale": {
+        "1": "Discordo totalmente",
+        "2": "Discordo",
+        "3": "Neutro",
+        "4": "Concordo",
+        "5": "Concordo totalmente"
+      },
+      "progress": "Pergunta {current} de {total}",
+      "submitting": "Calculando seu perfil...",
+      "submitBtn": "Ver meu perfil"
+    },
+
+    "resultado": {
+      "eyebrow": "Seu perfil de líder",
+      "title": "Você é {archetype}",
+      "pillarLabel": "Pilar dominante",
+      "traitLabel": "Traço principal",
+      "strengthsTitle": "Seus pontos fortes",
+      "growthTitle": "Áreas de crescimento",
+      "ctaBtn": "Ir para meu painel",
+      "savingProfile": "Salvando seu perfil...",
+      "profileSaved": "Perfil salvo"
+    }
+  },
+
+  "dashboard": {
+    "greeting": "Olá, {name}",
+    "greetingMorning": "Bom dia, {name}",
+    "greetingAfternoon": "Boa tarde, {name}",
+    "greetingEvening": "Boa noite, {name}",
+
+    "identity": {
+      "track": {
+        "senior": "CEO Junior",
+        "junior": "CEO MiniJunior"
+      },
+      "archetype": "Arquétipo",
+      "viewPortfolio": "Ver meu portfólio público",
+      "portfolioPrivate": "Seu portfólio é privado",
+      "pillarsTitle": "Seus pilares de liderança"
+    },
+
+    "kpis": {
+      "xpTotal": "XP Total",
+      "modulesCompleted": "Módulos concluídos",
+      "currentStreak": "Sequência atual",
+      "streakDays": "{days} dias",
+      "network": "Rede",
+      "connections": "{count} conexões"
+    },
+
+    "modules": {
+      "title": "Seus módulos",
+      "progress": "{completed} de {total} concluídos",
+      "strengthBadge": "Seu ponto forte",
+      "growthBadge": "Área-chave",
+      "locked": "Bloqueado",
+      "available": "Disponível",
+      "inProgress": "Em progresso",
+      "completed": "Concluído",
+      "startBtn": "Começar",
+      "continueBtn": "Continuar",
+      "reviewBtn": "Revisar",
+      "xpReward": "+{xp} XP ao concluir"
+    },
+
+    "capstone": {
+      "title": "Projeto Capstone",
+      "subtitle": "IDEMR — Seu projeto de impacto social",
+      "phases": {
+        "identificar": "Identificar",
+        "disenar": "Projetar",
+        "ejecutar": "Executar",
+        "medir": "Medir",
+        "reflexionar": "Refletir"
+      },
+      "status": {
+        "draft": "Rascunho",
+        "pending": "Em revisão",
+        "approved": "Aprovado",
+        "rejected": "Requer alterações"
+      },
+      "editBtn": "Editar projeto",
+      "viewFeedback": "Ver feedback",
+      "submitBtn": "Enviar para revisão"
+    },
+
+    "greatVenture": {
+      "title": "The Great Venture",
+      "subtitle": "Seu mapa estratégico pessoal",
+      "startBtn": "Começar meu Great Venture",
+      "viewMapBtn": "Ver mapa completo →",
+      "status": {
+        "pending": "Pendente",
+        "inProgress": "Em progresso",
+        "complete": "Completo"
+      },
+      "steps": {
+        "metaNucleo": "Objetivo central",
+        "creencias": "Crenças empoderadoras",
+        "paradigma": "Paradigma apreciativo",
+        "equipo": "Equipe de poder",
+        "planes": "Planos de ação"
+      }
+    },
+
+    "leadershipPath": {
+      "title": "Caminho de Liderança",
+      "subtitle": "Seu progresso nos 5 pilares",
+      "pillars": {
+        "yo": "Eu",
+        "norte": "Norte",
+        "vinculo": "Vínculo",
+        "accion": "Ação",
+        "legado": "Legado"
+      },
+      "levelLabel": "Nível {level}",
+      "nextMilestone": "Próximo marco"
+    },
+
+    "goals": {
+      "title": "Metas Pessoais",
+      "addGoal": "Adicionar meta",
+      "noGoals": "Você ainda não tem metas. Crie a primeira!",
+      "complete": "Completar",
+      "completed": "Meta concluída",
+      "xpEarned": "+{xp} XP ganhos"
+    },
+
+    "kashi": {
+      "title": "Kashi",
+      "subtitle": "Rede educativa — Wayuu: lua",
+      "description": "Compartilhe seus conhecimentos e aprenda com estudantes de todo o mundo.",
+      "exploreBtn": "Explorar Kashi",
+      "badge": "Novo",
+      "developer": "Desenvolvido por Luis Barrios"
+    },
+
+    "portfolio": {
+      "title": "Meu Portfólio",
+      "viewPublic": "Ver portfólio público",
+      "editPrivacy": "Editar privacidade",
+      "sections": {
+        "identidad": "Identidade",
+        "certificacion": "Certificação",
+        "capstone": "Capstone",
+        "estadisticas": "Estatísticas",
+        "greatVenture": "Great Venture",
+        "universidades": "Universidades",
+        "exportar": "Exportar"
+      },
+      "privacy": {
+        "public": "Público",
+        "private": "Privado",
+        "showCapstone": "Mostrar capstone",
+        "showGreatVenture": "Mostrar Great Venture",
+        "showStats": "Mostrar estatísticas",
+        "showProfile": "Mostrar perfil de líder"
+      },
+      "export": {
+        "btn": "Exportar PDF",
+        "format": "Formato Common App",
+        "exporting": "Gerando PDF..."
+      }
+    }
+  },
+
+  "modules": {
+    "videoSection": "Vídeo do módulo",
+    "quizSection": "Quiz",
+    "quizAttempts": "Tentativa {current} de {max}",
+    "quizStart": "Começar quiz",
+    "quizSubmit": "Enviar respostas",
+    "quizScore": "Você obteve {score}%",
+    "quizPassed": "Você passou! +{xp} XP",
+    "quizFailed": "Você não passou desta vez.",
+    "quizRetryRequest": "Solicitar nova tentativa",
+    "quizRetryRequested": "Solicitação enviada ao coordenador",
+    "badgeEarned": "Distintivo obtido: {badge}!",
+    "tabSwitch": {
+      "warning": "Você saiu da aba do quiz.",
+      "count": "Saídas detectadas: {count}/3",
+      "blocked": "Quiz bloqueado por múltiplas saídas de aba."
+    },
+    "personalization": {
+      "title": "Sua versão personalizada",
+      "intro": "Introdução adaptada ao seu perfil",
+      "reflections": "Reflexões",
+      "deliverable": "Entregável",
+      "selfAssessment": "Autoavaliação",
+      "saveDeliverable": "Salvar entregável",
+      "scale": {
+        "1": "Básico",
+        "2": "Em desenvolvimento",
+        "3": "Competente",
+        "4": "Especialista"
+      },
+      "completeBtn": "Concluir autoavaliação"
+    }
+  },
+
+  "coordinator": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "projects": "Projetos",
+      "modules": "Módulos",
+      "students": "Estudantes",
+      "announcements": "Comunicados",
+      "calendar": "Calendário",
+      "feed": "Feed",
+      "stories": "Histórias",
+      "leadersGame": "Leader's Game",
+      "datos": "Centro de Dados",
+      "settings": "Configurações"
+    },
+
+    "projects": {
+      "title": "Projetos",
+      "pending": "Pendentes de revisão",
+      "all": "Todos os projetos",
+      "evaluate": "Avaliar",
+      "rubric": {
+        "title": "Rubrica de avaliação",
+        "bigLeaderModel": "Big Leader Model",
+        "scores": {
+          "1": "Básico",
+          "2": "Em desenvolvimento",
+          "3": "Competente",
+          "4": "Excelente"
+        },
+        "submitEvaluation": "Enviar avaliação",
+        "outcomes": {
+          "certificate": "Certificado",
+          "honorMention": "Menção honrosa",
+          "feedback": "Feedback",
+          "noCertificate": "Sem certificado"
+        }
+      }
+    },
+
+    "announcements": {
+      "title": "Comunicados",
+      "create": "Criar comunicado",
+      "categories": {
+        "operative": "Operacional",
+        "motivational": "Motivacional",
+        "event": "Evento",
+        "achievement": "Conquista"
+      },
+      "scope": {
+        "global": "Todas as escolas",
+        "school": "Minha escola"
+      },
+      "expiresLabel": "Expira em"
+    },
+
+    "quizRetries": {
+      "title": "Solicitações de nova tentativa",
+      "approve": "Aprovar nova tentativa",
+      "deny": "Negar",
+      "approved": "Nova tentativa aprovada",
+      "denied": "Solicitação negada"
+    },
+
+    "dados": {
+      "title": "Centro de Dados",
+      "tabs": {
+        "resumen": "Resumo",
+        "constructor": "Construtor",
+        "insights": "IA Insights"
+      },
+      "insights": {
+        "placeholder": "Pergunte algo sobre os dados da sua escola...",
+        "analyzing": "Analisando dados...",
+        "rateLimitWarning": "Máximo 10 perguntas por sessão"
+      }
+    }
+  },
+
+  "admin": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "users": "Usuários",
+      "projects": "Projetos",
+      "modules": "Módulos",
+      "schools": "Escolas",
+      "datos": "Centro de Dados"
+    },
+    "confirmEvaluation": "Confirmar avaliação",
+    "secondReview": "Segunda revisão"
+  },
+
+  "expositor": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "modules": "Meus módulos",
+      "create": "Criar módulo"
+    },
+    "moduleStatus": {
+      "draft": "Rascunho",
+      "pending": "Em revisão",
+      "published": "Publicado",
+      "rejected": "Rejeitado"
+    },
+    "submitForReview": "Enviar para revisão",
+    "editModule": "Editar módulo"
+  },
+
+  "notifications": {
+    "title": "Notificações",
+    "markAllRead": "Marcar tudo como lido",
+    "noNotifications": "Você não tem novas notificações",
+    "groups": {
+      "today": "Hoje",
+      "yesterday": "Ontem",
+      "thisWeek": "Esta semana",
+      "earlier": "Antes"
+    },
+    "types": {
+      "announcement": "Comunicado",
+      "projectEvaluated": "Projeto avaliado",
+      "modulePublished": "Módulo publicado",
+      "badgeEarned": "Distintivo obtido",
+      "quizRetry": "Nova tentativa aprovada",
+      "system": "Sistema"
+    }
+  },
+
+  "certification": {
+    "title": "Certificado de Liderança",
+    "subtitle": "The Big Family Program",
+    "certifiedText": "Por ter concluído com êxito o programa de formação em liderança transformacional",
+    "issuedBy": "Emitido por",
+    "issuedDate": "Data de emissão",
+    "certNumber": "N° do certificado",
+    "archetype": "Arquétipo de Líder",
+    "verifyText": "Verificar autenticidade",
+    "verifyUrl": "big-family-nu.vercel.app/verify",
+    "downloadBtn": "Baixar PDF",
+    "printBtn": "Imprimir",
+    "shareBtn": "Compartilhar",
+    "confetti": "Parabéns!"
+  },
+
+  "verify": {
+    "eyebrow": "Verificação de Diploma",
+    "title": "Verificação de Certificado",
+    "subtitle": "Sistema de verificação oficial — The Big Family Program",
+    "valid": {
+      "badge": "Certificado válido",
+      "title": "Diploma verificado",
+      "body": "Este certificado foi emitido oficialmente pelo The Big Family Program."
+    },
+    "invalid": {
+      "badge": "Não encontrado",
+      "title": "Certificado não encontrado",
+      "body": "Não encontramos um certificado com este ID. Verifique se o link ou código está correto."
+    },
+    "fields": {
+      "student": "Estudante",
+      "school": "Instituição",
+      "date": "Data de emissão",
+      "certId": "ID do certificado",
+      "archetype": "Arquétipo"
+    },
+    "verifiedAt": "Verificado em {date}",
+    "legalNote": "Este documento é emitido pelo The Big Family Program. Para consultas, entrar em contato com luis.barrios@colegioalbania.edu.co"
+  },
+
+  "portfolio": {
+    "publicBadge": "Portfólio público",
+    "sections": {
+      "identity": "Identidade",
+      "certification": "Certificação",
+      "capstone": "Projeto Capstone",
+      "stats": "Estatísticas",
+      "greatVenture": "The Great Venture",
+      "universities": "Universidades"
+    },
+    "stats": {
+      "xp": "XP Total",
+      "modules": "Módulos",
+      "streak": "Sequência",
+      "rank": "Posição"
+    },
+    "capstone": {
+      "phases": "Fases concluídas",
+      "viewProject": "Ver projeto completo"
+    },
+    "universities": {
+      "title": "Universidades compatíveis",
+      "subtitle": "Seu perfil atende aos requisitos destas instituições",
+      "international": "Internacionais",
+      "colombian": "Colombianas"
+    },
+    "export": {
+      "btn": "Exportar PDF",
+      "format": "Formato Common App",
+      "share": "Compartilhar portfólio"
+    }
+  },
+
+  "news": {
+    "title": "Notícias",
+    "subtitle": "Novidades do programa",
+    "readMore": "Leia mais",
+    "readTime": "{minutes} min de leitura",
+    "publishedAt": "Publicado em {date}",
+    "markRead": "Marcar como lido",
+    "read": "Lido",
+    "share": "Compartilhar",
+    "noArticles": "Nenhum artigo publicado ainda."
+  },
+
+  "timeline": {
+    "title": "Nossa História",
+    "subtitle": "A trajetória do programa desde 2015",
+    "noEvents": "Não há eventos na linha do tempo."
+  },
+
+  "successStories": {
+    "title": "Histórias de Sucesso",
+    "subtitle": "Líderes que estão transformando seu entorno",
+    "nominateBtn": "Indicar um líder",
+    "readStory": "Ler história",
+    "noStories": "Nenhuma história publicada ainda."
+  },
+
+  "calendar": {
+    "title": "Calendário",
+    "createEvent": "Criar evento",
+    "eventFields": {
+      "title": "Título do evento",
+      "description": "Descrição",
+      "date": "Data",
+      "location": "Local",
+      "link": "Link (opcional)"
+    },
+    "noEvents": "Não há eventos este mês.",
+    "months": {
+      "1": "Janeiro", "2": "Fevereiro", "3": "Março", "4": "Abril",
+      "5": "Maio", "6": "Junho", "7": "Julho", "8": "Agosto",
+      "9": "Setembro", "10": "Outubro", "11": "Novembro", "12": "Dezembro"
+    },
+    "days": {
+      "short": ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+      "long": ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"]
+    }
+  },
+
+  "teamHub": {
+    "title": "Team Hub",
+    "chat": "Chat da equipe",
+    "ranking": "Ranking",
+    "messagePlaceholder": "Escreva uma mensagem...",
+    "send": "Enviar",
+    "rankingStudents": "Top Estudantes",
+    "rankingSchools": "Top Escolas"
+  },
+
+  "settings": {
+    "title": "Configurações",
+    "sections": {
+      "profile": "Perfil",
+      "account": "Conta",
+      "portfolio": "Portfólio",
+      "notifications": "Notificações",
+      "security": "Segurança",
+      "danger": "Zona de perigo"
+    },
+    "profile": {
+      "displayName": "Nome de exibição",
+      "avatar": "Foto de perfil",
+      "changeAvatar": "Alterar foto",
+      "bio": "Biografia"
+    },
+    "portfolio": {
+      "urlLabel": "URL do seu portfólio",
+      "copyLink": "Copiar link",
+      "viewPortfolio": "Ver portfólio",
+      "toggles": {
+        "public": "Portfólio público",
+        "showCapstone": "Mostrar capstone",
+        "showGreatVenture": "Mostrar Great Venture",
+        "showStats": "Mostrar estatísticas",
+        "showProfile": "Mostrar perfil de líder"
+      }
+    },
+    "security": {
+      "changePassword": "Alterar senha",
+      "currentPassword": "Senha atual",
+      "newPassword": "Nova senha",
+      "confirmPassword": "Confirmar senha",
+      "updatePassword": "Atualizar senha"
+    },
+    "danger": {
+      "deleteAccount": "Excluir conta",
+      "deleteWarning": "Esta ação é permanente e irreversível. Todos os seus dados serão excluídos.",
+      "deleteConfirmPlaceholder": "Digite EXCLUIR para confirmar",
+      "deleteConfirmWord": "EXCLUIR",
+      "deleteBtn": "Excluir minha conta definitivamente"
+    }
+  },
+
+  "diploma": {
+    "loading": "Preparando seu diploma...",
+    "confetti": "Parabéns!",
+    "shareTitle": "Compartilhar diploma",
+    "downloadBtn": "Baixar PDF",
+    "verifyBtn": "Verificar autenticidade"
+  },
+
+  "errors": {
+    "404": {
+      "title": "Página não encontrada",
+      "body": "A página que você está procurando não existe ou foi movida.",
+      "btn": "Voltar ao início"
+    },
+    "401": {
+      "title": "Acesso negado",
+      "body": "Você não tem permissão para ver esta página.",
+      "btn": "Entrar"
+    },
+    "500": {
+      "title": "Erro do servidor",
+      "body": "Algo deu errado. Estamos trabalhando para resolver.",
+      "btn": "Tentar novamente"
+    },
+    "offline": {
+      "title": "Sem conexão",
+      "body": "Verifique sua conexão à internet e tente novamente.",
+      "btn": "Tentar novamente"
+    }
+  },
+
+  "footer": {
+    "tagline": "Formando líderes com propósito global e inovador",
+    "location": "La Guajira, Colômbia",
+    "links": {
+      "noticias": "Notícias",
+      "timeline": "História",
+      "verify": "Verificar diploma",
+      "login": "Entrar"
+    },
+    "legal": {
+      "privacy": "Política de privacidade",
+      "terms": "Termos e condições"
+    },
+    "copyright": "© {year} The Big Family Program. Todos os direitos reservados."
+  }
+}

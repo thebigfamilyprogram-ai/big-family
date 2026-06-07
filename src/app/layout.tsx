@@ -92,6 +92,9 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: ANTI_FLASH }} />
         <link rel="preload" href="/fonts/satoshi-400.woff2" as="font" type="font/woff2" crossOrigin="" />
         <link rel="preload" href="/fonts/satoshi-900.woff2" as="font" type="font/woff2" crossOrigin="" />
+        {locale === 'ar' && (
+          <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet" />
+        )}
       </head>
       <body className="antialiased">
         <ViewTransitions>

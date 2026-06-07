@@ -183,3 +183,16 @@ code, pre, .font-mono {
   ::view-transition-old(root),
   ::view-transition-new(root) { animation: none; }
 }
+
+
+/* ── Arabic (RTL) typography ─────────────────────────────────────────────── */
+:lang(ar) {
+  font-family: 'Noto Sans Arabic', sans-serif;
+}
+
+:lang(ar) h1,
+:lang(ar) h2,
+:lang(ar) h3 {
+  font-family: 'Noto Sans Arabic', sans-serif;
+  font-weight: 700;
+}
