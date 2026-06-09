@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { m, AnimatePresence } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -63,12 +64,12 @@ type ModuleSnapshot = {
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-function SaveIndicator({ saveStatus, savedAt }: { saveStatus: SaveStatus; savedAt: Date | null }) {
+function SaveIndicator({ saveStatus, savedAt, labels }: { saveStatus: SaveStatus; savedAt: Date | null; labels: { saving: string; error: string; saved: string } }) {
   if (saveStatus === 'idle') return null
   const text =
-    saveStatus === 'saving' ? 'Guardando…' :
-    saveStatus === 'error'  ? '⚠ Error al guardar' :
-    `Guardado ✓  ${savedAt ? savedAt.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : ''}`
+    saveStatus === 'saving' ? labels.saving :
+    saveStatus === 'error'  ? labels.error :
+    `${labels.saved}  ${savedAt ? savedAt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : ''}`
   const color = saveStatus === 'error' ? '#C0392B' : '#6B6B6B'
   return (
     <div style={{ position: 'fixed', top: 16, right: 24, zIndex: 50, fontSize: 12, color, fontFamily: 'Satoshi,sans-serif', background: 'var(--card-bg)', border: '1px solid var(--line)', borderRadius: 8, padding: '4px 10px', boxShadow: '0 2px 8px -2px rgba(0,0,0,.1)' }}>
@@ -77,8 +78,14 @@ function SaveIndicator({ saveStatus, savedAt }: { saveStatus: SaveStatus; savedA
   )
 }
 
+type QCardLabels = {
+  deleteBtn: string; questionPlaceholder: string; radioHint: string; openQuestion: string
+  typeMultiple: string; typeTrueFalse: string; typeReflection: string
+  markCorrect: string; verdadero: string; falso: string
+}
+
 function QuestionCard({
-  q, index, total, onUpdate, onDelete, onDragStart, onDragOver, onDrop, isDragOver,
+  q, index, total, onUpdate, onDelete, onDragStart, onDragOver, onDrop, isDragOver, labels,
 }: {
   q: QuestionData; index: number; total: number
   onUpdate: (id: string, changes: Partial<QuestionData>) => void
@@ -87,6 +94,7 @@ function QuestionCard({
   onDragOver: (e: React.DragEvent, i: number) => void
   onDrop: (i: number) => void
   isDragOver: boolean
+  labels: QCardLabels
 }) {
   const qSupabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
@@ -95,8 +103,6 @@ function QuestionCard({
     if (!qSupabaseRef.current) qSupabaseRef.current = createClient()
     await qSupabaseRef.current.from('questions').update(changes).eq('id', q.id)
   }
-
-  const typeLabel = q.type === 'multiple_choice' ? 'Opción múltiple' : q.type === 'true_false' ? 'Verdadero / Falso' : 'Reflexión'
 
   return (
     <div
@@ -127,36 +133,36 @@ function QuestionCard({
       <div style={{ flex: 1, minWidth: 0 }}>
         {/* type selector */}
         <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
-          {(['multiple_choice', 'true_false', 'reflection'] as const).map(t => (
+          {(['multiple_choice', 'true_false', 'reflection'] as const).map(qt => (
             <button
-              key={t}
+              key={qt}
               onClick={() => save({
-                type: t,
-                options: t === 'multiple_choice' ? ['', '', '', ''] : t === 'true_false' ? ['Verdadero', 'Falso'] : null,
-                correct_answer: t === 'multiple_choice' ? '0' : t === 'true_false' ? 'true' : null,
+                type: qt,
+                options: qt === 'multiple_choice' ? ['', '', '', ''] : qt === 'true_false' ? [labels.verdadero, labels.falso] : null,
+                correct_answer: qt === 'multiple_choice' ? '0' : qt === 'true_false' ? 'true' : null,
               })}
               style={{
                 padding: '4px 11px', borderRadius: 999, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', border: 'none',
-                background: q.type === t ? '#0D0D0D' : 'var(--line)',
-                color: q.type === t ? '#fff' : 'var(--mute)',
+                background: q.type === qt ? '#0D0D0D' : 'var(--line)',
+                color: q.type === qt ? '#fff' : 'var(--mute)',
                 transition: 'all .15s',
               }}
             >
-              {t === 'multiple_choice' ? 'Opción múltiple' : t === 'true_false' ? 'V / F' : 'Reflexión'}
+              {qt === 'multiple_choice' ? labels.typeMultiple : qt === 'true_false' ? labels.typeTrueFalse : labels.typeReflection}
             </button>
           ))}
           <button onClick={() => onDelete(q.id)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, padding: '4px 8px', borderRadius: 6, transition: 'color .15s' }}
             onMouseEnter={e => (e.currentTarget.style.color = '#C0392B')}
             onMouseLeave={e => (e.currentTarget.style.color = 'var(--mute)')}>
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
-            Eliminar
+            {labels.deleteBtn}
           </button>
         </div>
 
         {/* question text */}
         <input
           style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--line)', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', outline: 'none', background: 'var(--bg)', color: 'var(--ink)', marginBottom: 14 }}
-          placeholder="Escribe la pregunta…"
+          placeholder={labels.questionPlaceholder}
           defaultValue={q.question}
           onBlur={e => save({ question: e.target.value })}
           onFocus={e => (e.target.style.borderColor = '#C0392B')}
@@ -173,7 +179,7 @@ function QuestionCard({
                   checked={q.correct_answer === String(i)}
                   onChange={() => save({ correct_answer: String(i) })}
                   style={{ accentColor: '#C0392B', width: 15, height: 15, flexShrink: 0, cursor: 'pointer' }}
-                  title="Marcar como respuesta correcta"
+                  title={labels.markCorrect}
                 />
                 <input
                   style={{ flex: 1, padding: '8px 10px', border: '1px solid var(--line)', borderRadius: 7, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--bg)', color: 'var(--ink)' }}
@@ -188,13 +194,13 @@ function QuestionCard({
                 />
               </div>
             ))}
-            <p style={{ fontSize: 11.5, color: 'var(--mute)', marginTop: 2 }}>Selecciona el radio de la respuesta correcta</p>
+            <p style={{ fontSize: 11.5, color: 'var(--mute)', marginTop: 2 }}>{labels.radioHint}</p>
           </div>
         )}
 
         {q.type === 'true_false' && (
           <div style={{ display: 'flex', gap: 20 }}>
-            {[{ val: 'true', label: 'Verdadero' }, { val: 'false', label: 'Falso' }].map(({ val, label }) => (
+            {[{ val: 'true', label: labels.verdadero }, { val: 'false', label: labels.falso }].map(({ val, label }) => (
               <label key={val} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14, color: 'var(--ink)' }}>
                 <input
                   type="radio"
@@ -210,7 +216,7 @@ function QuestionCard({
         )}
 
         {q.type === 'reflection' && (
-          <p style={{ fontSize: 12.5, color: 'var(--mute)', fontStyle: 'italic' }}>Pregunta abierta — no tiene respuesta correcta.</p>
+          <p style={{ fontSize: 12.5, color: 'var(--mute)', fontStyle: 'italic' }}>{labels.openQuestion}</p>
         )}
       </div>
     </div>
@@ -220,6 +226,7 @@ function QuestionCard({
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function ModuleEditor({ moduleId, initialModule, initialQuestions, onSubmit }: Props) {
   const router      = useRouter()
+  const t           = useTranslations('moduleEditor')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   // Module field state — all initialized directly from prop (avoids autosave bug)
@@ -361,12 +368,26 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
   }
 
   const checklistItems = [
-    { label: 'Título',        done: title.trim().length > 0 },
-    { label: 'Descripción',   done: (description ?? '').trim().length > 0 },
-    { label: 'Video URL',     done: videoUrl.trim().length > 0 },
-    { label: 'Nivel',         done: level.length > 0 },
-    { label: 'Al menos 1 pregunta', done: questions.length > 0 },
+    { label: t('checkTitle'),    done: title.trim().length > 0 },
+    { label: t('checkDesc'),     done: (description ?? '').trim().length > 0 },
+    { label: t('checkVideo'),    done: videoUrl.trim().length > 0 },
+    { label: t('checkLevel'),    done: level.length > 0 },
+    { label: t('checkQuestion'), done: questions.length > 0 },
   ]
+
+  const saveLabels = { saving: t('saveError').replace('⚠ ', '') + '…', error: t('saveError'), saved: 'Guardado ✓' }
+  const qCardLabels: QCardLabels = {
+    deleteBtn: t('questionDeleteBtn'),
+    questionPlaceholder: t('questionPlaceholder'),
+    radioHint: t('radioHint'),
+    openQuestion: t('openQuestion'),
+    typeMultiple: t('typeMultiple'),
+    typeTrueFalse: t('typeTrueFalse'),
+    typeReflection: t('typeReflection'),
+    markCorrect: t('markCorrect'),
+    verdadero: 'Verdadero',
+    falso: 'Falso',
+  }
 
   return (
     <>
@@ -406,7 +427,7 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
         }
       `}</style>
 
-      <SaveIndicator saveStatus={saveStatus} savedAt={savedAt} />
+      <SaveIndicator saveStatus={saveStatus} savedAt={savedAt} labels={saveLabels} />
 
       <div className="me-wrap">
         {/* ── Editor ──────────────────────────────────────────────────────── */}
@@ -415,7 +436,7 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M9 12L4 7l5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            Mis módulos
+            {t('backToModules')}
           </button>
 
           {isLocked && (
@@ -423,29 +444,29 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 8v4M12 16h.01" stroke="#92400E" strokeWidth="1.8" strokeLinecap="round"/>
               </svg>
-              Este módulo está en revisión. No puedes editarlo hasta recibir respuesta.
+              {t('lockedBanner')}
             </div>
           )}
 
           {/* Module info */}
           <div className="me-card">
-            <div className="me-section-title">Información del módulo</div>
+            <div className="me-section-title">{t('sectionInfo')}</div>
 
             <div className="me-field">
-              <label className="me-label">Título</label>
+              <label className="me-label">{t('titleLabel')}</label>
               <input className="me-input" value={title} onChange={e => setTitle(e.target.value)}
-                placeholder="Nombre del módulo" disabled={isLocked} maxLength={120} />
+                placeholder={t('titlePlaceholder')} disabled={isLocked} maxLength={120} />
             </div>
 
             <div className="me-field">
-              <label className="me-label">Descripción</label>
+              <label className="me-label">{t('descLabel')}</label>
               <textarea className="me-input me-textarea" value={description}
                 onChange={e => setDescription(e.target.value)}
-                placeholder="¿De qué trata este módulo?" disabled={isLocked} />
+                placeholder={t('descPlaceholder')} disabled={isLocked} />
             </div>
 
             <div className="me-field">
-              <label className="me-label">Nivel</label>
+              <label className="me-label">{t('levelLabel')}</label>
               <div style={{ display: 'flex', gap: 10 }}>
                 {LEVEL_OPTIONS.map(opt => (
                   <button
@@ -466,26 +487,26 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
             </div>
 
             <div className="me-field">
-              <label className="me-label">URL del video (YouTube o Vimeo)</label>
+              <label className="me-label">{t('videoLabel')}</label>
               <input className="me-input" value={videoUrl} onChange={e => setVideoUrl(e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=… o https://vimeo.com/…" disabled={isLocked} />
+                placeholder={t('videoPlaceholder')} disabled={isLocked} />
               {thumbUrl
-                ? <img className="me-thumb" src={thumbUrl} alt="Vista previa del video" />
+                ? <img className="me-thumb" src={thumbUrl} alt={t('videoPreviewAlt')} />
                 : videoUrl.trim().length > 0 && !videoUrlValid
-                  ? <div className="me-thumb-ph" style={{ color: '#C0392B' }}>URL no válida. Usa un enlace de YouTube o Vimeo.</div>
+                  ? <div className="me-thumb-ph" style={{ color: '#C0392B' }}>{t('videoInvalid')}</div>
                   : null
               }
             </div>
 
             <div className="me-row">
               <div>
-                <label className="me-label">Duración (minutos)</label>
+                <label className="me-label">{t('durationLabel')}</label>
                 <input className="me-input" type="number" min={1} value={durationMinutes || ''}
                   onChange={e => setDurationMinutes(Number(e.target.value) || 0)}
                   placeholder="30" disabled={isLocked} />
               </div>
               <div>
-                <label className="me-label">Recompensa XP</label>
+                <label className="me-label">{t('xpLabel')}</label>
                 <input className="me-input" type="number" min={0} value={xpReward || ''}
                   onChange={e => setXpReward(Number(e.target.value) || 0)}
                   placeholder="100" disabled={isLocked} />
@@ -497,7 +518,7 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
           <div className="me-card">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <div className="me-section-title" style={{ margin: 0 }}>
-                Preguntas
+                {t('questionsTitle')}
                 <span style={{ marginLeft: 8, fontSize: 13, fontWeight: 400, color: 'var(--mute)' }}>
                   ({questions.length})
                 </span>
@@ -508,7 +529,7 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
                   disabled={addingQ}
                   style={{ padding: '8px 18px', borderRadius: 999, background: '#0D0D0D', color: '#fff', border: 'none', fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 13, cursor: addingQ ? 'not-allowed' : 'pointer', opacity: addingQ ? 0.5 : 1, transition: 'background .2s' }}
                 >
-                  {addingQ ? 'Agregando…' : '+ Agregar pregunta'}
+                  {addingQ ? t('addingQuestion') : t('addQuestion')}
                 </button>
               )}
             </div>
@@ -519,7 +540,7 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
                   <path d="M12 8v4M12 16h.01" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
-                No hay preguntas todavía. Agrega al menos una para poder enviar el módulo.
+                {t('noQuestions')}
               </div>
             ) : (
               <div onDragEnd={() => { setDragIndex(null); setDragOverIndex(null) }}>
@@ -532,6 +553,7 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
                     onDragOver={(e, idx) => { e.preventDefault(); setDragOverIndex(idx) }}
                     onDrop={handleDrop}
                     isDragOver={dragOverIndex === i}
+                    labels={qCardLabels}
                   />
                 ))}
               </div>
@@ -543,7 +565,7 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
         <div className="me-sidebar">
           <div className="me-sb-card">
             <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 14 }}>
-              Lista de verificación
+              {t('checklist')}
             </div>
             {checklistItems.map(item => (
               <div key={item.label} className="me-check-item">
@@ -553,30 +575,30 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
             ))}
 
             <div style={{ marginTop: 18, marginBottom: 12 }}>
-              {status === 'draft'     && <span style={{ display:'inline-block', padding:'4px 12px', background:'var(--line)', color:'var(--mute)', borderRadius:999, fontSize:12, fontWeight:600 }}>Borrador</span>}
-              {status === 'pending'   && <span style={{ display:'inline-block', padding:'4px 12px', background:'#FEF3C7', color:'#92400E', borderRadius:999, fontSize:12, fontWeight:600 }}>En revisión</span>}
-              {status === 'published' && <span style={{ display:'inline-block', padding:'4px 12px', background:'#D1FAE5', color:'#065F46', borderRadius:999, fontSize:12, fontWeight:600 }}>Publicado ✓</span>}
-              {status === 'rejected'  && <span style={{ display:'inline-block', padding:'4px 12px', background:'#FEE2E2', color:'#991B1B', borderRadius:999, fontSize:12, fontWeight:600 }}>Rechazado</span>}
+              {status === 'draft'     && <span style={{ display:'inline-block', padding:'4px 12px', background:'var(--line)', color:'var(--mute)', borderRadius:999, fontSize:12, fontWeight:600 }}>{t('statusDraft')}</span>}
+              {status === 'pending'   && <span style={{ display:'inline-block', padding:'4px 12px', background:'#FEF3C7', color:'#92400E', borderRadius:999, fontSize:12, fontWeight:600 }}>{t('statusPending')}</span>}
+              {status === 'published' && <span style={{ display:'inline-block', padding:'4px 12px', background:'#D1FAE5', color:'#065F46', borderRadius:999, fontSize:12, fontWeight:600 }}>{t('statusPublished')}</span>}
+              {status === 'rejected'  && <span style={{ display:'inline-block', padding:'4px 12px', background:'#FEE2E2', color:'#991B1B', borderRadius:999, fontSize:12, fontWeight:600 }}>{t('statusRejected')}</span>}
             </div>
 
             {!isLocked && (
               <>
                 {!canSubmit && (
                   <p style={{ fontSize: 11.5, color: '#9a9690', marginBottom: 8, lineHeight: 1.4 }}>
-                    Completa todos los campos para enviar a revisión.
+                    {t('completeToSubmit')}
                   </p>
                 )}
                 <button className="btn-submit" onClick={() => setSubmitModal(true)} disabled={!canSubmit}>
-                  Enviar a revisión →
+                  {t('submitBtn')}
                 </button>
-                <button className="btn-save" onClick={doSave}>Guardar borrador</button>
+                <button className="btn-save" onClick={doSave}>{t('saveDraftBtn')}</button>
               </>
             )}
           </div>
 
           {initialModule.rejection_reason && (
             <div className="me-sb-card" style={{ borderColor: '#FCA5A5', background: '#FFF5F5' }}>
-              <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 13, color: '#991B1B', marginBottom: 6 }}>Motivo de rechazo</div>
+              <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 13, color: '#991B1B', marginBottom: 6 }}>{t('rejectionReasonLabel')}</div>
               <p style={{ fontSize: 13, color: '#7F1D1D', lineHeight: 1.55 }}>{initialModule.rejection_reason}</p>
             </div>
           )}
@@ -599,19 +621,19 @@ export default function ModuleEditor({ moduleId, initialModule, initialQuestions
               style={{ background: 'var(--card-bg)', borderRadius: 20, padding: '36px 32px', maxWidth: 440, width: '100%', boxShadow: '0 24px 64px -12px rgba(0,0,0,.25)' }}
             >
               <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 22, color: 'var(--ink)', marginBottom: 12 }}>
-                ¿Enviar a revisión?
+                {t('submitModalTitle')}
               </div>
               <p style={{ fontSize: 14, color: 'var(--mute)', lineHeight: 1.65, marginBottom: 28 }}>
-                El módulo quedará en revisión y no podrás editarlo hasta recibir respuesta del administrador.
+                {t('submitModalBody')}
               </p>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button onClick={() => setSubmitModal(false)} disabled={submitting}
                   style={{ padding: '10px 20px', borderRadius: 999, background: 'transparent', color: 'var(--mute)', border: '1px solid var(--line)', fontFamily: 'inherit', fontSize: 14, cursor: 'pointer' }}>
-                  Cancelar
+                  {t('submitModalCancel')}
                 </button>
                 <button onClick={handleSubmit} disabled={submitting}
                   style={{ padding: '10px 22px', borderRadius: 999, background: '#C0392B', color: '#fff', border: 'none', fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 14, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1 }}>
-                  {submitting ? 'Enviando…' : 'Confirmar envío'}
+                  {submitting ? t('submitting') : t('submitModalConfirm')}
                 </button>
               </div>
             </m.div>

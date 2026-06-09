@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { m, AnimatePresence } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -69,85 +70,92 @@ const I = {
 const KASHI_NEW_UNTIL = new Date('2026-07-03').getTime()
 const kashiIsNew = Date.now() < KASHI_NEW_UNTIL
 
+type SidebarT = ReturnType<typeof useTranslations<'sidebar'>>
+
 function getNav(
   role: 'student' | 'coordinator' | 'admin',
   unread: number,
+  t: SidebarT,
   ventureCompleted?: boolean | null,
   portfolioUsername?: string | null,
   portfolioPublic?: boolean | null,
 ): Section[] {
+  const n = t.raw('nav') as Record<string, string>
+  const s = t.raw('sections') as Record<string, string>
+  const b = t.raw('badge') as Record<string, string>
+
   if (role === 'student') return [
     {
-      key: 'principal', label: 'Principal', items: [
-        { label: 'Dashboard',       href: '/dashboard',                 icon: I.dashboard },
-        { label: 'Leadership Path', href: '/dashboard/leadership-path', icon: I.star      },
-        { label: 'Global Map',      href: '/dashboard/global-map',      icon: I.globe     },
-        { label: 'Proyectos',       href: '/dashboard/projects',        icon: I.folder    },
-        { label: 'Team Hub',        href: '/dashboard/team-hub',        icon: I.users     },
-        { label: 'Mis Metas',       href: '/dashboard/goals',           icon: I.target    },
+      key: 'principal', label: s.principal, items: [
+        { label: n.dashboard,       href: '/dashboard',                 icon: I.dashboard },
+        { label: n.leadershipPath,  href: '/dashboard/leadership-path', icon: I.star      },
+        { label: n.globalMap,       href: '/dashboard/global-map',      icon: I.globe     },
+        { label: n.projects,        href: '/dashboard/projects',        icon: I.folder    },
+        { label: n.teamHub,         href: '/dashboard/team-hub',        icon: I.users     },
+        { label: n.goals,           href: '/dashboard/goals',           icon: I.target    },
         {
-          label: 'Kashi',
+          label: n.kashi,
           href: '/dashboard/kashi',
           icon: I.moon,
-          ...(kashiIsNew ? { badgeText: 'Nuevo', badgeColor: 'var(--accent-teal,#0F7B6C)' } : {}),
+          ...(kashiIsNew ? { badgeText: b.new, badgeColor: 'var(--accent-teal,#0F7B6C)' } : {}),
         },
         {
-          label: 'Great Venture',
+          label: n.greatVenture,
           href: '/dashboard/great-venture',
           icon: I.compass,
           ...(ventureCompleted === true
             ? { badgeText: '✓', badgeColor: '#22c55e' }
             : ventureCompleted === false
-              ? { badgeText: 'Pendiente', badgeColor: 'var(--accent-amber,#D4821A)' }
+              ? { badgeText: b.pending, badgeColor: 'var(--accent-amber,#D4821A)' }
               : {}),
         },
         {
-          label: 'Mi Portafolio',
+          label: n.myPortfolio,
           href: portfolioUsername ? `/p/${portfolioUsername}` : '/dashboard/settings',
           icon: I.portcard,
           external: !!portfolioUsername,
           ...(portfolioUsername
             ? portfolioPublic === true
-              ? { badgeText: 'Público', badgeColor: 'var(--accent-teal,#0F7B6C)' }
-              : { badgeText: 'Privado', badgeColor: 'var(--mute,#6B6B6B)' }
-            : { badgeText: 'Configurar', badgeColor: 'var(--accent-amber,#D4821A)' }
+              ? { badgeText: b.public, badgeColor: 'var(--accent-teal,#0F7B6C)' }
+              : { badgeText: b.private, badgeColor: 'var(--mute,#6B6B6B)' }
+            : { badgeText: b.configure, badgeColor: 'var(--accent-amber,#D4821A)' }
           ),
         },
-        { label: 'Calendario',      href: '/dashboard/calendar',        icon: I.calendar  },
-        { label: 'Configuración',   href: '/dashboard/settings',        icon: I.settings  },
+        { label: n.calendar,        href: '/dashboard/calendar',        icon: I.calendar  },
+        { label: n.settings,        href: '/dashboard/settings',        icon: I.settings  },
       ],
     },
     {
-      key: 'comunidad', label: 'Comunidad', items: [
-        { label: 'Anuncios',  href: '/dashboard/announcements', icon: I.bell,    badge: unread || undefined },
-        { label: 'Feed',      href: '/dashboard/feed',          icon: I.feed     },
-        { label: 'Historias', href: '/success-stories',         icon: I.stories  },
+      key: 'comunidad', label: s.comunidad, items: [
+        { label: n.announcements, href: '/dashboard/announcements', icon: I.bell,    badge: unread || undefined },
+        { label: n.feed,          href: '/dashboard/feed',          icon: I.feed     },
+        { label: n.stories,       href: '/success-stories',         icon: I.stories  },
       ],
     },
   ]
 
   if (role === 'coordinator') return [
     {
-      key: 'principal', label: 'Principal', items: [
-        { label: 'Dashboard', href: '/coordinator',          icon: I.dashboard },
-        { label: 'Proyectos', href: '/coordinator/projects', icon: I.doc       },
-        { label: 'Módulos',   href: '/coordinator/modules',  icon: I.hexagon   },
+      key: 'principal', label: s.principal, items: [
+        { label: n.dashboard, href: '/coordinator',          icon: I.dashboard },
+        { label: n.projects,  href: '/coordinator/projects', icon: I.doc       },
+        { label: n.modules,   href: '/coordinator/modules',  icon: I.hexagon   },
       ],
     },
     {
-      key: 'comunidad', label: 'Comunidad', items: [
-        { label: 'Feed',      href: '/coordinator/feed',            icon: I.rss      },
-        { label: 'Noticias',  href: '/coordinator/news',            icon: I.news     },
-        { label: 'Historias', href: '/coordinator/success-stories', icon: I.stories  },
-        { label: 'Anuncios',  href: '/coordinator/announcements',   icon: I.announce },
+      key: 'comunidad', label: s.comunidad, items: [
+        { label: n.feed,          href: '/coordinator/feed',            icon: I.rss      },
+        { label: n.news,          href: '/coordinator/news',            icon: I.news     },
+        { label: n.stories,       href: '/coordinator/success-stories', icon: I.stories  },
+        { label: n.announcements, href: '/coordinator/announcements',   icon: I.announce },
       ],
     },
     {
-      key: 'gestion', label: 'Gestión', items: [
-        { label: 'Datos',         href: '/coordinator/datos',    icon: I.barChart },
-        { label: 'Calendario',    href: '/coordinator/calendar', icon: I.calendar },
-        { label: 'Reportes',      href: '/coordinator/report',   icon: I.report   },
-        { label: 'Configuración', href: '/coordinator/settings', icon: I.settings },
+      key: 'gestion', label: s.gestion, items: [
+        { label: n.datos,    href: '/coordinator/datos',    icon: I.barChart },
+        { label: n.calendar, href: '/coordinator/calendar', icon: I.calendar },
+        { label: n.reports,  href: '/coordinator/report',   icon: I.report   },
+        { label: n.settings, href: '/coordinator/settings', icon: I.settings },
       ],
     },
   ]
@@ -155,19 +163,19 @@ function getNav(
   // admin
   return [
     {
-      key: 'panel', label: 'Panel', items: [
-        { label: 'Estadísticas', tab: 'stats',       icon: I.dashboard  },
-        { label: 'Usuarios',     tab: 'users',       icon: I.users      },
-        { label: 'Proyectos',    tab: 'projects',    icon: I.folder     },
-        { label: 'Evaluaciones', tab: 'evaluations', icon: I.checklist  },
-        { label: 'Metas',        tab: 'goals',       icon: I.target     },
-        { label: 'Códigos',      tab: 'codes',       icon: I.key        },
-        { label: 'Colegios',     tab: 'schools',     icon: I.building   },
+      key: 'panel', label: s.panel, items: [
+        { label: n.stats,       tab: 'stats',       icon: I.dashboard  },
+        { label: n.users,       tab: 'users',       icon: I.users      },
+        { label: n.projects,    tab: 'projects',    icon: I.folder     },
+        { label: n.evaluations, tab: 'evaluations', icon: I.checklist  },
+        { label: n.goals,       tab: 'goals',       icon: I.target     },
+        { label: n.codes,       tab: 'codes',       icon: I.key        },
+        { label: n.schools,     tab: 'schools',     icon: I.building   },
       ],
     },
     {
-      key: 'analitica', label: 'Analítica', items: [
-        { label: 'Datos', href: '/admin/datos', icon: I.barChart },
+      key: 'analitica', label: s.analitica, items: [
+        { label: n.datos, href: '/admin/datos', icon: I.barChart },
       ],
     },
   ]
@@ -189,6 +197,8 @@ export default function AppSidebar({
   const router      = useRouter()
   const pathname    = usePathname()
   const { theme, setTheme } = useTheme()
+  const tSb         = useTranslations('sidebar')
+  const tRoles      = useTranslations('roles')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const [drawerOpen,        setDrawerOpen]        = useState(false)
   const [ventureCompleted,  setVentureCompleted]  = useState<boolean | null>(null)
@@ -229,7 +239,7 @@ export default function AppSidebar({
     checkStudentData()
   }, [role])
 
-  const sections    = getNav(role, unreadAnnouncements, ventureCompleted, portfolioUsername, portfolioPublic)
+  const sections    = getNav(role, unreadAnnouncements, tSb, ventureCompleted, portfolioUsername, portfolioPublic)
   const defaultOpen = Object.fromEntries(sections.map(s => [s.key, true]))
 
   // useEffect reads localStorage to avoid SSR/client hydration mismatch
@@ -279,8 +289,8 @@ export default function AppSidebar({
   }
 
   const roleLabel = roleLabelOverride ?? (
-    role === 'student' ? 'Estudiante' :
-    role === 'coordinator' ? 'Coordinador' : 'Administrador'
+    role === 'student' ? tRoles('student') :
+    role === 'coordinator' ? tRoles('coordinator') : tRoles('admin')
   )
 
   const multiSection = sections.length > 1
@@ -423,7 +433,7 @@ export default function AppSidebar({
       `}</style>
 
       {/* Mobile hamburger */}
-      <button className="app-hamburger" aria-label="Abrir menú" onClick={() => setDrawerOpen(true)}>
+      <button className="app-hamburger" aria-label={tSb('openMenu')} onClick={() => setDrawerOpen(true)}>
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8">
           <path d="M2 4.5h14M2 9h14M2 13.5h14"/>
         </svg>
@@ -554,7 +564,7 @@ export default function AppSidebar({
               className="app-sb__new"
               onClick={() => { router.push('/dashboard/projects/new'); setDrawerOpen(false) }}
             >
-              + Nuevo Proyecto
+              {tSb('newProject')}
             </button>
           )}
         </nav>
@@ -575,10 +585,10 @@ export default function AppSidebar({
             </div>
           </div>
           <div className="app-sb__links">
-            <button onClick={handleLogout}>Cerrar sesión</button>
+            <button onClick={handleLogout}>{tSb('logout')}</button>
             <span>·</span>
             <button
-              aria-label={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+              aria-label={theme === 'dark' ? tSb('modeLight') : tSb('modeDark')}
               style={{ minWidth: 40, minHeight: 40, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             >

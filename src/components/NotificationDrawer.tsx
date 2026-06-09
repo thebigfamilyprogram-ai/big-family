@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE } from '@/lib/mockData'
 
@@ -46,16 +47,16 @@ function timeAgo(iso: string): string {
   return `hace ${days} días`
 }
 
-function groupByDate(items: Notification[]): { label: string; items: Notification[] }[] {
+function groupByDate(items: Notification[], labels: [string, string, string, string]): { label: string; items: Notification[] }[] {
   const now  = new Date()
   const tod  = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
   const yest = tod - 86400000
   const week = tod - 7 * 86400000
   const groups = [
-    { label: 'Hoy',         items: [] as Notification[] },
-    { label: 'Ayer',        items: [] as Notification[] },
-    { label: 'Esta semana', items: [] as Notification[] },
-    { label: 'Antes',       items: [] as Notification[] },
+    { label: labels[0], items: [] as Notification[] },
+    { label: labels[1], items: [] as Notification[] },
+    { label: labels[2], items: [] as Notification[] },
+    { label: labels[3], items: [] as Notification[] },
   ]
   for (const n of items) {
     const t = new Date(n.created_at).getTime()
@@ -104,6 +105,8 @@ const fallbackCfg = {
 export default function NotificationDrawer({ isOpen, onClose, userId }: NotificationDrawerProps) {
   const router   = useRouter()
   const pref     = useReducedMotion()
+  const t        = useTranslations('notifications')
+  const tGroups  = useTranslations('notifications.groups')
   const sbRef    = useRef<ReturnType<typeof createClient> | null>(null)
   const chanRef  = useRef<ReturnType<typeof createClient> | null>(null)
 
@@ -175,7 +178,13 @@ export default function NotificationDrawer({ isOpen, onClose, userId }: Notifica
     }
   }
 
-  const groups = groupByDate(notifs)
+  const groupLabels = [
+    tGroups('today'),
+    tGroups('yesterday'),
+    tGroups('thisWeek'),
+    tGroups('earlier'),
+  ] as [string, string, string, string]
+  const groups = groupByDate(notifs, groupLabels)
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -222,7 +231,7 @@ export default function NotificationDrawer({ isOpen, onClose, userId }: Notifica
             }}>
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--mute)' }}>
-                  NOTIFICACIONES
+                  {t('titleUpper')}
                 </span>
                 {unread > 0 && (
                   <span style={{
@@ -241,7 +250,7 @@ export default function NotificationDrawer({ isOpen, onClose, userId }: Notifica
                   onMouseEnter={e => (e.currentTarget.style.color = 'var(--ink)')}
                   onMouseLeave={e => (e.currentTarget.style.color = 'var(--mute)')}
                 >
-                  Marcar todas como leídas
+                  {t('markAllReadDrawer')}
                 </button>
               )}
               <m.button
@@ -249,7 +258,7 @@ export default function NotificationDrawer({ isOpen, onClose, userId }: Notifica
                 whileHover={pref ? undefined : { rotate: 90, scale: 1.1 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 22 }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontSize: 20, lineHeight: 1, padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                aria-label="Cerrar"
+                aria-label={t('close')}
               >
                 ×
               </m.button>
@@ -277,8 +286,8 @@ export default function NotificationDrawer({ isOpen, onClose, userId }: Notifica
                     <path d="M20 4a12 12 0 0 0-12 12v6l-3 5h30l-3-5v-6A12 12 0 0 0 20 4Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
                     <path d="M16 33a4 4 0 0 0 8 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
                   </svg>
-                  <p style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>Todo al día</p>
-                  <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 13, color: 'var(--mute)' }}>No tienes notificaciones nuevas.</p>
+                  <p style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>{t('allCaughtUp')}</p>
+                  <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 13, color: 'var(--mute)' }}>{t('noNotificationsBody')}</p>
                 </div>
               ) : (
                 /* Notification groups */

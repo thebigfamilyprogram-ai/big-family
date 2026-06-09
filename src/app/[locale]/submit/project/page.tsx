@@ -4,11 +4,11 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import ProjectEditor, { type ProjectEditorData } from '@/components/ProjectEditor'
 
-function Progress({ step }: { step: 1 | 2 | 3 }) {
-  const labels = ['Registro', 'Proyecto', 'Enviado']
+function Progress({ step, labels }: { step: 1 | 2 | 3; labels: [string, string, string] }) {
   return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:0 }}>
       {labels.map((label, i) => {
@@ -31,7 +31,7 @@ function Progress({ step }: { step: 1 | 2 | 3 }) {
   )
 }
 
-function Spinner() {
+function Spinner({ text }: { text: string }) {
   return (
     <div style={{ minHeight:'100dvh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'var(--bg,#F5F3EF)', gap:14, fontFamily:'Satoshi,sans-serif', color:'var(--mute,#6B6B6B)' }}>
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ animation:'spin 1s linear infinite' }}>
@@ -39,13 +39,14 @@ function Spinner() {
         <path d="M12 2a10 10 0 0 1 10 10" stroke="#C0392B" strokeWidth="3" strokeLinecap="round"/>
       </svg>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      <span style={{ fontSize:14 }}>Preparando tu proyecto…</span>
+      <span style={{ fontSize:14 }}>{text}</span>
     </div>
   )
 }
 
 export default function SubmitProjectPage() {
-  const router      = useRouter()
+  const router = useRouter()
+  const t      = useTranslations('submit')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,       setLoading]       = useState(true)
@@ -173,7 +174,7 @@ export default function SubmitProjectPage() {
     window.location.href = '/submit/confirmation'
   }
 
-  if (loading) return <Spinner />
+  if (loading) return <Spinner text={t('preparing')} />
 
   const canSubmit = !isSubmitted && !!projectData?.title?.trim()
 
@@ -190,7 +191,7 @@ export default function SubmitProjectPage() {
         transition: 'background .2s', whiteSpace: 'nowrap', flexShrink: 0,
       }}
     >
-      {submitting ? 'Enviando…' : isSubmitted ? 'Proyecto enviado ✓' : 'Enviar al coordinador →'}
+      {submitting ? t('project.submitting') : isSubmitted ? t('project.submitted') : t('project.submitBtn')}
     </button>
   )
 
@@ -225,8 +226,8 @@ export default function SubmitProjectPage() {
         </div>
         <div className="sp-user">{userFullName}</div>
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          <Progress step={2} />
-          <button className="sp-logout" onClick={handleLogout}>Cerrar sesión</button>
+          <Progress step={2} labels={[t('steps.register'), t('steps.project'), t('steps.sent')]} />
+          <button className="sp-logout" onClick={handleLogout}>{t('project.logoutBtn')}</button>
         </div>
       </header>
 
@@ -234,7 +235,7 @@ export default function SubmitProjectPage() {
       <div className="sp-bar">
         <div>
           <div style={{ fontFamily:'Satoshi,sans-serif', fontWeight:700, fontSize:15, color:'#0D0D0D' }}>
-            Tu proyecto de liderazgo
+            {t('project.pageTitle')}
           </div>
           {schoolName && (
             <div style={{ fontSize:12.5, color:'#6B6B6B', marginTop:2 }}>{schoolName}</div>
@@ -243,7 +244,7 @@ export default function SubmitProjectPage() {
         <div style={{ display:'flex', alignItems:'center', gap:12, flexWrap:'wrap' }}>
           {isSubmitted && (
             <span className="sp-status-badge" style={{ background:'#FFFBEB', color:'#92400E' }}>
-              En revisión — {projectData?.title || 'Sin título'}
+              {t('project.pendingBadge', { title: projectData?.title || t('confirmation.noTitle') })}
             </span>
           )}
           {SubmitButton}
@@ -267,9 +268,7 @@ export default function SubmitProjectPage() {
       {/* Action bar — bottom */}
       <div className="sp-bottom-bar">
         <span className="sp-bottom-hint">
-          {isSubmitted
-            ? 'Tu proyecto ya fue enviado. El coordinador lo revisará pronto.'
-            : 'Tu progreso se guarda automáticamente cada vez que escribes.'}
+          {isSubmitted ? t('project.submittedHint') : t('project.autosaveHint')}
         </span>
         {SubmitButton}
       </div>

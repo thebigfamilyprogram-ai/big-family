@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 
 function Logo() {
@@ -22,6 +23,7 @@ function Logo() {
 
 export default function SubmitLoginPage() {
   const router      = useRouter()
+  const t           = useTranslations('submit.login')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [email,    setEmail]    = useState('')
@@ -40,7 +42,7 @@ export default function SubmitLoginPage() {
 
     if (authError) {
       setLoading(false)
-      setError('Email o contraseña incorrectos.')
+      setError(t('invalidCredentials'))
       return
     }
 
@@ -72,12 +74,12 @@ export default function SubmitLoginPage() {
       <div className="sl-page">
         <Logo />
         <div className="sl-card">
-          <div className="sl-heading">Ingresar</div>
-          <div className="sl-sub">Ingresa con tu cuenta para continuar con tu proyecto</div>
+          <div className="sl-heading">{t('heading')}</div>
+          <div className="sl-sub">{t('sub')}</div>
 
           <form onSubmit={handleSubmit}>
             <div className="sl-field">
-              <label className="sl-label">Email</label>
+              <label className="sl-label">{t('emailLabel')}</label>
               <input
                 className="sl-input"
                 type="email"
@@ -89,24 +91,24 @@ export default function SubmitLoginPage() {
               />
             </div>
             <div className="sl-field">
-              <label className="sl-label">Contraseña</label>
+              <label className="sl-label">{t('passwordLabel')}</label>
               <input
                 className="sl-input"
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Tu contraseña"
+                placeholder={t('passwordPlaceholder')}
                 required
               />
             </div>
             {error && <div className="sl-error">{error}</div>}
             <button className="sl-btn" type="submit" disabled={loading || !email || !password}>
-              {loading ? 'Ingresando…' : 'Ingresar →'}
+              {loading ? t('signingIn') : t('submitBtn')}
             </button>
           </form>
 
           <div className="sl-link">
-            ¿No tienes cuenta? <a href="/submit/register">Registrarme</a>
+            {t('noAccount')} <a href="/submit/register">{t('registerLink')}</a>
           </div>
         </div>
       </div>

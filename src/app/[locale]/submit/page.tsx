@@ -3,8 +3,10 @@
 export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 export default function SubmitLanding() {
+  const t = useTranslations('submit')
   return (
     <>
       <style>{`
@@ -41,22 +43,20 @@ export default function SubmitLanding() {
         <div className="sl-event-banner">
           <span className="sl-event-banner-icon">🎯</span>
           <div>
-            <div className="sl-event-banner-title">Día de Liderazgo · Big Family</div>
-            <div className="sl-event-banner-sub">
-              Este es el flujo oficial de registro y envío de proyectos para el Día de Liderazgo. Regístrate, completa tu proyecto y envíalo a tu coordinador desde aquí.
-            </div>
+            <div className="sl-event-banner-title">{t('eventTitle')}</div>
+            <div className="sl-event-banner-sub">{t('eventSub')}</div>
           </div>
         </div>
 
-        <h1 className="sl-title">Sube tu Proyecto de Liderazgo</h1>
-        <p className="sl-sub">Completa el formulario con tu proyecto y envíalo a tu coordinador</p>
+        <h1 className="sl-title">{t('title')}</h1>
+        <p className="sl-sub">{t('subtitle')}</p>
 
         <div className="sl-buttons">
-          <Link href="/submit/register" className="sl-btn-primary">Registrarme →</Link>
-          <Link href="/submit/login"    className="sl-btn-ghost">Ya tengo cuenta</Link>
+          <Link href="/submit/register" className="sl-btn-primary">{t('registerBtn')}</Link>
+          <Link href="/submit/login"    className="sl-btn-ghost">{t('haveAccount')}</Link>
         </div>
 
-        <p className="sl-footer">The Big Leader · Big Family © 2026</p>
+        <p className="sl-footer">{t('footer')}</p>
       </div>
     </>
   )

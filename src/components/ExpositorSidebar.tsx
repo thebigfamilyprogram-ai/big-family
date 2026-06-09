@@ -2,6 +2,7 @@
 
 import { useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 
 interface Props {
@@ -21,6 +22,8 @@ const BF_LOGO = (
 
 export default function ExpositorSidebar({ activePage, userName = '…', userInitial = 'E' }: Props) {
   const router      = useRouter()
+  const tSb         = useTranslations('sidebar')
+  const tRoles      = useTranslations('roles')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   async function handleLogout() {
@@ -57,10 +60,10 @@ export default function ExpositorSidebar({ activePage, userName = '…', userIni
           {BF_LOGO}
           BIG FAMILY
         </div>
-        <div className="xsb-role">Expositor</div>
+        <div className="xsb-role">{tRoles('expositor')}</div>
 
         <nav className="xsb-nav">
-          <div className="xsb-section">Contenido</div>
+          <div className="xsb-section">{tSb('sections.contenido')}</div>
 
           <button
             className={`xsb-item${activePage === 'modules' ? ' xsb-active' : ''}`}
@@ -70,10 +73,10 @@ export default function ExpositorSidebar({ activePage, userName = '…', userIni
               <rect x="2" y="2" width="14" height="14" rx="2.5" stroke="currentColor" strokeWidth="1.5"/>
               <path d="M5 6h8M5 9h6M5 12h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
             </svg>
-            Mis módulos
+            {tSb('myModules')}
           </button>
 
-          <div className="xsb-section">Acceso</div>
+          <div className="xsb-section">{tSb('sections.acceso')}</div>
 
           <button
             className="xsb-item"
@@ -85,13 +88,13 @@ export default function ExpositorSidebar({ activePage, userName = '…', userIni
               <rect x="1" y="10" width="7" height="7" rx="2" fill="currentColor" opacity=".5"/>
               <rect x="10" y="10" width="7" height="7" rx="2" fill="currentColor" opacity=".5"/>
             </svg>
-            Dashboard estudiante
+            {tSb('studentDashboard')}
           </button>
 
           <div className="xsb-divider" />
 
           <button className="xsb-btn-new" onClick={() => router.push('/expositor/modules/new')}>
-            + Nuevo módulo
+            {tSb('newModule')}
           </button>
         </nav>
 
@@ -101,12 +104,12 @@ export default function ExpositorSidebar({ activePage, userName = '…', userIni
           <div className="xsb-avatar">{userInitial}</div>
           <div style={{ minWidth: 0 }}>
             <div className="xsb-user-name">{userName}</div>
-            <div className="xsb-user-role">Expositor</div>
+            <div className="xsb-user-role">{tRoles('expositor')}</div>
           </div>
         </div>
 
         <div className="xsb-links">
-          <button onClick={handleLogout}>Cerrar sesión</button>
+          <button onClick={handleLogout}>{tSb('logout')}</button>
         </div>
       </aside>
     </>

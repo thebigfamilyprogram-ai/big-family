@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { m, useReducedMotion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { showToast } from '@/components/Toast'
 
@@ -64,6 +65,7 @@ export default function ModulePersonalization({
   track, userId, variant = 'intro',
 }: ModulePersonalizationProps) {
   const pref     = useReducedMotion()
+  const t        = useTranslations('modulePersonalization')
   const sbRef    = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [data,         setData]         = useState<PersonalizationData | null>(null)
@@ -167,7 +169,7 @@ export default function ModulePersonalization({
   }
 
   const allEvalAnswered = data?.autoevaluacion.every((_, i) => evalScores[i] !== undefined) ?? false
-  const SCALE_LABELS = ['1 · Inicio', '2 · Desarrollo', '3 · Logro', '4 · Maestría']
+  const SCALE_LABELS = t.raw('scaleLabels') as string[]
 
   // ── Loading state ─────────────────────────────────────────────────────────
   if (loading) {
@@ -218,7 +220,7 @@ export default function ModulePersonalization({
         color,
         marginBottom: 6,
       }}>
-        PARA TU PERFIL · {arquetipo.toUpperCase()}
+        {t('forProfile')} · {arquetipo.toUpperCase()}
       </p>
       <p style={{
         fontFamily: '"Instrument Serif",serif',
@@ -263,9 +265,9 @@ export default function ModulePersonalization({
           marginBottom: 12,
         }}
       >
-        <div className="mp-eyebrow">REFLEXIONES PERSONALIZADAS</div>
+        <div className="mp-eyebrow">{t('reflectionsTitle')}</div>
         <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 12, color: 'var(--mute)', marginBottom: 14, lineHeight: 1.5 }}>
-          Preguntas diseñadas para tu perfil de {arquetipo}.
+          {t('reflectionsDesc', { arquetipo })}
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -311,7 +313,7 @@ export default function ModulePersonalization({
           marginBottom: 12,
         }}
       >
-        <div className="mp-eyebrow">TU ENTREGABLE</div>
+        <div className="mp-eyebrow">{t('deliverableTitle')}</div>
         <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 13, color: 'var(--ink-2,#2D2D2D)', lineHeight: 1.55, marginBottom: 12 }}>
           {data.entregable_enfoque}
         </p>
@@ -320,7 +322,7 @@ export default function ModulePersonalization({
           className="mp-ta"
           value={entregable}
           onChange={e => handleEntregableChange(e.target.value)}
-          placeholder="Escribe tu entregable aquí..."
+          placeholder={t('deliverablePlaceholder')}
           rows={5}
           style={{ background: 'var(--card-bg)' }}
         />
@@ -338,7 +340,7 @@ export default function ModulePersonalization({
             opacity: entregable.trim() ? 1 : 0.5,
           }}
         >
-          Guardar entregable
+          {t('saveDeliverable')}
         </m.button>
       </m.div>
 
@@ -373,7 +375,7 @@ export default function ModulePersonalization({
           />
         ))}
 
-        <div className="mp-eyebrow">AUTOEVALUACIÓN DEL MÓDULO</div>
+        <div className="mp-eyebrow">{t('selfEvalTitle')}</div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
           {data.autoevaluacion.map((item, i) => (
@@ -416,7 +418,7 @@ export default function ModulePersonalization({
             borderRadius: 10, fontFamily: '"Satoshi",sans-serif',
             fontSize: 13, fontWeight: 700, color: 'var(--accent-teal,#0F7B6C)',
           }}>
-            ✓ Autoevaluación completada
+            {t('selfEvalDone')}
           </div>
         ) : (
           <m.button
@@ -435,7 +437,7 @@ export default function ModulePersonalization({
               transition: 'background .2s, color .2s',
             }}
           >
-            {saving ? 'Guardando…' : 'Completar autoevaluación'}
+            {saving ? t('saving') : t('selfEvalBtn')}
           </m.button>
         )}
       </m.div>

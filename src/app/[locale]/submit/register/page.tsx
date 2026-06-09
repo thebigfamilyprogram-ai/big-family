@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 
@@ -33,8 +34,7 @@ function Logo({ pref }: { pref: boolean | null }) {
   )
 }
 
-function Progress({ step, pref }: { step: 1 | 2 | 3; pref: boolean | null }) {
-  const labels = ['Registro', 'Proyecto', 'Enviado']
+function Progress({ step, pref, labels }: { step: 1 | 2 | 3; pref: boolean | null; labels: [string, string, string] }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28 }}>
       {labels.map((label, i) => {
@@ -69,8 +69,11 @@ function Progress({ step, pref }: { step: 1 | 2 | 3; pref: boolean | null }) {
 }
 
 export default function SubmitRegisterPage() {
-  const router      = useRouter()
-  const pref        = useReducedMotion()
+  const router = useRouter()
+  const pref   = useReducedMotion()
+  const t      = useTranslations('submit')
+  const tR     = useTranslations('submit.register')
+  const progressLabels: [string, string, string] = [t('steps.register'), t('steps.project'), t('steps.sent')]
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [step,         setStep]         = useState<Step>('code')
@@ -107,7 +110,7 @@ export default function SubmitRegisterPage() {
     setCodeLoading(false)
 
     if (!school) {
-      setCodeError('Código no encontrado. Verifica con tu coordinador.')
+      setCodeError(tR('codeNotFound'))
       return
     }
     setSchoolId(school.id)
@@ -118,10 +121,10 @@ export default function SubmitRegisterPage() {
   async function handleInfoSubmit(e: React.FormEvent) {
     e.preventDefault()
     setFormError('')
-    if (!track) { setFormError('Selecciona tu track (Junior o Senior).'); return }
-    if (track === 'junior' && !guardianEmail.trim()) { setFormError('El correo del acudiente es requerido para estudiantes Junior.'); return }
-    if (!termsAccepted) { setFormError('Debes aceptar los términos y condiciones para continuar.'); return }
-    if (password.length < 8) { setFormError('La contraseña debe tener al menos 8 caracteres.'); return }
+    if (!track) { setFormError(tR('errorNoTrack')); return }
+    if (track === 'junior' && !guardianEmail.trim()) { setFormError(tR('errorNoGuardian')); return }
+    if (!termsAccepted) { setFormError(tR('errorNoTerms')); return }
+    if (password.length < 8) { setFormError(tR('errorWeakPassword')); return }
     setFormLoading(true)
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
@@ -134,7 +137,7 @@ export default function SubmitRegisterPage() {
 
     if (signUpError || !data.user) {
       setFormLoading(false)
-      setFormError(signUpError?.message ?? 'Error al crear la cuenta.')
+      setFormError(signUpError?.message ?? tR('errorCreateAccount'))
       return
     }
 
@@ -198,7 +201,7 @@ export default function SubmitRegisterPage() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ ...springNatural, delay: 0.08 }}
         >
-          <Progress step={emailSent ? 2 : 1} pref={pref} />
+          <Progress step={emailSent ? 2 : 1} pref={pref} labels={progressLabels} />
 
           {emailSent ? (
             <m.div
@@ -208,18 +211,18 @@ export default function SubmitRegisterPage() {
               style={{ textAlign: 'center', padding: '8px 0' }}
             >
               <div style={{ fontSize: 40, marginBottom: 16 }}>📬</div>
-              <div className="sr-heading" style={{ marginBottom: 8 }}>Revisa tu correo</div>
+              <div className="sr-heading" style={{ marginBottom: 8 }}>{tR('emailSentHeading')}</div>
               <div className="sr-sub">
-                Te enviamos un enlace de confirmación a <strong>{email}</strong>. Confirma tu cuenta para continuar.
+                {tR('emailSentSubPre')} <strong>{email}</strong>. {tR('emailSentSubPost')}
               </div>
               <div style={{ marginTop: 20, fontSize: 13, color: 'var(--mute)' }}>
-                ¿No llegó? Revisa tu carpeta de spam.
+                {tR('noEmailArrived')}
               </div>
             </m.div>
           ) : step === 'code' ? (
             <>
-              <div className="sr-heading">Regístrate</div>
-              <div className="sr-sub">Ingresa el código de tu colegio para comenzar</div>
+              <div className="sr-heading">{tR('heading')}</div>
+              <div className="sr-sub">{tR('sub')}</div>
 
               <form onSubmit={handleCodeSubmit}>
                 <m.div
@@ -228,12 +231,12 @@ export default function SubmitRegisterPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, ease: expoOut, delay: 0.22 }}
                 >
-                  <label className="sr-label">Código del colegio</label>
+                  <label className="sr-label">{tR('schoolCodeLabel')}</label>
                   <input
                     className="sr-input"
                     value={schoolCode}
                     onChange={e => setSchoolCode(e.target.value)}
-                    placeholder="Ej: BF-2026"
+                    placeholder={tR('schoolCodePlaceholder')}
                     maxLength={20}
                     autoFocus
                     required
@@ -255,7 +258,7 @@ export default function SubmitRegisterPage() {
                 </AnimatePresence>
 
                 <button className={`sr-btn${codeLoading ? ' shimmer' : ''}`} type="submit" disabled={codeLoading || !schoolCode.trim()}>
-                  {codeLoading ? 'Verificando…' : 'Verificar código'}
+                  {codeLoading ? tR('verifyingCode') : tR('verifyCodeBtn')}
                 </button>
               </form>
             </>
@@ -263,7 +266,7 @@ export default function SubmitRegisterPage() {
             <>
               <button className="sr-back" onClick={() => setStep('code')}>
                 <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M9 12L4 7l5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                Cambiar colegio
+                {tR('changeSchool')}
               </button>
 
               <div className="sr-school-badge">
@@ -271,14 +274,14 @@ export default function SubmitRegisterPage() {
                 {schoolName}
               </div>
 
-              <div className="sr-heading">Completa tu perfil</div>
-              <div className="sr-sub">Un paso más para subir tu proyecto</div>
+              <div className="sr-heading">{tR('completeProfile')}</div>
+              <div className="sr-sub">{tR('profileSub')}</div>
 
               <form onSubmit={handleInfoSubmit}>
                 {[
-                  { label: 'Nombre completo', type: 'text', value: fullName, onChange: setFullName, placeholder: 'Tu nombre y apellido', autoFocus: true },
-                  { label: 'Email', type: 'email', value: email, onChange: setEmail, placeholder: 'tu@email.com' },
-                  { label: 'Contraseña', type: 'password', value: password, onChange: setPassword, placeholder: 'Mínimo 8 caracteres', minLength: 8 },
+                  { label: tR('fullNameLabel'), type: 'text', value: fullName, onChange: setFullName, placeholder: tR('fullNamePlaceholder'), autoFocus: true },
+                  { label: tR('emailLabel'), type: 'email', value: email, onChange: setEmail, placeholder: 'tu@email.com' },
+                  { label: tR('passwordLabel'), type: 'password', value: password, onChange: setPassword, placeholder: tR('passwordPlaceholder'), minLength: 8 },
                 ].map((f, i) => (
                   <m.div
                     key={f.label}
@@ -307,15 +310,15 @@ export default function SubmitRegisterPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.18, ease: expoOut, delay: 0.22 }}
                 >
-                  <label className="sr-label">Tu track</label>
+                  <label className="sr-label">{tR('trackLabel')}</label>
                   <div className="sr-tracks">
                     <div className={`sr-track${track === 'junior' ? ' selected' : ''}`} onClick={() => setTrack('junior')}>
-                      <div className="sr-track-name">🌱 Junior</div>
-                      <div className="sr-track-sub">9 a 13 años</div>
+                      <div className="sr-track-name">{tR('juniorLabel')}</div>
+                      <div className="sr-track-sub">{tR('juniorSub')}</div>
                     </div>
                     <div className={`sr-track${track === 'senior' ? ' selected' : ''}`} onClick={() => setTrack('senior')}>
-                      <div className="sr-track-name">⚡ Senior</div>
-                      <div className="sr-track-sub">14 a 18 años</div>
+                      <div className="sr-track-name">{tR('seniorLabel')}</div>
+                      <div className="sr-track-sub">{tR('seniorSub')}</div>
                     </div>
                   </div>
                 </m.div>
@@ -332,13 +335,13 @@ export default function SubmitRegisterPage() {
                       transition={springNatural}
                     >
                       <div className="sr-field" style={{ marginTop: 4 }}>
-                        <label className="sr-label">Correo del acudiente (requerido para menores de edad)</label>
+                        <label className="sr-label">{tR('guardianLabel')}</label>
                         <input
                           className="sr-input"
                           type="email"
                           value={guardianEmail}
                           onChange={e => setGuardianEmail(e.target.value)}
-                          placeholder="correo@acudiente.com"
+                          placeholder={tR('guardianPlaceholder')}
                           required={track === 'junior'}
                         />
                       </div>
@@ -358,7 +361,10 @@ export default function SubmitRegisterPage() {
                     onChange={e => setTermsAccepted(e.target.checked)}
                   />
                   <span className="sr-terms-text">
-                    Acepto los <a href="/terminos" target="_blank" rel="noopener noreferrer">términos y condiciones</a> y la <a href="/privacidad" target="_blank" rel="noopener noreferrer">política de privacidad</a> del programa Big Family.
+                    {tR.rich('termsText', {
+                      termsLink: (chunk) => <a key="terms" href="/terminos" target="_blank" rel="noopener noreferrer">{chunk}</a>,
+                      privacyLink: (chunk) => <a key="privacy" href="/privacidad" target="_blank" rel="noopener noreferrer">{chunk}</a>,
+                    })}
                   </span>
                 </m.label>
 
@@ -381,7 +387,7 @@ export default function SubmitRegisterPage() {
                   type="submit"
                   disabled={formLoading || !fullName || !email || !password || !track || !termsAccepted}
                 >
-                  {formLoading ? 'Creando cuenta…' : 'Crear cuenta y continuar →'}
+                  {formLoading ? tR('creatingAccount') : tR('createAccountBtn')}
                 </button>
               </form>
             </>
@@ -389,7 +395,7 @@ export default function SubmitRegisterPage() {
 
           {!emailSent && (
             <div className="sr-link">
-              ¿Ya tienes cuenta? <a href="/submit/login">Ingresar</a>
+              {tR('haveAccount')} <a href="/submit/login">{tR('loginLink')}</a>
             </div>
           )}
         </m.div>

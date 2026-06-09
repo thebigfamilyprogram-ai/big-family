@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { m, AnimatePresence } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import DOMPurify from 'isomorphic-dompurify'
 
@@ -97,7 +98,8 @@ function DiagramCarousel() {
 }
 
 export default function NewsEditor({ newsId, initialData, userId }: Props) {
-  const router      = useRouter()
+  const router = useRouter()
+  const t      = useTranslations('newsEditor')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [title,          setTitle]         = useState(initialData.title ?? '')
@@ -376,7 +378,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
       {/* Save indicator */}
       {saveStatus !== 'idle' && (
         <div style={{ position:'fixed', top:16, right:24, zIndex:50, fontSize:12, color: saveStatus==='error'?'#C0392B':'#6B6B6B', fontFamily:'Satoshi,sans-serif', background:'var(--card-bg,#fff)', border:'1px solid var(--line,rgba(13,13,13,.1))', borderRadius:8, padding:'4px 10px', boxShadow:'0 2px 8px -2px rgba(0,0,0,.1)' }}>
-          {saveStatus==='saving' ? 'Guardando…' : saveStatus==='error' ? '⚠ Error al guardar' : `Guardado ✓  ${savedAt ? savedAt.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}) : ''}`}
+          {saveStatus==='saving' ? t('saving') : saveStatus==='error' ? t('errorFull') : t('savedAt', { time: savedAt ? savedAt.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}) : '' })}
         </div>
       )}
 
@@ -387,14 +389,14 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
           <div className="ne-left-header">
             <button className="ne-back" onClick={() => router.push('/coordinator/news')}>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 12L4 7l5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Mis noticias
+              {t('backToNews')}
             </button>
             <button
               className={`ne-preview-toggle${previewOpen ? ' active' : ''}`}
               onClick={() => setPreviewOpen(o => !o)}
             >
               <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 3v8" stroke="currentColor" strokeWidth="1.3"/></svg>
-              {previewOpen ? 'Solo editor' : 'Vista previa'}
+              {previewOpen ? t('editorOnly') : t('previewBtn')}
             </button>
           </div>
 
@@ -404,7 +406,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
               className="ne-title"
               value={title}
               onChange={e => { setTitle(e.target.value); setSlug(toSlug(e.target.value)) }}
-              placeholder="Título de la noticia"
+              placeholder={t('titlePlaceholder')}
               maxLength={160}
             />
             <div className="ne-slug-row">
@@ -419,8 +421,8 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
               <button className="ne-tb-btn" onMouseDown={e => { e.preventDefault(); execCmd('formatBlock','h2') }} style={{ fontFamily:'Satoshi,sans-serif', fontWeight:700, fontSize:13 }}>H2</button>
               <button className="ne-tb-btn" onMouseDown={e => { e.preventDefault(); execCmd('formatBlock','h3') }} style={{ fontFamily:'Satoshi,sans-serif', fontWeight:700, fontSize:12 }}>H3</button>
               <div className="ne-tb-sep" />
-              <button className="ne-tb-btn" onMouseDown={e => { e.preventDefault(); execCmd('insertUnorderedList') }}>• Lista</button>
-              <button className="ne-tb-btn" onMouseDown={e => { e.preventDefault(); execCmd('formatBlock','p') }} style={{ fontSize:11 }}>¶ Normal</button>
+              <button className="ne-tb-btn" onMouseDown={e => { e.preventDefault(); execCmd('insertUnorderedList') }}>{t('toolbar.list')}</button>
+              <button className="ne-tb-btn" onMouseDown={e => { e.preventDefault(); execCmd('formatBlock','p') }} style={{ fontSize:11 }}>{t('toolbar.normal')}</button>
             </div>
 
             <div
@@ -428,7 +430,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
               className="ne-editor"
               contentEditable
               suppressContentEditableWarning
-              data-placeholder="Escribe el contenido de la noticia…"
+              data-placeholder={t('contentPlaceholder')}
               onInput={onEditorInput}
               style={{ paddingTop: 4 }}
             />
@@ -436,12 +438,12 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
 
           {/* Cover */}
           <div className="ne-card">
-            <span className="ne-label">Imagen de portada</span>
+            <span className="ne-label">{t('coverLabel')}</span>
             {coverUrl ? (
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={coverUrl} alt="" className="ne-cover-img" />
-                <button className="ne-btn-rm" onClick={removeCover}>✕ Eliminar portada</button>
+                <button className="ne-btn-rm" onClick={removeCover}>{t('removeCover')}</button>
               </>
             ) : (
               <div
@@ -451,15 +453,15 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
                 onDrop={e => { e.preventDefault(); setCoverDrag(false); const f = e.dataTransfer.files?.[0]; if (f) uploadCover(f) }}
                 onClick={() => coverInputRef.current?.click()}
               >
-                {uploading ? <div style={{ fontSize:13, color:'#C0392B' }}>Subiendo imagen…</div> : (
+                {uploading ? <div style={{ fontSize:13, color:'#C0392B' }}>{t('uploadingImage')}</div> : (
                   <>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ display:'block', margin:'0 auto 8px', opacity:.4 }}>
                       <rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" strokeWidth="1.5"/>
                       <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.3"/>
                       <path d="M3 15l5-4 4 4 3-2.5 6 5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    <div style={{ fontSize:13.5, color:'var(--mute,#6B6B6B)' }}>Arrastra una imagen o haz clic</div>
-                    <div style={{ fontSize:12, color:'#bbb', marginTop:4 }}>JPG, PNG, WEBP · 16:9 recomendada</div>
+                    <div style={{ fontSize:13.5, color:'var(--mute,#6B6B6B)' }}>{t('dragOrClick')}</div>
+                    <div style={{ fontSize:12, color:'#bbb', marginTop:4 }}>{t('coverFormats')}</div>
                   </>
                 )}
               </div>
@@ -469,10 +471,10 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
 
           {/* Gallery */}
           <div className="ne-card">
-            <span className="ne-label">Galería de fotos ({galleryUrls.length}/20)</span>
+            <span className="ne-label">{t('galleryLabel')} ({galleryUrls.length}/20)</span>
             {galleryUrls.length < 20 && (
               <div className="ne-drop" onClick={() => galleryInputRef.current?.click()} style={{ marginBottom: galleryUrls.length > 0 ? 12 : 0 }}>
-                {galleryUpl ? <div style={{ fontSize:13, color:'#C0392B' }}>Subiendo fotos…</div> : <div style={{ fontSize:13.5, color:'var(--mute,#6B6B6B)' }}>+ Agregar fotos a la galería</div>}
+                {galleryUpl ? <div style={{ fontSize:13, color:'#C0392B' }}>{t('uploadingPhotos')}</div> : <div style={{ fontSize:13.5, color:'var(--mute,#6B6B6B)' }}>{t('addPhotos')}</div>}
               </div>
             )}
             <input ref={galleryInputRef} type="file" accept="image/*" multiple style={{ display:'none' }} onChange={e => addGalleryFiles(e.target.files)} />
@@ -491,13 +493,13 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
 
           {/* Layout options */}
           <div className="ne-card">
-            <span className="ne-label">Diseño</span>
+            <span className="ne-label">{t('layoutLabel')}</span>
 
-            <div style={{ fontSize:12, fontWeight:600, color:'var(--ink,#0D0D0D)', marginBottom:6 }}>Estilo de portada</div>
+            <div style={{ fontSize:12, fontWeight:600, color:'var(--ink,#0D0D0D)', marginBottom:6 }}>{t('coverStyleLabel')}</div>
             <div className="ne-layout-pills">
               {([
-                { value: 'full',    label: 'Portada completa', Diagram: DiagramFullCover    },
-                { value: 'lateral', label: 'Portada lateral',  Diagram: DiagramLateralCover },
+                { value: 'full',    label: t('coverFull'),    Diagram: DiagramFullCover    },
+                { value: 'lateral', label: t('coverLateral'), Diagram: DiagramLateralCover },
               ] as { value: 'full'|'lateral'; label: string; Diagram: () => JSX.Element }[]).map(({ value, label, Diagram }) => (
                 <button
                   key={value}
@@ -512,11 +514,11 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
 
             <div className="ne-section-divider" />
 
-            <div style={{ fontSize:12, fontWeight:600, color:'var(--ink,#0D0D0D)', marginBottom:6 }}>Estilo de galería</div>
+            <div style={{ fontSize:12, fontWeight:600, color:'var(--ink,#0D0D0D)', marginBottom:6 }}>{t('galleryStyleLabel')}</div>
             <div className="ne-layout-pills">
               {([
-                { value: 'grid',     label: 'Grid',     Diagram: DiagramGrid     },
-                { value: 'carousel', label: 'Carrusel', Diagram: DiagramCarousel },
+                { value: 'grid',     label: t('galleryGrid'),     Diagram: DiagramGrid     },
+                { value: 'carousel', label: t('galleryCarousel'), Diagram: DiagramCarousel },
               ] as { value: 'grid'|'carousel'; label: string; Diagram: () => JSX.Element }[]).map(({ value, label, Diagram }) => (
                 <button
                   key={value}
@@ -532,15 +534,15 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
 
           {/* Extra blocks */}
           <div className="ne-card">
-            <span className="ne-label">Elementos extra</span>
+            <span className="ne-label">{t('extraLabel')}</span>
 
             <div className="ne-extra-section">
-              <div className="ne-extra-label">Cita destacada</div>
+              <div className="ne-extra-label">{t('featuredQuoteLabel')}</div>
               <textarea
                 className="ne-extra-textarea"
                 value={featuredQuote}
                 onChange={e => setFeaturedQuote(e.target.value)}
-                placeholder="Escribe una cita o frase destacada que aparecerá resaltada en el artículo…"
+                placeholder={t('featuredQuotePlaceholder')}
                 rows={3}
               />
             </div>
@@ -548,7 +550,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
             <div className="ne-section-divider" />
 
             <div className="ne-extra-section">
-              <div className="ne-extra-label">Color de acento</div>
+              <div className="ne-extra-label">{t('accentColorLabel')}</div>
               <div style={{ display:'flex', gap:8, alignItems:'center', marginTop:8 }}>
                 {ACCENT_PRESETS.map(color => (
                   <button
@@ -566,12 +568,12 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
             <div className="ne-section-divider" />
 
             <div className="ne-extra-section">
-              <div className="ne-extra-label">Estadística destacada</div>
-              <div style={{ fontSize:12, color:'var(--mute,#6B6B6B)', marginBottom:8 }}>Número · Etiqueta · Descripción</div>
+              <div className="ne-extra-label">{t('highlightStatLabel')}</div>
+              <div style={{ fontSize:12, color:'var(--mute,#6B6B6B)', marginBottom:8 }}>{t('statHint')}</div>
               <div className="ne-stat-inputs">
-                <input className="ne-stat-input" value={highlightStat.number} onChange={e => setHighlightStat(s => ({ ...s, number: e.target.value }))} placeholder="150" />
-                <input className="ne-stat-input" value={highlightStat.label} onChange={e => setHighlightStat(s => ({ ...s, label: e.target.value }))} placeholder="estudiantes" />
-                <input className="ne-stat-input" value={highlightStat.description} onChange={e => setHighlightStat(s => ({ ...s, description: e.target.value }))} placeholder="participaron en el proyecto" />
+                <input className="ne-stat-input" value={highlightStat.number} onChange={e => setHighlightStat(s => ({ ...s, number: e.target.value }))} placeholder={t('statPlaceholderNumber')} />
+                <input className="ne-stat-input" value={highlightStat.label} onChange={e => setHighlightStat(s => ({ ...s, label: e.target.value }))} placeholder={t('statPlaceholderLabel')} />
+                <input className="ne-stat-input" value={highlightStat.description} onChange={e => setHighlightStat(s => ({ ...s, description: e.target.value }))} placeholder={t('statPlaceholderDesc')} />
               </div>
             </div>
           </div>
@@ -592,29 +594,29 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
               <div className="ne-sb-card">
                 <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
                   <span style={{ display:'inline-block', padding:'3px 11px', borderRadius:999, fontSize:11.5, fontWeight:700, background: published ? '#D1FAE5' : 'var(--line,rgba(13,13,13,.08))', color: published ? '#065F46' : 'var(--mute,#6B6B6B)' }}>
-                    {published ? 'Publicado ✓' : 'Borrador'}
+                    {published ? t('publishedBadge') : t('draftBadge')}
                   </span>
                   <div className="ne-save-ind" style={{ marginLeft:'auto' }}>
-                    {saveStatus === 'saving' && <span style={{ color:'var(--mute,#6B6B6B)' }}>Guardando…</span>}
-                    {saveStatus === 'saved' && <span style={{ color:'#065F46' }}>Guardado ✓</span>}
-                    {saveStatus === 'error' && <span style={{ color:'#C0392B' }}>⚠ Error</span>}
+                    {saveStatus === 'saving' && <span style={{ color:'var(--mute,#6B6B6B)' }}>{t('saving')}</span>}
+                    {saveStatus === 'saved' && <span style={{ color:'#065F46' }}>{t('savedShort')}</span>}
+                    {saveStatus === 'error' && <span style={{ color:'#C0392B' }}>{t('saveError')}</span>}
                   </div>
                 </div>
                 {!published ? (
                   <button className="btn-publish" disabled={publishing || !canPublish} onClick={handlePublish}>
-                    {publishing ? 'Publicando…' : 'Publicar noticia →'}
+                    {publishing ? t('publishing') : t('publishBtn')}
                   </button>
                 ) : (
                   <button className="btn-unpublish" disabled={publishing} onClick={handleUnpublish}>
-                    {publishing ? '…' : 'Despublicar'}
+                    {publishing ? '…' : t('unpublishBtn')}
                   </button>
                 )}
-                <button className="btn-save-news" onClick={doSave}>Guardar borrador</button>
+                <button className="btn-save-news" onClick={doSave}>{t('saveDraftBtn')}</button>
               </div>
 
               {/* Preview frame */}
               <div>
-                <div className="ne-pv-label">Vista previa</div>
+                <div className="ne-pv-label">{t('previewLabel')}</div>
                 <div className="ne-pv-frame">
                   {/* Browser chrome */}
                   <div className="ne-chrome">
@@ -628,7 +630,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
 
                   <div className="ne-pv-scroll">
                     {!title && !previewContent ? (
-                      <div className="ne-pv-empty">Empieza a escribir para ver la vista previa</div>
+                      <div className="ne-pv-empty">{t('previewEmpty')}</div>
                     ) : (
                       <>
                         {/* Cover — full */}
@@ -644,7 +646,7 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
                           <div className="ne-pv-lateral">
                             <div className="ne-pv-lateral-text">
                               <div className="ne-pv-meta">{previewDate}</div>
-                              <div className="ne-pv-title">{title || 'Título del artículo'}</div>
+                              <div className="ne-pv-title">{title || t('titleArticleFallback')}</div>
                               {featuredQuote && (
                                 <blockquote className="ne-pv-quote" style={{ borderColor: accentColor }}>
                                   {featuredQuote}
@@ -666,14 +668,14 @@ export default function NewsEditor({ newsId, initialData, userId }: Props) {
                               </div>
                             ) : (
                               <div className="ne-pv-lateral-img" style={{ display:'flex', alignItems:'center', justifyContent:'center', background:'var(--line,rgba(13,13,13,.08))' }}>
-                                <span style={{ fontSize:11, color:'var(--mute,#6B6B6B)' }}>Sin portada</span>
+                                <span style={{ fontSize:11, color:'var(--mute,#6B6B6B)' }}>{t('noCover')}</span>
                               </div>
                             )}
                           </div>
                         ) : (
                           <div className="ne-pv-body-pad">
                             <div className="ne-pv-meta">{previewDate}</div>
-                            <div className="ne-pv-title">{title || 'Título del artículo'}</div>
+                            <div className="ne-pv-title">{title || t('titleArticleFallback')}</div>
                             {highlightStat.number && (
                               <div className="ne-pv-stat-card" style={{ borderColor: accentColor + '33', background: accentColor + '0D' }}>
                                 <div className="ne-pv-stat-num" style={{ color: accentColor }}>{highlightStat.number}</div>

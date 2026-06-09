@@ -5,10 +5,10 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { m } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 
-function Progress({ step }: { step: 1 | 2 | 3 }) {
-  const labels = ['Registro', 'Proyecto', 'Enviado']
+function Progress({ step, labels }: { step: 1 | 2 | 3; labels: [string, string, string] }) {
   return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:0, marginBottom:40 }}>
       {labels.map((label, i) => {
@@ -39,7 +39,9 @@ interface Summary {
 }
 
 export default function SubmitConfirmationPage() {
-  const router      = useRouter()
+  const router = useRouter()
+  const t      = useTranslations('submit')
+  const tC     = useTranslations('submit.confirmation')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const [summary, setSummary] = useState<Summary | null>(null)
   const [loading, setLoading] = useState(true)
@@ -71,9 +73,9 @@ export default function SubmitConfirmationPage() {
       if (cancelled) return
 
       setSummary({
-        fullName:     profile?.display_name ?? user.email ?? 'Estudiante',
+        fullName:     profile?.display_name ?? user.email ?? tC('studentFallback'),
         schoolName:   (school as any)?.name ?? '',
-        projectTitle: project?.title ?? 'Tu proyecto',
+        projectTitle: project?.title ?? tC('projectFallback'),
         projectId:    project?.id ?? '',
       })
       setLoading(false)
@@ -115,7 +117,7 @@ export default function SubmitConfirmationPage() {
           <span className="sc-logo-name">Big Family</span>
         </div>
 
-        <Progress step={3} />
+        <Progress step={3} labels={[t('steps.register'), t('steps.project'), t('steps.sent')]} />
 
         {/* Animated checkmark */}
         <m.div
@@ -147,8 +149,8 @@ export default function SubmitConfirmationPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 180, damping: 26, delay: 0.5 }}
         >
-          <h1 className="sc-title">¡Proyecto enviado exitosamente!</h1>
-          <p className="sc-sub">Tu coordinador revisará tu proyecto pronto y te dará retroalimentación.</p>
+          <h1 className="sc-title">{tC('title')}</h1>
+          <p className="sc-sub">{tC('sub')}</p>
         </m.div>
 
         {loading ? null : summary && (
@@ -160,29 +162,29 @@ export default function SubmitConfirmationPage() {
           >
             <div className="sc-info">
               <div className="sc-info-row">
-                <span className="sc-info-label">Proyecto</span>
-                <span className="sc-info-value">{summary.projectTitle || 'Sin título'}</span>
+                <span className="sc-info-label">{tC('labelProject')}</span>
+                <span className="sc-info-value">{summary.projectTitle || tC('noTitle')}</span>
               </div>
               <div className="sc-info-row">
-                <span className="sc-info-label">Estudiante</span>
+                <span className="sc-info-label">{tC('labelStudent')}</span>
                 <span className="sc-info-value">{summary.fullName}</span>
               </div>
               {summary.schoolName && (
                 <div className="sc-info-row">
-                  <span className="sc-info-label">Colegio</span>
+                  <span className="sc-info-label">{tC('labelSchool')}</span>
                   <span className="sc-info-value">{summary.schoolName}</span>
                 </div>
               )}
               <div className="sc-info-row">
-                <span className="sc-info-label">Estado</span>
-                <span className="sc-info-value" style={{ color:'#92400E', fontWeight:700 }}>En revisión</span>
+                <span className="sc-info-label">{tC('labelStatus')}</span>
+                <span className="sc-info-value" style={{ color:'#92400E', fontWeight:700 }}>{tC('statusPending')}</span>
               </div>
             </div>
 
             <div style={{ display:'flex', gap:12, justifyContent:'center', flexWrap:'wrap' }}>
-              <a href="/submit/project" className="sc-btn-primary">Ver mi proyecto →</a>
+              <a href="/submit/project" className="sc-btn-primary">{tC('viewProjectBtn')}</a>
               <button className="sc-btn-ghost" onClick={() => { if (supabaseRef.current) supabaseRef.current.auth.signOut().then(() => router.replace('/submit')) }}>
-                Cerrar sesión
+                {tC('logoutBtn')}
               </button>
             </div>
           </m.div>

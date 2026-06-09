@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { m, AnimatePresence } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { showToast } from '@/components/Toast'
 
@@ -130,10 +131,10 @@ function computeCompletion(v: ValuesSnapshot): number {
 
 // ── Rich Textarea ─────────────────────────────────────────────────────────────
 function RichTextarea({
-  value, onChange, disabled, minHeight = 100, rows = 4,
+  value, onChange, disabled, minHeight = 100, rows = 4, wordCountLabel,
 }: {
   value: string; onChange: (v: string) => void
-  disabled: boolean; minHeight?: number; rows?: number
+  disabled: boolean; minHeight?: number; rows?: number; wordCountLabel?: string
 }) {
   const elRef = useRef<HTMLTextAreaElement>(null)
   const hist  = useRef<{ s: string[]; i: number }>({ s: [value], i: 0 })
@@ -215,7 +216,7 @@ function RichTextarea({
   return (
     <div className="pe-rtw" style={{ marginBottom: 4 }}>
       {!disabled && (
-        <div className="pe-toolbar" role="toolbar" aria-label="Formato">
+        <div className="pe-toolbar" role="toolbar">
           {/* Formatting */}
           {tb('Negrita (**texto**)',    () => wrap('**', '**', 'texto'),     <strong style={{ fontSize: 13, fontFamily: 'Satoshi,sans-serif' }}>B</strong>)}
           {tb('Cursiva (*texto*)',      () => wrap('*',  '*',  'texto'),     <em style={{ fontSize: 13, fontStyle: 'italic', fontFamily: "'Instrument Serif',serif" }}>I</em>)}
@@ -279,7 +280,7 @@ function RichTextarea({
           disabled={disabled}
           rows={rows}
         />
-        <span className="pe-rtw-wc">{wc(value)} palabras</span>
+        <span className="pe-rtw-wc">{wordCountLabel ?? `${wc(value)} palabras`}</span>
       </div>
     </div>
   )
@@ -306,8 +307,8 @@ function CircleProgress({ pct }: { pct: number }) {
   )
 }
 
-function Section({ num, label, open, done, onToggle, children }: {
-  num: number; label: string; open: boolean; done: boolean; onToggle: () => void; children: React.ReactNode
+function Section({ num, label, open, done, onToggle, children, doneLabel }: {
+  num: number; label: string; open: boolean; done: boolean; onToggle: () => void; children: React.ReactNode; doneLabel?: string
 }) {
   return (
     <div id={`section-${num}`} style={{ borderBottom: '1px solid rgba(13,13,13,0.08)', scrollMarginTop: 80 }}>
@@ -322,7 +323,7 @@ function Section({ num, label, open, done, onToggle, children }: {
           </span>
           {done && (
             <span style={{ padding: '2px 8px', background: '#D1FAE5', color: '#065F46', borderRadius: 999, fontSize: 10.5, fontWeight: 700, flexShrink: 0 }}>
-              ✓ Completo
+              {doneLabel ?? '✓ Completo'}
             </span>
           )}
         </div>
@@ -345,25 +346,26 @@ function Section({ num, label, open, done, onToggle, children }: {
   )
 }
 
-function SubField({ label, value, onChange, disabled }: {
-  label: string; value: string; onChange: (v: string) => void; disabled: boolean
+function SubField({ label, value, onChange, disabled, wordCountLabel }: {
+  label: string; value: string; onChange: (v: string) => void; disabled: boolean; wordCountLabel?: string
 }) {
   return (
     <div style={{ marginBottom: 20 }}>
       <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 500, fontSize: 13, color: 'var(--ink-2)', marginBottom: 8, lineHeight: 1.5 }}>
         {label}
       </div>
-      <RichTextarea value={value} onChange={onChange} disabled={disabled} minHeight={100} rows={4} />
+      <RichTextarea value={value} onChange={onChange} disabled={disabled} minHeight={100} rows={4} wordCountLabel={wordCountLabel} />
     </div>
   )
 }
 
-function SaveIndicator({ saveStatus, savedAt }: { saveStatus: 'idle'|'saving'|'saved'|'error'; savedAt: Date | null }) {
+type SaveLabels = { saving: string; error: string; savedAt: (time: string) => string }
+function SaveIndicator({ saveStatus, savedAt, labels }: { saveStatus: 'idle'|'saving'|'saved'|'error'; savedAt: Date | null; labels: SaveLabels }) {
   if (saveStatus === 'idle') return null
   const text =
-    saveStatus === 'saving' ? 'Guardando…' :
-    saveStatus === 'error'  ? '⚠ Error al guardar — reintentando' :
-    `Guardado ✓  ${savedAt ? savedAt.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : ''}`
+    saveStatus === 'saving' ? labels.saving :
+    saveStatus === 'error'  ? labels.error :
+    labels.savedAt(savedAt ? savedAt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '')
   const color = saveStatus === 'error' ? '#C0392B' : '#6B6B6B'
   return (
     <div style={{ position: 'fixed', top: 16, right: 24, zIndex: 50, fontSize: 12, color, fontFamily: 'Satoshi,sans-serif', background: 'var(--card-bg)', border: '1px solid var(--line)', borderRadius: 8, padding: '4px 10px', boxShadow: '0 2px 8px -2px rgba(0,0,0,.1)' }}>
@@ -376,8 +378,40 @@ function SaveIndicator({ saveStatus, savedAt }: { saveStatus: 'idle'|'saving'|'s
 export default function ProjectEditor({
   projectId, userId, userFullName, schoolName, initialData, onSave, onSubmit,
 }: Props) {
-  const router      = useRouter()
+  const router = useRouter()
+  const t      = useTranslations('projectEditor')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
+
+  // ── Translated constants ───────────────────────────────────────────────────
+  const CATEGORIES_T = [
+    { value: 'liderazgo-comunitario', label: t('categories.liderazgo-comunitario') },
+    { value: 'innovacion-social',     label: t('categories.innovacion-social') },
+    { value: 'medio-ambiente',        label: t('categories.medio-ambiente') },
+    { value: 'educacion',             label: t('categories.educacion') },
+    { value: 'salud-bienestar',       label: t('categories.salud-bienestar') },
+    { value: 'emprendimiento',        label: t('categories.emprendimiento') },
+  ]
+  const TRACKS_T = [
+    { value: 'junior', label: t('tracks.juniorLabel'), sub: t('tracks.juniorSub') },
+    { value: 'senior', label: t('tracks.seniorLabel'), sub: t('tracks.seniorSub') },
+  ]
+  const SIDEBAR_SECTIONS_T = [
+    { num: 2, label: t('sidebarSections.identificar')    },
+    { num: 3, label: t('sidebarSections.diseniar')       },
+    { num: 4, label: t('sidebarSections.ejecutar')       },
+    { num: 5, label: t('sidebarSections.medir')          },
+    { num: 6, label: t('sidebarSections.reflexionar')    },
+    { num: 7, label: t('sidebarSections.planContinuidad')},
+    { num: 8, label: t('sidebarSections.bigLeader')      },
+    { num: 9, label: t('sidebarSections.evidencias')     },
+  ]
+  const doneLabel    = t('done')
+  const wcLabel      = (count: number) => t('wordCount', { count })
+  const saveLabels: SaveLabels = {
+    saving:  t('saving'),
+    error:   t('savingError'),
+    savedAt: (time) => t('savedAt', { time }),
+  }
 
   // ── State — initialized directly from initialData ─────────────────────────
   const [title,    setTitle]    = useState(initialData.title ?? '')
@@ -608,7 +642,7 @@ export default function ProjectEditor({
   const isLocked   = status === 'pending'
   const isRejected = status === 'rejected'
   const today    = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
-  const trackLabel = TRACKS.find(t => t.value === track)?.label ?? ''
+  const trackLabel = TRACKS_T.find(tr => tr.value === track)?.label ?? ''
 
   return (
     <>
@@ -697,7 +731,7 @@ export default function ProjectEditor({
         }
       `}</style>
 
-      <SaveIndicator saveStatus={saveStatus} savedAt={savedAt} />
+      <SaveIndicator saveStatus={saveStatus} savedAt={savedAt} labels={saveLabels} />
 
       <div className="pe-wrap">
         {/* ── LEFT: Editor ── */}
@@ -706,7 +740,7 @@ export default function ProjectEditor({
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M9 12L4 7l5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            Mis Proyectos
+            {t('backToProjects')}
           </button>
 
           {isLocked && (
@@ -714,7 +748,7 @@ export default function ProjectEditor({
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 8v4M12 16h.01" stroke="#92400E" strokeWidth="1.8" strokeLinecap="round"/>
               </svg>
-              Este proyecto está en revisión. No puedes editarlo hasta recibir respuesta del coordinador.
+              {t('lockedBanner')}
             </div>
           )}
 
@@ -725,16 +759,16 @@ export default function ProjectEditor({
               </svg>
               <div>
                 <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, color: '#C0392B', marginBottom: 4 }}>
-                  Tu proyecto fue devuelto — edítalo y reenvíalo
+                  {t('rejectedTitle')}
                 </div>
                 {rejectionReason && (
                   <div style={{ fontSize: 13.5, color: '#7a1f13', lineHeight: 1.55 }}>
-                    <strong>Motivo:</strong> {rejectionReason}
+                    <strong>{t('rejectedReason')}</strong> {rejectionReason}
                   </div>
                 )}
                 {!rejectionReason && (
                   <div style={{ fontSize: 13.5, color: '#9a3a2e', lineHeight: 1.55 }}>
-                    Revisa los comentarios de tu coordinador y realiza las correcciones necesarias.
+                    {t('rejectedNoReason')}
                   </div>
                 )}
               </div>
@@ -752,13 +786,13 @@ export default function ProjectEditor({
                 Big Family
               </div>
               <input className="pe-cover-title" value={title} onChange={e => setTitle(e.target.value)}
-                placeholder="Nombre del proyecto" disabled={isLocked} maxLength={120} />
+                placeholder={t('titlePlaceholder')} disabled={isLocked} maxLength={120} />
               <input className="pe-cover-subtitle" value={subtitle} onChange={e => setSubtitle(e.target.value)}
-                placeholder="Una línea que describa tu proyecto" disabled={isLocked} maxLength={200} />
+                placeholder={t('subtitlePlaceholder')} disabled={isLocked} maxLength={200} />
               <div className="pe-cover-footer">
-                <span>{schoolName || 'Mi colegio'}</span>
+                <span>{schoolName || t('schoolFallback')}</span>
                 <span>{userFullName}</span>
-                {trackLabel && <span>{trackLabel} Leader</span>}
+                {trackLabel && <span>{trackLabel} {t('leaderSuffix')}</span>}
                 <span>{today}</span>
               </div>
             </div>
@@ -766,111 +800,111 @@ export default function ProjectEditor({
             {/* Categoría + Track */}
             <div className="pe-cat-row">
               <div style={{ marginBottom: 20 }}>
-                <label className="pe-label">Categoría del proyecto</label>
+                <label className="pe-label">{t('categoryLabel')}</label>
                 <select className="pe-input pe-select" value={category} onChange={e => setCategory(e.target.value)} disabled={isLocked}>
-                  <option value="">Selecciona una categoría</option>
-                  {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  <option value="">{t('categoryPlaceholder')}</option>
+                  {CATEGORIES_T.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </select>
               </div>
-              <label className="pe-label">Track</label>
+              <label className="pe-label">{t('trackLabel')}</label>
               <div className="pe-track-btns">
-                {TRACKS.map(t => (
-                  <button key={t.value} className={`pe-track-btn${track === t.value ? ' selected' : ''}`}
-                    onClick={() => setTrack(t.value)} disabled={isLocked} type="button">
-                    <div className="pe-track-btn-label">{t.label} Leader</div>
-                    <div className="pe-track-btn-sub">{t.sub}</div>
+                {TRACKS_T.map(tr => (
+                  <button key={tr.value} className={`pe-track-btn${track === tr.value ? ' selected' : ''}`}
+                    onClick={() => setTrack(tr.value)} disabled={isLocked} type="button">
+                    <div className="pe-track-btn-label">{tr.label} {t('leaderSuffix')}</div>
+                    <div className="pe-track-btn-sub">{tr.sub}</div>
                   </button>
                 ))}
               </div>
             </div>
 
             {/* ── SECCIÓN 2 — IDENTIFICAR ── */}
-            <Section num={2} label="Identificar"
+            <Section num={2} label={t('sections.identificar')} doneLabel={doneLabel}
               open={openSections.has(2)} done={sectionDone[2]} onToggle={() => toggleSection(2)}>
-              <SubField label="¿Qué problema identificaste en tu comunidad?"
-                value={identificar.problema} disabled={isLocked}
+              <SubField label={t('identificar.problema')}
+                value={identificar.problema} disabled={isLocked} wordCountLabel={wcLabel(wc(identificar.problema))}
                 onChange={v => setIdentificar(p => ({ ...p, problema: v }))} />
-              <SubField label="¿A quiénes afecta este problema?"
-                value={identificar.afecta} disabled={isLocked}
+              <SubField label={t('identificar.afecta')}
+                value={identificar.afecta} disabled={isLocked} wordCountLabel={wcLabel(wc(identificar.afecta))}
                 onChange={v => setIdentificar(p => ({ ...p, afecta: v }))} />
-              <SubField label="¿Por qué decidiste trabajar en esto?"
-                value={identificar.porque} disabled={isLocked}
+              <SubField label={t('identificar.porque')}
+                value={identificar.porque} disabled={isLocked} wordCountLabel={wcLabel(wc(identificar.porque))}
                 onChange={v => setIdentificar(p => ({ ...p, porque: v }))} />
             </Section>
 
             {/* ── SECCIÓN 3 — DISEÑAR ── */}
-            <Section num={3} label="Diseñar"
+            <Section num={3} label={t('sections.diseniar')} doneLabel={doneLabel}
               open={openSections.has(3)} done={sectionDone[3]} onToggle={() => toggleSection(3)}>
-              <SubField label="¿Cuál fue tu meta principal?"
-                value={diseniar.meta} disabled={isLocked}
+              <SubField label={t('diseniar.meta')}
+                value={diseniar.meta} disabled={isLocked} wordCountLabel={wcLabel(wc(diseniar.meta))}
                 onChange={v => setDiseniar(p => ({ ...p, meta: v }))} />
-              <SubField label="¿Quiénes formaron tu equipo?"
-                value={diseniar.equipo} disabled={isLocked}
+              <SubField label={t('diseniar.equipo')}
+                value={diseniar.equipo} disabled={isLocked} wordCountLabel={wcLabel(wc(diseniar.equipo))}
                 onChange={v => setDiseniar(p => ({ ...p, equipo: v }))} />
-              <SubField label="¿Qué recursos utilizaste?"
-                value={diseniar.recursos} disabled={isLocked}
+              <SubField label={t('diseniar.recursos')}
+                value={diseniar.recursos} disabled={isLocked} wordCountLabel={wcLabel(wc(diseniar.recursos))}
                 onChange={v => setDiseniar(p => ({ ...p, recursos: v }))} />
-              <SubField label="¿En cuánto tiempo lo ejecutaste?"
-                value={diseniar.tiempo} disabled={isLocked}
+              <SubField label={t('diseniar.tiempo')}
+                value={diseniar.tiempo} disabled={isLocked} wordCountLabel={wcLabel(wc(diseniar.tiempo))}
                 onChange={v => setDiseniar(p => ({ ...p, tiempo: v }))} />
             </Section>
 
             {/* ── SECCIÓN 4 — EJECUTAR ── */}
-            <Section num={4} label="Ejecutar"
+            <Section num={4} label={t('sections.ejecutar')} doneLabel={doneLabel}
               open={openSections.has(4)} done={sectionDone[4]} onToggle={() => toggleSection(4)}>
-              <SubField label="¿Qué acciones concretas realizaste?"
-                value={ejecutar.acciones} disabled={isLocked}
+              <SubField label={t('ejecutar.acciones')}
+                value={ejecutar.acciones} disabled={isLocked} wordCountLabel={wcLabel(wc(ejecutar.acciones))}
                 onChange={v => setEjecutar(p => ({ ...p, acciones: v }))} />
-              <SubField label="¿Cómo lideraste al equipo?"
-                value={ejecutar.liderazgo} disabled={isLocked}
+              <SubField label={t('ejecutar.liderazgo')}
+                value={ejecutar.liderazgo} disabled={isLocked} wordCountLabel={wcLabel(wc(ejecutar.liderazgo))}
                 onChange={v => setEjecutar(p => ({ ...p, liderazgo: v }))} />
-              <SubField label="¿Qué dificultades encontraste y cómo las superaste?"
-                value={ejecutar.dificultades} disabled={isLocked}
+              <SubField label={t('ejecutar.dificultades')}
+                value={ejecutar.dificultades} disabled={isLocked} wordCountLabel={wcLabel(wc(ejecutar.dificultades))}
                 onChange={v => setEjecutar(p => ({ ...p, dificultades: v }))} />
             </Section>
 
             {/* ── SECCIÓN 5 — MEDIR ── */}
-            <Section num={5} label="Medir"
+            <Section num={5} label={t('sections.medir')} doneLabel={doneLabel}
               open={openSections.has(5)} done={sectionDone[5]} onToggle={() => toggleSection(5)}>
-              <SubField label="¿Cuántas personas impactaste?"
-                value={medir.personas} disabled={isLocked}
+              <SubField label={t('medir.personas')}
+                value={medir.personas} disabled={isLocked} wordCountLabel={wcLabel(wc(medir.personas))}
                 onChange={v => setMedir(p => ({ ...p, personas: v }))} />
-              <SubField label="¿Qué cambió concretamente?"
-                value={medir.cambio} disabled={isLocked}
+              <SubField label={t('medir.cambio')}
+                value={medir.cambio} disabled={isLocked} wordCountLabel={wcLabel(wc(medir.cambio))}
                 onChange={v => setMedir(p => ({ ...p, cambio: v }))} />
-              <SubField label="¿Qué evidencia tienes? (fotos, testimonios, números)"
-                value={medir.evidencia} disabled={isLocked}
+              <SubField label={t('medir.evidencia')}
+                value={medir.evidencia} disabled={isLocked} wordCountLabel={wcLabel(wc(medir.evidencia))}
                 onChange={v => setMedir(p => ({ ...p, evidencia: v }))} />
             </Section>
 
             {/* ── SECCIÓN 6 — REFLEXIONAR ── */}
-            <Section num={6} label="Reflexionar"
+            <Section num={6} label={t('sections.reflexionar')} doneLabel={doneLabel}
               open={openSections.has(6)} done={sectionDone[6]} onToggle={() => toggleSection(6)}>
-              <SubField label="¿Qué aprendiste de esta experiencia?"
-                value={reflexionar.aprendizaje} disabled={isLocked}
+              <SubField label={t('reflexionar.aprendizaje')}
+                value={reflexionar.aprendizaje} disabled={isLocked} wordCountLabel={wcLabel(wc(reflexionar.aprendizaje))}
                 onChange={v => setReflexionar(p => ({ ...p, aprendizaje: v }))} />
-              <SubField label="¿Qué harías diferente?"
-                value={reflexionar.diferente} disabled={isLocked}
+              <SubField label={t('reflexionar.diferente')}
+                value={reflexionar.diferente} disabled={isLocked} wordCountLabel={wcLabel(wc(reflexionar.diferente))}
                 onChange={v => setReflexionar(p => ({ ...p, diferente: v }))} />
-              <SubField label="¿Qué fue lo más difícil?"
-                value={reflexionar.dificil} disabled={isLocked}
+              <SubField label={t('reflexionar.dificil')}
+                value={reflexionar.dificil} disabled={isLocked} wordCountLabel={wcLabel(wc(reflexionar.dificil))}
                 onChange={v => setReflexionar(p => ({ ...p, dificil: v }))} />
             </Section>
 
             {/* ── SECCIÓN 7 — PLAN DE CONTINUIDAD ── */}
-            <Section num={7} label="Plan de Continuidad"
+            <Section num={7} label={t('sections.planContinuidad')} doneLabel={doneLabel}
               open={openSections.has(7)} done={sectionDone[7]} onToggle={() => toggleSection(7)}>
-              <RichTextarea value={planContinuidad} onChange={v => setPlanContinuidad(v)} disabled={isLocked} minHeight={140} />
+              <RichTextarea value={planContinuidad} onChange={v => setPlanContinuidad(v)} disabled={isLocked} minHeight={140} wordCountLabel={wcLabel(wc(planContinuidad))} />
             </Section>
 
             {/* ── SECCIÓN 8 — BIG LEADER MODEL ── */}
-            <Section num={8} label="Mi Mapa al Big Leader Model"
+            <Section num={8} label={t('sections.bigLeader')} doneLabel={doneLabel}
               open={openSections.has(8)} done={sectionDone[8]} onToggle={() => toggleSection(8)}>
-              <RichTextarea value={bigLeaderModelReflection} onChange={v => setBigLeaderModelReflection(v)} disabled={isLocked} minHeight={140} />
+              <RichTextarea value={bigLeaderModelReflection} onChange={v => setBigLeaderModelReflection(v)} disabled={isLocked} minHeight={140} wordCountLabel={wcLabel(wc(bigLeaderModelReflection))} />
             </Section>
 
             {/* ── SECCIÓN 9 — EVIDENCIA FOTOGRÁFICA ── */}
-            <Section num={9} label="Evidencia fotográfica"
+            <Section num={9} label={t('sections.evidencias')} doneLabel={doneLabel}
               open={openSections.has(9)} done={sectionDone[9]} onToggle={() => toggleSection(9)}>
               {!isLocked && evidenceUrls.length < 10 && (
                 <div
@@ -881,7 +915,7 @@ export default function ProjectEditor({
                   onClick={() => imgInputRef.current?.click()}
                 >
                   {uploadingImg ? (
-                    <div style={{ fontSize: 14, color: '#C0392B' }}>Subiendo foto…</div>
+                    <div style={{ fontSize: 14, color: '#C0392B' }}>{t('uploadingPhoto')}</div>
                   ) : (
                     <>
                       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ margin: '0 auto', display: 'block' }}>
@@ -889,8 +923,8 @@ export default function ProjectEditor({
                         <circle cx="8.5" cy="8.5" r="1.5" stroke="#9a9690" strokeWidth="1.3"/>
                         <path d="M3 15l5-4 4 4 3-2.5 6 5.5" stroke="#9a9690" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                      <p className="pe-drop-text">Arrastra fotos aquí o haz clic para seleccionar</p>
-                      <p className="pe-drop-sub">{evidenceUrls.length}/10 fotos · JPG, PNG, WEBP</p>
+                      <p className="pe-drop-text">{t('dropPhotos')}</p>
+                      <p className="pe-drop-sub">{t('photoCount', { count: evidenceUrls.length })}</p>
                     </>
                   )}
                 </div>
@@ -909,7 +943,7 @@ export default function ProjectEditor({
               )}
 
               <div style={{ marginTop: 20 }}>
-                <label className="pe-label" style={{ marginBottom: 8, fontSize: 13 }}>PDF opcional</label>
+                <label className="pe-label" style={{ marginBottom: 8, fontSize: 13 }}>{t('pdfOptional')}</label>
                 {pdfUrl ? (
                   <div className="pe-pdf-row">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -937,8 +971,8 @@ export default function ProjectEditor({
                     onClick={() => pdfInputRef.current?.click()}
                   >
                     {uploadingPdf
-                      ? <div style={{ fontSize: 13, color: '#C0392B' }}>Subiendo PDF…</div>
-                      : <p className="pe-drop-text" style={{ marginTop: 0 }}>Arrastra un PDF aquí o haz clic</p>
+                      ? <div style={{ fontSize: 13, color: '#C0392B' }}>{t('uploadingPdf')}</div>
+                      : <p className="pe-drop-text" style={{ marginTop: 0 }}>{t('dropPdf')}</p>
                     }
                   </div>
                 ) : null}
@@ -947,8 +981,8 @@ export default function ProjectEditor({
 
               {/* ── Video opcional (YouTube / Vimeo URL) ── */}
               <div style={{ marginTop: 20 }}>
-                <label className="pe-label" style={{ marginBottom: 6, fontSize: 13 }}>Video del proyecto (YouTube o Vimeo)</label>
-                <p style={{ fontSize: 12, color: 'var(--mute)', marginBottom: 8 }}>Pega el enlace de tu video de YouTube o Vimeo.</p>
+                <label className="pe-label" style={{ marginBottom: 6, fontSize: 13 }}>{t('videoLabel')}</label>
+                <p style={{ fontSize: 12, color: 'var(--mute)', marginBottom: 8 }}>{t('videoHint')}</p>
                 <input
                   className="pe-input"
                   type="url"
@@ -962,7 +996,7 @@ export default function ProjectEditor({
                   const embedUrl = getVideoEmbedUrl(videoUrl)
                   if (!embedUrl) return (
                     <p style={{ fontSize: 12, color: '#C0392B', marginTop: 6 }}>
-                      URL no válida. Usa un enlace de YouTube o Vimeo.
+                      {t('videoInvalid')}
                     </p>
                   )
                   return (
@@ -972,7 +1006,7 @@ export default function ProjectEditor({
                         style={{ width: '100%', height: '100%', border: 'none' }}
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
-                        title="Vista previa del video"
+                        title={t('videoPreviewTitle')}
                       />
                     </div>
                   )
@@ -988,16 +1022,16 @@ export default function ProjectEditor({
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
               <CircleProgress pct={completion} />
               <p style={{ marginTop: 10, fontSize: 13, color: 'var(--mute)' }}>
-                {doneSectionCount} de 9 secciones completadas
+                {t('completionText', { done: doneSectionCount })}
               </p>
             </div>
 
             <div className="pe-checklist">
               <div className="pe-check-item" onClick={() => document.querySelector('.pe-cover')?.scrollIntoView({ behavior: 'smooth' })}>
                 <div className={`pe-check-dot${sectionDone[1] ? ' done' : ''}`}>{sectionDone[1] ? '✓' : ''}</div>
-                <span>Portada</span>
+                <span>{t('coverSection')}</span>
               </div>
-              {SIDEBAR_SECTIONS.map(s => (
+              {SIDEBAR_SECTIONS_T.map(s => (
                 <div key={s.num} className="pe-check-item" onClick={() => jumpTo(s.num)}>
                   <div className={`pe-check-dot${sectionDone[s.num] ? ' done' : ''}`}>{sectionDone[s.num] ? '✓' : ''}</div>
                   <span>{s.label}</span>
@@ -1006,24 +1040,24 @@ export default function ProjectEditor({
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              {status === 'draft'    && <span style={{ display: 'inline-block', padding: '4px 12px', background: 'var(--line)',  color: 'var(--mute)', borderRadius: 999, fontSize: 12, fontWeight: 600 }}>Borrador</span>}
-              {status === 'pending'  && <span style={{ display: 'inline-block', padding: '4px 12px', background: '#FFFBEB',      color: '#92400E',     borderRadius: 999, fontSize: 12, fontWeight: 600 }}>En revisión</span>}
-              {status === 'approved' && <span style={{ display: 'inline-block', padding: '4px 12px', background: '#D1FAE5',      color: '#065F46',     borderRadius: 999, fontSize: 12, fontWeight: 600 }}>Aprobado ✓</span>}
-              {status === 'rejected' && <span style={{ display: 'inline-block', padding: '4px 12px', background: '#FEE2E2',      color: '#991B1B',     borderRadius: 999, fontSize: 12, fontWeight: 600 }}>Rechazado</span>}
+              {status === 'draft'    && <span style={{ display: 'inline-block', padding: '4px 12px', background: 'var(--line)',  color: 'var(--mute)', borderRadius: 999, fontSize: 12, fontWeight: 600 }}>{t('statusDraft')}</span>}
+              {status === 'pending'  && <span style={{ display: 'inline-block', padding: '4px 12px', background: '#FFFBEB',      color: '#92400E',     borderRadius: 999, fontSize: 12, fontWeight: 600 }}>{t('statusPending')}</span>}
+              {status === 'approved' && <span style={{ display: 'inline-block', padding: '4px 12px', background: '#D1FAE5',      color: '#065F46',     borderRadius: 999, fontSize: 12, fontWeight: 600 }}>{t('statusApproved')}</span>}
+              {status === 'rejected' && <span style={{ display: 'inline-block', padding: '4px 12px', background: '#FEE2E2',      color: '#991B1B',     borderRadius: 999, fontSize: 12, fontWeight: 600 }}>{t('statusRejected')}</span>}
             </div>
 
             {!isLocked && (
               <>
                 {completion < 70 && (
                   <p style={{ fontSize: 11.5, color: '#9a9690', marginBottom: 8, lineHeight: 1.4 }}>
-                    Completa al menos el 70% para enviar al coordinador
+                    {t('completeToSend')}
                   </p>
                 )}
                 <button className="btn-submit-proj" onClick={() => setSubmitModal(true)} disabled={completion < 70}
                   style={isRejected ? { background: '#C0392B' } : undefined}>
-                  {isRejected ? 'Volver a enviar al coordinador →' : 'Enviar al coordinador →'}
+                  {isRejected ? t('resendBtn') : t('sendBtn')}
                 </button>
-                <button className="btn-save-draft" onClick={doSave}>Guardar borrador</button>
+                <button className="btn-save-draft" onClick={doSave}>{t('saveDraftBtn')}</button>
               </>
             )}
           </div>
@@ -1046,19 +1080,19 @@ export default function ProjectEditor({
               style={{ background: 'var(--card-bg)', borderRadius: 20, padding: '36px 32px', maxWidth: 440, width: '100%', boxShadow: '0 24px 64px -12px rgba(0,0,0,.25)' }}
             >
               <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 10 }}>
-                ¿Enviar al coordinador?
+                {t('submitModalTitle')}
               </div>
               <p style={{ fontSize: 14, color: 'var(--mute)', lineHeight: 1.6, marginBottom: 24 }}>
-                Una vez enviado, no podrás editar el proyecto hasta recibir respuesta de tu coordinador.
+                {t('submitModalBody')}
               </p>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button onClick={() => setSubmitModal(false)} disabled={submitting}
                   style={{ padding: '10px 20px', borderRadius: 999, background: 'transparent', color: 'var(--mute)', border: '1px solid var(--line)', fontFamily: 'inherit', fontSize: 14, cursor: 'pointer' }}>
-                  Cancelar
+                  {t('submitModalCancel')}
                 </button>
                 <button onClick={handleSubmit} disabled={submitting}
                   style={{ padding: '10px 22px', borderRadius: 999, background: '#C0392B', color: '#fff', border: 'none', fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 14, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1 }}>
-                  {submitting ? 'Enviando…' : 'Confirmar envío'}
+                  {submitting ? t('submitting') : t('submitModalConfirm')}
                 </button>
               </div>
             </m.div>

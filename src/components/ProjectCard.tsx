@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import ProjectReactions from '@/components/ProjectReactions'
 
@@ -55,21 +56,14 @@ const RESULTADO_BADGE: Record<string, { label: string; bg: string; color: string
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const CATEGORY_LABELS: Record<string, string> = {
-  'liderazgo-comunitario': 'Liderazgo comunitario',
-  'innovacion-social':     'Innovación social',
-  'medio-ambiente':        'Medio ambiente',
-  'educacion':             'Educación',
-  'salud-bienestar':       'Salud y bienestar',
-  'emprendimiento':        'Emprendimiento',
-}
+type StatusLabels = { draft: string; pending: string; approved: string; rejected: string }
 
-function StatusBadge({ status }: { status: Project['status'] }) {
+function StatusBadge({ status, labels }: { status: Project['status']; labels: StatusLabels }) {
   const map = {
-    draft:    { label: 'Borrador',    bg: '#F1EFE8', color: '#444441' },
-    pending:  { label: 'En revisión', bg: '#FEF3C7', color: '#92400E' },
-    approved: { label: 'Aprobado',    bg: '#D1FAE5', color: '#065F46' },
-    rejected: { label: 'Rechazado',   bg: '#FEE2E2', color: '#991B1B' },
+    draft:    { label: labels.draft,    bg: '#F1EFE8', color: '#444441' },
+    pending:  { label: labels.pending,  bg: '#FEF3C7', color: '#92400E' },
+    approved: { label: labels.approved, bg: '#D1FAE5', color: '#065F46' },
+    rejected: { label: labels.rejected, bg: '#FEE2E2', color: '#991B1B' },
   }
   const { label, bg, color } = map[status] || map['draft']
   return (
@@ -95,10 +89,10 @@ function StatusBadge({ status }: { status: Project['status'] }) {
   )
 }
 
-function CategoryPill({ category }: { category: string }) {
+function CategoryPill({ label }: { label: string }) {
   return (
     <span style={{ padding: '3px 10px', borderRadius: 999, background: 'rgba(192,57,43,.1)', color: '#C0392B', fontSize: 11, fontWeight: 600, fontFamily: '"Satoshi",sans-serif' }}>
-      {CATEGORY_LABELS[category] ?? category}
+      {label}
     </span>
   )
 }
@@ -163,7 +157,21 @@ export default function ProjectCard({
   onEvaluate,
   resultado,
 }: Props) {
+  const t           = useTranslations('projectCard')
+  const tPE         = useTranslations('projectEditor')
+  const tCat        = useTranslations('projectCard.categories')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
+
+  const statusLabels: StatusLabels = {
+    draft:    tPE('statusDraft'),
+    pending:  tPE('statusPending'),
+    approved: tPE('statusApproved'),
+    rejected: tPE('statusRejected'),
+  }
+
+  function getCategoryLabel(cat: string): string {
+    try { return tCat(cat as Parameters<typeof tCat>[0]) } catch { return cat }
+  }
 
   const [localStatus, setLocalStatus]               = useState(project.status)
   const [localRejection, setLocalRejection]         = useState(project.rejection_reason ?? '')
@@ -238,7 +246,7 @@ export default function ProjectCard({
           <div style={{ position: 'absolute', top: 10, right: 10 }}>
             <AnimatePresence mode="wait">
               <m.div key={localStatus} initial={{ opacity: 0, scale: 0.88 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.88 }} transition={{ duration: 0.18 }}>
-                <StatusBadge status={localStatus} />
+                <StatusBadge status={localStatus} labels={statusLabels} />
               </m.div>
             </AnimatePresence>
           </div>
@@ -247,10 +255,10 @@ export default function ProjectCard({
         {/* Body */}
         <div style={{ padding: '16px 18px 18px' }}>
           <div style={{ marginBottom: 10 }}>
-            <CategoryPill category={project.category} />
+            <CategoryPill label={getCategoryLabel(project.category)} />
           </div>
           <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 16, color: '#0D0D0D', marginBottom: 8, lineHeight: 1.3 }}>
-            {project.title || 'Sin título'}
+            {project.title || t('noTitle')}
           </div>
           <div style={{ fontSize: 14, color: '#6B6B6B', lineHeight: 1.55, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: 12 } as React.CSSProperties}>
             {project.description || ''}
@@ -308,10 +316,10 @@ export default function ProjectCard({
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
-          <CategoryPill category={project.category} />
+          <CategoryPill label={getCategoryLabel(project.category)} />
           <AnimatePresence mode="wait">
             <m.div key={localStatus} initial={{ opacity: 0, scale: 0.88 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.88 }} transition={{ duration: 0.18 }}>
-              <StatusBadge status={localStatus} />
+              <StatusBadge status={localStatus} labels={statusLabels} />
             </m.div>
           </AnimatePresence>
         </div>
@@ -320,7 +328,7 @@ export default function ProjectCard({
       {/* Content */}
       <div style={{ padding: '18px 26px' }}>
         <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 20, color: '#0D0D0D', marginBottom: 10, lineHeight: 1.25 }}>
-          {project.title || 'Sin título'}
+          {project.title || t('noTitle')}
         </div>
         <div style={{ fontSize: 15, color: '#4a4a4a', lineHeight: 1.72, marginBottom: 4 }}>
           {project.description || ''}
@@ -350,7 +358,7 @@ export default function ProjectCard({
               <rect x="2" y="1" width="10" height="14" rx="2" stroke="currentColor" strokeWidth="1.4"/>
               <path d="M5 5h6M5 8h4M5 11h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
             </svg>
-            Ver presentación PDF
+            {t('viewPdf')}
           </a>
         )}
 
@@ -375,7 +383,7 @@ export default function ProjectCard({
               <div style={{ height: '100%', borderRadius: 999, background: '#C0392B', width: `${project.completion_percentage ?? 0}%`, transition: 'width .4s ease' }} />
             </div>
             <span style={{ fontSize: 12, color: '#9a9690', whiteSpace: 'nowrap', fontFamily: 'Satoshi,sans-serif' }}>
-              {project.completion_percentage ?? 0}% completado · Editando
+              {project.completion_percentage ?? 0}{t('editing')}
             </span>
           </div>
         )}
@@ -387,7 +395,7 @@ export default function ProjectCard({
               style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 22px', borderRadius: 999, background: '#C0392B', color: '#fff', border: 'none', fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
             >
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2.5" stroke="currentColor" strokeWidth="1.5"/><path d="M5 8h6M5 5.5h6M5 10.5h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
-              Evaluar con rúbrica →
+              {t('evaluateRubric')}
             </button>
           ) : (
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -396,14 +404,14 @@ export default function ProjectCard({
                 style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 22px', borderRadius: 999, background: '#065F46', color: '#fff', border: 'none', fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
               >
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                Aprobar para certificación
+                {t('approveBtn')}
               </button>
               <button
                 onClick={() => setShowRejectInput(true)}
                 style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '11px 22px', borderRadius: 999, background: '#fff', color: '#991B1B', border: '1px solid #991B1B', fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
               >
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-                Rechazar
+                {t('rejectBtn')}
               </button>
             </div>
           )
@@ -411,19 +419,19 @@ export default function ProjectCard({
 
         {localStatus === 'pending' && showRejectInput && (
           <div>
-            <div style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 8 }}>Motivo del rechazo (opcional)</div>
+            <div style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 8 }}>{t('rejectionReasonLabel')}</div>
             <textarea
               value={rejectReason}
               onChange={e => setRejectReason(e.target.value)}
-              placeholder="Escribe el motivo para el estudiante..."
+              placeholder={t('rejectionReasonPlaceholder')}
               style={{ width: '100%', minHeight: 80, padding: '10px 14px', border: '1px solid rgba(13,13,13,.15)', borderRadius: 10, fontSize: 14, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
             />
             <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
               <button onClick={handleRejectConfirm} style={{ padding: '10px 20px', borderRadius: 999, background: '#991B1B', color: '#fff', border: 'none', fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
-                Confirmar rechazo
+                {t('confirmReject')}
               </button>
               <button onClick={() => { setShowRejectInput(false); setRejectReason('') }} style={{ padding: '10px 20px', borderRadius: 999, background: 'transparent', color: '#6B6B6B', border: '1px solid rgba(13,13,13,.15)', fontFamily: '"Satoshi",sans-serif', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}>
-                Cancelar
+                {t('cancel')}
               </button>
             </div>
           </div>
@@ -438,11 +446,11 @@ export default function ProjectCard({
             ) : (
               <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#065F46', fontFamily: '"Satoshi",sans-serif', fontWeight: 600 }}>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#065F46" strokeWidth="1.4"/><path d="M5 8l2.5 2.5 4-4" stroke="#065F46" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                Aprobado para certificación
+                {t('approvedForCert')}
               </span>
             )}
             <button onClick={() => { setLocalStatus('pending'); onApprove?.('revoke-' + project.id) }} style={{ padding: '7px 16px', borderRadius: 999, background: 'transparent', color: '#6B6B6B', border: '1px solid rgba(13,13,13,.12)', fontSize: 12, fontFamily: '"Satoshi",sans-serif', cursor: 'pointer' }}>
-              Revocar aprobación
+              {t('revokeApproval')}
             </button>
           </div>
         )}
@@ -452,12 +460,12 @@ export default function ProjectCard({
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#991B1B', fontFamily: '"Satoshi",sans-serif', fontWeight: 600 }}>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#991B1B" strokeWidth="1.4"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="#991B1B" strokeWidth="1.6" strokeLinecap="round"/></svg>
-                Rechazado
+                {t('rejected')}
               </div>
               {localRejection && <div style={{ fontSize: 13, color: '#6B6B6B', marginTop: 5 }}>{localRejection}</div>}
             </div>
             <button onClick={() => setLocalStatus('pending')} style={{ padding: '7px 16px', borderRadius: 999, background: 'transparent', color: '#6B6B6B', border: '1px solid rgba(13,13,13,.12)', fontSize: 12, fontFamily: '"Satoshi",sans-serif', cursor: 'pointer' }}>
-              Reconsiderar
+              {t('reconsider')}
             </button>
           </div>
         )}
@@ -466,7 +474,7 @@ export default function ProjectCard({
       {/* Comments */}
       <div style={{ borderTop: '1px solid rgba(13,13,13,.06)', padding: '16px 26px 20px' }}>
         <div style={{ fontSize: 10.5, color: '#9a9690', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 14 }}>
-          Comentarios del coordinador
+          {t('coordinatorComments')}
         </div>
 
         {comments.map(c => (
@@ -487,7 +495,7 @@ export default function ProjectCard({
             value={commentText}
             onChange={e => setCommentText(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') submitComment() }}
-            placeholder="Escribe feedback para el estudiante..."
+            placeholder={t('feedbackPlaceholder')}
             style={{ flex: 1, padding: '9px 14px', border: '1px solid rgba(13,13,13,.12)', borderRadius: 999, fontSize: 13, fontFamily: 'inherit', outline: 'none', background: '#faf9f7' }}
           />
           <button
@@ -495,7 +503,7 @@ export default function ProjectCard({
             disabled={submittingComment || !commentText.trim()}
             style={{ padding: '9px 18px', borderRadius: 999, background: (!submittingComment && commentText.trim()) ? '#0D0D0D' : 'rgba(13,13,13,.08)', color: '#fff', border: 'none', fontSize: 13, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, cursor: (!submittingComment && commentText.trim()) ? 'pointer' : 'default', whiteSpace: 'nowrap' }}
           >
-            Comentar
+            {t('commentBtn')}
           </button>
         </div>
       </div>

@@ -109,8 +109,8 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.08 }}
         >
-          <h1 className="card-title">Bienvenido de vuelta</h1>
-          <p className="card-sub">Ingresa a tu cuenta</p>
+          <h1 className="card-title">{t('welcomeBack')}</h1>
+          <p className="card-sub">{t('enterAccount')}</p>
 
           <m.div
             initial={pref ? false : { opacity: 0, y: 6 }}
@@ -169,13 +169,13 @@ export default function LoginPage() {
               transition={{ duration: 0.2, ease: expoOut, delay: 0.3 }}
             >
               <button className={`btn-main${loading ? ' shimmer' : ''}`} type="submit" disabled={loading}>
-                {loading ? 'Ingresando…' /* TODO: i18n */ : t('submitBtn')}
+                {loading ? t('signingIn') : t('submitBtn')}
               </button>
             </m.div>
           </form>
 
           <div className="footer-links">
-            <span>{t('forgotPassword')} <a href="/forgot-password">Recupérala</a>{/* TODO: i18n link text */}</span>
+            <span>{t('forgotPassword')} <a href="/forgot-password">{t('recoverPassword')}</a></span>
             <span>{t('noAccount')} <a href="/register">{t('register')}</a></span>
           </div>
         </m.div>

@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import AppSidebar from './AppSidebar'
 
 type ActivePage =
@@ -15,14 +16,14 @@ interface Props {
   userRole?: string | null
 }
 
-const ROLE_LABELS: Record<string, string> = {
-  student:     'Estudiante',
-  coordinator: 'Coordinador',
-  expositor:   'Expositor',
-  admin:       'Administrador',
-}
-
 export default function DashboardSidebar({ userName, userInitial, unreadAnnouncements, userRole }: Props) {
+  const tRoles = useTranslations('roles')
+  const ROLE_LABELS: Record<string, string> = {
+    student:     tRoles('student'),
+    coordinator: tRoles('coordinator'),
+    expositor:   tRoles('expositor'),
+    admin:       tRoles('admin'),
+  }
   const roleLabelOverride = userRole ? (ROLE_LABELS[userRole] ?? userRole) : undefined
 
   return (

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 export type QuestionType = 'multiple_choice' | 'true_false' | 'reflection'
 
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export default function QuizQuestion({ question, onChange, onTabSwitch }: Props) {
+  const t                            = useTranslations('quiz')
   const [selected, setSelected]     = useState<string | null>(null)
   const [text, setText]             = useState('')
   const [pasteWarn, setPasteWarn]   = useState(false)
@@ -99,7 +101,7 @@ export default function QuizQuestion({ question, onChange, onTabSwitch }: Props)
               <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4"/>
               <path d="M8 5v3.5M8 10.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
-            Cambio de pestaña detectado — mantén el foco en el quiz
+            {t('tabSwitchWarning')}
           </m.div>
         )}
       </AnimatePresence>
@@ -148,8 +150,8 @@ export default function QuizQuestion({ question, onChange, onTabSwitch }: Props)
       {question.type === 'true_false' && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           {[
-            { val: 'true',  label: '✓ Verdadero', selBg: 'rgba(39,174,96,0.08)', selBorder: '#27AE60', selColor: '#16a34a' },
-            { val: 'false', label: '✗ Falso',      selBg: 'rgba(192,57,43,0.08)', selBorder: '#C0392B', selColor: '#C0392B' },
+            { val: 'true',  label: t('verdadero'), selBg: 'rgba(39,174,96,0.08)', selBorder: '#27AE60', selColor: '#16a34a' },
+            { val: 'false', label: t('falso'),      selBg: 'rgba(192,57,43,0.08)', selBorder: '#C0392B', selColor: '#C0392B' },
           ].map(opt => {
             const isSel = selected === opt.val
             return (
@@ -182,7 +184,7 @@ export default function QuizQuestion({ question, onChange, onTabSwitch }: Props)
             onChange={handleTextChange}
             onCopy={e => e.preventDefault()}
             onPaste={handlePaste}
-            placeholder="Escribe tu reflexión aquí..."
+            placeholder={t('reflectionPlaceholder')}
             style={{
               width: '100%', minHeight: 160,
               padding: '14px 16px',
@@ -198,11 +200,11 @@ export default function QuizQuestion({ question, onChange, onTabSwitch }: Props)
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
             <span style={{ fontSize: 12, color: wordCount >= 50 ? '#16a34a' : '#9a9690' }}>
-              {wordCount} palabras (mínimo 50)
+              {t('wordCount', { count: wordCount })}
             </span>
             {pasteWarn && (
               <span style={{ fontSize: 12, color: '#C0392B', fontWeight: 500 }}>
-                Las respuestas deben ser originales
+                {t('originalAnswers')}
               </span>
             )}
           </div>
