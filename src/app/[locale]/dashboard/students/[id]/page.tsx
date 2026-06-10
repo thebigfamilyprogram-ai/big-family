@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 
 interface ProfileData {
@@ -43,6 +44,8 @@ const LEVEL_MAP: Record<string, { label: string; bg: string; color: string }> = 
 export default function StudentProfilePage() {
   const { id: studentId } = useParams<{ id: string }>()
   const router      = useRouter()
+  const t           = useTranslations('dashboard.studentProfile')
+  const tSidebar    = useTranslations('sidebar.nav')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,     setLoading]     = useState(true)
@@ -152,12 +155,12 @@ export default function StudentProfilePage() {
           <div className="sp-inner">
             {/* Breadcrumb */}
             <nav className="sp-crumb" aria-label="Breadcrumb">
-              <a onClick={() => router.push('/dashboard')}>Dashboard</a>
+              <a onClick={() => router.push('/dashboard')}>{tSidebar('dashboard')}</a>
               <span className="sp-crumb-sep">›</span>
-              <a onClick={() => router.push('/dashboard/team-hub')}>Team Hub</a>
+              <a onClick={() => router.push('/dashboard/team-hub')}>{tSidebar('teamHub')}</a>
               <span className="sp-crumb-sep">›</span>
               <span style={{ color: 'var(--ink)', fontWeight: 500 }}>
-                {loading ? '…' : profile?.display_name ?? 'Perfil'}
+                {loading ? '…' : profile?.display_name ?? t('profileFallback')}
               </span>
             </nav>
 
@@ -179,16 +182,16 @@ export default function StudentProfilePage() {
               <div style={{ textAlign: 'center', padding: '60px 20px' }}>
                 <div style={{ fontSize: 40, marginBottom: 16 }}>👤</div>
                 <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 8 }}>
-                  Perfil no encontrado
+                  {t('notFoundTitle')}
                 </div>
                 <p style={{ fontSize: 14, color: 'var(--mute)', marginBottom: 24 }}>
-                  Este estudiante no existe o no tienes acceso.
+                  {t('notFoundBody')}
                 </p>
                 <button
                   onClick={() => router.push('/dashboard/team-hub')}
                   style={{ padding: '10px 24px', borderRadius: 999, background: '#C0392B', color: '#fff', border: 'none', fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
                 >
-                  Volver al Team Hub
+                  {t('backToTeamHub')}
                 </button>
               </div>
             ) : profile ? (
@@ -217,22 +220,22 @@ export default function StudentProfilePage() {
                   <div className="sp-stats">
                     <div className="sp-stat">
                       <div className="sp-stat-num">{profile.total_xp.toLocaleString('es-CO')}</div>
-                      <div className="sp-stat-label">XP Total</div>
+                      <div className="sp-stat-label">{t('xpTotal')}</div>
                     </div>
                     <div className="sp-stat">
                       <div className="sp-stat-num">{profile.modules_completed}</div>
-                      <div className="sp-stat-label">Módulos</div>
+                      <div className="sp-stat-label">{t('modules')}</div>
                     </div>
                     <div className="sp-stat">
                       <div className="sp-stat-num">{profile.approved_projects}</div>
-                      <div className="sp-stat-label">Proyectos</div>
+                      <div className="sp-stat-label">{t('projects')}</div>
                     </div>
                   </div>
                 </div>
 
                 {/* Badges card */}
                 <div className="sp-card">
-                  <div className="sp-section-title">Insignias</div>
+                  <div className="sp-section-title">{t('badges')}</div>
                   {profile.user_badges.length > 0 ? (
                     <div>
                       {profile.user_badges.map((badge, i) => (
@@ -240,7 +243,7 @@ export default function StudentProfilePage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="sp-empty-badge">Este estudiante aún no tiene insignias.</div>
+                    <div className="sp-empty-badge">{t('noBadges')}</div>
                   )}
                 </div>
               </>

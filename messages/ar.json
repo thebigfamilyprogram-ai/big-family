@@ -713,7 +713,256 @@
       "noGoals": "ليس لديك أهداف بعد. أنشئ أولها!",
       "complete": "إكمال",
       "completed": "تم تحقيق الهدف",
-      "xpEarned": "+{xp} XP مكتسبة"
+      "xpEarned": "+{xp} XP مكتسبة",
+      "leaderFallback": "قائد",
+      "pageTitle": "أهدافي",
+      "subtitle": "حدد أهدافًا شخصية وأهدافًا للبرنامج لكسب نقاط الخبرة",
+      "typeProgram": "برنامج",
+      "typePersonal": "شخصي",
+      "completedBadge": "مكتمل",
+      "dueDate": "الموعد النهائي: {date}",
+      "allCompleted": "🎉 تم إنجاز جميع الأهداف!",
+      "progressSummary": "{completed} من {total} أهداف مكتملة",
+      "completedGoals": "الأهداف المكتملة",
+      "activeGoals": "الأهداف النشطة",
+      "newGoal": "+ هدف جديد",
+      "noActiveGoals": "ليس لديك أهداف نشطة. أنشئ هدفًا أو اعتمد هدفًا من البرنامج!",
+      "programGoals": "أهداف البرنامج",
+      "noTemplates": "لا توجد نماذج للبرنامج بعد",
+      "noTemplatesBody": "سيضيف منسقك أهداف البرنامج قريبًا.",
+      "adopted": "✓ معتمد",
+      "form": {
+        "title": "العنوان",
+        "titlePlaceholder": "ما الذي تريد تحقيقه؟",
+        "description": "الوصف (اختياري)",
+        "descriptionPlaceholder": "صف هدفك...",
+        "dueDate": "الموعد النهائي (اختياري)",
+        "xpReward": "نقاط الخبرة عند الإكمال",
+        "createGoal": "إنشاء هدف"
+      }
+    },
+
+    "studentProfile": {
+      "profileFallback": "الملف الشخصي",
+      "notFoundTitle": "الملف الشخصي غير موجود",
+      "notFoundBody": "هذا الطالب غير موجود أو ليس لديك صلاحية الوصول.",
+      "backToTeamHub": "العودة إلى مركز الفريق",
+      "xpTotal": "إجمالي نقاط الخبرة",
+      "modules": "الوحدات",
+      "projects": "المشاريع",
+      "badges": "الأوسمة",
+      "noBadges": "لا يملك هذا الطالب أي أوسمة بعد."
+    },
+
+    "announcementsPage": {
+      "title": "الإعلانات",
+      "unreadCount": "{count} غير مقروءة",
+      "noAnnouncements": "لا توجد إعلانات بعد."
+    },
+
+    "projectsPage": {
+      "searchingDraft": "جارٍ البحث عن مسودة…",
+      "projectDeleted": "تم حذف المشروع",
+      "title": "مشاريعي",
+      "subtitle": "وثّق تأثيرك للحصول على شهادة The Big Leader",
+      "newProject": "+ مشروع جديد",
+      "emptyTitle": "ليس لديك أي مشاريع بعد",
+      "emptyBody": "ارفع أول مشروع قيادي لك وابدأ خطوتك الأولى نحو شهادتك.",
+      "uploadFirst": "رفع أول مشروع",
+      "continue": "متابعة ←",
+      "underReview": "قيد المراجعة",
+      "viewProject": "عرض المشروع ✓",
+      "storyUnderReview": "القصة قيد المراجعة",
+      "nominate": "⭐ ترشيح",
+      "reviewAndResubmit": "مراجعة وإعادة الإرسال",
+      "nominateModal": {
+        "title": "⭐ ترشيح قصة نجاح",
+        "description": "شارك قصتك القيادية. إذا تم اختيارها، ستظهر في القسم العام لـ Big Family.",
+        "storyTitle": "عنوان القصة",
+        "storyTitlePlaceholder": "مثال: كيف نظمت أول ورشة عمل لريادة الأعمال في مدرستي",
+        "yourStory": "قصتك",
+        "yourStoryPlaceholder": "ماذا أنجزت؟ ما هو الأثر على مجتمعك؟",
+        "sending": "جارٍ الإرسال…",
+        "sendNomination": "إرسال الترشيح"
+      },
+      "deleteModal": {
+        "title": "هل تريد حذف المشروع؟",
+        "body": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف المشروع وجميع صوره.",
+        "deleting": "جارٍ الحذف…",
+        "confirmDelete": "نعم، احذف"
+      }
+    },
+
+    "calendarPage": {
+      "leaderFallback": "قائد",
+      "upcomingEvents": "الفعاليات القادمة",
+      "noUpcomingEvents": "لا توجد فعاليات قادمة.",
+      "joinMeeting": "الانضمام إلى الاجتماع"
+    },
+
+    "feedPage": {
+      "title": "خلاصة النشاط",
+      "userFallback": "مستخدم",
+      "leaderFallback": "قائد",
+      "noActivity": "لا يوجد نشاط بعد.",
+      "loadingMore": "جارٍ تحميل المزيد…",
+      "endOfFeed": "نهاية الخلاصة",
+      "scrollToTop": "العودة إلى الأعلى",
+      "filters": {
+        "all": "الكل",
+        "modules": "الوحدات",
+        "projects": "المشاريع",
+        "badges": "الأوسمة",
+        "certifications": "الشهادات",
+        "goals": "الأهداف"
+      },
+      "activityTypes": {
+        "moduleCompleted": "أكمل وحدة",
+        "projectSubmitted": "أرسل مشروعًا",
+        "badgeEarned": "حصل على وسام",
+        "certified": "حصل على شهادة",
+        "goalCompleted": "حقق هدفًا"
+      },
+      "timeAgo": {
+        "justNow": "الآن",
+        "minutes": "منذ {count} دقيقة",
+        "hours": "منذ {count} ساعة",
+        "days": "منذ {count} يوم"
+      }
+    },
+
+    "globalMap": {
+      "eyebrow": "Big Family Network · رؤية 2036",
+      "title": "الخريطة العالمية",
+      "subtitle": "هذه هي الأهداف العالمية لبرنامج Big Family — وليست بيانات حالية.",
+      "activeLeaders": "قائد نشط",
+      "countriesLabel": "دولة",
+      "goal": "الهدف",
+      "disclaimerLabel": "رؤية 2036:",
+      "disclaimerBody": "تمثل البيانات المعروضة أهداف البرنامج المتوقعة، وليست أرقامًا فعلية حالية.",
+      "rankingByCountry": "الترتيب حسب الدولة",
+      "totalXp": "إجمالي نقاط الخبرة",
+      "leadersCount": "{count} قائد",
+      "yourCountry": "دولتك",
+      "rankPosition": "المرتبة #{rank} من {total} دولة",
+      "activeLeadersLabel": "القادة النشطون",
+      "ofNetworkTotal": "من أصل {total} في الشبكة",
+      "accumulatedXp": "نقاط الخبرة المتراكمة",
+      "progressVsFirst": "التقدم مقارنة بالمركز #1",
+      "tooltipLeaders": "القادة",
+      "tooltipRanking": "الترتيب",
+      "countries": {
+        "co": "كولومبيا",
+        "us": "الولايات المتحدة",
+        "ca": "كندا",
+        "es": "إسبانيا",
+        "fr": "فرنسا",
+        "de": "ألمانيا",
+        "ae": "الإمارات العربية المتحدة",
+        "py": "باراغواي",
+        "mx": "المكسيك",
+        "br": "البرازيل",
+        "gb": "المملكة المتحدة",
+        "ar": "الأرجنتين"
+      }
+    },
+
+    "greatVentureMapa": {
+      "metaNucleo": "الهدف الجوهري",
+      "metaNucleoPlaceholder": "هدفك الجوهري",
+      "nodeLabels": {
+        "creencias": "المعتقدات",
+        "paradigma": "النموذج الفكري",
+        "planes": "الخطط",
+        "equipo": "الفريق"
+      },
+      "titleWithName": "خريطة {name}",
+      "yourLeadership": "قيادتك",
+      "updatedOn": "آخر تحديث في {date}",
+      "editInWizard": "← تعديل في المعالج",
+      "exportPng": "تصدير كصورة PNG",
+      "goToDashboard": "الذهاب إلى لوحة التحكم ←",
+      "placeholders": {
+        "meta": "حلمك الكبير كقائد...",
+        "creencias": "القناعات التي تستند إليها...",
+        "paradigma": "كيف ترى وتفهم العالم...",
+        "memberName": "الاسم",
+        "memberRole": "الدور في حياتك",
+        "planText": "صف الخطوة..."
+      },
+      "addPerson": "+ إضافة شخص",
+      "addStep": "+ إضافة خطوة"
+    },
+
+    "teamHubPage": {
+      "loading": "جارٍ تحميل مركز الفريق…",
+      "subtitle": "مجتمعك في {school}",
+      "tabs": {
+        "team": "فريقك",
+        "ranking": "الترتيب",
+        "chat": "الدردشة",
+        "projects": "المشاريع"
+      },
+      "noTeammates": "لا يوجد زملاء في مدرستك بعد.",
+      "you": "(أنت)",
+      "memberStats": "⭐ {xp} نقطة خبرة · 📚 {modules} وحدة",
+      "viewProfile": "عرض الملف الشخصي",
+      "studentRanking": "ترتيب الطلاب",
+      "schoolRanking": "ترتيب المدارس",
+      "loadingShort": "جارٍ التحميل…",
+      "refresh": "تحديث",
+      "calculatingRanking": "جارٍ حساب الترتيب…",
+      "noRankingData": "لا توجد بيانات ترتيب بعد",
+      "noSchoolData": "لا توجد بيانات مدارس بعد",
+      "rankTable": {
+        "rank": "#",
+        "student": "الطالب",
+        "school": "المدرسة",
+        "xp": "نقاط الخبرة",
+        "modules": "الوحدات",
+        "projects": "المشاريع",
+        "points": "النقاط",
+        "totalPoints": "إجمالي النقاط",
+        "students": "الطلاب",
+        "approvedProjects": "المشاريع المعتمدة"
+      },
+      "youLabel": "أنت",
+      "studentsCount": "{count} طالب",
+      "projectsCount": "{count} مشروع",
+      "beTheFirstToWrite": "كن أول من يكتب شيئًا 👋",
+      "userFallback": "مستخدم",
+      "newTeamProject": "+ مشروع جماعي جديد",
+      "noTeamProjects": "لا توجد مشاريع جماعية بعد. أنشئ المشروع الأول!",
+      "statusActive": "نشط",
+      "statusCompleted": "مكتمل",
+      "membersAndCreator": "{count} عضو · أنشأه {name}",
+      "viewProject": "عرض المشروع",
+      "join": "انضمام",
+      "comingSoon": "قريبًا",
+      "modal": {
+        "title": "مشروع جماعي جديد",
+        "titlePlaceholder": "عنوان المشروع *",
+        "descriptionPlaceholder": "الوصف...",
+        "creating": "جارٍ الإنشاء…",
+        "createProject": "إنشاء المشروع"
+      },
+      "toasts": {
+        "messageError": "تعذر إرسال الرسالة",
+        "joinError": "خطأ في الانضمام إلى المشروع",
+        "joined": "لقد انضممت إلى المشروع!",
+        "createError": "خطأ في إنشاء المشروع",
+        "created": "تم إنشاء المشروع!"
+      },
+      "categories": {
+        "leadership": "القيادة",
+        "environment": "البيئة",
+        "education": "التعليم",
+        "artCulture": "الفن والثقافة",
+        "sports": "الرياضة",
+        "technology": "التكنولوجيا",
+        "health": "الصحة",
+        "community": "المجتمع"
+      }
     },
 
     "kashi": {

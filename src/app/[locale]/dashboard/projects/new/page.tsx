@@ -4,10 +4,12 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 
 export default function NewProjectPage() {
   const router      = useRouter()
+  const t           = useTranslations('dashboard.projectsPage')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   useEffect(() => {
@@ -80,7 +82,7 @@ export default function NewProjectPage() {
         <path d="M12 2a10 10 0 0 1 10 10" stroke="#C0392B" strokeWidth="3" strokeLinecap="round"/>
       </svg>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      <span style={{ fontSize: 14 }}>Buscando borrador…</span>
+      <span style={{ fontSize: 14 }}>{t('searchingDraft')}</span>
     </div>
   )
 }

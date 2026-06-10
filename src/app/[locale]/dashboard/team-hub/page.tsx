@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m, AnimatePresence } from 'framer-motion'
 import { showToast } from '@/components/Toast'
@@ -72,6 +73,17 @@ const PROJECT_CATEGORIES = [
   'Deporte', 'Tecnología', 'Salud', 'Comunidad',
 ]
 
+const PROJECT_CATEGORY_LABEL_KEYS: Record<string, string> = {
+  'Liderazgo':      'leadership',
+  'Medioambiente':  'environment',
+  'Educación':      'education',
+  'Arte y Cultura': 'artCulture',
+  'Deporte':        'sports',
+  'Tecnología':     'technology',
+  'Salud':          'health',
+  'Comunidad':      'community',
+}
+
 function getInitials(name: string) {
   const parts = name.trim().split(' ')
   return parts.length >= 2
@@ -85,6 +97,8 @@ function fmtTime(iso: string) {
 
 export default function TeamHubPage() {
   const router       = useRouter()
+  const t            = useTranslations('dashboard.teamHubPage')
+  const tTeamHub     = useTranslations('teamHub')
   const supabaseRef  = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,     setLoading]     = useState(true)
@@ -252,7 +266,7 @@ export default function TeamHubPage() {
       user_id: userId,
       content: msgText.trim(),
     })
-    if (error) showToast('error', 'No se pudo enviar el mensaje')
+    if (error) showToast('error', t('toasts.messageError'))
     else setMsgText('')
     setSending(false)
   }
@@ -261,8 +275,8 @@ export default function TeamHubPage() {
     if (!supabaseRef.current) return
     const supabase = supabaseRef.current
     const { error } = await supabase.from('team_project_members').insert({ project_id: projectId, user_id: userId })
-    if (error) { showToast('error', 'Error al unirse al proyecto'); return }
-    showToast('success', '¡Te uniste al proyecto!')
+    if (error) { showToast('error', t('toasts.joinError')); return }
+    showToast('success', t('toasts.joined'))
     setMemberIds(prev => [...prev, projectId])
     setProjects(prev => prev.map(p => p.id === projectId ? { ...p, member_count: p.member_count + 1, member_names: [...p.member_names, userName] } : p))
   }
@@ -280,9 +294,9 @@ export default function TeamHubPage() {
       school_id: schoolId,
     }).select().maybeSingle()
 
-    if (error || !proj) { showToast('error', 'Error al crear el proyecto'); setCreating(false); return }
+    if (error || !proj) { showToast('error', t('toasts.createError')); setCreating(false); return }
     await supabase.from('team_project_members').insert({ project_id: proj.id, user_id: userId })
-    showToast('success', '¡Proyecto creado!')
+    showToast('success', t('toasts.created'))
     setProjects(prev => [{ ...proj, creator_name: userName, member_count: 1, member_names: [userName] }, ...prev])
     setMemberIds(prev => [...prev, proj.id])
     setShowModal(false)
@@ -356,7 +370,7 @@ export default function TeamHubPage() {
   if (loading) {
     return (
       <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: 'var(--mute)', fontFamily: 'Satoshi,sans-serif', fontSize: 14 }}>Cargando Team Hub…</div>
+        <div style={{ color: 'var(--mute)', fontFamily: 'Satoshi,sans-serif', fontSize: 14 }}>{t('loading')}</div>
       </main>
     )
   }
@@ -490,15 +504,15 @@ export default function TeamHubPage() {
       <main className="th-main">
           <div className="th-header">
             <h1 className="th-title">Team Hub</h1>
-            <p className="th-sub">Tu comunidad en {schoolName}</p>
+            <p className="th-sub">{t('subtitle', { school: schoolName })}</p>
           </div>
 
           <div className="th-tabs">
-            {(['team', 'ranking', 'chat', 'projects'] as Tab[]).map(t => {
-              const labels: Record<Tab, string> = { team: 'Tu Equipo', ranking: 'Ranking', chat: 'Chat', projects: 'Proyectos' }
+            {(['team', 'ranking', 'chat', 'projects'] as Tab[]).map(tab => {
+              const labels: Record<Tab, string> = { team: t('tabs.team'), ranking: t('tabs.ranking'), chat: t('tabs.chat'), projects: t('tabs.projects') }
               return (
-                <button key={t} className={`th-tab${activeTab === t ? ' active' : ''}`} onClick={() => setActiveTab(t)}>
-                  {labels[t]}
+                <button key={tab} className={`th-tab${activeTab === tab ? ' active' : ''}`} onClick={() => setActiveTab(tab)}>
+                  {labels[tab]}
                 </button>
               )
             })}
@@ -511,7 +525,7 @@ export default function TeamHubPage() {
               {activeTab === 'team' && (
                 <m.div key="team" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
                   {teamMembers.length === 0
-                    ? <div className="th-empty">No hay compañeros en tu colegio aún.</div>
+                    ? <div className="th-empty">{t('noTeammates')}</div>
                     : (
                       <div className="th-team-grid">
                         {teamMembers.map((member, i) => {
@@ -532,13 +546,13 @@ export default function TeamHubPage() {
                               </div>
                               <div className="th-member-name">
                                 {member.display_name}
-                                {member.id === userId && <span style={{ color: 'var(--mute)', fontWeight: 400, fontSize: 13 }}> (Tú)</span>}
+                                {member.id === userId && <span style={{ color: 'var(--mute)', fontWeight: 400, fontSize: 13 }}> {t('you')}</span>}
                               </div>
-                              <div className="th-member-stats">⭐ {member.total_xp} XP · 📚 {member.modules_completed} módulos</div>
+                              <div className="th-member-stats">{t('memberStats', { xp: member.total_xp, modules: member.modules_completed })}</div>
                               <div className="th-xp-bar">
                                 <div className="th-xp-fill" style={{ width: `${Math.round((member.total_xp / maxXp) * 100)}%` }} />
                               </div>
-                              <button className="th-profile-btn" onClick={() => router.push(`/dashboard/students/${member.id}`)}>Ver perfil</button>
+                              <button className="th-profile-btn" onClick={() => router.push(`/dashboard/students/${member.id}`)}>{t('viewProfile')}</button>
                             </m.div>
                           )
                         })}
@@ -556,10 +570,10 @@ export default function TeamHubPage() {
                   <div className="th-rank-header">
                     <div className="th-rank-subtabs">
                       <button className={`th-rank-stab${rankingTab === 'students' ? ' active' : ''}`} onClick={() => setRankingTab('students')}>
-                        Ranking de Estudiantes
+                        {t('studentRanking')}
                       </button>
                       <button className={`th-rank-stab${rankingTab === 'schools' ? ' active' : ''}`} onClick={() => setRankingTab('schools')}>
-                        Ranking de Colegios
+                        {t('schoolRanking')}
                       </button>
                     </div>
                     <button className="th-rank-refresh" onClick={loadRanking} disabled={loadingRanking}>
@@ -567,22 +581,22 @@ export default function TeamHubPage() {
                         <path d="M13 6.5H6a4.5 4.5 0 0 0 0 9h5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
                         <path d="M13 6.5 10 3M13 6.5 10 10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                      {loadingRanking ? 'Cargando…' : 'Actualizar'}
+                      {loadingRanking ? t('loadingShort') : t('refresh')}
                     </button>
                   </div>
 
                   {loadingRanking ? (
-                    <div className="th-empty">Calculando ranking…</div>
+                    <div className="th-empty">{t('calculatingRanking')}</div>
                   ) : rankingTab === 'students' ? (
                     /* ── Estudiantes ── */
                     studentRanking.length === 0 ? (
-                      <div className="th-empty">No hay datos de ranking aún</div>
+                      <div className="th-empty">{t('noRankingData')}</div>
                     ) : (
                       <div className="th-rank-table">
                         <div className="th-rank-row th-rank-head">
-                          <span>#</span><span>Estudiante</span><span className="th-rank-hide-sm">Colegio</span>
-                          <span className="th-rank-hide-sm">XP</span><span className="th-rank-hide-sm">Módulos</span><span className="th-rank-hide-sm">Proyectos</span>
-                          <span>Puntos</span>
+                          <span>{t('rankTable.rank')}</span><span>{t('rankTable.student')}</span><span className="th-rank-hide-sm">{t('rankTable.school')}</span>
+                          <span className="th-rank-hide-sm">{t('rankTable.xp')}</span><span className="th-rank-hide-sm">{t('rankTable.modules')}</span><span className="th-rank-hide-sm">{t('rankTable.projects')}</span>
+                          <span>{t('rankTable.points')}</span>
                         </div>
                         {studentRanking.map((s, i) => {
                           const pos  = i + 1
@@ -604,7 +618,7 @@ export default function TeamHubPage() {
                                 <div className="th-rank-av">{getInitials(s.display_name)}</div>
                                 <div style={{ minWidth: 0 }}>
                                   <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, color: isMe ? '#C0392B' : 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.display_name}</div>
-                                  {isMe && <div style={{ fontSize: 10, fontWeight: 700, color: '#C0392B', fontFamily: '"Satoshi",sans-serif', letterSpacing: '.06em', textTransform: 'uppercase' }}>Tú</div>}
+                                  {isMe && <div style={{ fontSize: 10, fontWeight: 700, color: '#C0392B', fontFamily: '"Satoshi",sans-serif', letterSpacing: '.06em', textTransform: 'uppercase' }}>{t('youLabel')}</div>}
                                 </div>
                               </span>
                               <span className="th-rank-hide-sm" style={{ fontSize: 12.5, color: 'var(--mute)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.school_name ?? '—'}</span>
@@ -620,11 +634,11 @@ export default function TeamHubPage() {
                   ) : (
                     /* ── Colegios ── */
                     schoolRanking.length === 0 ? (
-                      <div className="th-empty">No hay datos de colegios aún</div>
+                      <div className="th-empty">{t('noSchoolData')}</div>
                     ) : (
                       <div className="th-rank-table">
                         <div className="th-rank-row th-rank-head th-rank-school-row">
-                          <span>#</span><span>Colegio</span><span>Puntos totales</span><span className="th-rank-hide-sm">Estudiantes</span><span className="th-rank-hide-sm">Proyectos aprobados</span>
+                          <span>{t('rankTable.rank')}</span><span>{t('rankTable.school')}</span><span>{t('rankTable.totalPoints')}</span><span className="th-rank-hide-sm">{t('rankTable.students')}</span><span className="th-rank-hide-sm">{t('rankTable.approvedProjects')}</span>
                         </div>
                         {schoolRanking.map((sc, i) => {
                           const pos   = i + 1
@@ -643,8 +657,8 @@ export default function TeamHubPage() {
                               </span>
                               <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 15, color: 'var(--ink)' }}>{sc.name}</span>
                               <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 800, fontSize: 15, color: 'var(--ink)' }}>{sc.total_score.toLocaleString('es-CO')}</span>
-                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{sc.student_count} estudiantes</span>
-                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{sc.project_count} proyectos</span>
+                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{t('studentsCount', { count: sc.student_count })}</span>
+                              <span className="th-rank-hide-sm" style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 13, color: 'var(--mute)' }}>{t('projectsCount', { count: sc.project_count })}</span>
                             </m.div>
                           )
                         })}
@@ -661,14 +675,14 @@ export default function TeamHubPage() {
                     <div className="th-chat-msgs">
                       {messages.length === 0 && (
                         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--mute)', fontFamily: 'Satoshi,sans-serif', fontSize: 14 }}>
-                          Sé el primero en escribir algo 👋
+                          {t('beTheFirstToWrite')}
                         </div>
                       )}
                       {messages.map((msg, i) => {
                         const isOwn = msg.user_id === userId
                         const prev  = messages[i - 1]
                         const isFirstInGroup = !prev || prev.user_id !== msg.user_id
-                        const senderName = msg.profiles?.display_name ?? 'Usuario'
+                        const senderName = msg.profiles?.display_name ?? t('userFallback')
 
                         if (isOwn) return (
                           <m.div key={msg.id} className="th-msg-group th-msg-own"
@@ -704,7 +718,7 @@ export default function TeamHubPage() {
                         value={msgText}
                         onChange={e => setMsgText(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
-                        placeholder="Escribe un mensaje..."
+                        placeholder={tTeamHub('messagePlaceholder')}
                         disabled={!schoolId}
                       />
                       <button className="th-send-btn" onClick={sendMessage} disabled={!msgText.trim() || sending || !schoolId}>
@@ -721,10 +735,10 @@ export default function TeamHubPage() {
               {activeTab === 'projects' && (
                 <m.div key="projects" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
-                    <button className="th-new-btn" onClick={() => setShowModal(true)}>+ Nuevo proyecto en equipo</button>
+                    <button className="th-new-btn" onClick={() => setShowModal(true)}>{t('newTeamProject')}</button>
                   </div>
                   {projects.length === 0
-                    ? <div className="th-empty">No hay proyectos en equipo aún. ¡Crea el primero!</div>
+                    ? <div className="th-empty">{t('noTeamProjects')}</div>
                     : (
                       <div className="th-proj-grid">
                         {projects.map((p, i) => {
@@ -738,7 +752,7 @@ export default function TeamHubPage() {
                               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
                                 <span className="th-cat-badge">{p.category}</span>
                                 <span className={`th-status-badge ${p.status === 'active' ? 'th-s-active' : 'th-s-done'}`}>
-                                  {p.status === 'active' ? 'Activo' : 'Completado'}
+                                  {p.status === 'active' ? t('statusActive') : t('statusCompleted')}
                                 </span>
                               </div>
                               <h3 className="th-proj-title">{p.title}</h3>
@@ -749,10 +763,10 @@ export default function TeamHubPage() {
                                 ))}
                                 {extra > 0 && <div className="th-mini-av" style={{ background: 'var(--mute)', fontSize: 9 }}>+{extra}</div>}
                               </div>
-                              <p className="th-proj-meta">{p.member_count} miembros · Creado por {p.creator_name}</p>
+                              <p className="th-proj-meta">{t('membersAndCreator', { count: p.member_count, name: p.creator_name })}</p>
                               {isMember
-                                ? <button className="th-view-btn" onClick={() => showToast('info', 'Próximamente')}>Ver proyecto</button>
-                                : <button className="th-join-btn" onClick={() => joinProject(p.id)}>Unirse</button>
+                                ? <button className="th-view-btn" onClick={() => showToast('info', t('comingSoon'))}>{t('viewProject')}</button>
+                                : <button className="th-join-btn" onClick={() => joinProject(p.id)}>{t('join')}</button>
                               }
                             </m.div>
                           )
@@ -776,14 +790,14 @@ export default function TeamHubPage() {
             <m.div className="th-modal"
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
-              <h2 className="th-modal-title">Nuevo proyecto en equipo</h2>
-              <input className="th-input" placeholder="Título del proyecto *" value={newTitle} onChange={e => setNewTitle(e.target.value)} />
-              <textarea className="th-input th-textarea" placeholder="Descripción..." value={newDesc} onChange={e => setNewDesc(e.target.value)} />
+              <h2 className="th-modal-title">{t('modal.title')}</h2>
+              <input className="th-input" placeholder={t('modal.titlePlaceholder')} value={newTitle} onChange={e => setNewTitle(e.target.value)} />
+              <textarea className="th-input th-textarea" placeholder={t('modal.descriptionPlaceholder')} value={newDesc} onChange={e => setNewDesc(e.target.value)} />
               <select className="th-select" value={newCat} onChange={e => setNewCat(e.target.value)}>
-                {PROJECT_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                {PROJECT_CATEGORIES.map(c => <option key={c} value={c}>{t(`categories.${PROJECT_CATEGORY_LABEL_KEYS[c]}` as 'categories.leadership')}</option>)}
               </select>
               <button className="th-create-btn" onClick={createProject} disabled={!newTitle.trim() || creating}>
-                {creating ? 'Creando…' : 'Crear proyecto'}
+                {creating ? t('modal.creating') : t('modal.createProject')}
               </button>
             </m.div>
           </m.div>

@@ -713,7 +713,256 @@
       "noGoals": "Você ainda não tem metas. Crie a primeira!",
       "complete": "Completar",
       "completed": "Meta concluída",
-      "xpEarned": "+{xp} XP ganhos"
+      "xpEarned": "+{xp} XP ganhos",
+      "leaderFallback": "Líder",
+      "pageTitle": "Minhas Metas",
+      "subtitle": "Defina metas pessoais e do programa para ganhar XP",
+      "typeProgram": "Programa",
+      "typePersonal": "Pessoal",
+      "completedBadge": "Concluída",
+      "dueDate": "Vence em: {date}",
+      "allCompleted": "🎉 Todas as metas concluídas!",
+      "progressSummary": "{completed} de {total} metas concluídas",
+      "completedGoals": "Metas concluídas",
+      "activeGoals": "Metas ativas",
+      "newGoal": "+ Nova meta",
+      "noActiveGoals": "Você não tem metas ativas. Crie uma ou adote uma do programa!",
+      "programGoals": "Metas do programa",
+      "noTemplates": "Ainda não há modelos do programa",
+      "noTemplatesBody": "Seu coordenador adicionará metas do programa em breve.",
+      "adopted": "✓ Adotada",
+      "form": {
+        "title": "Título",
+        "titlePlaceholder": "O que você quer alcançar?",
+        "description": "Descrição (opcional)",
+        "descriptionPlaceholder": "Descreva sua meta...",
+        "dueDate": "Prazo (opcional)",
+        "xpReward": "XP ao completar",
+        "createGoal": "Criar meta"
+      }
+    },
+
+    "studentProfile": {
+      "profileFallback": "Perfil",
+      "notFoundTitle": "Perfil não encontrado",
+      "notFoundBody": "Este estudante não existe ou você não tem acesso.",
+      "backToTeamHub": "Voltar ao Team Hub",
+      "xpTotal": "XP Total",
+      "modules": "Módulos",
+      "projects": "Projetos",
+      "badges": "Insígnias",
+      "noBadges": "Este estudante ainda não tem insígnias."
+    },
+
+    "announcementsPage": {
+      "title": "Avisos",
+      "unreadCount": "{count} não lidos",
+      "noAnnouncements": "Nenhum aviso ainda."
+    },
+
+    "projectsPage": {
+      "searchingDraft": "Procurando rascunho…",
+      "projectDeleted": "Projeto excluído",
+      "title": "Meus Projetos",
+      "subtitle": "Documente seu impacto para a certificação The Big Leader",
+      "newProject": "+ Novo Projeto",
+      "emptyTitle": "Você ainda não tem projetos",
+      "emptyBody": "Envie seu primeiro projeto de liderança e dê o primeiro passo rumo à sua certificação.",
+      "uploadFirst": "Enviar primeiro projeto",
+      "continue": "Continuar →",
+      "underReview": "Em análise",
+      "viewProject": "Ver projeto ✓",
+      "storyUnderReview": "História em análise",
+      "nominate": "⭐ Indicar",
+      "reviewAndResubmit": "Revisar e reenviar",
+      "nominateModal": {
+        "title": "⭐ Indicar História de Sucesso",
+        "description": "Compartilhe sua história de liderança. Se selecionada, aparecerá na seção pública do Big Family.",
+        "storyTitle": "Título da história",
+        "storyTitlePlaceholder": "Ex: Como organizei a primeira oficina de empreendedorismo na minha escola",
+        "yourStory": "Sua história",
+        "yourStoryPlaceholder": "O que você conquistou? Qual foi o impacto na sua comunidade?",
+        "sending": "Enviando…",
+        "sendNomination": "Enviar indicação"
+      },
+      "deleteModal": {
+        "title": "Excluir projeto?",
+        "body": "Esta ação não pode ser desfeita. O projeto e todas as suas imagens serão excluídos.",
+        "deleting": "Excluindo…",
+        "confirmDelete": "Sim, excluir"
+      }
+    },
+
+    "calendarPage": {
+      "leaderFallback": "Líder",
+      "upcomingEvents": "Próximos eventos",
+      "noUpcomingEvents": "Nenhum evento próximo.",
+      "joinMeeting": "Entrar na reunião"
+    },
+
+    "feedPage": {
+      "title": "Feed de Atividade",
+      "userFallback": "Usuário",
+      "leaderFallback": "Líder",
+      "noActivity": "Nenhuma atividade ainda.",
+      "loadingMore": "Carregando mais…",
+      "endOfFeed": "Fim do feed",
+      "scrollToTop": "Voltar ao topo",
+      "filters": {
+        "all": "Todos",
+        "modules": "Módulos",
+        "projects": "Projetos",
+        "badges": "Badges",
+        "certifications": "Certificações",
+        "goals": "Metas"
+      },
+      "activityTypes": {
+        "moduleCompleted": "completou um módulo",
+        "projectSubmitted": "enviou um projeto",
+        "badgeEarned": "ganhou um badge",
+        "certified": "foi certificado(a)",
+        "goalCompleted": "completou uma meta"
+      },
+      "timeAgo": {
+        "justNow": "agora mesmo",
+        "minutes": "há {count} min",
+        "hours": "há {count}h",
+        "days": "há {count}d"
+      }
+    },
+
+    "globalMap": {
+      "eyebrow": "Big Family Network · Visão 2036",
+      "title": "Mapa Global",
+      "subtitle": "Estas são as metas globais do programa Big Family — não são dados atuais.",
+      "activeLeaders": "líderes ativos",
+      "countriesLabel": "países",
+      "goal": "Meta",
+      "disclaimerLabel": "Visão 2036:",
+      "disclaimerBody": "Os dados exibidos representam metas projetadas do programa, não números reais atuais.",
+      "rankingByCountry": "Ranking por País",
+      "totalXp": "XP Total",
+      "leadersCount": "{count} líderes",
+      "yourCountry": "Seu País",
+      "rankPosition": "Posição #{rank} de {total} países",
+      "activeLeadersLabel": "LÍDERES ATIVOS",
+      "ofNetworkTotal": "de {total} na rede",
+      "accumulatedXp": "XP ACUMULADO",
+      "progressVsFirst": "Progresso vs. #1",
+      "tooltipLeaders": "Líderes",
+      "tooltipRanking": "Ranking",
+      "countries": {
+        "co": "Colômbia",
+        "us": "Estados Unidos",
+        "ca": "Canadá",
+        "es": "Espanha",
+        "fr": "França",
+        "de": "Alemanha",
+        "ae": "Emirados Árabes Unidos",
+        "py": "Paraguai",
+        "mx": "México",
+        "br": "Brasil",
+        "gb": "Reino Unido",
+        "ar": "Argentina"
+      }
+    },
+
+    "greatVentureMapa": {
+      "metaNucleo": "META NÚCLEO",
+      "metaNucleoPlaceholder": "Sua Meta Núcleo",
+      "nodeLabels": {
+        "creencias": "CRENÇAS",
+        "paradigma": "PARADIGMA",
+        "planes": "PLANOS",
+        "equipo": "EQUIPE"
+      },
+      "titleWithName": "O mapa de {name}",
+      "yourLeadership": "sua liderança",
+      "updatedOn": "Atualizado em {date}",
+      "editInWizard": "← Editar no assistente",
+      "exportPng": "Exportar PNG",
+      "goToDashboard": "Ir para o painel →",
+      "placeholders": {
+        "meta": "Seu grande sonho como líder...",
+        "creencias": "As convicções que te sustentam...",
+        "paradigma": "Como você vê e lê o mundo...",
+        "memberName": "Nome",
+        "memberRole": "Papel na sua vida",
+        "planText": "Descreva o passo..."
+      },
+      "addPerson": "+ Adicionar pessoa",
+      "addStep": "+ Adicionar passo"
+    },
+
+    "teamHubPage": {
+      "loading": "Carregando Team Hub…",
+      "subtitle": "Sua comunidade em {school}",
+      "tabs": {
+        "team": "Sua Equipe",
+        "ranking": "Ranking",
+        "chat": "Chat",
+        "projects": "Projetos"
+      },
+      "noTeammates": "Ainda não há colegas na sua escola.",
+      "you": "(Você)",
+      "memberStats": "⭐ {xp} XP · 📚 {modules} módulos",
+      "viewProfile": "Ver perfil",
+      "studentRanking": "Ranking de Estudantes",
+      "schoolRanking": "Ranking de Escolas",
+      "loadingShort": "Carregando…",
+      "refresh": "Atualizar",
+      "calculatingRanking": "Calculando ranking…",
+      "noRankingData": "Ainda não há dados de ranking",
+      "noSchoolData": "Ainda não há dados de escolas",
+      "rankTable": {
+        "rank": "#",
+        "student": "Estudante",
+        "school": "Escola",
+        "xp": "XP",
+        "modules": "Módulos",
+        "projects": "Projetos",
+        "points": "Pontos",
+        "totalPoints": "Pontos totais",
+        "students": "Estudantes",
+        "approvedProjects": "Projetos aprovados"
+      },
+      "youLabel": "Você",
+      "studentsCount": "{count} estudantes",
+      "projectsCount": "{count} projetos",
+      "beTheFirstToWrite": "Seja o primeiro a escrever algo 👋",
+      "userFallback": "Usuário",
+      "newTeamProject": "+ Novo projeto em equipe",
+      "noTeamProjects": "Ainda não há projetos em equipe. Crie o primeiro!",
+      "statusActive": "Ativo",
+      "statusCompleted": "Concluído",
+      "membersAndCreator": "{count} membros · Criado por {name}",
+      "viewProject": "Ver projeto",
+      "join": "Participar",
+      "comingSoon": "Em breve",
+      "modal": {
+        "title": "Novo projeto em equipe",
+        "titlePlaceholder": "Título do projeto *",
+        "descriptionPlaceholder": "Descrição...",
+        "creating": "Criando…",
+        "createProject": "Criar projeto"
+      },
+      "toasts": {
+        "messageError": "Não foi possível enviar a mensagem",
+        "joinError": "Erro ao participar do projeto",
+        "joined": "Você entrou no projeto!",
+        "createError": "Erro ao criar o projeto",
+        "created": "Projeto criado!"
+      },
+      "categories": {
+        "leadership": "Liderança",
+        "environment": "Meio Ambiente",
+        "education": "Educação",
+        "artCulture": "Arte e Cultura",
+        "sports": "Esporte",
+        "technology": "Tecnologia",
+        "health": "Saúde",
+        "community": "Comunidade"
+      }
     },
 
     "kashi": {

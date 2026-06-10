@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 
@@ -30,16 +31,10 @@ interface AttemptData {
 }
 
 const PHASES = [
-  { label: 'FASE 1', name: 'Core Foundations',  range: [1, 3]   },
-  { label: 'FASE 2', name: 'Network Expansion',  range: [4, 6]   },
-  { label: 'FASE 3', name: 'Community Impact',   range: [7, 9]   },
-  { label: 'FASE 4', name: 'SUMMIT',             range: [10, 99] },
-]
-
-const LEARN_BULLETS = [
-  'Desarrollar habilidades de liderazgo prácticas',
-  'Aplicar conceptos a situaciones reales de tu entorno',
-  'Construir confianza para liderar equipos',
+  { label: 'phase1', name: 'Core Foundations',  range: [1, 3]   },
+  { label: 'phase2', name: 'Network Expansion',  range: [4, 6]   },
+  { label: 'phase3', name: 'Community Impact',   range: [7, 9]   },
+  { label: 'phase4', name: 'SUMMIT',             range: [10, 99] },
 ]
 
 const CONFETTI_COLORS = ['#C0392B','#F39C12','#27AE60','#2980B9','#8E44AD','#E74C3C','#F1C40F','#1ABC9C']
@@ -152,12 +147,14 @@ function phaseConfettiParticles(label: string) {
 /* ═══════════════════════════════════════════════════════════ */
 export default function LeadershipPathPage() {
   const router      = useRouter()
+  const t           = useTranslations('dashboard.leadershipPathPage')
+  const tCommon     = useTranslations('common')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const srm         = useReducedMotion()
 
   const [loading,         setLoading]         = useState(true)
   const [nodes,           setNodes]           = useState<PathNode[]>([])
-  const [userName,        setUserName]        = useState('Líder Big Family')
+  const [userName,        setUserName]        = useState(t('defaultLeaderName'))
   const [totalXP,         setTotalXP]         = useState(0)
   const [streak,          setStreak]          = useState(0)
   const [attMap,          setAttMap]          = useState<Record<string, AttemptData>>({})
@@ -247,7 +244,7 @@ export default function LeadershipPathPage() {
         }
       })
 
-      setUserName(profile?.display_name ?? 'Líder Big Family')
+      setUserName(profile?.display_name ?? t('defaultLeaderName'))
       setTotalXP(total_xp)
       setStreak(streakDays)
       setAttMap(aMap)
@@ -345,12 +342,12 @@ export default function LeadershipPathPage() {
           <div className="lp-header">
             <div>
               <h1>Leadership Path</h1>
-              <p>Tu camino de aprendizaje personalizado</p>
+              <p>{t('subtitle')}</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {streak >= 3 && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: 'rgba(192,57,43,0.1)', borderRadius: 999, fontSize: 12, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, color: '#C0392B' }}>
-                  🔥 {streak} días
+                  {t('streakDays', { count: streak })}
                 </div>
               )}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 12 }}>
@@ -358,7 +355,7 @@ export default function LeadershipPathPage() {
                 <span style={{ fontSize: 11, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.12em', fontWeight: 600 }}>IC</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 12, fontSize: 12.5, fontWeight: 600, color: 'var(--ink)' }}>
-                <span style={{ color: '#C0392B' }}>{completedCount}</span> / {nodes.length} módulos
+                <span style={{ color: '#C0392B' }}>{completedCount}</span> {t('modulesOf', { total: nodes.length })}
               </div>
             </div>
           </div>
@@ -385,7 +382,7 @@ export default function LeadershipPathPage() {
               >
                 <div>
                   <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15, color: 'var(--ink)', marginBottom: 8 }}>
-                    {completedCount} de {nodes.length} módulos completados
+                    {t('modulesCompleted', { completed: completedCount, total: nodes.length })}
                   </div>
                   <div style={{ width: 200, height: 6, borderRadius: 999, background: '#f0ede8', overflow: 'hidden' }}>
                     <m.div
@@ -400,14 +397,14 @@ export default function LeadershipPathPage() {
                   <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 900, fontSize: 22, color: '#C0392B' }}>
                     ⭐ {totalXP.toLocaleString()}
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--mute)', marginTop: 2, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>XP ganados</div>
+                  <div style={{ fontSize: 11, color: 'var(--mute)', marginTop: 2, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{t('xpEarned')}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--mute)', fontSize: 13 }}>
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                     <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.4"/>
                     <path d="M7 4v3l2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
                   </svg>
-                  ~{remainingHours} horas restantes
+                  {t('hoursRemaining', { hours: remainingHours })}
                 </div>
               </m.div>
             )}
@@ -424,9 +421,9 @@ export default function LeadershipPathPage() {
                     <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#C0392B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 10 }}>Próximamente</div>
+                <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 10 }}>{tCommon('comingSoon')}</div>
                 <div style={{ fontSize: 14, color: 'var(--mute)', lineHeight: 1.6, maxWidth: 300 }}>
-                  Estamos preparando el contenido para tu nivel. ¡Vuelve pronto para comenzar tu camino de liderazgo!
+                  {t('preparingContent')}
                 </div>
               </div>
             ) : (
@@ -498,7 +495,7 @@ export default function LeadershipPathPage() {
 
                         <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C0392B', marginBottom: 2 }}>
-                            {slot.phase.label}
+                            {t(`phases.${slot.phase.label}` as 'phases.phase1')}
                           </div>
                           <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>
                             {slot.phase.name}
@@ -506,10 +503,10 @@ export default function LeadershipPathPage() {
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
-                          <span style={{ fontSize: 12, color: 'var(--mute)' }}>{modCount} módulos</span>
+                          <span style={{ fontSize: 12, color: 'var(--mute)' }}>{t('moduleCount', { count: modCount })}</span>
                           {complete && (
                             <span style={{ fontSize: 11, padding: '2px 8px', background: 'rgba(192,57,43,0.1)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.2)', borderRadius: 999, whiteSpace: 'nowrap' }}>
-                              ✓ Fase completada
+                              {t('phaseCompleted')}
                             </span>
                           )}
                         </div>
@@ -549,7 +546,7 @@ export default function LeadershipPathPage() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.8 + slot.nodeIdx * 0.07 }}
                         >
-                          ¡Continúa aquí!
+                          {t('continueHere')}
                         </m.div>
                       )}
 
@@ -566,7 +563,7 @@ export default function LeadershipPathPage() {
                           fontWeight: 600, color: '#C0392B',
                           whiteSpace: 'nowrap',
                         }}>
-                          🔥 {streak} días
+                          {t('streakDays', { count: streak })}
                         </div>
                       )}
 
@@ -621,7 +618,7 @@ export default function LeadershipPathPage() {
                                   pointerEvents: 'none', zIndex: 30,
                                 }}
                               >
-                                🔒 Completa &ldquo;{prevNode?.module.title ?? 'el módulo anterior'}&rdquo; para desbloquear
+                                {t('unlockHint', { title: prevNode?.module.title ?? t('previousModule') })}
                               </m.div>
                             )}
                           </AnimatePresence>
@@ -700,7 +697,7 @@ export default function LeadershipPathPage() {
               {/* Phase badge */}
               {selPhase && (
                 <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C0392B', marginBottom: 8 }}>
-                  {selPhase.label} · {selPhase.name}
+                  {t(`phases.${selPhase.label}` as 'phases.phase1')} · {selPhase.name}
                 </div>
               )}
 
@@ -721,12 +718,12 @@ export default function LeadershipPathPage() {
                 </div>
                 {selected.module.duration_minutes && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: 'var(--mute)', background: 'var(--bg-2)', padding: '5px 10px', borderRadius: 999 }}>
-                    🕐 {selected.module.duration_minutes} min
+                    {t('durationMinutes', { minutes: selected.module.duration_minutes })}
                   </div>
                 )}
                 {selQCount > 0 && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: 'var(--mute)', background: 'var(--bg-2)', padding: '5px 10px', borderRadius: 999 }}>
-                    📝 {selQCount} preguntas
+                    {t('questionCount', { count: selQCount })}
                   </div>
                 )}
               </div>
@@ -735,9 +732,9 @@ export default function LeadershipPathPage() {
               <div style={{ height: 1, background: 'rgba(13,13,13,0.08)', marginBottom: 18 }} />
 
               {/* Learn bullets */}
-              <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, color: 'var(--ink)', marginBottom: 10 }}>Lo que aprenderás:</div>
+              <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, color: 'var(--ink)', marginBottom: 10 }}>{t('whatYouWillLearn')}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
-                {LEARN_BULLETS.map((b, i) => (
+                {(t.raw('learnBullets') as string[]).map((b, i) => (
                   <div key={i} style={{ display: 'flex', gap: 8, fontSize: 13, color: 'var(--mute)', lineHeight: 1.5 }}>
                     <span style={{ color: '#C0392B', flexShrink: 0 }}>✓</span>{b}
                   </div>
@@ -751,11 +748,11 @@ export default function LeadershipPathPage() {
               {selAtt && (
                 <div style={{ marginBottom: 20 }}>
                   {selAtt.count === 0 ? (
-                    <div style={{ padding: '10px 14px', background: '#D1FAE5', borderRadius: 10, fontSize: 13, color: '#065F46', fontWeight: 600 }}>✓ 2 intentos disponibles</div>
+                    <div style={{ padding: '10px 14px', background: '#D1FAE5', borderRadius: 10, fontSize: 13, color: '#065F46', fontWeight: 600 }}>{t('attemptsAvailable')}</div>
                   ) : selAtt.count === 1 ? (
-                    <div style={{ padding: '10px 14px', background: '#FFFBEB', borderRadius: 10, fontSize: 13, color: '#92400E', fontWeight: 600 }}>⚠ 1 intento restante</div>
+                    <div style={{ padding: '10px 14px', background: '#FFFBEB', borderRadius: 10, fontSize: 13, color: '#92400E', fontWeight: 600 }}>{t('attemptRemaining')}</div>
                   ) : (
-                    <div style={{ padding: '10px 14px', background: '#FEE2E2', borderRadius: 10, fontSize: 13, color: '#991B1B', fontWeight: 600 }}>✗ Sin intentos disponibles</div>
+                    <div style={{ padding: '10px 14px', background: '#FEE2E2', borderRadius: 10, fontSize: 13, color: '#991B1B', fontWeight: 600 }}>{t('noAttemptsLeft')}</div>
                   )}
                 </div>
               )}
@@ -765,7 +762,7 @@ export default function LeadershipPathPage() {
                 {selected.state === 'completed' ? (
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', background: '#D1FAE5', borderRadius: 10, marginBottom: 10 }}>
-                      <span style={{ fontSize: 13, color: '#065F46', fontWeight: 700 }}>✓ Módulo completado</span>
+                      <span style={{ fontSize: 13, color: '#065F46', fontWeight: 700 }}>{t('moduleCompleted')}</span>
                       {selAtt?.bestScore != null && (
                         <span style={{ marginLeft: 'auto', fontSize: 13, color: '#065F46', fontWeight: 600 }}>{selAtt.bestScore}%</span>
                       )}
@@ -774,7 +771,7 @@ export default function LeadershipPathPage() {
                       onClick={() => router.push(`/dashboard/modules/${selected.module.id}`)}
                       style={{ width: '100%', padding: '14px', background: 'transparent', border: '1.5px solid rgba(13,13,13,0.15)', borderRadius: 999, fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15, color: 'var(--ink)', cursor: 'pointer' }}
                     >
-                      Revisar módulo
+                      {t('reviewModule')}
                     </button>
                   </>
                 ) : (
@@ -784,7 +781,7 @@ export default function LeadershipPathPage() {
                     onMouseLeave={e => (e.currentTarget.style.background = '#C0392B')}
                     style={{ width: '100%', padding: '14px', background: '#C0392B', border: 'none', borderRadius: 999, fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15, color: '#fff', cursor: 'pointer', transition: 'background .2s' }}
                   >
-                    Comenzar módulo →
+                    {t('startModule')}
                   </button>
                 )}
               </div>

@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m, AnimatePresence } from 'framer-motion'
 import * as topojson from 'topojson-client'
@@ -20,19 +21,19 @@ interface Country {
   xp: number
 }
 
-const COUNTRIES: Country[] = [
-  { code: 'co', name: 'Colombia',       flag: '🇨🇴', x: 294, y: 237, students: 1240, xp: 98400 },
-  { code: 'us', name: 'Estados Unidos', flag: '🇺🇸', x: 231, y: 144, students: 820,  xp: 71200 },
-  { code: 'ca', name: 'Canadá',         flag: '🇨🇦', x: 233, y:  94, students: 410,  xp: 38900 },
-  { code: 'es', name: 'España',         flag: '🇪🇸', x: 490, y: 139, students: 620,  xp: 55100 },
-  { code: 'fr', name: 'Francia',        flag: '🇫🇷', x: 506, y: 122, students: 380,  xp: 33800 },
-  { code: 'de', name: 'Alemania',       flag: '🇩🇪', x: 529, y: 108, students: 290,  xp: 25400 },
-  { code: 'ae', name: 'Emiratos',       flag: '🇦🇪', x: 649, y: 185, students: 175,  xp: 16200 },
-  { code: 'py', name: 'Paraguay',       flag: '🇵🇾', x: 338, y: 315, students: 260,  xp: 22100 },
-  { code: 'mx', name: 'México',         flag: '🇲🇽', x: 215, y: 184, students: 560,  xp: 49300 },
-  { code: 'br', name: 'Brasil',         flag: '🇧🇷', x: 356, y: 289, students: 440,  xp: 39600 },
-  { code: 'gb', name: 'Reino Unido',    flag: '🇬🇧', x: 490, y:  96, students: 195,  xp: 17800 },
-  { code: 'ar', name: 'Argentina',      flag: '🇦🇷', x: 323, y: 357, students: 310,  xp: 27400 },
+const COUNTRY_DATA: Omit<Country, 'name'>[] = [
+  { code: 'co', flag: '🇨🇴', x: 294, y: 237, students: 1240, xp: 98400 },
+  { code: 'us', flag: '🇺🇸', x: 231, y: 144, students: 820,  xp: 71200 },
+  { code: 'ca', flag: '🇨🇦', x: 233, y:  94, students: 410,  xp: 38900 },
+  { code: 'es', flag: '🇪🇸', x: 490, y: 139, students: 620,  xp: 55100 },
+  { code: 'fr', flag: '🇫🇷', x: 506, y: 122, students: 380,  xp: 33800 },
+  { code: 'de', flag: '🇩🇪', x: 529, y: 108, students: 290,  xp: 25400 },
+  { code: 'ae', flag: '🇦🇪', x: 649, y: 185, students: 175,  xp: 16200 },
+  { code: 'py', flag: '🇵🇾', x: 338, y: 315, students: 260,  xp: 22100 },
+  { code: 'mx', flag: '🇲🇽', x: 215, y: 184, students: 560,  xp: 49300 },
+  { code: 'br', flag: '🇧🇷', x: 356, y: 289, students: 440,  xp: 39600 },
+  { code: 'gb', flag: '🇬🇧', x: 490, y:  96, students: 195,  xp: 17800 },
+  { code: 'ar', flag: '🇦🇷', x: 323, y: 357, students: 310,  xp: 27400 },
 ]
 
 const CONNECTION_PAIRS: [string, string][] = [
@@ -40,13 +41,10 @@ const CONNECTION_PAIRS: [string, string][] = [
   ['us', 'de'], ['es', 'ae'], ['co', 'fr'], ['py', 'co'],
 ]
 
-const LEADERBOARD = [...COUNTRIES].sort((a, b) => b.xp - a.xp)
-const MAX_XP = LEADERBOARD[0].xp
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getCountry(code: string) {
-  return COUNTRIES.find(c => c.code === code)!
+function getCountry(countries: Country[], code: string) {
+  return countries.find(c => c.code === code)!
 }
 
 function arcPath(a: Country, b: Country) {
@@ -94,7 +92,12 @@ function geoToPath(geometry: any): string {
 
 export default function GlobalMapPage() {
   const router      = useRouter()
+  const t           = useTranslations('dashboard.globalMap')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
+
+  const COUNTRIES: Country[] = COUNTRY_DATA.map(c => ({ ...c, name: t(`countries.${c.code}`) }))
+  const LEADERBOARD = [...COUNTRIES].sort((a, b) => b.xp - a.xp)
+  const MAX_XP = LEADERBOARD[0].xp
 
   const [authLoading, setAuthLoading] = useState(true)
   const [userName, setUserName]       = useState('…')
@@ -168,7 +171,7 @@ export default function GlobalMapPage() {
     )
   }
 
-  const co     = getCountry('co')
+  const co     = getCountry(COUNTRIES, 'co')
   const coRank = LEADERBOARD.findIndex(c => c.code === 'co') + 1
   const total  = COUNTRIES.reduce((s, c) => s + c.students, 0)
 
@@ -246,22 +249,22 @@ export default function GlobalMapPage() {
           {/* ── Header ── */}
           <div className="gm-header">
             <div>
-              <div className="gm-eyebrow">Big Family Network · Visión 2036</div>
-              <h1 className="gm-title">Mapa Global</h1>
-              <p className="gm-sub">Estas son las metas globales del programa Big Family — no datos actuales.</p>
+              <div className="gm-eyebrow">{t('eyebrow')}</div>
+              <h1 className="gm-title">{t('title')}</h1>
+              <p className="gm-sub">{t('subtitle')}</p>
             </div>
             <div className="gm-pills">
               <div className="gm-pill">
                 <span className="gm-pill__dot" style={{ background: '#C0392B' }} />
-                <span><b>{counter.toLocaleString()}</b> líderes activos</span>
+                <span><b>{counter.toLocaleString()}</b> {t('activeLeaders')}</span>
               </div>
               <div className="gm-pill">
                 <span className="gm-pill__dot" style={{ background: '#C0392B' }} />
-                <span><b>{COUNTRIES.length}</b> países</span>
+                <span><b>{COUNTRIES.length}</b> {t('countriesLabel')}</span>
               </div>
               <div className="gm-pill">
                 <span className="gm-pill__dot" style={{ background: '#27500A' }} />
-                <span>Meta <b>2036</b></span>
+                <span>{t('goal')} <b>2036</b></span>
               </div>
             </div>
           </div>
@@ -272,7 +275,7 @@ export default function GlobalMapPage() {
               <path d="M8 1.5A6.5 6.5 0 1 0 8 14.5 6.5 6.5 0 0 0 8 1.5ZM8 5v3M8 10h.01" stroke="#C0392B" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
             <span style={{ fontSize: 12.5, color: '#C0392B', fontFamily: 'Satoshi,sans-serif' }}>
-              <strong>Visión 2036:</strong> Los datos mostrados representan metas proyectadas del programa, no cifras reales actuales.
+              <strong>{t('disclaimerLabel')}</strong> {t('disclaimerBody')}
             </span>
           </div>
 
@@ -305,8 +308,8 @@ export default function GlobalMapPage() {
 
                   {/* Connection arcs */}
                   {CONNECTION_PAIRS.map(([a, b], i) => {
-                    const ca = getCountry(a)
-                    const cb = getCountry(b)
+                    const ca = getCountry(COUNTRIES, a)
+                    const cb = getCountry(COUNTRIES, b)
                     const path = arcPath(ca, cb)
                     return (
                       <g key={i}>
@@ -374,8 +377,8 @@ export default function GlobalMapPage() {
             {/* Leaderboard */}
             <div className="gm-lb">
               <div className="gm-lb__head">
-                <span>Ranking por País</span>
-                <span>XP Total</span>
+                <span>{t('rankingByCountry')}</span>
+                <span>{t('totalXp')}</span>
               </div>
               {LEADERBOARD.map((country, i) => (
                 <div key={country.code} className="gm-lb__row">
@@ -399,7 +402,7 @@ export default function GlobalMapPage() {
                       />
                     </div>
                   </div>
-                  <span className="gm-lb__students">{country.students.toLocaleString()} líderes</span>
+                  <span className="gm-lb__students">{t('leadersCount', { count: country.students })}</span>
                   <span className="gm-lb__xp">{(country.xp / 1000).toFixed(1)}K XP</span>
                 </div>
               ))}
@@ -412,24 +415,24 @@ export default function GlobalMapPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.3 }}
             >
-              <div className="gm-card__eyebrow">Tu País</div>
+              <div className="gm-card__eyebrow">{t('yourCountry')}</div>
               <div className="gm-card__flag">{co.flag}</div>
               <div className="gm-card__country">{co.name}</div>
-              <div className="gm-card__rank">Posición #{coRank} de {COUNTRIES.length} países</div>
+              <div className="gm-card__rank">{t('rankPosition', { rank: coRank, total: COUNTRIES.length })}</div>
 
-              <div className="gm-card__stat-label">LÍDERES ACTIVOS</div>
+              <div className="gm-card__stat-label">{t('activeLeadersLabel')}</div>
               <div className="gm-card__stat-val">{co.students.toLocaleString()}</div>
-              <div className="gm-card__stat-sub">de {total.toLocaleString()} en la red</div>
+              <div className="gm-card__stat-sub">{t('ofNetworkTotal', { total: total.toLocaleString() })}</div>
 
               <div className="gm-card__sep" />
 
-              <div className="gm-card__stat-label">XP ACUMULADO</div>
+              <div className="gm-card__stat-label">{t('accumulatedXp')}</div>
               <div className="gm-card__stat-val">{(co.xp / 1000).toFixed(1)}K</div>
 
               <div className="gm-card__sep" />
 
               <div className="gm-card__prog-head">
-                <span>Progreso vs. #1</span>
+                <span>{t('progressVsFirst')}</span>
                 <span>{Math.round(co.xp / MAX_XP * 100)}%</span>
               </div>
               <div className="gm-card__prog">
@@ -463,15 +466,15 @@ export default function GlobalMapPage() {
             <div className="gm-tip__flag">{tooltip.country.flag}</div>
             <div className="gm-tip__name">{tooltip.country.name}</div>
             <div className="gm-tip__row">
-              <span>Líderes</span>
+              <span>{t('tooltipLeaders')}</span>
               <b>{tooltip.country.students.toLocaleString()}</b>
             </div>
             <div className="gm-tip__row">
-              <span>XP Total</span>
+              <span>{t('totalXp')}</span>
               <b>{(tooltip.country.xp / 1000).toFixed(1)}K</b>
             </div>
             <div className="gm-tip__row">
-              <span>Ranking</span>
+              <span>{t('tooltipRanking')}</span>
               <b>#{LEADERBOARD.findIndex(c => c.code === tooltip.country.code) + 1}</b>
             </div>
             <div className="gm-tip__bar">

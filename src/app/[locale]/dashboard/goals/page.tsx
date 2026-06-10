@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
@@ -33,6 +34,7 @@ function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?
 }
 
 function GoalRow({ goal, onComplete, completing }: { goal: Goal; onComplete: (g: Goal) => void; completing: boolean }) {
+  const t = useTranslations('dashboard.goals')
   const overdue = goal.due_date && goal.status === 'active' && new Date(goal.due_date) < new Date()
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, padding: '16px 0', borderBottom: '1px solid var(--line-soft)' }}>
@@ -59,10 +61,10 @@ function GoalRow({ goal, onComplete, completing }: { goal: Goal; onComplete: (g:
             {goal.title}
           </span>
           <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: goal.type === 'program' ? 'rgba(192,57,43,.1)' : 'rgba(13,13,13,.07)', color: goal.type === 'program' ? '#C0392B' : 'var(--mute)' }}>
-            {goal.type === 'program' ? 'Programa' : 'Personal'}
+            {goal.type === 'program' ? t('typeProgram') : t('typePersonal')}
           </span>
           {goal.status === 'completed' && (
-            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: '#D1FAE5', color: '#065F46' }}>Completada</span>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: '#D1FAE5', color: '#065F46' }}>{t('completedBadge')}</span>
           )}
         </div>
         {goal.description && (
@@ -71,7 +73,7 @@ function GoalRow({ goal, onComplete, completing }: { goal: Goal; onComplete: (g:
         <div style={{ display: 'flex', gap: 12, marginTop: 6, flexWrap: 'wrap' }}>
           {goal.due_date && (
             <span style={{ fontSize: 11.5, color: overdue ? '#C0392B' : 'var(--mute)', fontWeight: overdue ? 600 : 400 }}>
-              {overdue ? '⚠ ' : ''}Vence: {new Date(goal.due_date).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
+              {overdue ? '⚠ ' : ''}{t('dueDate', { date: new Date(goal.due_date).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) })}
             </span>
           )}
           <span style={{ fontSize: 11.5, color: '#b25a00', fontWeight: 600 }}>+{goal.xp_reward} XP</span>
@@ -83,6 +85,8 @@ function GoalRow({ goal, onComplete, completing }: { goal: Goal; onComplete: (g:
 
 export default function GoalsPage() {
   const router      = useRouter()
+  const t           = useTranslations('dashboard.goals')
+  const tCommon     = useTranslations('common')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const pref        = useReducedMotion()
 
@@ -140,7 +144,7 @@ export default function GoalsPage() {
         sb!.from('goal_templates').select('*').order('created_at', { ascending: false }),
       ])
 
-      setUserName(profile?.display_name ?? 'Líder')
+      setUserName(profile?.display_name ?? t('leaderFallback'))
       setUserInitial((profile?.display_name ?? 'L')[0].toUpperCase())
       setGoals(goalsData ?? [])
       setTemplates(tmplData ?? [])
@@ -227,8 +231,8 @@ export default function GoalsPage() {
           transition={{ type: 'spring', stiffness: 220, damping: 28 }}
         >
           <div>
-            <div className="page-title">Mis Metas</div>
-            <div className="page-sub">Establece objetivos personales y del programa para ganar XP</div>
+            <div className="page-title">{t('pageTitle')}</div>
+            <div className="page-sub">{t('subtitle')}</div>
           </div>
 
           {/* Progress summary */}
@@ -237,8 +241,8 @@ export default function GoalsPage() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                 <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--ink)' }}>
                   {completedGoals.length === totalGoals && totalGoals > 0
-                    ? '🎉 ¡Todas las metas completadas!'
-                    : `${completedGoals.length} de ${totalGoals} metas completadas`}
+                    ? t('allCompleted')
+                    : t('progressSummary', { completed: completedGoals.length, total: totalGoals })}
                 </span>
                 <span style={{ fontSize: 12, fontWeight: 700, color: '#C0392B' }}>{completedPct}%</span>
               </div>
@@ -258,7 +262,7 @@ export default function GoalsPage() {
           {!loading && activeGoals.length === 0 && completedGoals.length > 0 && (
             <div className="card">
               <div className="section-title">
-                Metas completadas
+                {t('completedGoals')}
                 <span className="section-badge">{completedGoals.length}</span>
               </div>
               {completedGoals.map(goal => (
@@ -271,7 +275,7 @@ export default function GoalsPage() {
           <div className="card">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <div className="section-title" style={{ marginBottom: 0 }}>
-                Metas activas
+                {t('activeGoals')}
                 {!loading && <span className="section-badge">{activeGoals.length}</span>}
               </div>
               <m.button
@@ -281,7 +285,7 @@ export default function GoalsPage() {
                 whileTap={pref ? undefined : { scale: 0.97 }}
                 transition={springSnappy}
               >
-                + Nueva meta
+                {t('newGoal')}
               </m.button>
             </div>
 
@@ -298,28 +302,28 @@ export default function GoalsPage() {
                 >
                   <div style={{ padding: '16px', background: 'var(--bg-2)', borderRadius: 12, marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
                     <div className="field">
-                      <label>Título</label>
-                      <input value={formTitle} onChange={e => setFormTitle(e.target.value)} placeholder="¿Qué quieres lograr?" />
+                      <label>{t('form.title')}</label>
+                      <input value={formTitle} onChange={e => setFormTitle(e.target.value)} placeholder={t('form.titlePlaceholder')} />
                     </div>
                     <div className="field">
-                      <label>Descripción (opcional)</label>
-                      <textarea className="field-textarea" value={formDesc} onChange={e => setFormDesc(e.target.value)} placeholder="Describe tu meta..." rows={2} />
+                      <label>{t('form.description')}</label>
+                      <textarea className="field-textarea" value={formDesc} onChange={e => setFormDesc(e.target.value)} placeholder={t('form.descriptionPlaceholder')} rows={2} />
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                       <div className="field">
-                        <label>Fecha límite (opcional)</label>
+                        <label>{t('form.dueDate')}</label>
                         <input type="date" value={formDue} onChange={e => setFormDue(e.target.value)} />
                       </div>
                       <div className="field">
-                        <label>XP al completar</label>
+                        <label>{t('form.xpReward')}</label>
                         <input type="number" value={formXp} onChange={e => setFormXp(Number(e.target.value))} min={10} max={500} step={10} />
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 10 }}>
                       <button className="btn-primary" onClick={handleCreateGoal} disabled={!formTitle.trim() || submitting}>
-                        {submitting ? 'Guardando…' : 'Crear meta'}
+                        {submitting ? tCommon('saving') : t('form.createGoal')}
                       </button>
-                      <button className="btn-ghost" onClick={() => setShowForm(false)}>Cancelar</button>
+                      <button className="btn-ghost" onClick={() => setShowForm(false)}>{tCommon('cancel')}</button>
                     </div>
                   </div>
                 </m.div>
@@ -332,7 +336,7 @@ export default function GoalsPage() {
               </div>
             ) : activeGoals.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '32px 20px', color: 'var(--mute)', fontSize: 13 }}>
-                No tienes metas activas. ¡Crea una o adopta una del programa!
+                {t('noActiveGoals')}
               </div>
             ) : (
               <m.div
@@ -357,7 +361,7 @@ export default function GoalsPage() {
           {!loading && (
             <div className="card">
               <div className="section-title">
-                Metas del programa
+                {t('programGoals')}
                 {templates.length > 0 && <span className="section-badge">{templates.length}</span>}
               </div>
               {templates.length === 0 ? (
@@ -368,8 +372,8 @@ export default function GoalsPage() {
                       <path d="M11 7v4l2.5 2.5" stroke="var(--mute)" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
                   </div>
-                  <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 6 }}>No hay plantillas del programa todavía</div>
-                  <div style={{ fontSize: 13, color: 'var(--mute)', lineHeight: 1.5 }}>El coordinador agregará metas del programa próximamente.</div>
+                  <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 6 }}>{t('noTemplates')}</div>
+                  <div style={{ fontSize: 13, color: 'var(--mute)', lineHeight: 1.5 }}>{t('noTemplatesBody')}</div>
                 </div>
               ) : (
               <div className="tmpl-grid">
@@ -390,7 +394,7 @@ export default function GoalsPage() {
                         <div style={{ marginTop: 6, fontSize: 11.5, color: 'rgba(180,90,0,.9)', fontWeight: 600 }}>+{tmpl.xp_reward} XP</div>
                       </div>
                       {adopted ? (
-                        <span style={{ fontSize: 11, color: '#065F46', fontWeight: 700, background: 'rgba(34,197,94,.15)', padding: '4px 10px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0 }}>✓ Adoptada</span>
+                        <span style={{ fontSize: 11, color: '#065F46', fontWeight: 700, background: 'rgba(34,197,94,.15)', padding: '4px 10px', borderRadius: 999, whiteSpace: 'nowrap', flexShrink: 0 }}>{t('adopted')}</span>
                       ) : (
                         <span style={{ fontSize: 20, color: '#C0392B', fontWeight: 300, lineHeight: 1 }}>+</span>
                       )}
@@ -406,7 +410,7 @@ export default function GoalsPage() {
           {!loading && completedGoals.length > 0 && activeGoals.length > 0 && (
             <div className="card">
               <div className="section-title">
-                Metas completadas
+                {t('completedGoals')}
                 <span className="section-badge">{completedGoals.length}</span>
               </div>
               {completedGoals.map(goal => (

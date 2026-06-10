@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
@@ -21,13 +22,15 @@ interface CalendarEvent {
   end_time: string | null
 }
 
-const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-
 export default function CalendarPage() {
   const router      = useRouter()
+  const t           = useTranslations('calendar')
+  const tPage       = useTranslations('dashboard.calendarPage')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const pref        = useReducedMotion()
+
+  const DAYS = t.raw('days.short') as string[]
+  const MONTHS = Array.from({ length: 12 }, (_, i) => t(`months.${i + 1}`))
 
   const today = new Date()
   const [year,     setYear]     = useState(today.getFullYear())
@@ -63,7 +66,7 @@ export default function CalendarPage() {
       const { data: { user } } = await sb!.auth.getUser()
       if (!user) { router.replace('/login'); return }
       const { data: profile } = await sb!.from('profiles').select('display_name').eq('id', user.id).maybeSingle()
-      setUserName(profile?.display_name ?? 'Líder')
+      setUserName(profile?.display_name ?? tPage('leaderFallback'))
       setUserInit((profile?.display_name ?? 'L')[0].toUpperCase())
 
       const { data } = await sb!.from('calendar_events').select('*').order('event_date')
@@ -146,7 +149,7 @@ export default function CalendarPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 220, damping: 28 }}
         >
-          <div className="page-title">Calendario</div>
+          <div className="page-title">{t('title')}</div>
 
           <div className="cal-layout">
             {/* Monthly calendar */}
@@ -205,7 +208,7 @@ export default function CalendarPage() {
                   .filter(Boolean) as { day: number; dateStr: string; isToday: boolean; events: CalendarEvent[] }[]
 
                 if (daysWithEvents.length === 0) {
-                  return <div className="cal-ml-empty">Sin eventos este mes</div>
+                  return <div className="cal-ml-empty">{t('noEvents')}</div>
                 }
 
                 return daysWithEvents.map(({ day, isToday, events: dayEvs }) =>
@@ -234,7 +237,7 @@ export default function CalendarPage() {
             {/* Upcoming events */}
             <div className="card">
               <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                Próximos eventos
+                {tPage('upcomingEvents')}
                 {upcoming.length > 0 && (
                   <span style={{ padding: '2px 8px', background: 'rgba(192,57,43,.1)', color: '#C0392B', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>{upcoming.length}</span>
                 )}
@@ -244,7 +247,7 @@ export default function CalendarPage() {
                   {[1,2,3].map(i => <div key={i} style={{ height: 48, background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite', borderRadius: 8 }} />)}
                 </div>
               ) : upcoming.length === 0 ? (
-                <p style={{ fontSize: 13, color: 'var(--mute)' }}>No hay eventos próximos.</p>
+                <p style={{ fontSize: 13, color: 'var(--mute)' }}>{tPage('noUpcomingEvents')}</p>
               ) : upcoming.map(ev => (
                 <div key={ev.id} className="upcoming-item" style={{ cursor: 'pointer' }} onClick={() => setSelected(ev)}>
                   <div className="ev-date">{new Date(ev.event_date + 'T00:00:00').toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
@@ -278,7 +281,7 @@ export default function CalendarPage() {
                 {selected.description && <p style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.6, marginBottom: 12 }}>{selected.description}</p>}
                 {selected.meeting_link && (
                   <a href={selected.meeting_link} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '9px 18px', background: '#C0392B', color: '#fff', borderRadius: 10, fontSize: 13, fontFamily: '"Satoshi",sans-serif', fontWeight: 700, textDecoration: 'none' }}>
-                    🔗 Unirse a la reunión
+                    🔗 {tPage('joinMeeting')}
                   </a>
                 )}
               </m.div>

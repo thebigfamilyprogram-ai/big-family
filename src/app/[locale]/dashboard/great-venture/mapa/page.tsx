@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE, MOCK } from '@/lib/mockData'
@@ -87,10 +88,12 @@ const MapSVG = memo(function MapSVG({
   data, panel, hovered, pref, ready,
   onNodeClick, onNodeEnter, onNodeLeave,
 }: MapSVGProps) {
+  const t = useTranslations('dashboard.greatVentureMapa')
 
   function nodeContent(key: string) {
     const { equipo, planes, creencias, paradigma } = data
     const cfg = NODE_CFG[key]
+    const label = t(`nodeLabels.${key}` as 'nodeLabels.creencias')
 
     if (key === 'equipo') {
       const visible = equipo.slice(0, 3)
@@ -98,7 +101,7 @@ const MapSVG = memo(function MapSVG({
       return (
         <div style={{ padding: '8px 8px 6px', height: '100%', display: 'flex', flexDirection: 'column', gap: 5 }}>
           <span style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 9, fontWeight: 700, letterSpacing: '0.15em', color: cfg.labelColor, textTransform: 'uppercase' }}>
-            {cfg.label}
+            {label}
           </span>
           <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
             {visible.map((mem, i) => (
@@ -133,7 +136,7 @@ const MapSVG = memo(function MapSVG({
       return (
         <div style={{ padding: '8px 8px 6px', height: '100%', display: 'flex', flexDirection: 'column', gap: 5 }}>
           <span style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 9, fontWeight: 700, letterSpacing: '0.15em', color: cfg.labelColor, textTransform: 'uppercase' }}>
-            {cfg.label}
+            {label}
           </span>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {planes.slice(0, 3).map((p, i) => (
@@ -157,7 +160,7 @@ const MapSVG = memo(function MapSVG({
     return (
       <div style={{ padding: '8px 8px 6px', height: '100%', display: 'flex', flexDirection: 'column', gap: 4 }}>
         <span style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 9, fontWeight: 700, letterSpacing: '0.15em', color: cfg.labelColor, textTransform: 'uppercase' }}>
-          {cfg.label}
+          {label}
         </span>
         <span style={{
           fontFamily: 'Satoshi,sans-serif', fontSize: 11,
@@ -269,7 +272,7 @@ const MapSVG = memo(function MapSVG({
                 display: '-webkit-box', WebkitLineClamp: 4,
                 WebkitBoxOrient: 'vertical', overflow: 'hidden',
               }}>
-                {data.meta_nucleo || 'Tu Meta Núcleo'}
+                {data.meta_nucleo || t('metaNucleoPlaceholder')}
               </span>
             </div>
           </foreignObject>
@@ -286,7 +289,7 @@ const MapSVG = memo(function MapSVG({
           transition={{ type: 'spring', stiffness: 160, damping: 22, delay: 0.9 }}
           style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 9, fontWeight: 700, fill: '#C0392B', letterSpacing: '0.2em', pointerEvents: 'none' }}
         >
-          META NÚCLEO
+          {t('metaNucleo')}
         </m.text>
       )}
 
@@ -344,6 +347,8 @@ const MapSVG = memo(function MapSVG({
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function GreatVentureMapaPage() {
   const router      = useRouter()
+  const t           = useTranslations('dashboard.greatVentureMapa')
+  const tCommon     = useTranslations('common')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const saveTimer   = useRef<ReturnType<typeof setTimeout> | null>(null)
   const mapRef      = useRef<HTMLDivElement>(null)
@@ -557,10 +562,10 @@ export default function GreatVentureMapaPage() {
         >
           <div className="gvm-eyebrow">THE GREAT VENTURE</div>
           <h1 className="gvm-title">
-            El mapa de {userName || 'tu liderazgo'}
+            {t('titleWithName', { name: userName || t('yourLeadership') })}
           </h1>
           {updatedAt && (
-            <p className="gvm-updated">Actualizado el {fmtDate(updatedAt)}</p>
+            <p className="gvm-updated">{t('updatedOn', { date: fmtDate(updatedAt) })}</p>
           )}
         </m.header>
 
@@ -606,7 +611,7 @@ export default function GreatVentureMapaPage() {
             whileTap={pref ? undefined : { scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
           >
-            ← Editar en wizard
+            {t('editInWizard')}
           </m.button>
           <m.button
             className="gvm-btn-outline"
@@ -615,7 +620,7 @@ export default function GreatVentureMapaPage() {
             whileTap={pref ? undefined : { scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
           >
-            Exportar PNG
+            {t('exportPng')}
           </m.button>
           <m.button
             className="gvm-btn-primary"
@@ -624,7 +629,7 @@ export default function GreatVentureMapaPage() {
             whileTap={pref ? undefined : { scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
           >
-            Ir al dashboard →
+            {t('goToDashboard')}
           </m.button>
         </div>
       </div>
@@ -642,7 +647,7 @@ export default function GreatVentureMapaPage() {
           >
             <div className="gvm-panel__head">
               <span className="gvm-panel__title" style={{ color: panelColor }}>
-                {panel === 'meta' ? 'META NÚCLEO' : NODE_CFG[panel].label}
+                {panel === 'meta' ? t('metaNucleo') : t(`nodeLabels.${panel}` as 'nodeLabels.creencias')}
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <AnimatePresence>
@@ -657,7 +662,7 @@ export default function GreatVentureMapaPage() {
                       <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                         <path d="M2 5l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                      Guardado
+                      {tCommon('saved')}
                     </m.span>
                   )}
                 </AnimatePresence>
@@ -674,14 +679,14 @@ export default function GreatVentureMapaPage() {
                   onChange={e => setEditText(e.target.value)}
                   onBlur={savePanel}
                   placeholder={
-                    panel === 'meta'      ? 'Tu gran sueño como líder...' :
-                    panel === 'creencias' ? 'Las convicciones que te sostienen...' :
-                                           'Cómo ves y lees el mundo...'
+                    panel === 'meta'      ? t('placeholders.meta') :
+                    panel === 'creencias' ? t('placeholders.creencias') :
+                                           t('placeholders.paradigma')
                   }
                   maxLength={1500}
                 />
                 <button className="gvm-save-btn" onClick={() => { savePanel(); closePanel() }}>
-                  Guardar
+                  {tCommon('save')}
                 </button>
               </>
             )}
@@ -689,10 +694,10 @@ export default function GreatVentureMapaPage() {
             {/* Equipo panel */}
             {panel === 'equipo' && (
               <>
-                <input className="gvm-input" placeholder="Nombre" value={editNombre} onChange={e => setEditNombre(e.target.value)} maxLength={50} />
-                <input className="gvm-input" placeholder="Rol en tu vida" value={editRol} onChange={e => setEditRol(e.target.value)} maxLength={80} />
+                <input className="gvm-input" placeholder={t('placeholders.memberName')} value={editNombre} onChange={e => setEditNombre(e.target.value)} maxLength={50} />
+                <input className="gvm-input" placeholder={t('placeholders.memberRole')} value={editRol} onChange={e => setEditRol(e.target.value)} maxLength={80} />
                 <button className="gvm-add-btn" onClick={addEquipoMember} disabled={!editNombre.trim() || data.equipo.length >= 5}>
-                  + Agregar persona
+                  {t('addPerson')}
                 </button>
                 {data.equipo.map((mem, i) => (
                   <div key={i} className="gvm-chip">
@@ -712,10 +717,10 @@ export default function GreatVentureMapaPage() {
             {/* Planes panel */}
             {panel === 'planes' && (
               <>
-                <input className="gvm-input" placeholder="Describe el paso..." value={editPlanText} onChange={e => setEditPlanText(e.target.value)} maxLength={120} />
+                <input className="gvm-input" placeholder={t('placeholders.planText')} value={editPlanText} onChange={e => setEditPlanText(e.target.value)} maxLength={120} />
                 <input className="gvm-input" type="date" value={editPlanDate} onChange={e => setEditPlanDate(e.target.value)} />
                 <button className="gvm-add-btn" onClick={addPlan} disabled={!editPlanText.trim() || data.planes.length >= 5}>
-                  + Agregar paso
+                  {t('addStep')}
                 </button>
                 {data.planes.map(p => (
                   <div key={p.id} className="gvm-chip">

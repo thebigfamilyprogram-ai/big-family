@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m, AnimatePresence } from 'framer-motion'
 import ProjectCard, { type Project } from '@/components/ProjectCard'
@@ -11,6 +12,8 @@ import { showToast } from '@/components/Toast'
 
 export default function ProjectsPage() {
   const router      = useRouter()
+  const t           = useTranslations('dashboard.projectsPage')
+  const tCommon     = useTranslations('common')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,      setLoading]      = useState(true)
@@ -120,7 +123,7 @@ export default function ProjectsPage() {
     setProjects(prev => prev.filter(p => p.id !== project.id))
     setDeleteTarget(null)
     setDeleting(false)
-    showToast('success', 'Proyecto eliminado')
+    showToast('success', t('projectDeleted'))
   }
 
   if (loading) {
@@ -177,11 +180,11 @@ export default function ProjectsPage() {
           <div className="pj-header">
             <div className="pj-header__left">
               <div className="pj-eyebrow">The Big Leader</div>
-              <h1 className="pj-title">Mis Proyectos</h1>
-              <p className="pj-sub">Documenta tu impacto para la certificación The Big Leader</p>
+              <h1 className="pj-title">{t('title')}</h1>
+              <p className="pj-sub">{t('subtitle')}</p>
             </div>
             <button className="btn-new" onClick={handleNewProject}>
-              + Nuevo Proyecto
+              {t('newProject')}
             </button>
           </div>
 
@@ -193,12 +196,12 @@ export default function ProjectsPage() {
                     <path d="M2 7C2 5.9 2.9 5 4 5H9.5L11 7H20C21.1 7 22 7.9 22 9V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V7Z" stroke="#C0392B" strokeWidth="1.6" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <div className="pj-empty__title">Aún no tienes proyectos</div>
+                <div className="pj-empty__title">{t('emptyTitle')}</div>
                 <p className="pj-empty__sub">
-                  Sube tu primer proyecto de liderazgo y da el primer paso hacia tu certificación.
+                  {t('emptyBody')}
                 </p>
                 <button className="btn-empty" onClick={handleNewProject}>
-                  Subir primer proyecto
+                  {t('uploadFirst')}
                 </button>
               </div>
             ) : (
@@ -218,7 +221,7 @@ export default function ProjectsPage() {
                           <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
                             <path d="M2 4h12M5 4V2.5h6V4M6 7v5M10 7v5M3 4l1 9.5h8L13 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
-                          Eliminar
+                          {tCommon('delete')}
                         </button>
                         <div className="pj-card-footer">
                           <div className="pj-progress-bar">
@@ -227,28 +230,28 @@ export default function ProjectsPage() {
                           <span className="pj-progress-label">{(project as any).completion_percentage ?? 0}%</span>
                           {project.status === 'draft' && (
                             <button className="btn-action draft" onClick={() => router.push(`/dashboard/projects/${project.id}/edit`)}>
-                              Continuar →
+                              {t('continue')}
                             </button>
                           )}
                           {project.status === 'pending' && (
-                            <button className="btn-action pending" disabled>En revisión</button>
+                            <button className="btn-action pending" disabled>{t('underReview')}</button>
                           )}
                           {project.status === 'approved' && (
                             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                              <button className="btn-action approved" onClick={() => router.push(`/dashboard/projects/${project.id}/edit`)}>Ver proyecto ✓</button>
+                              <button className="btn-action approved" onClick={() => router.push(`/dashboard/projects/${project.id}/edit`)}>{t('viewProject')}</button>
                               {nominatedIds.has(project.id)
-                                ? <span style={{ fontSize: 11, color: '#065F46', fontWeight: 600, padding: '5px 10px', background: 'rgba(34,197,94,.15)', borderRadius: 999, display: 'inline-flex', alignItems: 'center' }}>Historia en revisión</span>
+                                ? <span style={{ fontSize: 11, color: '#065F46', fontWeight: 600, padding: '5px 10px', background: 'rgba(34,197,94,.15)', borderRadius: 999, display: 'inline-flex', alignItems: 'center' }}>{t('storyUnderReview')}</span>
                                 : <button
                                     className="btn-action"
                                     onClick={() => { setNominateTarget(project); setNominateForm({ title: project.title || '', story: '' }) }}
                                     style={{ fontSize: 11, whiteSpace: 'nowrap', background: 'rgba(192,57,43,.1)', color: '#C0392B', border: 'none', padding: '5px 10px', borderRadius: 999, cursor: 'pointer', fontFamily: '"Satoshi",sans-serif', fontWeight: 700, transition: 'background .2s' }}
-                                  >⭐ Nominar</button>
+                                  >{t('nominate')}</button>
                               }
                             </div>
                           )}
                           {project.status === 'rejected' && (
                             <button className="btn-action rejected" onClick={() => router.push(`/dashboard/projects/${project.id}/edit`)}>
-                              Revisar y reenviar
+                              {t('reviewAndResubmit')}
                             </button>
                           )}
                         </div>
@@ -267,22 +270,22 @@ export default function ProjectsPage() {
           <m.div key="nom-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => !nominating && setNominateTarget(null)}>
             <m.div initial={{ opacity: 0, scale: 0.92, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }} onClick={e => e.stopPropagation()} style={{ background: 'var(--card-bg)', borderRadius: 20, padding: '32px 28px', maxWidth: 500, width: '100%', boxShadow: '0 24px 64px -12px rgba(0,0,0,.25)', display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 4 }}>⭐ Nominar Historia de Éxito</div>
-                <div style={{ fontSize: 13, color: 'var(--mute)', lineHeight: 1.5 }}>Comparte tu historia de liderazgo. Si es seleccionada, aparecerá en la sección pública de Big Family.</div>
+                <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 4 }}>{t('nominateModal.title')}</div>
+                <div style={{ fontSize: 13, color: 'var(--mute)', lineHeight: 1.5 }}>{t('nominateModal.description')}</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.06em' }}>Título de la historia</label>
-                <input value={nominateForm.title} onChange={e => setNominateForm(f => ({ ...f, title: e.target.value }))} style={{ padding: '10px 14px', border: '1px solid var(--line)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--bg-2)', color: 'var(--ink)' }} placeholder="Ej: Cómo organicé el primer taller de emprendimiento en mi colegio" />
+                <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.06em' }}>{t('nominateModal.storyTitle')}</label>
+                <input value={nominateForm.title} onChange={e => setNominateForm(f => ({ ...f, title: e.target.value }))} style={{ padding: '10px 14px', border: '1px solid var(--line)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--bg-2)', color: 'var(--ink)' }} placeholder={t('nominateModal.storyTitlePlaceholder')} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.06em' }}>Tu historia</label>
-                <textarea value={nominateForm.story} onChange={e => setNominateForm(f => ({ ...f, story: e.target.value }))} rows={5} style={{ resize: 'vertical', padding: '10px 14px', border: '1px solid var(--line)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--bg-2)', color: 'var(--ink)' }} placeholder="¿Qué lograste? ¿Cuál fue el impacto en tu comunidad?" />
+                <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.06em' }}>{t('nominateModal.yourStory')}</label>
+                <textarea value={nominateForm.story} onChange={e => setNominateForm(f => ({ ...f, story: e.target.value }))} rows={5} style={{ resize: 'vertical', padding: '10px 14px', border: '1px solid var(--line)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--bg-2)', color: 'var(--ink)' }} placeholder={t('nominateModal.yourStoryPlaceholder')} />
               </div>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button onClick={handleNominate} disabled={!nominateForm.title.trim() || !nominateForm.story.trim() || nominating} style={{ flex: 1, padding: '12px', background: nominateForm.title.trim() && nominateForm.story.trim() ? '#C0392B' : 'rgba(13,13,13,.1)', border: 'none', borderRadius: 10, fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 13, color: nominateForm.title.trim() && nominateForm.story.trim() ? '#fff' : 'var(--mute)', cursor: nominateForm.title.trim() && nominateForm.story.trim() ? 'pointer' : 'default' }}>
-                  {nominating ? 'Enviando…' : 'Enviar nominación'}
+                  {nominating ? t('nominateModal.sending') : t('nominateModal.sendNomination')}
                 </button>
-                <button onClick={() => { setNominateTarget(null); setNominateForm({ title: '', story: '' }) }} style={{ padding: '12px 20px', border: '1px solid var(--line)', borderRadius: 10, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--mute)' }}>Cancelar</button>
+                <button onClick={() => { setNominateTarget(null); setNominateForm({ title: '', story: '' }) }} style={{ padding: '12px 20px', border: '1px solid var(--line)', borderRadius: 10, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--mute)' }}>{tCommon('cancel')}</button>
               </div>
             </m.div>
           </m.div>
@@ -313,10 +316,10 @@ export default function ProjectsPage() {
                 </svg>
               </div>
               <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 10 }}>
-                ¿Eliminar proyecto?
+                {t('deleteModal.title')}
               </div>
               <div style={{ fontSize: 14, color: 'var(--mute)', lineHeight: 1.6, marginBottom: 28 }}>
-                Esta acción no se puede deshacer. El proyecto y todas sus imágenes serán eliminados.
+                {t('deleteModal.body')}
               </div>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button
@@ -324,14 +327,14 @@ export default function ProjectsPage() {
                   disabled={deleting}
                   style={{ padding: '10px 20px', borderRadius: 999, background: 'transparent', color: 'var(--mute)', border: '1px solid var(--line)', fontFamily: '"Satoshi",sans-serif', fontWeight: 500, fontSize: 14, cursor: 'pointer' }}
                 >
-                  Cancelar
+                  {tCommon('cancel')}
                 </button>
                 <button
                   onClick={() => handleDelete(deleteTarget)}
                   disabled={deleting}
                   style={{ padding: '10px 20px', borderRadius: 999, background: '#991B1B', color: '#fff', border: 'none', fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, cursor: deleting ? 'not-allowed' : 'pointer', opacity: deleting ? 0.7 : 1 }}
                 >
-                  {deleting ? 'Eliminando…' : 'Sí, eliminar'}
+                  {deleting ? t('deleteModal.deleting') : t('deleteModal.confirmDelete')}
                 </button>
               </div>
             </m.div>

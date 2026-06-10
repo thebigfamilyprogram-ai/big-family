@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m, useReducedMotion } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
@@ -34,6 +35,8 @@ function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?
 
 export default function AnnouncementsPage() {
   const router       = useRouter()
+  const t            = useTranslations('dashboard.announcementsPage')
+  const tSidebar     = useTranslations('sidebar.badge')
   const supabaseRef  = useRef<ReturnType<typeof createClient> | null>(null)
   const pref         = useReducedMotion()
 
@@ -101,10 +104,10 @@ export default function AnnouncementsPage() {
           transition={{ type: 'spring', stiffness: 220, damping: 28 }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div className="page-title">Anuncios</div>
+            <div className="page-title">{t('title')}</div>
             {unread > 0 && (
               <span style={{ padding: '4px 12px', background: 'rgba(192,57,43,.1)', color: '#C0392B', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>
-                {unread} sin leer
+                {t('unreadCount', { count: unread })}
               </span>
             )}
           </div>
@@ -115,7 +118,7 @@ export default function AnnouncementsPage() {
             </div>
           ) : announcements.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--mute)', fontSize: 13 }}>
-              No hay anuncios todavía.
+              {t('noAnnouncements')}
             </div>
           ) : (
             <m.div
@@ -137,7 +140,7 @@ export default function AnnouncementsPage() {
                   >
                     <div className="ann-header">
                       <span style={{ padding: '3px 9px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: catStyle.bg, color: catStyle.color, whiteSpace: 'nowrap' }}>{ann.category}</span>
-                      {!isRead && <span style={{ padding: '3px 9px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: 'rgba(192,57,43,.1)', color: '#C0392B' }}>Nuevo</span>}
+                      {!isRead && <span style={{ padding: '3px 9px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: 'rgba(192,57,43,.1)', color: '#C0392B' }}>{tSidebar('new')}</span>}
                     </div>
                     <div className="ann-title">{ann.title}</div>
                     <div className="ann-content">{ann.content}</div>
