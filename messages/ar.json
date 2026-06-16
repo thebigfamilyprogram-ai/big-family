@@ -591,6 +591,10 @@
     "login": {
       "title": "تسجيل الدخول إلى Big Family",
       "subtitle": "منصتك للقيادة",
+      "welcomeBack": "مرحباً بعودتك",
+      "enterAccount": "أدخل إلى حسابك",
+      "signingIn": "جارٍ تسجيل الدخول…",
+      "recoverPassword": "استعدها",
       "emailLabel": "البريد الإلكتروني",
       "emailPlaceholder": "بريدك@الإلكتروني.com",
       "passwordLabel": "كلمة المرور",

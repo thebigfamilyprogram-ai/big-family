@@ -591,6 +591,10 @@
     "login": {
       "title": "Entrar no Big Family",
       "subtitle": "Sua plataforma de liderança",
+      "welcomeBack": "Bem-vindo de volta",
+      "enterAccount": "Entre na sua conta",
+      "signingIn": "Entrando…",
+      "recoverPassword": "Recuperá-la",
       "emailLabel": "Endereço de e-mail",
       "emailPlaceholder": "voce@email.com",
       "passwordLabel": "Senha",

@@ -591,6 +591,10 @@
     "login": {
       "title": "Se connecter à Big Family",
       "subtitle": "Votre plateforme de leadership",
+      "welcomeBack": "Bon retour",
+      "enterAccount": "Connectez-vous à votre compte",
+      "signingIn": "Connexion…",
+      "recoverPassword": "Récupérer",
       "emailLabel": "Adresse e-mail",
       "emailPlaceholder": "vous@email.com",
       "passwordLabel": "Mot de passe",
