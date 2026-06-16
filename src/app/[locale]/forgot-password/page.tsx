@@ -3,12 +3,14 @@
 export const dynamic = 'force-dynamic'
 
 import { useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 
 const expoOut = [0.22, 1, 0.36, 1] as const
 
 export default function ForgotPasswordPage() {
+  const t           = useTranslations('auth')
   const pref        = useReducedMotion()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
@@ -86,15 +88,15 @@ export default function ForgotPasswordPage() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.08 }}
         >
-          <h1 className="card-title">Recuperar contraseña</h1>
-          <p className="card-sub">Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.</p>
+          <h1 className="card-title">{t('forgotPassword.title')}</h1>
+          <p className="card-sub">{t('forgotPassword.subtitle')}</p>
 
           {sent ? (
             <div className="success">
               <div className="success-icon">✉️</div>
-              <div className="success-title">Correo enviado</div>
+              <div className="success-title">{t('forgotPassword.successTitle')}</div>
               <div className="success-sub">
-                Revisa tu bandeja de entrada en <strong>{email}</strong> y sigue las instrucciones para restablecer tu contraseña.
+                {t('forgotPassword.successBody')} <strong>{email}</strong>
               </div>
             </div>
           ) : (
@@ -120,9 +122,9 @@ export default function ForgotPasswordPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, ease: expoOut, delay: 0.22 }}
                 >
-                  <label htmlFor="email">Correo electrónico</label>
+                  <label htmlFor="email">{t('forgotPassword.emailLabel')}</label>
                   <input
-                    id="email" type="email" placeholder="tu@correo.com"
+                    id="email" type="email" placeholder={t('login.emailPlaceholder')}
                     value={email} onChange={e => setEmail(e.target.value)} required
                   />
                 </m.div>
@@ -132,7 +134,7 @@ export default function ForgotPasswordPage() {
                   transition={{ duration: 0.2, ease: expoOut, delay: 0.26 }}
                 >
                   <button className={`btn-main${loading ? ' shimmer' : ''}`} type="submit" disabled={loading}>
-                    {loading ? 'Enviando…' : 'Enviar enlace de recuperación'}
+                    {t('forgotPassword.submitBtn')}
                   </button>
                 </m.div>
               </form>
@@ -140,7 +142,7 @@ export default function ForgotPasswordPage() {
           )}
 
           <div className="footer-links">
-            <a href="/login">← Volver al inicio de sesión</a>
+            <a href="/login">← {t('forgotPassword.backToLogin')}</a>
           </div>
         </m.div>
       </div>

@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { m, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { showToast, ToastContainer } from '@/components/Toast'
@@ -45,20 +46,13 @@ function extractYouTubeId(url: string | null): string | null {
   return null
 }
 
-const PILAR_LABELS: Record<string, string> = {
-  'I':   'I · Yo',
-  'II':  'II · Norte',
-  'III': 'III · Vínculo',
-  'IV':  'IV · Acción',
-  'V':   'V · Legado',
-}
-
 function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?: number }) {
   return <div style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%)', backgroundSize: '400% 100%', animation: 'shimmer 1.4s ease infinite' }} />
 }
 
 // ── Approval / rejection modals ───────────────────────────────────────────────
 function ApproveModal({ mod, onConfirm, onClose, loading }: { mod: ModuleRow; onConfirm: () => void; onClose: () => void; loading: boolean }) {
+  const t = useTranslations('coordinator.modulesReview')
   return (
     <m.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -71,13 +65,13 @@ function ApproveModal({ mod, onConfirm, onClose, loading }: { mod: ModuleRow; on
         onClick={e => e.stopPropagation()}
         style={{ background: '#fff', borderRadius: 20, padding: '36px 32px', maxWidth: 440, width: '100%', boxShadow: '0 24px 64px -12px rgba(0,0,0,.25)' }}
       >
-        <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 10 }}>¿Publicar este módulo?</div>
-        <p style={{ fontSize: 14, color: 'var(--mute)', lineHeight: 1.6, marginBottom: 6 }}>El módulo quedará visible para todos los estudiantes de la plataforma.</p>
+        <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 10 }}>{t('approveModalTitle')}</div>
+        <p style={{ fontSize: 14, color: 'var(--mute)', lineHeight: 1.6, marginBottom: 6 }}>{t('approveModalBody')}</p>
         <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)', marginBottom: 24 }}>"{mod.title}"</p>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} disabled={loading} style={{ padding: '10px 20px', borderRadius: 999, background: 'transparent', color: 'var(--mute)', border: '1px solid rgba(13,13,13,.15)', fontFamily: 'inherit', fontSize: 14, cursor: 'pointer' }}>Cancelar</button>
+          <button onClick={onClose} disabled={loading} style={{ padding: '10px 20px', borderRadius: 999, background: 'transparent', color: 'var(--mute)', border: '1px solid rgba(13,13,13,.15)', fontFamily: 'inherit', fontSize: 14, cursor: 'pointer' }}>{t('cancel')}</button>
           <button onClick={onConfirm} disabled={loading} style={{ padding: '10px 22px', borderRadius: 999, background: '#065F46', color: '#fff', border: 'none', fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 14, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'Publicando…' : 'Sí, publicar'}
+            {loading ? t('publishing') : t('confirmPublish')}
           </button>
         </div>
       </m.div>
@@ -86,6 +80,7 @@ function ApproveModal({ mod, onConfirm, onClose, loading }: { mod: ModuleRow; on
 }
 
 function RejectModal({ mod, onConfirm, onClose, loading }: { mod: ModuleRow; onConfirm: (reason: string) => void; onClose: () => void; loading: boolean }) {
+  const t = useTranslations('coordinator.modulesReview')
   const [reason, setReason] = useState('')
   return (
     <m.div
@@ -99,18 +94,18 @@ function RejectModal({ mod, onConfirm, onClose, loading }: { mod: ModuleRow; onC
         onClick={e => e.stopPropagation()}
         style={{ background: '#fff', borderRadius: 20, padding: '36px 32px', maxWidth: 460, width: '100%', boxShadow: '0 24px 64px -12px rgba(0,0,0,.25)' }}
       >
-        <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 10 }}>Rechazar módulo</div>
+        <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 10 }}>{t('rejectModalTitle')}</div>
         <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)', marginBottom: 16 }}>"{mod.title}"</p>
-        <div style={{ fontSize: 13, color: 'var(--mute)', marginBottom: 8 }}>Motivo del rechazo (requerido)</div>
+        <div style={{ fontSize: 13, color: 'var(--mute)', marginBottom: 8 }}>{t('reasonLabel')}</div>
         <textarea
           value={reason} onChange={e => setReason(e.target.value)}
-          placeholder="Explica al expositor por qué no se aprueba y qué debe mejorar…"
+          placeholder={t('reasonPlaceholder')}
           style={{ width: '100%', minHeight: 100, padding: '10px 14px', border: '1px solid rgba(13,13,13,.15)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
         />
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 16 }}>
-          <button onClick={onClose} disabled={loading} style={{ padding: '10px 20px', borderRadius: 999, background: 'transparent', color: 'var(--mute)', border: '1px solid rgba(13,13,13,.15)', fontFamily: 'inherit', fontSize: 14, cursor: 'pointer' }}>Cancelar</button>
+          <button onClick={onClose} disabled={loading} style={{ padding: '10px 20px', borderRadius: 999, background: 'transparent', color: 'var(--mute)', border: '1px solid rgba(13,13,13,.15)', fontFamily: 'inherit', fontSize: 14, cursor: 'pointer' }}>{t('cancel')}</button>
           <button onClick={() => reason.trim() && onConfirm(reason.trim())} disabled={loading || !reason.trim()} style={{ padding: '10px 22px', borderRadius: 999, background: '#991B1B', color: '#fff', border: 'none', fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 14, cursor: (loading || !reason.trim()) ? 'not-allowed' : 'pointer', opacity: (loading || !reason.trim()) ? 0.5 : 1 }}>
-            {loading ? 'Rechazando…' : 'Confirmar rechazo'}
+            {loading ? t('rejecting') : t('confirmReject')}
           </button>
         </div>
       </m.div>
@@ -128,6 +123,14 @@ function ModuleCard({
   onUnpublish?: (id: string) => void
   showActions: 'pending' | 'published'
 }) {
+  const t = useTranslations('coordinator.modulesReview')
+  const PILAR_LABELS: Record<string, string> = {
+    'I':   `I · ${t('pillars.yo')}`,
+    'II':  `II · ${t('pillars.norte')}`,
+    'III': `III · ${t('pillars.vinculo')}`,
+    'IV':  `IV · ${t('pillars.accion')}`,
+    'V':   `V · ${t('pillars.legado')}`,
+  }
   const thumbId = extractYouTubeId(mod.video_url)
   const thumbUrl = thumbId ? `https://img.youtube.com/vi/${thumbId}/hqdefault.jpg` : null
 
@@ -165,17 +168,17 @@ function ModuleCard({
 
           {/* Meta row */}
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 12.5, color: 'var(--mute)', marginBottom: 14 }}>
-            <span>Por <strong style={{ color: 'var(--ink)' }}>{mod.expositor_name}</strong></span>
+            <span>{t('by')} <strong style={{ color: 'var(--ink)' }}>{mod.expositor_name}</strong></span>
             {mod.submitted_at && (
-              <span>Enviado el {new Date(mod.submitted_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+              <span>{t('submittedOn', { date: new Date(mod.submitted_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) })}</span>
             )}
             {mod.approved_at && showActions === 'published' && (
-              <span>Publicado el {new Date(mod.approved_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+              <span>{t('publishedOn', { date: new Date(mod.approved_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) })}</span>
             )}
             {mod.duration_minutes && mod.duration_minutes > 0 && (
               <span>{mod.duration_minutes} min</span>
             )}
-            <span>{mod.question_count} pregunta{mod.question_count !== 1 ? 's' : ''}</span>
+            <span>{mod.question_count === 1 ? t('questionSingular', { count: mod.question_count }) : t('questionPlural', { count: mod.question_count })}</span>
           </div>
 
           {/* Actions */}
@@ -189,7 +192,7 @@ function ModuleCard({
                   onMouseLeave={e => (e.currentTarget.style.background = '#065F46')}
                 >
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  Aprobar
+                  {t('approve')}
                 </button>
                 <button
                   onClick={() => onReject(mod)}
@@ -198,7 +201,7 @@ function ModuleCard({
                   onMouseLeave={e => { e.currentTarget.style.background = '#fff' }}
                 >
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-                  Rechazar
+                  {t('reject')}
                 </button>
               </>
             )}
@@ -209,7 +212,7 @@ function ModuleCard({
                 onMouseEnter={e => { e.currentTarget.style.borderColor = '#991B1B'; e.currentTarget.style.color = '#991B1B' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(13,13,13,.14)'; e.currentTarget.style.color = '#6B6B6B' }}
               >
-                Despublicar
+                {t('unpublish')}
               </button>
             )}
           </div>
@@ -221,6 +224,7 @@ function ModuleCard({
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function CoordinatorModulesPage() {
+  const t           = useTranslations('coordinator.modulesReview')
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
@@ -256,7 +260,7 @@ export default function CoordinatorModulesPage() {
       if (cancelled) return
 
       setCoordName(profile.display_name ?? '—')
-      setSchoolName((schoolRow as any)?.name ?? 'Mi colegio')
+      setSchoolName((schoolRow as any)?.name ?? t('defaultSchoolName'))
 
       // Fetch pending + published modules
       const { data: mods } = await supabase
@@ -338,12 +342,12 @@ export default function CoordinatorModulesPage() {
       approved_by: user?.id ?? null,
     }).eq('id', approving.id)
     setActionLoading(false)
-    if (error) { showToast('error', 'Error al aprobar el módulo'); return }
+    if (error) { showToast('error', t('approveError')); return }
     const updated = { ...approving, status: 'published', approved_at: new Date().toISOString() }
     setPending(prev => prev.filter(m => m.id !== approving.id))
     setPublished(prev => [updated, ...prev])
     setApproving(null)
-    showToast('success', `"${approving.title}" publicado ✓`)
+    showToast('success', t('publishedToast', { title: approving.title }))
   }
 
   async function handleReject(reason: string) {
@@ -355,10 +359,10 @@ export default function CoordinatorModulesPage() {
       rejection_reason: reason,
     }).eq('id', rejecting.id)
     setActionLoading(false)
-    if (error) { showToast('error', 'Error al rechazar el módulo'); return }
+    if (error) { showToast('error', t('rejectError')); return }
     setPending(prev => prev.filter(m => m.id !== rejecting.id))
     setRejecting(null)
-    showToast('error', `"${rejecting.title}" rechazado`)
+    showToast('error', t('rejectedToast', { title: rejecting.title }))
   }
 
   async function handleUnpublish(id: string) {
@@ -366,9 +370,9 @@ export default function CoordinatorModulesPage() {
     if (!mod || !supabaseRef.current) return
     const supabase = supabaseRef.current
     const { error } = await supabase.from('modules').update({ status: 'draft', approved_at: null, approved_by: null }).eq('id', id)
-    if (error) { showToast('error', 'Error al despublicar'); return }
+    if (error) { showToast('error', t('unpublishError')); return }
     setPublished(prev => prev.filter(m => m.id !== id))
-    showToast('info', `"${mod.title}" movido a borrador`)
+    showToast('info', t('movedToDraftToast', { title: mod.title }))
   }
 
   async function handleApproveRetry(req: RetryRequest) {
@@ -381,7 +385,7 @@ export default function CoordinatorModulesPage() {
       .delete()
       .eq('user_id', req.user_id)
       .eq('module_id', req.module_id)
-    if (delErr) { showToast('error', 'Error al aprobar el reintento'); setApprovingRetry(null); return }
+    if (delErr) { showToast('error', t('retryApproveError')); setApprovingRetry(null); return }
     // Mark request as approved
     await supabase
       .from('quiz_retry_requests')
@@ -389,10 +393,10 @@ export default function CoordinatorModulesPage() {
       .eq('id', req.id)
     setRetryRequests(prev => prev.filter(r => r.id !== req.id))
     setApprovingRetry(null)
-    showToast('success', `Reintento aprobado para ${req.student_name} ✓`)
+    showToast('success', t('retryApprovedToast', { name: req.student_name }))
     // Notify student
     try {
-      await createNotification(supabase, { userId: req.user_id, type: 'quiz_retry_approved', title: 'Reintento de quiz aprobado', body: `Tu coordinador aprobó un reintento para el módulo ${req.module_id}.`, link: '/dashboard/leadership-path' })
+      await createNotification(supabase, { userId: req.user_id, type: 'quiz_retry_approved', title: t('retryNotificationTitle'), body: t('retryNotificationBody', { moduleId: req.module_id }), link: '/dashboard/leadership-path' })
     } catch { /* non-fatal */ }
   }
 
@@ -427,9 +431,9 @@ export default function CoordinatorModulesPage() {
         {/* Header */}
         <div className="cm-header">
           <div>
-            <h1>Revisión de Módulos</h1>
+            <h1>{t('pageTitle')}</h1>
             <p>
-              {loading ? 'Cargando…' : `${pending.length} módulo${pending.length !== 1 ? 's' : ''} pendiente${pending.length !== 1 ? 's' : ''} de revisión · ${schoolName}`}
+              {loading ? t('loading') : (pending.length === 1 ? t('pendingCountSingular', { count: pending.length, school: schoolName }) : t('pendingCountPlural', { count: pending.length, school: schoolName }))}
             </p>
           </div>
         </div>
@@ -440,7 +444,7 @@ export default function CoordinatorModulesPage() {
             className={`cm-tab${tab === 'pending' ? ' active' : ''}`}
             onClick={() => setTab('pending')}
           >
-            Pendientes
+            {t('tabPending')}
             {!loading && pending.length > 0 && (
               <span style={{ marginLeft: 8, padding: '1px 7px', borderRadius: 999, background: tab === 'pending' ? 'rgba(255,255,255,.2)' : 'rgba(13,13,13,.08)', fontSize: 11 }}>{pending.length}</span>
             )}
@@ -449,7 +453,7 @@ export default function CoordinatorModulesPage() {
             className={`cm-tab${tab === 'published' ? ' active' : ''}`}
             onClick={() => setTab('published')}
           >
-            Publicados
+            {t('tabPublished')}
             {!loading && published.length > 0 && (
               <span style={{ marginLeft: 8, padding: '1px 7px', borderRadius: 999, background: tab === 'published' ? 'rgba(255,255,255,.2)' : 'rgba(13,13,13,.08)', fontSize: 11 }}>{published.length}</span>
             )}
@@ -459,7 +463,7 @@ export default function CoordinatorModulesPage() {
             onClick={() => setTab('retries')}
             style={retryRequests.length > 0 && tab !== 'retries' ? { borderColor: '#C0392B', color: '#C0392B', background: 'rgba(192,57,43,.06)' } : undefined}
           >
-            Reintentos solicitados
+            {t('tabRetries')}
             {!loading && retryRequests.length > 0 && (
               <span style={{ marginLeft: 8, padding: '1px 7px', borderRadius: 999, background: tab === 'retries' ? 'rgba(255,255,255,.2)' : 'rgba(192,57,43,.12)', color: tab === 'retries' ? undefined : '#C0392B', fontSize: 11 }}>{retryRequests.length}</span>
             )}
@@ -482,8 +486,8 @@ export default function CoordinatorModulesPage() {
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
                 <path d="M9 9a3 3 0 1 1 4.5 2.6c-.4.2-.5.4-.5.9v1M12 17h.01" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
               </svg>
-              <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 16, marginBottom: 6 }}>No hay reintentos pendientes</div>
-              <div style={{ fontSize: 13.5 }}>Cuando un estudiante solicite un reintento, aparecerá aquí.</div>
+              <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 16, marginBottom: 6 }}>{t('noPendingRetries')}</div>
+              <div style={{ fontSize: 13.5 }}>{t('noPendingRetriesHint')}</div>
             </div>
           ) : (
             <div className="cm-feed">
@@ -498,10 +502,10 @@ export default function CoordinatorModulesPage() {
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 16, color: 'var(--ink)', marginBottom: 4 }}>{req.student_name}</div>
                       <div style={{ fontSize: 13.5, color: 'var(--mute)', marginBottom: 6 }}>
-                        Módulo: <strong style={{ color: 'var(--ink)' }}>{req.module_title}</strong>
+                        {t('moduleLabel')}: <strong style={{ color: 'var(--ink)' }}>{req.module_title}</strong>
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--mute)' }}>
-                        Solicitado el {new Date(req.requested_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        {t('requestedOn', { date: new Date(req.requested_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) })}
                       </div>
                     </div>
                     <button
@@ -511,10 +515,10 @@ export default function CoordinatorModulesPage() {
                       onMouseEnter={e => { if (approvingRetry !== req.id) e.currentTarget.style.background = '#064E3B' }}
                       onMouseLeave={e => { e.currentTarget.style.background = '#065F46' }}
                     >
-                      {approvingRetry === req.id ? 'Aprobando…' : (
+                      {approvingRetry === req.id ? t('approving') : (
                         <>
                           <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                          Aprobar reintento
+                          {t('approveRetryAction')}
                         </>
                       )}
                     </button>
@@ -553,10 +557,10 @@ export default function CoordinatorModulesPage() {
               <path d="M8 12h8M8 8h5M8 16h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
             </svg>
             <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 16, marginBottom: 6 }}>
-              {tab === 'pending' ? 'No hay módulos pendientes de revisión' : 'No hay módulos publicados aún'}
+              {tab === 'pending' ? t('noPendingModules') : t('noPublishedModules')}
             </div>
             <div style={{ fontSize: 13.5 }}>
-              {tab === 'pending' ? 'Cuando un expositor envíe un módulo aparecerá aquí.' : 'Aprueba módulos desde la pestaña Pendientes.'}
+              {tab === 'pending' ? t('noPendingModulesHint') : t('noPublishedModulesHint')}
             </div>
           </div>
         ) : (

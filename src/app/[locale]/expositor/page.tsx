@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE } from '@/lib/mockData'
@@ -25,19 +26,9 @@ interface ModuleAnalytics {
   completion_rate: number   // 0-100
 }
 
-const LEVEL_LABELS: Record<string, { label: string; color: string; bg: string }> = {
-  junior: { label: 'Junior', color: '#92400E', bg: '#FEF3C7' },
-  senior: { label: 'Senior', color: '#C0392B', bg: 'rgba(192,57,43,0.1)' },
-}
+type LabelMap = Record<string, { label: string; color: string; bg: string }>
 
-const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
-  draft:     { label: 'Borrador',    color: '#444441', bg: '#F1EFE8' },
-  pending:   { label: 'En revisión', color: '#92400E', bg: '#FEF3C7' },
-  published: { label: 'Publicado',   color: '#065F46', bg: '#D1FAE5' },
-  rejected:  { label: 'Rechazado',   color: '#991B1B', bg: '#FEE2E2' },
-}
-
-function Badge({ map, value }: { map: typeof STATUS_LABELS; value: string }) {
+function Badge({ map, value }: { map: LabelMap; value: string }) {
   const s = map[value] ?? { label: value, color: '#444', bg: '#eee' }
   return (
     <span style={{ padding: '3px 10px', borderRadius: 999, fontSize: 11.5, fontWeight: 700, color: s.color, background: s.bg, display: 'inline-block' }}>
@@ -54,7 +45,22 @@ function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?
 
 export default function ExpositorPage() {
   const router      = useRouter()
+  const t           = useTranslations('expositor.modulesPage')
+  const tStatus     = useTranslations('expositor.moduleStatus')
+  const tCommon     = useTranslations('common')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
+
+  const LEVEL_LABELS: LabelMap = {
+    junior: { label: t('levelJunior'), color: '#92400E', bg: '#FEF3C7' },
+    senior: { label: t('levelSenior'), color: '#C0392B', bg: 'rgba(192,57,43,0.1)' },
+  }
+
+  const STATUS_LABELS: LabelMap = {
+    draft:     { label: tStatus('draft'),     color: '#444441', bg: '#F1EFE8' },
+    pending:   { label: tStatus('pending'),   color: '#92400E', bg: '#FEF3C7' },
+    published: { label: tStatus('published'), color: '#065F46', bg: '#D1FAE5' },
+    rejected:  { label: tStatus('rejected'),  color: '#991B1B', bg: '#FEE2E2' },
+  }
 
   const [loading,      setLoading]      = useState(true)
   const [userName,     setUserName]     = useState('…')
@@ -220,8 +226,8 @@ export default function ExpositorPage() {
           {/* Header */}
           <div className="exp-header">
             <div>
-              <div className="exp-title">Mis Módulos</div>
-              <div className="exp-subtitle">Panel del Expositor · {userName}</div>
+              <div className="exp-title">{t('pageTitle')}</div>
+              <div className="exp-subtitle">{t('panelSubtitle', { name: userName })}</div>
             </div>
             <m.button
               className="btn-new"
@@ -230,7 +236,7 @@ export default function ExpositorPage() {
               whileTap={pref ? undefined : { scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 200, damping: 22 }}
             >
-              + Nuevo módulo
+              {t('newModuleBtn')}
             </m.button>
           </div>
 
@@ -247,10 +253,10 @@ export default function ExpositorPage() {
           ) : (
             <div className="stats">
               {([
-                { label: 'Total',       num: stats.total,     accent: false                 },
-                { label: 'Publicados',  num: stats.published, accent: stats.published > 0   },
-                { label: 'En revisión', num: stats.pending,   accent: false                 },
-                { label: 'Rechazados',  num: stats.rejected,  accent: stats.rejected > 0    },
+                { label: t('statTotal'),       num: stats.total,     accent: false                 },
+                { label: t('statPublished'),   num: stats.published, accent: stats.published > 0   },
+                { label: tStatus('pending'),   num: stats.pending,   accent: false                 },
+                { label: t('statRejected'),    num: stats.rejected,  accent: stats.rejected > 0    },
               ] as { label: string; num: number; accent: boolean }[]).map((s, i) => (
                 <m.div
                   key={s.label}
@@ -285,9 +291,9 @@ export default function ExpositorPage() {
                 <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="1.5"/>
                 <path d="M8 12h8M8 8h5M8 16h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
               </svg>
-              <p style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 18, marginBottom: 6 }}>Sin módulos todavía</p>
-              <p style={{ fontSize: 14, marginBottom: 24 }}>Crea tu primer módulo para empezar.</p>
-              <button className="btn-new" onClick={() => router.push('/expositor/modules/new')}>+ Crear módulo</button>
+              <p style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 18, marginBottom: 6 }}>{t('emptyTitle')}</p>
+              <p style={{ fontSize: 14, marginBottom: 24 }}>{t('emptySubtitle')}</p>
+              <button className="btn-new" onClick={() => router.push('/expositor/modules/new')}>{t('createModuleBtn')}</button>
             </div>
           ) : (
             <div className="mod-list">
@@ -300,21 +306,25 @@ export default function ExpositorPage() {
                   transition={{ type: 'spring', stiffness: 140, damping: 20, delay: pref ? 0 : i * 0.04 }}
                 >
                   <div className="mod-card-row">
-                    <div className="mod-card-title">{mod.title || <span style={{ color: 'var(--mute)', fontStyle: 'italic' }}>Sin título</span>}</div>
+                    <div className="mod-card-title">{mod.title || <span style={{ color: 'var(--mute)', fontStyle: 'italic' }}>{t('untitledModule')}</span>}</div>
                     <div className="mod-card-meta">
                       {mod.level && <Badge map={LEVEL_LABELS} value={mod.level} />}
                       <Badge map={STATUS_LABELS} value={mod.status} />
                       {mod.duration_minutes > 0 && (
                         <span className="mod-card-detail">{mod.duration_minutes} min</span>
                       )}
-                      <span className="mod-card-detail">{mod.question_count} pregunta{mod.question_count !== 1 ? 's' : ''}</span>
+                      <span className="mod-card-detail">
+                        {mod.question_count === 1
+                          ? t('questionCountSingular', { count: mod.question_count })
+                          : t('questionCountPlural', { count: mod.question_count })}
+                      </span>
                     </div>
                     <button className="btn-edit" onClick={() => router.push(`/expositor/modules/${mod.id}/edit`)}>
-                      Editar →
+                      {t('editBtn')}
                     </button>
                     {mod.status === 'draft' && (
                       <button className="btn-delete" onClick={() => setDeleteTarget(mod)}>
-                        Eliminar
+                        {t('deleteBtn')}
                       </button>
                     )}
                   </div>
@@ -325,22 +335,24 @@ export default function ExpositorPage() {
                     return (
                       <div className="mod-analytics">
                         <span className={`mod-pill ${rateClass}`}>
-                          {a.completed} completado{a.completed !== 1 ? 's' : ''}
+                          {a.completed === 1
+                            ? t('completedSingular', { count: a.completed })
+                            : t('completedPlural', { count: a.completed })}
                         </span>
                         {a.avg_score !== null && (
                           <span className="mod-pill mod-pill--neutral">
-                            Quiz avg: {a.avg_score}%
+                            {t('quizAvgLabel', { value: a.avg_score })}
                           </span>
                         )}
                         <span className={`mod-pill ${rateClass}`}>
-                          {a.completion_rate}% completion
+                          {t('completionRateLabel', { value: a.completion_rate })}
                         </span>
                       </div>
                     )
                   })()}
                   {mod.status === 'rejected' && mod.rejection_reason && (
                     <div className="mod-rejection">
-                      <strong>Motivo de rechazo:</strong> {mod.rejection_reason}
+                      <strong>{t('rejectionReasonLabel')}</strong> {mod.rejection_reason}
                     </div>
                   )}
                 </m.div>
@@ -367,16 +379,16 @@ export default function ExpositorPage() {
               style={{ background: 'var(--card-bg)', borderRadius: 20, padding: '36px 32px', maxWidth: 420, width: '100%', boxShadow: '0 24px 64px -12px rgba(0,0,0,.25)' }}
             >
               <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 10 }}>
-                ¿Eliminar módulo?
+                {t('deleteModalTitle')}
               </div>
               <p style={{ fontSize: 14, color: 'var(--mute)', lineHeight: 1.6, marginBottom: 8 }}>
-                Esto eliminará permanentemente
+                {t('deleteModalBody1')}
               </p>
               <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)', marginBottom: 24 }}>
-                "{deleteTarget.title || 'Sin título'}"
+                "{deleteTarget.title || t('untitledModule')}"
               </p>
               <p style={{ fontSize: 13, color: 'var(--mute)', marginBottom: 24 }}>
-                También se eliminarán todas sus preguntas. Esta acción no se puede deshacer.
+                {t('deleteModalBody2')}
               </p>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button
@@ -384,14 +396,14 @@ export default function ExpositorPage() {
                   disabled={deleting}
                   style={{ padding: '10px 20px', borderRadius: 999, background: 'transparent', color: 'var(--mute)', border: '1px solid var(--line)', fontFamily: 'inherit', fontSize: 14, cursor: 'pointer' }}
                 >
-                  Cancelar
+                  {tCommon('cancel')}
                 </button>
                 <button
                   onClick={confirmDelete}
                   disabled={deleting}
                   style={{ padding: '10px 22px', borderRadius: 999, background: '#991B1B', color: '#fff', border: 'none', fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 14, cursor: deleting ? 'not-allowed' : 'pointer', opacity: deleting ? 0.7 : 1 }}
                 >
-                  {deleting ? 'Eliminando…' : 'Sí, eliminar'}
+                  {deleting ? t('deletingBtn') : t('confirmDeleteBtn')}
                 </button>
               </div>
             </m.div>

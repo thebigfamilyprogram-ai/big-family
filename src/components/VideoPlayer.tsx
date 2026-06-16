@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { showToast } from '@/components/Toast'
 
@@ -38,7 +39,8 @@ function extractVideoId(url: string): string | null {
 }
 
 export default function VideoPlayer({ videoUrl, moduleId, userId }: Props) {
-  const router      = useRouter()
+  const router = useRouter()
+  const t      = useTranslations('modules')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const playerRef    = useRef<YTPlayer | null>(null)
@@ -131,7 +133,7 @@ export default function VideoPlayer({ videoUrl, moduleId, userId }: Props) {
         playerRef.current?.pauseVideo()
         tabSwitchRef.current += 1
         localStorage.setItem('tab_switches_video', String(tabSwitchRef.current))
-        showToast('warning', '⚠ï¸ Saliste de la página — el video se pausó')
+        showToast('warning', t('video.tabSwitchWarning'))
       }
     }
     document.addEventListener('visibilitychange', onVisibility)
@@ -155,8 +157,8 @@ export default function VideoPlayer({ videoUrl, moduleId, userId }: Props) {
             <circle cx="12" cy="12" r="10" stroke="#C0392B" strokeWidth="1.5"/>
             <path d="M12 8v4M12 16h.01" stroke="#C0392B" strokeWidth="1.8" strokeLinecap="round"/>
           </svg>
-          <span style={{ color: '#C0392B', fontWeight: 600, fontSize: 14 }}>El video no está disponible.</span>
-          <span style={{ fontSize: 12 }}>Verifica el enlace. Solo se admiten URLs de YouTube o Vimeo.</span>
+          <span style={{ color: '#C0392B', fontWeight: 600, fontSize: 14 }}>{t('video.invalid')}</span>
+          <span style={{ fontSize: 12 }}>{t('video.invalidHint')}</span>
         </div>
       )}
 
@@ -164,12 +166,10 @@ export default function VideoPlayer({ videoUrl, moduleId, userId }: Props) {
       <div style={{ marginTop: 18 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <span style={{ fontSize: 13, color: '#6B6B6B' }}>
-            Has visto el{' '}
-            <strong style={{ color: canProceed ? '#16a34a' : '#0D0D0D' }}>{watchedPct}%</strong>
-            {' '}del video
+            {t('video.watchedPct', { pct: watchedPct })}
           </span>
           {canProceed && (
-            <span style={{ fontSize: 12, color: '#16a34a', fontWeight: 600 }}>✓ Listo para el cuestionario</span>
+            <span style={{ fontSize: 12, color: '#16a34a', fontWeight: 600 }}>{t('video.readyForQuiz')}</span>
           )}
         </div>
         <div style={{ height: 4, background: '#f0ede8', borderRadius: 999, overflow: 'hidden' }}>
@@ -186,7 +186,7 @@ export default function VideoPlayer({ videoUrl, moduleId, userId }: Props) {
             onMouseOver={e => (e.currentTarget.style.background = '#a93226')}
             onMouseOut={e => (e.currentTarget.style.background = '#C0392B')}
           >
-            Ir al cuestionario →
+            {t('video.goToQuiz')}
           </button>
         ) : (
           <div>
@@ -194,10 +194,10 @@ export default function VideoPlayer({ videoUrl, moduleId, userId }: Props) {
               disabled
               style={{ width: '100%', padding: '14px', background: '#e8e4df', color: '#b0ada8', border: 'none', borderRadius: 999, fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15, cursor: 'not-allowed' }}
             >
-              Ir al cuestionario
+              {t('video.quizLocked')}
             </button>
             <p style={{ marginTop: 8, fontSize: 12, color: '#9a9690', textAlign: 'center' }}>
-              Debes ver al menos el 80% del video para continuar
+              {t('video.watchMinimum')}
             </p>
           </div>
         )}

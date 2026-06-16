@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m, AnimatePresence } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
@@ -36,6 +37,8 @@ function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?
 
 export default function CoordinatorAnnouncementsPage() {
   const router      = useRouter()
+  const t           = useTranslations('coordinator.announcements')
+  const tCommon     = useTranslations('common')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,        setLoading]        = useState(true)
@@ -153,42 +156,42 @@ export default function CoordinatorAnnouncementsPage() {
       `}</style>
 
       <m.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 28 }}>
-        <h1 style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 24 }}>Anuncios</h1>
+        <h1 style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 24 }}>{t('title')}</h1>
 
         <AnimatePresence>
           {showForm && (
             <m.div key="form" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={springNatural} style={{ overflow: 'hidden', marginBottom: 20 }}>
               <div className="card" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 <div className="field" style={{ gridColumn: '1 / -1' }}>
-                  <label>Título *</label>
-                  <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Título del anuncio" />
+                  <label>{t('formTitleLabel')}</label>
+                  <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder={t('titlePlaceholder')} />
                 </div>
                 <div className="field" style={{ gridColumn: '1 / -1' }}>
-                  <label>Contenido *</label>
-                  <textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} rows={4} style={{ resize: 'vertical', padding: '9px 12px', border: '1px solid var(--line)', borderRadius: 9, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--bg-2)', color: 'var(--ink)' }} placeholder="Escribe el contenido del anuncio..." />
+                  <label>{t('contentLabel')}</label>
+                  <textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} rows={4} style={{ resize: 'vertical', padding: '9px 12px', border: '1px solid var(--line)', borderRadius: 9, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--bg-2)', color: 'var(--ink)' }} placeholder={t('contentPlaceholder')} />
                 </div>
                 <div className="field">
-                  <label>Categoría</label>
+                  <label>{t('categoryLabel')}</label>
                   <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div className="field">
-                  <label>Destinatario</label>
+                  <label>{t('targetLabel')}</label>
                   <select value={form.target} onChange={e => setForm(f => ({ ...f, target: e.target.value }))}>
-                    <option value="all">Todos los colegios</option>
+                    <option value="all">{t('scope.global')}</option>
                     {schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
                 </div>
                 <div className="field">
-                  <label>Expira el (opcional)</label>
+                  <label>{t('expiresOptionalLabel')}</label>
                   <input type="date" value={form.expires_at} onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))} />
                 </div>
                 <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10 }}>
                   <button className="btn-primary" onClick={handleSave} disabled={!form.title.trim() || !form.content.trim() || saving}>
-                    {saving ? 'Guardando…' : editing ? 'Guardar cambios' : 'Publicar anuncio'}
+                    {saving ? tCommon('saving') : editing ? t('saveChangesBtn') : t('publishBtn')}
                   </button>
-                  <button onClick={() => { setShowForm(false); setEditing(null); setForm(EMPTY_FORM) }} style={{ padding: '10px 18px', border: '1px solid var(--line)', borderRadius: 10, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--mute)' }}>Cancelar</button>
+                  <button onClick={() => { setShowForm(false); setEditing(null); setForm(EMPTY_FORM) }} style={{ padding: '10px 18px', border: '1px solid var(--line)', borderRadius: 10, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--mute)' }}>{tCommon('cancel')}</button>
                 </div>
               </div>
             </m.div>
@@ -201,27 +204,27 @@ export default function CoordinatorAnnouncementsPage() {
               {[1,2,3].map(i => <Sk key={i} h={70} r={8} />)}
             </div>
           ) : announcements.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '32px', color: 'var(--mute)', fontSize: 13 }}>Sin anuncios todavía.</div>
+            <div style={{ textAlign: 'center', padding: '32px', color: 'var(--mute)', fontSize: 13 }}>{t('empty')}</div>
           ) : announcements.map(ann => {
             const catStyle = CATEGORY_STYLES[ann.category] ?? { bg: 'var(--line)', color: 'var(--mute)' }
             const expired = isExpired(ann)
-            const targetName = ann.target === 'all' ? 'Todos' : schools.find(s => s.id === ann.target)?.name ?? ann.target
+            const targetName = ann.target === 'all' ? t('allTargetShort') : schools.find(s => s.id === ann.target)?.name ?? ann.target
             return (
               <div key={ann.id} className={`ann-item ${expired ? 'expired' : ''}`}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', gap: 8, marginBottom: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                     <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: catStyle.bg, color: catStyle.color }}>{ann.category}</span>
                     <span style={{ fontSize: 11, color: 'var(--mute)' }}>→ {targetName}</span>
-                    {expired && <span style={{ fontSize: 11, color: '#991B1B', fontWeight: 600 }}>Expirado</span>}
+                    {expired && <span style={{ fontSize: 11, color: '#991B1B', fontWeight: 600 }}>{t('expiredBadge')}</span>}
                   </div>
                   <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 4 }}>{ann.title}</div>
                   <div style={{ fontSize: 13, color: 'var(--ink-2)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>{ann.content}</div>
                   <div style={{ fontSize: 11.5, color: 'var(--mute)', marginTop: 4 }}>{new Date(ann.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                  <button onClick={() => startEdit(ann)} style={{ padding: '6px 12px', border: '1px solid var(--line)', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--ink)' }}>Editar</button>
+                  <button onClick={() => startEdit(ann)} style={{ padding: '6px 12px', border: '1px solid var(--line)', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--ink)' }}>{tCommon('edit')}</button>
                   <button onClick={() => handleDelete(ann.id)} disabled={deleting === ann.id} style={{ padding: '6px 12px', border: '1px solid #FCA5A5', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 12, color: '#991B1B', opacity: deleting === ann.id ? 0.5 : 1 }}>
-                    {deleting === ann.id ? '…' : 'Eliminar'}
+                    {deleting === ann.id ? '…' : tCommon('delete')}
                   </button>
                 </div>
               </div>

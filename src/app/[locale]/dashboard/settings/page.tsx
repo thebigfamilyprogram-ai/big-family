@@ -4,42 +4,27 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { useTheme, type Theme } from '@/contexts/ThemeContext'
 import { showToast } from '@/components/Toast'
 type Section = 'profile' | 'appearance' | 'account' | 'notifications' | 'portfolio'
 
-const SECTIONS: { id: Section; label: string; icon: React.ReactNode }[] = [
-  {
-    id: 'profile', label: 'Perfil',
-    icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.4"/><path d="M2 13c0-2.76 2.686-5 6-5s6 2.24 6 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
-  },
-  {
-    id: 'appearance', label: 'Apariencia',
-    icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4"/><path d="M8 1.5v13M1.5 8h13" stroke="currentColor" strokeWidth="1.4"/></svg>,
-  },
-  {
-    id: 'account', label: 'Cuenta',
-    icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="6" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 6V4.5a3 3 0 0 1 6 0V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
-  },
-  {
-    id: 'notifications', label: 'Notificaciones',
-    icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5A4.5 4.5 0 0 0 3.5 6v2.5L2 11h12l-1.5-2.5V6A4.5 4.5 0 0 0 8 1.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M6.5 11v.5a1.5 1.5 0 0 0 3 0V11" stroke="currentColor" strokeWidth="1.4"/></svg>,
-  },
-  {
-    id: 'portfolio', label: 'Portafolio',
-    icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 5V4a3 3 0 0 1 6 0v1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><circle cx="8" cy="10" r="1.5" stroke="currentColor" strokeWidth="1.2"/></svg>,
-  },
-]
+const SECTION_ICONS: Record<Section, React.ReactNode> = {
+  profile: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.4"/><path d="M2 13c0-2.76 2.686-5 6-5s6 2.24 6 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  appearance: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4"/><path d="M8 1.5v13M1.5 8h13" stroke="currentColor" strokeWidth="1.4"/></svg>,
+  account: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="6" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 6V4.5a3 3 0 0 1 6 0V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  notifications: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5A4.5 4.5 0 0 0 3.5 6v2.5L2 11h12l-1.5-2.5V6A4.5 4.5 0 0 0 8 1.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M6.5 11v.5a1.5 1.5 0 0 0 3 0V11" stroke="currentColor" strokeWidth="1.4"/></svg>,
+  portfolio: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="5" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 5V4a3 3 0 0 1 6 0v1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><circle cx="8" cy="10" r="1.5" stroke="currentColor" strokeWidth="1.2"/></svg>,
+}
 
-const THEME_CARDS: { id: Theme; label: string; desc: string }[] = [
-  { id: 'light', label: 'Claro',       desc: 'Interfaz luminosa' },
-  { id: 'dark',  label: 'Oscuro',      desc: 'Modo nocturno' },
-  { id: 'auto',  label: 'Automático',  desc: 'Sigue el sistema' },
-]
+const SECTION_IDS: Section[] = ['profile', 'appearance', 'account', 'notifications', 'portfolio']
+
+const THEME_IDS: Theme[] = ['light', 'dark', 'auto']
 
 export default function SettingsPage() {
   const router      = useRouter()
+  const t           = useTranslations('settings')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const { theme, setTheme } = useTheme()
 
@@ -177,9 +162,9 @@ export default function SettingsPage() {
       const name = displayName || userName
       setUserName(name)
       setUserInitial(name.charAt(0).toUpperCase())
-      showToast('success', 'Perfil actualizado correctamente')
+      showToast('success', t('toasts.profileUpdated'))
     } catch {
-      showToast('error', 'Error al guardar el perfil')
+      showToast('error', t('toasts.profileError'))
     } finally {
       setSaving(false)
     }
@@ -192,10 +177,10 @@ export default function SettingsPage() {
       redirectTo: `${window.location.origin}/auth/callback`,
     })
     if (error) {
-      showToast('error', 'Error al enviar el correo')
+      showToast('error', t('toasts.emailError'))
     } else {
       setResetSent(true)
-      showToast('success', 'Correo de restablecimiento enviado')
+      showToast('success', t('toasts.resetSent'))
     }
   }
 
@@ -203,17 +188,17 @@ export default function SettingsPage() {
     e.preventDefault()
     setPwError('')
     setPwSuccess(false)
-    if (pwNew.length < 8) { setPwError('La nueva contraseña debe tener al menos 8 caracteres.'); return }
-    if (pwNew !== pwConfirm) { setPwError('Las contraseñas no coinciden.'); return }
+    if (pwNew.length < 8) { setPwError(t('pwValidation.tooShort')); return }
+    if (pwNew !== pwConfirm) { setPwError(t('pwValidation.mismatch')); return }
     if (!supabaseRef.current) return
     const supabase = supabaseRef.current
     setPwSaving(true)
     // Re-authenticate with current password first
     const { error: authErr } = await supabase.auth.signInWithPassword({ email, password: pwCurrent })
-    if (authErr) { setPwSaving(false); setPwError('La contraseña actual es incorrecta.'); return }
+    if (authErr) { setPwSaving(false); setPwError(t('pwValidation.wrongCurrent')); return }
     const { error } = await supabase.auth.updateUser({ password: pwNew })
     setPwSaving(false)
-    if (error) { setPwError('Error al cambiar la contraseña. Intenta de nuevo.'); return }
+    if (error) { setPwError(t('pwValidation.genericError')); return }
     setPwSuccess(true)
     setPwCurrent(''); setPwNew(''); setPwConfirm('')
   }
@@ -227,8 +212,8 @@ export default function SettingsPage() {
       .update({ notification_preferences: next })
       .eq('id', userId)
     setNotifSaving(false)
-    if (error) showToast('error', 'Error al guardar preferencias')
-    else showToast('success', 'Preferencias guardadas')
+    if (error) showToast('error', t('toasts.prefsError'))
+    else showToast('success', t('toasts.prefsSaved'))
   }
 
   function handleNotifToggle(key: 'email' | 'push' | 'weekly', value: boolean) {
@@ -247,7 +232,7 @@ export default function SettingsPage() {
     setPortSaving(true)
     const { error } = await supabaseRef.current.from('profiles').update(patch).eq('id', userId)
     setPortSaving(false)
-    if (error) showToast('error', 'Error al guardar')
+    if (error) showToast('error', t('toasts.saveError'))
   }
 
   function handlePortToggle(
@@ -284,7 +269,7 @@ export default function SettingsPage() {
       if (supabaseRef.current) await supabaseRef.current.auth.signOut()
       router.push('/')
     } catch {
-      showToast('error', 'Error al eliminar la cuenta. Contacta soporte.')
+      showToast('error', t('toasts.deleteAccountError'))
       setDeleting(false)
     }
   }
@@ -387,21 +372,21 @@ export default function SettingsPage() {
 
       <main style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
           <div className="st-header">
-            <div className="st-eyebrow">THE BIG LEADER</div>
-            <h1 className="st-title">Configuración</h1>
+            <div className="st-eyebrow">{t('brandEyebrow')}</div>
+            <h1 className="st-title">{t('title')}</h1>
           </div>
 
           <div className="st-body">
             {/* Left nav */}
             <nav className="st-sidenav">
-              {SECTIONS.map(s => (
+              {SECTION_IDS.map(id => (
                 <button
-                  key={s.id}
-                  className={`st-nav-btn ${section === s.id ? 'active' : ''}`}
-                  onClick={() => setSection(s.id)}
+                  key={id}
+                  className={`st-nav-btn ${section === id ? 'active' : ''}`}
+                  onClick={() => setSection(id)}
                 >
-                  {s.icon}
-                  {s.label}
+                  {SECTION_ICONS[id]}
+                  {t(`sections.${id}`)}
                 </button>
               ))}
             </nav>
@@ -413,14 +398,14 @@ export default function SettingsPage() {
               {section === 'profile' && (
                 <>
                   <div className="st-card">
-                    <div className="st-card-title">Información personal</div>
-                    <div className="st-card-sub">Tu perfil visible para coordinadores y compañeros.</div>
+                    <div className="st-card-title">{t('profileCard.title')}</div>
+                    <div className="st-card-sub">{t('profileCard.subtitle')}</div>
 
                     {/* Avatar */}
                     <div className="st-avatar-wrap">
                       <div className="st-avatar" onClick={() => fileRef.current?.click()}>
                         {displayAvatar
-                          ? <img src={displayAvatar} alt="avatar" />
+                          ? <img src={displayAvatar} alt={t('profile.avatar')} />
                           : userInitial}
                         <div className="st-avatar-overlay">
                           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -438,11 +423,11 @@ export default function SettingsPage() {
                       />
                       <div className="st-avatar-hint">
                         <div style={{ fontWeight: 600, fontSize: 13.5, color: 'var(--ink)', marginBottom: 4 }}>
-                          {avatarPreview ? 'Nueva foto seleccionada' : 'Foto de perfil'}
+                          {avatarPreview ? t('profileCard.newPhotoSelected') : t('profileCard.profilePhoto')}
                         </div>
                         {avatarPreview ? (
                           <>
-                            <div style={{ fontSize: 13, color: 'var(--mute)', marginBottom: 8 }}>La foto se subirá al guardar el perfil.</div>
+                            <div style={{ fontSize: 13, color: 'var(--mute)', marginBottom: 8 }}>{t('profileCard.photoUploadHint')}</div>
                             <button
                               type="button"
                               onClick={() => {
@@ -452,13 +437,13 @@ export default function SettingsPage() {
                               }}
                               style={{ padding: '5px 12px', border: '1px solid var(--line)', borderRadius: 999, background: 'none', cursor: 'pointer', fontSize: 12.5, color: 'var(--mute)', fontFamily: 'inherit', transition: 'all .15s' }}
                             >
-                              × Cancelar
+                              {t('profileCard.cancelPhoto')}
                             </button>
                           </>
                         ) : (
                           <>
-                            <div>Haz clic para subir una imagen.</div>
-                            <div>JPG, PNG o WEBP · máx. 2MB</div>
+                            <div>{t('profileCard.uploadHint')}</div>
+                            <div>{t('profileCard.uploadFormats')}</div>
                           </>
                         )}
                       </div>
@@ -466,24 +451,24 @@ export default function SettingsPage() {
 
                     {/* Display name */}
                     <div className="st-field">
-                      <label className="st-label">Nombre para mostrar</label>
+                      <label className="st-label">{t('profileCard.displayNameLabel')}</label>
                       <input
                         className="st-input"
                         value={displayName}
                         onChange={e => setDisplayName(e.target.value.slice(0, 60))}
-                        placeholder="Tu nombre"
+                        placeholder={t('profileCard.displayNamePlaceholder')}
                         maxLength={60}
                       />
                     </div>
 
                     {/* Bio */}
                     <div className="st-field">
-                      <label className="st-label">Biografía</label>
+                      <label className="st-label">{t('profile.bio')}</label>
                       <textarea
                         className="st-textarea"
                         value={bio}
                         onChange={e => setBio(e.target.value.slice(0, 160))}
-                        placeholder="Cuéntanos un poco sobre ti..."
+                        placeholder={t('profileCard.bioPlaceholder')}
                         maxLength={160}
                       />
                       <div className="st-char">{bio.length} / 160</div>
@@ -492,18 +477,18 @@ export default function SettingsPage() {
                     {/* School + Role (readonly) */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
                       <div className="st-field" style={{ marginBottom: 0 }}>
-                        <label className="st-label">Institución</label>
+                        <label className="st-label">{t('profileCard.institutionLabel')}</label>
                         <input className="st-input" value={school} disabled />
                       </div>
                       <div className="st-field" style={{ marginBottom: 0 }}>
-                        <label className="st-label">Rol</label>
+                        <label className="st-label">{t('profileCard.roleLabel')}</label>
                         <input className="st-input" value={role} disabled />
                       </div>
                     </div>
 
                     <div className="st-save-row">
                       <button className="btn-save" onClick={handleSaveProfile} disabled={saving}>
-                        {saving ? 'Guardando…' : 'Guardar cambios'}
+                        {saving ? t('profileCard.savingBtn') : t('profileCard.saveBtn')}
                       </button>
                     </div>
                   </div>
@@ -511,8 +496,8 @@ export default function SettingsPage() {
                   {/* Badges */}
                   {badges.length > 0 && (
                     <div className="st-card">
-                      <div className="st-card-title">Insignias</div>
-                      <div className="st-card-sub" style={{ marginBottom: 16 }}>Reconocimientos obtenidos en el programa.</div>
+                      <div className="st-card-title">{t('badgesCard.title')}</div>
+                      <div className="st-card-sub" style={{ marginBottom: 16 }}>{t('badgesCard.subtitle')}</div>
                       <div>{badges.map((b, i) => <span key={i} className="st-badge">{b}</span>)}</div>
                     </div>
                   )}
@@ -522,19 +507,19 @@ export default function SettingsPage() {
               {/* ── APPEARANCE ── */}
               {section === 'appearance' && (
                 <div className="st-card">
-                  <div className="st-card-title">Apariencia</div>
-                  <div className="st-card-sub">Elige cómo se ve la interfaz de Big Family.</div>
+                  <div className="st-card-title">{t('appearanceCard.title')}</div>
+                  <div className="st-card-sub">{t('appearanceCard.subtitle')}</div>
 
                   <div className="theme-grid">
-                    {THEME_CARDS.map(card => (
+                    {THEME_IDS.map(id => (
                       <div
-                        key={card.id}
-                        className={`theme-card ${theme === card.id ? 'selected' : ''}`}
-                        onClick={() => setTheme(card.id)}
+                        key={id}
+                        className={`theme-card ${theme === id ? 'selected' : ''}`}
+                        onClick={() => setTheme(id)}
                       >
                         {/* Preview */}
                         <div className="theme-preview">
-                          {card.id === 'light' && (
+                          {id === 'light' && (
                             <div style={{ background: '#F5F3EF', height: '100%', padding: 10 }}>
                               <div style={{ height: 8, width: '60%', borderRadius: 4, background: '#0D0D0D', marginBottom: 6 }} />
                               <div style={{ height: 6, width: '80%', borderRadius: 4, background: 'rgba(13,13,13,.2)', marginBottom: 4 }} />
@@ -542,7 +527,7 @@ export default function SettingsPage() {
                               <div style={{ height: 24, width: 60, borderRadius: 6, background: '#C0392B', marginTop: 12 }} />
                             </div>
                           )}
-                          {card.id === 'dark' && (
+                          {id === 'dark' && (
                             <div style={{ background: '#0F0F0F', height: '100%', padding: 10 }}>
                               <div style={{ height: 8, width: '60%', borderRadius: 4, background: '#F0EEE9', marginBottom: 6 }} />
                               <div style={{ height: 6, width: '80%', borderRadius: 4, background: 'rgba(240,238,233,.25)', marginBottom: 4 }} />
@@ -550,7 +535,7 @@ export default function SettingsPage() {
                               <div style={{ height: 24, width: 60, borderRadius: 6, background: '#E05247', marginTop: 12 }} />
                             </div>
                           )}
-                          {card.id === 'auto' && (
+                          {id === 'auto' && (
                             <div style={{ height: '100%', display: 'flex' }}>
                               <div style={{ flex: 1, background: '#F5F3EF', padding: 10 }}>
                                 <div style={{ height: 8, width: '70%', borderRadius: 4, background: '#0D0D0D', marginBottom: 6 }} />
@@ -564,10 +549,10 @@ export default function SettingsPage() {
                           )}
                         </div>
 
-                        <div className="theme-label">{card.label}</div>
-                        <div className="theme-desc">{card.desc}</div>
+                        <div className="theme-label">{t(`theme.${id}.label`)}</div>
+                        <div className="theme-desc">{t(`theme.${id}.desc`)}</div>
 
-                        {theme === card.id && (
+                        {theme === id && (
                           <div className="theme-check">
                             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                               <path d="M2 6l3 3 5-5" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
@@ -584,34 +569,34 @@ export default function SettingsPage() {
               {section === 'account' && (
                 <>
                   <div className="st-card">
-                    <div className="st-card-title">Correo electrónico</div>
-                    <div className="st-card-sub">Tu dirección de correo vinculada a la cuenta.</div>
+                    <div className="st-card-title">{t('accountSection.emailCardTitle')}</div>
+                    <div className="st-card-sub">{t('accountSection.emailCardSub')}</div>
                     <div className="st-field">
-                      <label className="st-label">Correo</label>
+                      <label className="st-label">{t('accountSection.emailLabel')}</label>
                       <input className="st-input" value={email} disabled />
                     </div>
                   </div>
 
                   <div className="st-card">
-                    <div className="st-card-title">Cambiar contraseña</div>
-                    <div className="st-card-sub">Actualiza tu contraseña de acceso.</div>
+                    <div className="st-card-title">{t('accountSection.changePwTitle')}</div>
+                    <div className="st-card-sub">{t('accountSection.changePwSub')}</div>
                     {pwSuccess ? (
                       <div style={{ padding: '12px 16px', borderRadius: 10, background: '#D1FAE5', color: '#065F46', fontSize: 13.5, fontWeight: 500 }}>
-                        ✓ Contraseña actualizada correctamente.
+                        {t('accountSection.pwUpdated')}
                       </div>
                     ) : (
                       <form onSubmit={handleChangePassword}>
                         <div className="st-field">
-                          <label className="st-label">Contraseña actual</label>
-                          <input className="st-input" type="password" value={pwCurrent} onChange={e => setPwCurrent(e.target.value)} placeholder="••••••••" required />
+                          <label className="st-label">{t('accountSection.currentPwLabel')}</label>
+                          <input className="st-input" type="password" value={pwCurrent} onChange={e => setPwCurrent(e.target.value)} placeholder={t('accountSection.pwPlaceholder')} required />
                         </div>
                         <div className="st-field">
-                          <label className="st-label">Nueva contraseña</label>
-                          <input className="st-input" type="password" value={pwNew} onChange={e => setPwNew(e.target.value)} placeholder="Mínimo 8 caracteres" minLength={8} required />
+                          <label className="st-label">{t('accountSection.newPwLabel')}</label>
+                          <input className="st-input" type="password" value={pwNew} onChange={e => setPwNew(e.target.value)} placeholder={t('accountSection.newPwPlaceholder')} minLength={8} required />
                         </div>
                         <div className="st-field">
-                          <label className="st-label">Confirmar nueva contraseña</label>
-                          <input className="st-input" type="password" value={pwConfirm} onChange={e => setPwConfirm(e.target.value)} placeholder="Repite la nueva contraseña" required />
+                          <label className="st-label">{t('accountSection.confirmPwLabel')}</label>
+                          <input className="st-input" type="password" value={pwConfirm} onChange={e => setPwConfirm(e.target.value)} placeholder={t('accountSection.confirmPwPlaceholder')} required />
                         </div>
                         {pwError && (
                           <div style={{ padding: '10px 14px', background: 'rgba(192,57,43,.08)', border: '1px solid rgba(192,57,43,.2)', borderRadius: 8, fontSize: 13, color: '#C0392B', marginBottom: 12 }}>
@@ -620,7 +605,7 @@ export default function SettingsPage() {
                         )}
                         <div className="st-save-row">
                           <button type="submit" className="btn-save" disabled={pwSaving || !pwCurrent || !pwNew || !pwConfirm}>
-                            {pwSaving ? 'Cambiando…' : 'Cambiar contraseña'}
+                            {pwSaving ? t('accountSection.changingBtn') : t('accountSection.changeBtn')}
                           </button>
                         </div>
                       </form>
@@ -628,36 +613,36 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="st-card">
-                    <div className="st-card-title">Contraseña olvidada</div>
-                    <div className="st-card-sub">Recibirás un correo con instrucciones para restablecer tu contraseña.</div>
+                    <div className="st-card-title">{t('accountSection.forgotPwTitle')}</div>
+                    <div className="st-card-sub">{t('accountSection.forgotPwSub')}</div>
                     {resetSent ? (
                       <div style={{ padding: '12px 16px', borderRadius: 10, background: '#D1FAE5', color: '#065F46', fontSize: 13.5, fontWeight: 500 }}>
-                        ✓ Correo enviado. Revisa tu bandeja de entrada.
+                        {t('accountSection.resetEmailSent')}
                       </div>
                     ) : (
                       <button className="btn-secondary" onClick={handlePasswordReset}>
-                        Enviar correo de restablecimiento
+                        {t('accountSection.sendResetBtn')}
                       </button>
                     )}
                   </div>
 
                   <div className="st-card">
-                    <div className="st-card-title" style={{ color: '#991B1B' }}>Zona de peligro</div>
-                    <div className="st-card-sub">Estas acciones son permanentes y no se pueden deshacer.</div>
+                    <div className="st-card-title" style={{ color: '#991B1B' }}>{t('accountSection.dangerZoneTitle')}</div>
+                    <div className="st-card-sub">{t('accountSection.dangerZoneSub')}</div>
 
                     <div className="st-danger-box" style={{ marginBottom: 16 }}>
-                      <div className="st-danger-title">Cerrar sesión en todos los dispositivos</div>
-                      <div className="st-danger-sub">Se cerrará la sesión en todos los dispositivos donde hayas iniciado sesión.</div>
+                      <div className="st-danger-title">{t('accountSection.signOutAllTitle')}</div>
+                      <div className="st-danger-sub">{t('accountSection.signOutAllSub')}</div>
                       <button className="btn-outline-danger" onClick={handleSignOutAll}>
-                        Cerrar sesión en todos los dispositivos
+                        {t('accountSection.signOutAllBtn')}
                       </button>
                     </div>
 
                     <div className="st-danger-box">
-                      <div className="st-danger-title">Eliminar cuenta</div>
-                      <div className="st-danger-sub">Se borrarán todos tus datos, proyectos y progreso de forma permanente.</div>
+                      <div className="st-danger-title">{t('danger.deleteAccount')}</div>
+                      <div className="st-danger-sub">{t('accountSection.deleteAccountSub')}</div>
                       <button className="btn-danger" onClick={() => setDeleteModal(true)}>
-                        Eliminar mi cuenta
+                        {t('accountSection.deleteAccountBtn')}
                       </button>
                     </div>
                   </div>
@@ -667,13 +652,13 @@ export default function SettingsPage() {
               {/* ── NOTIFICATIONS ── */}
               {section === 'notifications' && (
                 <div className="st-card">
-                  <div className="st-card-title">Notificaciones</div>
-                  <div className="st-card-sub">Elige cómo quieres recibir actualizaciones del programa.</div>
+                  <div className="st-card-title">{t('notificationsCard.title')}</div>
+                  <div className="st-card-sub">{t('notificationsCard.subtitle')}</div>
 
                   {[
-                    { key: 'email'  as const, label: 'Notificaciones por correo', sub: 'Actualizaciones sobre proyectos y módulos', val: notifEmail },
-                    { key: 'push'   as const, label: 'Notificaciones push', sub: 'Alertas en tiempo real en el navegador', val: notifPush },
-                    { key: 'weekly' as const, label: 'Resumen semanal', sub: 'Un correo cada lunes con tu progreso', val: notifWeekly },
+                    { key: 'email'  as const, label: t('notificationsCard.email.label'), sub: t('notificationsCard.email.sub'), val: notifEmail },
+                    { key: 'push'   as const, label: t('notificationsCard.push.label'), sub: t('notificationsCard.push.sub'), val: notifPush },
+                    { key: 'weekly' as const, label: t('notificationsCard.weekly.label'), sub: t('notificationsCard.weekly.sub'), val: notifWeekly },
                   ].map((row) => (
                     <div key={row.key} className="notif-row">
                       <div>
@@ -695,7 +680,7 @@ export default function SettingsPage() {
 
                   {notifSaving && (
                     <div style={{ marginTop: 12, fontSize: 12, color: 'var(--mute)', textAlign: 'right' }}>
-                      Guardando…
+                      {t('notificationsCard.saving')}
                     </div>
                   )}
                 </div>
@@ -705,14 +690,14 @@ export default function SettingsPage() {
               {section === 'portfolio' && (
                 <>
                   <div className="st-card">
-                    <div className="st-card-title">Mi Portafolio Público</div>
-                    <div className="st-card-sub">Controla qué ven las universidades y rectores cuando visitan tu portafolio.</div>
+                    <div className="st-card-title">{t('portfolioCard.title')}</div>
+                    <div className="st-card-sub">{t('portfolioCard.subtitle')}</div>
 
                     {[
-                      { key: 'portfolio_public'              as const, label: 'Portafolio público', sub: 'Activa tu página en big-family-nu.vercel.app/p/' + (portUsername || '…'), val: portPublic },
-                      { key: 'portfolio_show_capstone'       as const, label: 'Mostrar proyecto capstone', sub: 'Incluye el título, descripción y resultados de tu proyecto', val: portCapstone },
-                      { key: 'portfolio_show_great_venture'  as const, label: 'Mostrar Great Venture', sub: 'Incluye tu meta núcleo y mapa de liderazgo', val: portGV },
-                      { key: 'portfolio_show_xp'             as const, label: 'Mostrar estadísticas XP', sub: 'Puntos de impacto, módulos y días en el programa', val: portXP },
+                      { key: 'portfolio_public'              as const, label: t('portfolio.toggles.public'), sub: t('portfolioCard.publicSub', { username: portUsername || '…' }), val: portPublic },
+                      { key: 'portfolio_show_capstone'       as const, label: t('portfolioCard.capstone.label'), sub: t('portfolioCard.capstone.sub'), val: portCapstone },
+                      { key: 'portfolio_show_great_venture'  as const, label: t('portfolio.toggles.showGreatVenture'), sub: t('portfolioCard.greatVentureSub'), val: portGV },
+                      { key: 'portfolio_show_xp'             as const, label: t('portfolioCard.xp.label'), sub: t('portfolioCard.xp.sub'), val: portXP },
                     ].map(row => (
                       <div key={row.key} className="notif-row">
                         <div>
@@ -731,10 +716,10 @@ export default function SettingsPage() {
 
                   {portUsername && (
                     <div className="st-card">
-                      <div className="st-card-title">Link de tu portafolio</div>
-                      <div className="st-card-sub">Comparte este link en tus aplicaciones universitarias.</div>
+                      <div className="st-card-title">{t('portfolioCard.linkCardTitle')}</div>
+                      <div className="st-card-sub">{t('portfolioCard.linkCardSub')}</div>
                       <div className="st-field">
-                        <label className="st-label">URL pública</label>
+                        <label className="st-label">{t('portfolioCard.publicUrlLabel')}</label>
                         <input
                           className="st-input"
                           readOnly
@@ -754,7 +739,7 @@ export default function SettingsPage() {
                             cursor: 'pointer', transition: 'all .2s',
                           }}
                         >
-                          {portCopied ? '✓ ¡Copiado!' : 'Copiar link'}
+                          {portCopied ? t('portfolioCard.copiedBtn') : t('portfolioCard.copyBtn')}
                         </button>
                         <a
                           href={`/p/${portUsername}`}
@@ -766,7 +751,7 @@ export default function SettingsPage() {
                             color: '#C0392B', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6,
                           }}
                         >
-                          Ver mi portafolio ↗
+                          {t('portfolioCard.viewPortfolioLink')}
                         </a>
                       </div>
                     </div>
@@ -782,30 +767,30 @@ export default function SettingsPage() {
       {deleteModal && (
         <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) setDeleteModal(false) }}>
           <div className="modal-box">
-            <div className="modal-title">¿Eliminar tu cuenta?</div>
+            <div className="modal-title">{t('deleteModal.title')}</div>
             <p className="modal-sub">
-              Esta acción es <strong>irreversible</strong>. Se eliminarán todos tus datos, proyectos, insignias y progreso del programa.
+              {t('deleteModal.bodyPart1')}<strong>{t('deleteModal.bodyIrreversible')}</strong>{t('deleteModal.bodyPart2')}
               <br /><br />
-              Escribe <strong>ELIMINAR</strong> para confirmar.
+              {t('deleteModal.bodyPart3Pre')}<strong>{t('deleteModal.confirmWord')}</strong>{t('deleteModal.bodyPart3Post')}
             </p>
             <input
               className="st-input"
               value={deleteInput}
               onChange={e => setDeleteInput(e.target.value)}
-              placeholder="ELIMINAR"
+              placeholder={t('deleteModal.placeholder')}
               style={{ fontFamily: 'var(--font-mono),monospace', letterSpacing: '.08em' }}
             />
             <div className="modal-actions">
               <button className="btn-secondary" onClick={() => { setDeleteModal(false); setDeleteInput('') }}>
-                Cancelar
+                {t('deleteModal.cancelBtn')}
               </button>
               <button
                 className="btn-danger"
                 onClick={handleDeleteAccount}
-                disabled={deleteInput !== 'ELIMINAR' || deleting}
-                style={{ opacity: deleteInput !== 'ELIMINAR' ? 0.5 : 1, cursor: deleteInput !== 'ELIMINAR' ? 'not-allowed' : 'pointer' }}
+                disabled={deleteInput !== t('deleteModal.confirmWord') || deleting}
+                style={{ opacity: deleteInput !== t('deleteModal.confirmWord') ? 0.5 : 1, cursor: deleteInput !== t('deleteModal.confirmWord') ? 'not-allowed' : 'pointer' }}
               >
-                {deleting ? 'Eliminando…' : 'Eliminar cuenta'}
+                {deleting ? t('deleteModal.deletingBtn') : t('deleteModal.deleteBtn')}
               </button>
             </div>
           </div>

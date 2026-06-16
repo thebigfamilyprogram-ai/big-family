@@ -63,32 +63,6 @@ function parseFields<T extends object>(raw: string, defaults: T): T {
   return firstKey ? { ...defaults, [firstKey]: raw } as T : defaults
 }
 
-// ── Constants ─────────────────────────────────────────────────────────────────
-const CATEGORIES = [
-  { value: 'liderazgo-comunitario', label: 'Liderazgo comunitario' },
-  { value: 'innovacion-social',     label: 'Innovación social' },
-  { value: 'medio-ambiente',        label: 'Medio ambiente' },
-  { value: 'educacion',             label: 'Educación' },
-  { value: 'salud-bienestar',       label: 'Salud y bienestar' },
-  { value: 'emprendimiento',        label: 'Emprendimiento' },
-]
-
-const TRACKS = [
-  { value: 'junior', label: 'Junior', sub: 'Primaria – 7° Bach.' },
-  { value: 'senior', label: 'Senior', sub: '8° – 11° Bach.' },
-]
-
-const SIDEBAR_SECTIONS = [
-  { num: 2, label: 'Identificar'       },
-  { num: 3, label: 'Diseñar'           },
-  { num: 4, label: 'Ejecutar'          },
-  { num: 5, label: 'Medir'             },
-  { num: 6, label: 'Reflexionar'       },
-  { num: 7, label: 'Plan continuidad'  },
-  { num: 8, label: 'Big Leader Model'  },
-  { num: 9, label: 'Evidencias'        },
-]
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function wc(text: string) {
   return text.trim().split(/\s+/).filter(Boolean).length
@@ -136,6 +110,7 @@ function RichTextarea({
   value: string; onChange: (v: string) => void
   disabled: boolean; minHeight?: number; rows?: number; wordCountLabel?: string
 }) {
+  const t    = useTranslations('projectEditor')
   const elRef = useRef<HTMLTextAreaElement>(null)
   const hist  = useRef<{ s: string[]; i: number }>({ s: [value], i: 0 })
 
@@ -185,9 +160,9 @@ function RichTextarea({
   function insertLink() {
     const el = elRef.current; if (!el) return
     const s = el.selectionStart, e = el.selectionEnd
-    const url = window.prompt('URL del enlace:', 'https://')
+    const url = window.prompt(t('toolbar.linkPrompt'), 'https://')
     if (url === null) return
-    const md = `[${value.slice(s, e) || 'texto'}](${url})`
+    const md = `[${value.slice(s, e) || t('wrapText.text')}](${url})`
     commit(value.slice(0, s) + md + value.slice(e))
     requestAnimationFrame(() => { el.focus(); el.setSelectionRange(s + md.length, s + md.length) })
   }
@@ -218,34 +193,34 @@ function RichTextarea({
       {!disabled && (
         <div className="pe-toolbar" role="toolbar">
           {/* Formatting */}
-          {tb('Negrita (**texto**)',    () => wrap('**', '**', 'texto'),     <strong style={{ fontSize: 13, fontFamily: 'Satoshi,sans-serif' }}>B</strong>)}
-          {tb('Cursiva (*texto*)',      () => wrap('*',  '*',  'texto'),     <em style={{ fontSize: 13, fontStyle: 'italic', fontFamily: "'Instrument Serif',serif" }}>I</em>)}
-          {tb('Subrayado (<u>texto</u>)', () => wrap('<u>', '</u>', 'texto'), <span style={{ fontSize: 12, fontWeight: 700, textDecoration: 'underline' }}>U</span>)}
-          {tb('Tachado (~~texto~~)',    () => wrap('~~', '~~', 'texto'),     <span style={{ fontSize: 12, fontWeight: 700, textDecoration: 'line-through' }}>S</span>)}
-          {tb('Resaltado (==texto==)',  () => wrap('==', '==', 'texto'),     <span style={{ fontSize: 10, fontWeight: 800, background: '#FDE68A', color: '#92400E', padding: '1px 3px', borderRadius: 2, lineHeight: 1 }}>HL</span>)}
-          {tb('Cita (> texto)',         () => linePrefix('> ', 'cita'),
+          {tb(t('toolbar.bold'),         () => wrap('**', '**', t('wrapText.text')),  <strong style={{ fontSize: 13, fontFamily: 'Satoshi,sans-serif' }}>B</strong>)}
+          {tb(t('toolbar.italic'),       () => wrap('*',  '*',  t('wrapText.text')),  <em style={{ fontSize: 13, fontStyle: 'italic', fontFamily: "'Instrument Serif',serif" }}>I</em>)}
+          {tb(t('toolbar.underline'),    () => wrap('<u>', '</u>', t('wrapText.text')), <span style={{ fontSize: 12, fontWeight: 700, textDecoration: 'underline' }}>U</span>)}
+          {tb(t('toolbar.strikethrough'), () => wrap('~~', '~~', t('wrapText.text')), <span style={{ fontSize: 12, fontWeight: 700, textDecoration: 'line-through' }}>S</span>)}
+          {tb(t('toolbar.highlight'),    () => wrap('==', '==', t('wrapText.text')),  <span style={{ fontSize: 10, fontWeight: 800, background: '#FDE68A', color: '#92400E', padding: '1px 3px', borderRadius: 2, lineHeight: 1 }}>HL</span>)}
+          {tb(t('toolbar.quote'),        () => linePrefix('> ', t('wrapText.quote')),
             <svg width="13" height="11" viewBox="0 0 14 12" fill="none">
               <path d="M1.5 1.5h4v4L3.5 11M8.5 1.5h4v4l-2 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>)}
           <div className="pe-tb-sep" />
 
           {/* Structure */}
-          {tb('Encabezado (## Título)', () => linePrefix('## ', 'Título'),  <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '-.02em' }}>H₂</span>)}
-          {tb('Lista de puntos (- ítem)', () => linePrefix('- ', 'ítem'),
+          {tb(t('toolbar.heading'),      () => linePrefix('## ', t('wrapText.heading')), <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: '-.02em' }}>H₂</span>)}
+          {tb(t('toolbar.bulletList'),   () => linePrefix('- ', t('wrapText.item')),
             <svg width="13" height="11" viewBox="0 0 14 12" fill="none">
               <circle cx="2" cy="3" r="1.4" fill="currentColor"/>
               <line x1="5" y1="3" x2="13" y2="3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
               <circle cx="2" cy="9" r="1.4" fill="currentColor"/>
               <line x1="5" y1="9" x2="11" y2="9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>)}
-          {tb('Lista numerada (1. ítem)', () => linePrefix('1. ', 'ítem'),  <span style={{ fontSize: 11, fontWeight: 700 }}>1.</span>)}
-          {tb('Separador (---)',          () => insertBlock('---'),
+          {tb(t('toolbar.numberedList'),  () => linePrefix('1. ', t('wrapText.item')), <span style={{ fontSize: 11, fontWeight: 700 }}>1.</span>)}
+          {tb(t('toolbar.divider'),       () => insertBlock('---'),
             <svg width="14" height="9" viewBox="0 0 14 9" fill="none">
               <line x1="1" y1="4.5" x2="13" y2="4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
               <line x1="3" y1="1.5" x2="11" y2="1.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity=".4"/>
               <line x1="3" y1="7.5" x2="11" y2="7.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity=".4"/>
             </svg>)}
-          {tb('Enlace ([texto](url))',    insertLink,
+          {tb(t('toolbar.link'),          insertLink,
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="M6.5 9.5a3.5 3.5 0 0 0 5 0l2-2a3.5 3.5 0 0 0-5-5L7 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
               <path d="M9.5 6.5a3.5 3.5 0 0 0-5 0l-2 2a3.5 3.5 0 0 0 5 5L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -253,17 +228,17 @@ function RichTextarea({
           <div className="pe-tb-sep" />
 
           {/* Utilities */}
-          {tb('Deshacer', undo,
+          {tb(t('toolbar.undo'), undo,
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
               <path d="M3 6.5h7a4.5 4.5 0 0 1 0 9H4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M3 6.5 6 3M3 6.5 6 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>)}
-          {tb('Rehacer', redo,
+          {tb(t('toolbar.redo'), redo,
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
               <path d="M13 6.5H6a4.5 4.5 0 0 0 0 9h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M13 6.5 10 3M13 6.5 10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>)}
-          {tb('Limpiar formato (selecciona texto primero)', clearFmt,
+          {tb(t('toolbar.clearFmt'), clearFmt,
             <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
               <path d="M2 14h5M11 2.5 3.5 10l2 2 7.5-7.5-2-2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M12.5 1.5 14 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -280,7 +255,7 @@ function RichTextarea({
           disabled={disabled}
           rows={rows}
         />
-        <span className="pe-rtw-wc">{wordCountLabel ?? `${wc(value)} palabras`}</span>
+        <span className="pe-rtw-wc">{wordCountLabel ?? t('wordCount', { count: wc(value) })}</span>
       </div>
     </div>
   )
@@ -533,7 +508,7 @@ export default function ProjectEditor({
   async function handleSubmit() {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
-    if (!supabase) { showToast('error', 'Error de conexión'); return }
+    if (!supabase) { showToast('error', t('errConnection')); return }
     setSubmitting(true)
     await doSave()
     const { error } = await supabase.from('projects').update({
@@ -541,10 +516,10 @@ export default function ProjectEditor({
       submitted_at: new Date().toISOString(),
     }).eq('id', projectId)
     setSubmitting(false)
-    if (error) { showToast('error', 'Error al enviar el proyecto'); return }
+    if (error) { showToast('error', t('errSubmit')); return }
     setStatus('pending')
     setSubmitModal(false)
-    showToast('success', 'Proyecto enviado al coordinador ✓')
+    showToast('success', t('successSubmit'))
     onSubmit?.()
     setTimeout(() => router.push('/dashboard/projects'), 1200)
   }
@@ -553,13 +528,13 @@ export default function ProjectEditor({
   async function uploadPhoto(file: File) {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
-    if (!supabase) { showToast('error', 'Error de conexión'); return }
+    if (!supabase) { showToast('error', t('errConnection')); return }
     setUploadingImg(true)
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_') || 'photo'
     const path = `${userId}/${projectId}/${Date.now()}-${safeName}`
     const { data: up, error } = await supabase.storage
       .from('project-images').upload(path, file, { cacheControl: '3600', upsert: false })
-    if (error || !up) { showToast('error', 'Error al subir la foto'); setUploadingImg(false); return }
+    if (error || !up) { showToast('error', t('errPhotoUpload')); setUploadingImg(false); return }
     const url = supabase.storage.from('project-images').getPublicUrl(up.path).data.publicUrl
     await supabase.from('project_images').insert({ project_id: projectId, url })
     setEvidenceUrls(prev => [...prev, url])
@@ -587,17 +562,17 @@ export default function ProjectEditor({
   async function uploadPdf(file: File) {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
-    if (!supabase) { showToast('error', 'Error de conexión'); return }
+    if (!supabase) { showToast('error', t('errConnection')); return }
     setUploadingPdf(true)
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_') || 'document'
     const path = `${userId}/${projectId}/${Date.now()}-${safeName}`
     const { data: up, error } = await supabase.storage
       .from('project-pdfs').upload(path, file, { cacheControl: '3600', upsert: false })
-    if (error || !up) { showToast('error', 'Error al subir el PDF'); setUploadingPdf(false); return }
+    if (error || !up) { showToast('error', t('errPdfUpload')); setUploadingPdf(false); return }
     const url = supabase.storage.from('project-pdfs').getPublicUrl(up.path).data.publicUrl
     setPdfUrl(url)
     setUploadingPdf(false)
-    showToast('success', 'PDF subido ✓')
+    showToast('success', t('successPdfUpload'))
   }
 
   async function removePdf() {
@@ -641,7 +616,7 @@ export default function ProjectEditor({
 
   const isLocked   = status === 'pending'
   const isRejected = status === 'rejected'
-  const today    = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
+  const today    = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
   const trackLabel = TRACKS_T.find(tr => tr.value === track)?.label ?? ''
 
   return (

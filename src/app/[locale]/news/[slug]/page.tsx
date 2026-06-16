@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m, useReducedMotion } from 'framer-motion'
 
@@ -37,7 +38,9 @@ function PlaceholderImg({ size = 40 }: { size?: number }) {
 }
 
 export default function NewsListPage() {
-  const pref        = useReducedMotion()
+  const pref = useReducedMotion()
+  const t    = useTranslations('news')
+  const tn   = useTranslations('nav')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const [articles,  setArticles]  = useState<NewsItem[]>([])
   const [loading,   setLoading]   = useState(true)
@@ -170,13 +173,13 @@ export default function NewsListPage() {
           Big Family
         </a>
         <div className="nl-nav-links">
-          <a href="/#mision">Cómo funciona</a>
-          <a href="/#about">Países</a>
-          <a href="/#equipo">Equipo</a>
-          <a href="/news" className="active">Noticias</a>
+          <a href="/#mision">{tn('comoFunciona')}</a>
+          <a href="/#about">{tn('paises')}</a>
+          <a href="/#equipo">{tn('equipo')}</a>
+          <a href="/news" className="active">{tn('noticias')}</a>
         </div>
         <a href="/login" style={{ padding:'8px 18px', borderRadius:999, background:'#0D0D0D', color:'#fff', fontSize:13, fontFamily:'Satoshi,sans-serif', fontWeight:700, textDecoration:'none', whiteSpace:'nowrap' }}>
-          Ingresar
+          {tn('ingresar')}
         </a>
       </nav>
 
@@ -188,19 +191,19 @@ export default function NewsListPage() {
             initial={pref ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 220, damping: 28 }}
-          >Blog</m.div>
+          >{t('eyebrow')}</m.div>
           <m.h1
             className="nl-hero-title"
             initial={pref ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.06 }}
-          >Noticias</m.h1>
+          >{t('title')}</m.h1>
           <m.p
             className="nl-hero-sub"
             initial={pref ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.12 }}
-          >Lo que está pasando en Big Family</m.p>
+          >{t('subtitle')}</m.p>
         </div>
 
         {loading ? (
@@ -234,8 +237,8 @@ export default function NewsListPage() {
           </>
         ) : articles.length === 0 ? (
           <div className="nl-empty">
-            <p style={{ fontFamily:'Satoshi,sans-serif', fontWeight:700, fontSize:18, marginBottom:8 }}>Próximamente</p>
-            <p style={{ fontSize:14 }}>No hay noticias publicadas aún.</p>
+            <p style={{ fontFamily:'Satoshi,sans-serif', fontWeight:700, fontSize:18, marginBottom:8 }}>{t('comingSoon')}</p>
+            <p style={{ fontSize:14 }}>{t('noArticles')}</p>
           </div>
         ) : (
           <>
@@ -251,7 +254,7 @@ export default function NewsListPage() {
                 <div className="nl-featured-body">
                   <div className="nl-featured-eyebrow">
                     <span />
-                    Destacado
+                    {t('featured')}
                   </div>
                   <div className="nl-featured-title">{featured.title}</div>
                   <div className="nl-featured-excerpt">{excerpt(featured.content, 180)}</div>
@@ -259,9 +262,9 @@ export default function NewsListPage() {
                     {featured.published_at && (
                       <>{new Date(featured.published_at).toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' })} · </>
                     )}
-                    Por {featured.author_name}
+                    {t('by')} {featured.author_name}
                   </div>
-                  <span className="nl-featured-cta">Leer artículo →</span>
+                  <span className="nl-featured-cta">{t('readArticle')}</span>
                 </div>
                 <div className="nl-featured-img">
                   {featured.cover_url
@@ -275,7 +278,7 @@ export default function NewsListPage() {
             {/* Rest of articles */}
             {rest.length > 0 && (
               <>
-                {featured && <div className="nl-section-label">Más noticias</div>}
+                {featured && <div className="nl-section-label">{t('moreArticles')}</div>}
                 <m.div
                   className="nl-grid"
                   initial={pref ? false : 'hidden'}
@@ -310,11 +313,11 @@ export default function NewsListPage() {
                               initial={pref ? false : { scale: 0 }}
                               animate={{ scale: 1 }}
                               transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                            >✓ Leído</m.span>
+                            >✓ {t('read')}</m.span>
                           )}
                         </div>
                         <div className="nl-card-excerpt">{excerpt(art.content)}</div>
-                        <div className="nl-card-meta">Por {art.author_name}</div>
+                        <div className="nl-card-meta">{t('by')} {art.author_name}</div>
                       </div>
                     </m.a>
                   ))}

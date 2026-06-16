@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m } from 'framer-motion'
 
@@ -37,6 +38,8 @@ function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?
 
 export default function AdminReportPage() {
   const router      = useRouter()
+  const t           = useTranslations('admin.report')
+  const tReport     = useTranslations('coordinator.studentReport')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,        setLoading]        = useState(true)
@@ -199,36 +202,40 @@ export default function AdminReportPage() {
 
       <nav className="nav">
         <a href="/admin" style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 16, color: 'var(--ink)', textDecoration: 'none' }}>Big Family</a>
-        <span style={{ fontSize: 12, color: 'var(--mute)' }}>→ Reporte PDF</span>
+        <span style={{ fontSize: 12, color: 'var(--mute)' }}>{tReport('breadcrumb')}</span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 10 }}>
-          <button className="btn-sm" onClick={() => router.push('/admin')}>Panel Admin</button>
-          <button className="btn-sm" onClick={handleLogout}>Salir</button>
+          <button className="btn-sm" onClick={() => router.push('/admin')}>{t('adminPanelBtn')}</button>
+          <button className="btn-sm" onClick={handleLogout}>{tReport('logout')}</button>
         </div>
       </nav>
 
       <m.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 28 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
           <div>
-            <h1 style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 4 }}>Reporte Global</h1>
-            <p style={{ fontSize: 13, color: 'var(--mute)' }}>{displayed.length} estudiante{displayed.length !== 1 ? 's' : ''} · {selectedSchoolName}</p>
+            <h1 style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 4 }}>{t('pageTitle')}</h1>
+            <p style={{ fontSize: 13, color: 'var(--mute)' }}>
+              {displayed.length === 1
+                ? t('studentsCountSingular', { count: displayed.length, school: selectedSchool === 'all' ? t('allSchoolsLabel') : selectedSchoolName })
+                : t('studentsCountPlural', { count: displayed.length, school: selectedSchool === 'all' ? t('allSchoolsLabel') : selectedSchoolName })}
+            </p>
           </div>
           <m.button
             className="btn-export"
             onClick={handleExport}
             disabled={loading || exporting || displayed.length === 0}
-            title={displayed.length === 0 ? 'No hay estudiantes para exportar' : undefined}
+            title={displayed.length === 0 ? tReport('exportTooltipEmpty') : undefined}
             whileHover={loading || displayed.length === 0 ? undefined : { scale: 1.02 }}
             whileTap={loading || displayed.length === 0 ? undefined : { scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
           >
-            {exporting ? 'Generando PDF…' : '↓ Exportar Reporte PDF'}
+            {exporting ? tReport('exporting') : tReport('exportBtn')}
           </m.button>
         </div>
 
         {/* School filter */}
         {!loading && (
           <div className="filter-row">
-            <button className={`filter-btn ${selectedSchool === 'all' ? 'active' : ''}`} onClick={() => setSelectedSchool('all')}>Todos los colegios</button>
+            <button className={`filter-btn ${selectedSchool === 'all' ? 'active' : ''}`} onClick={() => setSelectedSchool('all')}>{t('allSchoolsLabel')}</button>
             {schools.map(s => (
               <button key={s.id} className={`filter-btn ${selectedSchool === s.id ? 'active' : ''}`} onClick={() => setSelectedSchool(s.id)}>{s.name}</button>
             ))}
@@ -237,7 +244,7 @@ export default function AdminReportPage() {
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
           <button type="button" className="col-toggle" onClick={() => setShowAllCols(s => !s)}>
-            {showAllCols ? '↑ Menos columnas' : '↓ Mostrar todas las columnas'}
+            {showAllCols ? tReport('showFewerCols') : tReport('showAllColsBtn')}
           </button>
         </div>
 
@@ -247,18 +254,18 @@ export default function AdminReportPage() {
               {[1,2,3,4,5].map(i => <Sk key={i} h={20} r={6} />)}
             </div>
           ) : displayed.length === 0 ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--mute)', fontSize: 13 }}>Sin datos.</div>
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--mute)', fontSize: 13 }}>{t('emptyData')}</div>
           ) : (
             <table>
               <thead>
                 <tr>
-                  <th>Nombre</th>
-                  <th>Colegio</th>
-                  <th>Nivel</th>
-                  <th>XP Total</th>
-                  <th>Módulos</th>
-                  <th>Capstone</th>
-                  {showAllCols && <><th>Badges</th><th>Proyecto</th><th>Metas</th></>}
+                  <th>{t('colName')}</th>
+                  <th>{t('colSchool')}</th>
+                  <th>{tReport('colLevel')}</th>
+                  <th>{t('colXpTotal')}</th>
+                  <th>{t('colModules')}</th>
+                  <th>{tReport('colCapstone')}</th>
+                  {showAllCols && <><th>{tReport('colBadges')}</th><th>{tReport('colProject')}</th><th>{tReport('colGoals')}</th></>}
                 </tr>
               </thead>
               <tbody>
@@ -266,7 +273,7 @@ export default function AdminReportPage() {
                   <tr key={s.id}>
                     <td style={{ fontWeight: 500 }}>{s.display_name}</td>
                     <td style={{ color: 'var(--mute)', fontSize: 12 }}>{s.school_name}</td>
-                    <td>{s.school_level === 'junior' ? 'Junior' : 'Senior'}</td>
+                    <td>{s.school_level === 'junior' ? t('juniorLabel') : t('seniorLabel')}</td>
                     <td style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, color: '#C0392B' }}>{s.total_xp.toLocaleString()}</td>
                     <td style={{ textAlign: 'center' }}>{s.modules_completed}</td>
                     <td>{s.capstone_resultado ? <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: 'rgba(34,197,94,.15)', color: '#065F46' }}>{s.capstone_resultado}</span> : '—'}</td>

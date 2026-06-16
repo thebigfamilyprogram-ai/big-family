@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
   AreaChart, Area,
@@ -58,6 +59,8 @@ interface Props {
 
 export default function CoordinatorClient({ initialFullName, initialSchoolId }: Props) {
   const router      = useRouter()
+  const t           = useTranslations('coordinator.dashboard')
+  const tCommon     = useTranslations('common')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,      setLoading]      = useState(true)
@@ -119,7 +122,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
       setCoord({
         display_name:   initialFullName,
         school_id:   schoolId,
-        school_name: schoolRow?.name ?? 'Mi colegio',
+        school_name: schoolRow?.name ?? t('defaultSchoolName'),
       })
 
       const { data: studs } = await supabase
@@ -317,12 +320,12 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
         >
           <div className="page-hd" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <div>
-              <h1>Panel del Coordinador</h1>
-              <p>Seguimiento de tus estudiantes · {coord?.school_name}</p>
+              <h1>{t('title')}</h1>
+              <p>{t('subtitle', { school: coord?.school_name ?? '' })}</p>
             </div>
             <button
               onClick={() => setNotifOpen(true)}
-              title={notifCount > 0 ? `${notifCount} notificaciones` : 'Notificaciones'}
+              title={notifCount > 0 ? t('notificationsCount', { count: notifCount }) : tCommon('notifications')}
               style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 8, color: 'var(--mute)', transition: 'color .15s', flexShrink: 0, marginTop: 2 }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--ink)' }}
               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--mute)' }}
@@ -352,7 +355,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
               ))
             ) : ([
               {
-                label: 'Estudiantes',
+                label: t('kpiStudents'),
                 num: metrics.total,
                 border: 'var(--line-strong)',
                 color: 'var(--ink)',
@@ -360,7 +363,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
                 deltaLabel: '',
               },
               {
-                label: 'Promedio XP',
+                label: t('kpiAvgXp'),
                 num: metrics.avgXp,
                 border: 'var(--accent-amber,#D4821A)',
                 color: 'var(--accent-amber,#D4821A)',
@@ -368,20 +371,20 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
                 deltaLabel: '',
               },
               {
-                label: 'Módulos completados',
+                label: t('kpiModulesCompleted'),
                 num: metrics.totalMods,
                 border: 'var(--accent-teal,#0F7B6C)',
                 color: 'var(--accent-teal,#0F7B6C)',
                 delta: metrics.totalMods - prevMods,
-                deltaLabel: 'vs sem. ant.',
+                deltaLabel: t('vsLastWeek'),
               },
               {
-                label: 'Activos esta semana',
+                label: t('kpiActiveThisWeek'),
                 num: metrics.activeCount,
                 border: 'var(--accent,#C0392B)',
                 color: metrics.activeCount > 0 ? 'var(--accent,#C0392B)' : 'var(--ink)',
                 delta: deltaActive,
-                deltaLabel: 'vs sem. ant.',
+                deltaLabel: t('vsLastWeek'),
               },
             ] as const).map(({ label, num, border, color, delta, deltaLabel }) => {
               const isUp   = delta !== undefined && delta > 0
@@ -411,13 +414,13 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
           <div className="charts-bento">
             {/* Bar chart: XP Top 10 */}
             <div className="panel">
-              <div className="panel__title">XP por estudiante — Top 10</div>
+              <div className="panel__title">{t('xpTop10Title')}</div>
               {loading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {Array.from({ length: 6 }).map((_, i) => <Sk key={i} h={16} r={4} w={`${90 - i * 8}%`} />)}
                 </div>
               ) : chartData.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--mute)', fontSize: 13 }}>Sin datos de XP todavía.</div>
+                <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--mute)', fontSize: 13 }}>{t('noXpData')}</div>
               ) : (
                 <m.div
                   initial={pref ? false : { opacity: 0, y: 8 }}
@@ -458,13 +461,13 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
 
             {/* Area chart: Weekly activity */}
             <div className="panel">
-              <div className="panel__title">Actividad del colegio — últimas 4 semanas</div>
+              <div className="panel__title">{t('weeklyActivityTitle')}</div>
               {loading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {[70, 50, 90, 60].map((w, i) => <Sk key={i} w={`${w}%`} h={10} r={4} />)}
                 </div>
               ) : weeklyData.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--mute)', fontSize: 13 }}>Sin actividad registrada.</div>
+                <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--mute)', fontSize: 13 }}>{t('noActivityData')}</div>
               ) : (
                 <m.div
                   initial={pref ? false : { opacity: 0, y: 8 }}
@@ -495,7 +498,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
                               {payload.map((p, idx) => (
                                 <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                                   <div style={{ width: 7, height: 7, borderRadius: 2, background: p.color as string }} />
-                                  <span style={{ color: 'var(--ink-2)' }}>{p.name === 'xp' ? 'XP total' : 'Estudiantes activos'}: </span>
+                                  <span style={{ color: 'var(--ink-2)' }}>{p.name === 'xp' ? t('xpTotal') : t('activeStudentsTooltip')}: </span>
                                   <span style={{ fontWeight: 700, color: 'var(--ink)', fontVariantNumeric: 'tabular-nums' }}>{(p.value as number).toLocaleString('es-CO')}</span>
                                 </div>
                               ))}
@@ -508,7 +511,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
                     </AreaChart>
                   </ResponsiveContainer>
                   <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
-                    {[{ color: '#C0392B', label: 'XP total' }, { color: '#0F7B6C', label: 'Activos' }].map(l => (
+                    {[{ color: '#C0392B', label: t('xpTotal') }, { color: '#0F7B6C', label: t('activeLegend') }].map(l => (
                       <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                         <div style={{ width: 8, height: 8, borderRadius: 2, background: l.color }} />
                         <span style={{ fontSize: 11, color: 'var(--mute)', fontFamily: '"Satoshi",sans-serif' }}>{l.label}</span>
@@ -522,7 +525,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
 
           {/* ── Students table ── */}
           <div className="panel">
-            <div className="panel__title">Estudiantes</div>
+            <div className="panel__title">{t('studentsTableTitle')}</div>
             <div className="table-top">
               <div className="search-wrap">
                 <svg className="search-icon" width="13" height="13" viewBox="0 0 14 14" fill="none">
@@ -532,13 +535,13 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
                 <input
                   className="search"
                   type="text"
-                  placeholder="Buscar por nombre o email…"
+                  placeholder={t('searchPlaceholder')}
                   value={search}
                   onChange={e => { setSearch(e.target.value); setPage(1) }}
                 />
               </div>
               <span style={{ fontSize: 12, color: 'var(--mute)', marginLeft: 'auto', fontFamily: '"Satoshi",sans-serif' }}>
-                {filtered.length} estudiante{filtered.length !== 1 ? 's' : ''}
+                {filtered.length === 1 ? t('studentCountSingular', { count: filtered.length }) : t('studentCountPlural', { count: filtered.length })}
               </span>
             </div>
 
@@ -552,24 +555,24 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
                   <table className="tbl">
                     <thead>
                       <tr>
-                        <th onClick={() => toggleSort('display_name')}>Nombre <SortArrow col="display_name" /></th>
-                        <th>Email</th>
-                        <th onClick={() => toggleSort('created_at')}>Registro <SortArrow col="created_at" /></th>
+                        <th onClick={() => toggleSort('display_name')}>{t('tableName')} <SortArrow col="display_name" /></th>
+                        <th>{t('tableEmail')}</th>
+                        <th onClick={() => toggleSort('created_at')}>{t('tableRegistered')} <SortArrow col="created_at" /></th>
                         <th onClick={() => toggleSort('total_xp')} style={{ textAlign: 'right' }}>XP <SortArrow col="total_xp" /></th>
-                        <th onClick={() => toggleSort('modules_completed')} style={{ textAlign: 'right' }}>Módulos <SortArrow col="modules_completed" /></th>
-                        <th onClick={() => toggleSort('tab_switches')} style={{ textAlign: 'right' }}>Salidas <SortArrow col="tab_switches" /></th>
-                        <th>Estado</th>
+                        <th onClick={() => toggleSort('modules_completed')} style={{ textAlign: 'right' }}>{t('tableModules')} <SortArrow col="modules_completed" /></th>
+                        <th onClick={() => toggleSort('tab_switches')} style={{ textAlign: 'right' }}>{t('tableTabSwitches')} <SortArrow col="tab_switches" /></th>
+                        <th>{t('tableStatus')}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {pageRows.length === 0 ? (
                         <tr>
                           <td colSpan={7} style={{ textAlign: 'center', color: 'var(--mute)', padding: '40px 0', fontSize: 13 }}>
-                            {search ? 'Sin resultados para esa búsqueda.' : 'No hay estudiantes registrados todavía.'}
+                            {search ? t('noSearchResults') : t('noStudentsYet')}
                           </td>
                         </tr>
                       ) : pageRows.map(s => (
-                        <tr key={s.id} onClick={() => router.push('/coordinator/students/' + s.id)} title="Ver perfil completo →">
+                        <tr key={s.id} onClick={() => router.push('/coordinator/students/' + s.id)} title={t('viewFullProfile')}>
                           <td style={{ fontWeight: 600, color: 'var(--ink)' }}>{s.display_name}</td>
                           <td style={{ color: 'var(--mute)', fontSize: 12 }}>{s.email}</td>
                           <td style={{ color: 'var(--mute)', whiteSpace: 'nowrap', fontSize: 12 }}>
@@ -592,9 +595,9 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
                           </td>
                           <td>
                             {s.active_this_week ? (
-                              <span className="badge-active"><span className="dot green" />Activo</span>
+                              <span className="badge-active"><span className="dot green" />{t('statusActive')}</span>
                             ) : (
-                              <span className="badge-inactive"><span className="dot gray" />Inactivo</span>
+                              <span className="badge-inactive"><span className="dot gray" />{t('statusInactive')}</span>
                             )}
                           </td>
                         </tr>
@@ -605,9 +608,9 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
 
                 {totalPages > 1 && (
                   <div className="pagination">
-                    <span>{(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, sorted.length)} de {sorted.length}</span>
+                    <span>{t('paginationRange', { from: (page - 1) * PAGE_SIZE + 1, to: Math.min(page * PAGE_SIZE, sorted.length), total: sorted.length })}</span>
                     <div className="pg-btns">
-                      <button className="pg-btn" onClick={() => setPage(p => p - 1)} disabled={page === 1}>← Ant.</button>
+                      <button className="pg-btn" onClick={() => setPage(p => p - 1)} disabled={page === 1}>{t('prevPage')}</button>
                       {Array.from({ length: totalPages }, (_, i) => i + 1)
                         .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
                         .reduce<(number | '…')[]>((acc, p, i, arr) => {
@@ -619,7 +622,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
                           : <button key={p} className={`pg-btn ${page === p ? 'active' : ''}`} onClick={() => setPage(p as number)}>{p}</button>
                         )
                       }
-                      <button className="pg-btn" onClick={() => setPage(p => p + 1)} disabled={page === totalPages}>Sig. →</button>
+                      <button className="pg-btn" onClick={() => setPage(p => p + 1)} disabled={page === totalPages}>{t('nextPage')}</button>
                     </div>
                   </div>
                 )}

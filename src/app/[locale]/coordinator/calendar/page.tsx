@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m, AnimatePresence } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
@@ -20,14 +21,15 @@ interface CalEvent {
   end_time: string | null
 }
 
-const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-
 const EMPTY_FORM = { title: '', description: '', location: '', meeting_link: '', event_date: '', event_time: '', end_date: '', end_time: '' }
 
 export default function CoordinatorCalendarPage() {
   const router      = useRouter()
+  const t           = useTranslations('coordinator.calendar')
+  const tCommon     = useTranslations('common')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
+  const DAYS   = t.raw('days') as string[]
+  const MONTHS = t.raw('months') as string[]
 
   const today = new Date()
   const [year,       setYear]       = useState(today.getFullYear())
@@ -149,7 +151,7 @@ export default function CoordinatorCalendarPage() {
       `}</style>
 
       <m.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 28 }}>
-        <h1 style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 24 }}>Calendario de Eventos</h1>
+        <h1 style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 24 }}>{t('title')}</h1>
 
         {/* Create/edit form */}
         <AnimatePresence>
@@ -164,42 +166,42 @@ export default function CoordinatorCalendarPage() {
             >
               <div className="card" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 14 }}>
                 <div className="field" style={{ gridColumn: 'span 2' }}>
-                  <label>Título *</label>
-                  <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Nombre del evento" />
+                  <label>{t('formTitleLabel')}</label>
+                  <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder={t('eventNamePlaceholder')} />
                 </div>
                 <div className="field">
-                  <label>Fecha inicio *</label>
+                  <label>{t('startDateLabel')}</label>
                   <input type="date" value={form.event_date} onChange={e => setForm(f => ({ ...f, event_date: e.target.value }))} />
                 </div>
                 <div className="field">
-                  <label>Hora inicio</label>
+                  <label>{t('startTimeLabel')}</label>
                   <input type="time" value={form.event_time} onChange={e => setForm(f => ({ ...f, event_time: e.target.value }))} />
                 </div>
                 <div className="field">
-                  <label>Fecha fin</label>
+                  <label>{t('endDateLabel')}</label>
                   <input type="date" value={form.end_date} onChange={e => setForm(f => ({ ...f, end_date: e.target.value }))} />
                 </div>
                 <div className="field">
-                  <label>Hora fin</label>
+                  <label>{t('endTimeLabel')}</label>
                   <input type="time" value={form.end_time} onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))} />
                 </div>
                 <div className="field">
-                  <label>Ubicación</label>
-                  <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="Dirección o lugar" />
+                  <label>{t('locationLabel')}</label>
+                  <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder={t('locationPlaceholder')} />
                 </div>
                 <div className="field">
-                  <label>Enlace de reunión</label>
+                  <label>{t('meetingLinkLabel')}</label>
                   <input value={form.meeting_link} onChange={e => setForm(f => ({ ...f, meeting_link: e.target.value }))} placeholder="https://meet.google.com/..." />
                 </div>
                 <div className="field" style={{ gridColumn: '1 / -1' }}>
-                  <label>Descripción</label>
+                  <label>{t('descriptionLabel')}</label>
                   <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={2} style={{ resize: 'vertical', padding: '9px 12px', border: '1px solid var(--line)', borderRadius: 9, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--bg-2)', color: 'var(--ink)' }} />
                 </div>
                 <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10 }}>
                   <button className="btn-primary" onClick={handleSave} disabled={!form.title.trim() || !form.event_date || saving}>
-                    {saving ? 'Guardando…' : editing ? 'Guardar cambios' : 'Crear evento'}
+                    {saving ? tCommon('saving') : editing ? t('saveChangesBtn') : t('createEventBtn')}
                   </button>
-                  <button onClick={() => { setShowForm(false); setEditing(null); setForm(EMPTY_FORM) }} style={{ padding: '10px 18px', border: '1px solid var(--line)', borderRadius: 10, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--mute)' }}>Cancelar</button>
+                  <button onClick={() => { setShowForm(false); setEditing(null); setForm(EMPTY_FORM) }} style={{ padding: '10px 18px', border: '1px solid var(--line)', borderRadius: 10, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--mute)' }}>{tCommon('cancel')}</button>
                 </div>
               </div>
             </m.div>
@@ -242,7 +244,7 @@ export default function CoordinatorCalendarPage() {
           {/* Event detail / upcoming count */}
           <div className="card">
             <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-              {selected ? selected.title : 'Próximos eventos'}
+              {selected ? selected.title : t('upcomingEvents')}
               {!selected && events.filter(e => new Date(e.event_date) >= new Date(today.toDateString())).length > 0 && (
                 <span style={{ padding: '2px 8px', background: 'rgba(192,57,43,.1)', color: '#C0392B', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>
                   {events.filter(e => new Date(e.event_date) >= new Date(today.toDateString())).length}
@@ -250,7 +252,7 @@ export default function CoordinatorCalendarPage() {
               )}
             </div>
             {!selected ? (
-              <p style={{ fontSize: 13, color: 'var(--mute)' }}>Haz clic en una fecha con eventos.</p>
+              <p style={{ fontSize: 13, color: 'var(--mute)' }}>{t('clickDateHint')}</p>
             ) : (
               <AnimatePresence mode="wait">
                 <m.div key={selected.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={springNatural}>
@@ -261,12 +263,12 @@ export default function CoordinatorCalendarPage() {
                   </div>
                   {selected.description && <p style={{ fontSize: 13, color: 'var(--ink-2)', lineHeight: 1.55, marginBottom: 12 }}>{selected.description}</p>}
                   {selected.meeting_link && (
-                    <a href={selected.meeting_link} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '7px 14px', background: '#C0392B', color: '#fff', borderRadius: 8, fontSize: 12.5, fontFamily: '"Satoshi",sans-serif', fontWeight: 700, textDecoration: 'none', marginBottom: 12 }}>🔗 Unirse</a>
+                    <a href={selected.meeting_link} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '7px 14px', background: '#C0392B', color: '#fff', borderRadius: 8, fontSize: 12.5, fontFamily: '"Satoshi",sans-serif', fontWeight: 700, textDecoration: 'none', marginBottom: 12 }}>{t('joinLink')}</a>
                   )}
                   <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                    <button onClick={() => startEdit(selected)} style={{ padding: '7px 14px', border: '1px solid var(--line)', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 12.5, color: 'var(--ink)' }}>Editar</button>
+                    <button onClick={() => startEdit(selected)} style={{ padding: '7px 14px', border: '1px solid var(--line)', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 12.5, color: 'var(--ink)' }}>{tCommon('edit')}</button>
                     <button onClick={() => handleDelete(selected.id)} disabled={deleting === selected.id} style={{ padding: '7px 14px', border: '1px solid #FCA5A5', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 12.5, color: '#991B1B', opacity: deleting === selected.id ? 0.5 : 1 }}>
-                      {deleting === selected.id ? '…' : 'Eliminar'}
+                      {deleting === selected.id ? '…' : tCommon('delete')}
                     </button>
                   </div>
                 </m.div>

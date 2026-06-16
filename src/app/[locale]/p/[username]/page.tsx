@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 
 import React, { useEffect, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { m, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE } from '@/lib/mockData'
@@ -152,8 +153,10 @@ const sp = (delay = 0) => ({ type: 'spring' as const, stiffness: 120, damping: 2
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function PortfolioPage() {
-  const params   = useParams()
-  const rawUn    = params?.username
+  const t      = useTranslations('portfolio')
+  const tc     = useTranslations('common')
+  const params = useParams()
+  const rawUn  = params?.username
   const username = typeof rawUn === 'string' ? rawUn : Array.isArray(rawUn) ? (rawUn[0] ?? '') : ''
   const sbRef    = useRef<ReturnType<typeof createClient> | null>(null)
   const pref     = useReducedMotion()
@@ -327,17 +330,17 @@ export default function PortfolioPage() {
   if (!data && !private_) return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg,#F5F3EF)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', textAlign: 'center' }}>
       <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 10, color: 'var(--mute,#6B6B6B)', letterSpacing: '.24em', textTransform: 'uppercase', marginBottom: 16 }}>THE BIG FAMILY PROGRAM</p>
-      <h1 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: '2rem', color: 'var(--ink,#0D0D0D)', marginBottom: 12 }}>Portafolio no encontrado</h1>
-      <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 15, color: 'var(--mute,#6B6B6B)' }}>El usuario <strong>@{username}</strong> no existe o no tiene un portafolio activo.</p>
-      <a href="/" style={{ marginTop: 28, fontFamily: '"Satoshi",sans-serif', fontSize: 13, fontWeight: 700, color: '#C0392B', textDecoration: 'none' }}>← Volver al sitio principal</a>
+      <h1 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: '2rem', color: 'var(--ink,#0D0D0D)', marginBottom: 12 }}>{t('notFound')}</h1>
+      <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 15, color: 'var(--mute,#6B6B6B)' }}>{t('notFoundBody', { username })}</p>
+      <a href="/" style={{ marginTop: 28, fontFamily: '"Satoshi",sans-serif', fontSize: 13, fontWeight: 700, color: '#C0392B', textDecoration: 'none' }}>{t('backToSite')}</a>
     </div>
   )
 
   if (private_) return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg,#F5F3EF)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', textAlign: 'center' }}>
       <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 10, color: 'var(--mute,#6B6B6B)', letterSpacing: '.24em', textTransform: 'uppercase', marginBottom: 16 }}>THE BIG FAMILY PROGRAM</p>
-      <h1 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: '1.8rem', color: 'var(--ink,#0D0D0D)', marginBottom: 12 }}>Este portafolio es privado</h1>
-      <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 15, color: 'var(--mute,#6B6B6B)' }}>El estudiante ha configurado su portafolio como privado.</p>
+      <h1 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: '1.8rem', color: 'var(--ink,#0D0D0D)', marginBottom: 12 }}>{t('privateTitle')}</h1>
+      <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 15, color: 'var(--mute,#6B6B6B)' }}>{t('privateBody')}</p>
     </div>
   )
 
@@ -346,8 +349,8 @@ export default function PortfolioPage() {
   const initials  = d.displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
   const trackLbl  = d.level === 'junior' ? 'Junior Leader' : 'Senior Leader'
   const heroSub   = d.arquetipo
-    ? `Estudiante del programa The Big Family, certificada como ${d.arquetipo} con impacto demostrado en ${d.schoolName || 'La Guajira'}, La Guajira, Colombia.`
-    : `Estudiante del programa The Big Family con impacto demostrado en ${d.schoolName || 'La Guajira'}, La Guajira, Colombia.`
+    ? t('heroSubWith', { arquetipo: d.arquetipo, school: d.schoolName || 'La Guajira' })
+    : t('heroSubWithout', { school: d.schoolName || 'La Guajira' })
   const forts     = d.big_five ? getFortalezas(d.big_five) : []
   const areasArr  = d.big_five ? getAreas(d.big_five) : []
 
@@ -475,7 +478,7 @@ export default function PortfolioPage() {
           {/* Bloque 2 — Pentágono */}
           {d.big_five && (
             <div>
-              <div className="pfl-sb-lbl">PERFIL DE LÍDER</div>
+              <div className="pfl-sb-lbl">{t('leaderProfile')}</div>
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
                 <ProfilePentagon bf={d.big_five} size={160} />
               </div>
@@ -493,12 +496,12 @@ export default function PortfolioPage() {
               <div className="pfl-sb-sep" />
               {/* Bloque 3 — Stats */}
               <div>
-                <div className="pfl-sb-lbl">IMPACTO</div>
+                <div className="pfl-sb-lbl">{t('impact')}</div>
                 {[
-                  { val: d.totalXP,          lbl: 'Puntos de Impacto'   },
-                  { val: d.modulesCompleted,  lbl: 'Módulos Completados' },
-                  { val: d.badgesCount,       lbl: 'Badges Obtenidos'    },
-                  { val: daysSince(d.createdAt), lbl: 'Días en el Programa' },
+                  { val: d.totalXP,          lbl: t('statXP')      },
+                  { val: d.modulesCompleted,  lbl: t('statModules') },
+                  { val: d.badgesCount,       lbl: t('statBadges')  },
+                  { val: daysSince(d.createdAt), lbl: t('statDays') },
                 ].map(({ val, lbl }) => (
                   <div key={lbl} className="pfl-stat">
                     <div className="pfl-stat__num"><Counter value={val} /></div>
@@ -515,7 +518,7 @@ export default function PortfolioPage() {
               {/* Bloque 4 — Certificación */}
               <div>
                 <span className={`pfl-cert-badge ${d.resultado === 'mencion_honor' ? 'honor' : 'cert'}`}>
-                  {d.resultado === 'mencion_honor' ? '✦ Mención de Honor' : '✓ Certificado'}
+                  {d.resultado === 'mencion_honor' ? t('honorsTitle') : t('certTitle')}
                 </span>
                 <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 12, color: 'var(--mute,#6B6B6B)', marginBottom: 4 }}>{fmtDate(d.certDate)}</p>
                 {certId && (
@@ -524,7 +527,7 @@ export default function PortfolioPage() {
                 {(qrUrl || certId) && (
                   <div className="pfl-qr-row">
                     {qrUrl && <img src={qrUrl} alt="QR" width={48} height={48} style={{ borderRadius: 4 }} />}
-                    {certId && <a href={`/verify/${certId}`} className="pfl-verify" target="_blank" rel="noreferrer">Verificar autenticidad →</a>}
+                    {certId && <a href={`/verify/${certId}`} className="pfl-verify" target="_blank" rel="noreferrer">{t('verifyLink')}</a>}
                   </div>
                 )}
               </div>
@@ -535,7 +538,7 @@ export default function PortfolioPage() {
 
           {/* Bloque 5 — Acreditaciones */}
           <div>
-            <div className="pfl-sb-lbl">RECONOCIDO POR</div>
+            <div className="pfl-sb-lbl">{t('recognizedBy')}</div>
             <div className="pfl-accred">
               <img src="/cognia.png"                               alt="Cognia"                   className="pfl-alogo" />
               <img src="/International_Baccalaureate_Logo.svg.png" alt="International Baccalaureate" className="pfl-alogo" />
@@ -545,12 +548,12 @@ export default function PortfolioPage() {
 
           {/* Bloque 6 — Acciones */}
           <div className="pfl-actions">
-            <button className="pfl-btn-outline" onClick={exportPDF}>Exportar PDF</button>
+            <button className="pfl-btn-outline" onClick={exportPDF}>{t('export.btn')}</button>
             <button className="pfl-btn-ghost" onClick={copyLink}>
-              {copied ? '✓ Copiado' : 'Compartir portafolio'}
+              {copied ? `✓ ${tc('copied')}` : t('export.share')}
             </button>
             {isOwner && (
-              <a href="/dashboard/settings" className="pfl-edit-link">Editar privacidad →</a>
+              <a href="/dashboard/settings" className="pfl-edit-link">{t('editPrivacy')}</a>
             )}
           </div>
         </m.aside>
@@ -566,7 +569,7 @@ export default function PortfolioPage() {
               viewport={{ once: true }}
               transition={sp(0.05)}
             >
-              <div className="pfl-hero-eyebrow">PORTAFOLIO DE LIDERAZGO</div>
+              <div className="pfl-hero-eyebrow">{t('heroEyebrow')}</div>
               <h1 className="pfl-hero-name">{d.displayName}</h1>
               <p className="pfl-hero-sub">{heroSub}</p>
               <div className="pfl-hero-rule" />
@@ -581,7 +584,7 @@ export default function PortfolioPage() {
                 viewport={{ once: true }}
                 transition={sp(0.08)}
               >
-                <div className="pfl-eyebrow">PROYECTO DE LIDERAZGO COMUNITARIO</div>
+                <div className="pfl-eyebrow">{t('capstoneSectionLabel')}</div>
                 <h2 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: '1.4rem', color: 'var(--ink,#0D0D0D)', marginBottom: 14, lineHeight: 1.3 }}>
                   {d.projectTitle}
                 </h2>
@@ -591,7 +594,7 @@ export default function PortfolioPage() {
                   </p>
                 )}
                 <div className="pfl-idemr">
-                  {['I · Identificar', 'D · Diseñar', 'E · Ejecutar', 'M · Medir', 'R · Reflexionar'].map(s => (
+                  {[t('idemr.identify'), t('idemr.design'), t('idemr.execute'), t('idemr.measure'), t('idemr.reflect')].map(s => (
                     <span key={s} className="pfl-idemr-pill">{s}</span>
                   ))}
                 </div>
@@ -614,32 +617,32 @@ export default function PortfolioPage() {
                 <div className="pfl-gv-grid">
                   {d.gvCreencias && (
                     <div>
-                      <div className="pfl-gv-cell-lbl">CREENCIAS</div>
+                      <div className="pfl-gv-cell-lbl">{t('gvCreencias')}</div>
                       <p className="pfl-gv-cell-text">{d.gvCreencias}</p>
                     </div>
                   )}
                   {d.gvParadigma && (
                     <div>
-                      <div className="pfl-gv-cell-lbl">PARADIGMA</div>
+                      <div className="pfl-gv-cell-lbl">{t('gvParadigma')}</div>
                       <p className="pfl-gv-cell-text">{d.gvParadigma}</p>
                     </div>
                   )}
                   {d.gvEquipo.length > 0 && (
                     <div>
-                      <div className="pfl-gv-cell-lbl">EQUIPO</div>
+                      <div className="pfl-gv-cell-lbl">{t('gvEquipo')}</div>
                       <p className="pfl-gv-cell-text">{d.gvEquipo.slice(0, 3).join(' · ')}</p>
                     </div>
                   )}
                   {d.gvPlanes.length > 0 && (
                     <div>
-                      <div className="pfl-gv-cell-lbl">PLANES</div>
+                      <div className="pfl-gv-cell-lbl">{t('gvPlanes')}</div>
                       <p className="pfl-gv-cell-text">{d.gvPlanes.slice(0, 2).join(' · ')}</p>
                     </div>
                   )}
                 </div>
                 {isOwner && (
                   <a href="/dashboard/great-venture/mapa" style={{ display: 'inline-flex', marginTop: 16, fontFamily: '"Satoshi",sans-serif', fontSize: 13, fontWeight: 700, color: '#C0392B', textDecoration: 'none' }}>
-                    Ver mapa completo →
+                    {t('gvViewMap')}
                   </a>
                 )}
               </m.div>
@@ -652,8 +655,8 @@ export default function PortfolioPage() {
               viewport={{ once: true }}
               transition={sp(0.1)}
             >
-              <h2 className="pfl-uni-title">¿Listo para el siguiente paso?</h2>
-              <p className="pfl-uni-sub">Este portafolio y certificado son reconocidos internacionalmente. Úsalos en tu aplicación universitaria.</p>
+              <h2 className="pfl-uni-title">{t('uniStepTitle')}</h2>
+              <p className="pfl-uni-sub">{t('uniStepSub')}</p>
               <div className="pfl-uni-grid">
                 {UNIVERSITIES.map(u => (
                   <m.div
@@ -665,7 +668,7 @@ export default function PortfolioPage() {
                     <UniLogo src={u.logo} alt={u.name} initial={u.initial} />
                     <div className="pfl-uni-name">{u.name}</div>
                     <div className="pfl-uni-desc">{u.desc}</div>
-                    <a href={u.url} target="_blank" rel="noreferrer" className="pfl-uni-btn">Aplicar →</a>
+                    <a href={u.url} target="_blank" rel="noreferrer" className="pfl-uni-btn">{t('applyBtn')}</a>
                   </m.div>
                 ))}
               </div>
@@ -679,12 +682,9 @@ export default function PortfolioPage() {
               viewport={{ once: true }}
               transition={sp(0.1)}
             >
-              <div className="pfl-eyebrow pfl-eyebrow--white">EXPORTAR</div>
-              <h2 className="pfl-exp-title">Listo para Common App.</h2>
-              <p className="pfl-exp-sub">
-                Descarga tu portafolio formateado para la sección &ldquo;Additional Information&rdquo;
-                de Common App, UCAS, o cualquier plataforma de admisiones.
-              </p>
+              <div className="pfl-eyebrow pfl-eyebrow--white">{t('exportLabel')}</div>
+              <h2 className="pfl-exp-title">{t('exportTitle')}</h2>
+              <p className="pfl-exp-sub">{t('exportSub')}</p>
               <m.button
                 className="pfl-exp-btn"
                 onClick={exportPDF}
@@ -692,15 +692,15 @@ export default function PortfolioPage() {
                 whileTap={pref ? undefined : { scale: 0.97 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 22 }}
               >
-                Descargar PDF
+                {t('export.btn')}
               </m.button>
             </m.div>
 
             {/* Footer */}
             <m.div className="pfl-footer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={sp(0.3)}>
-              Portafolio verificado por <a href="/">The Big Family Program</a>
+              {t('footerBy')} <a href="/">The Big Family Program</a>
               {' · '}
-              <a href="/#como-funciona">¿Eres educador? Conoce el programa</a>
+              <a href="/#como-funciona">{t('footerEducator')}</a>
             </m.div>
 
           </div>

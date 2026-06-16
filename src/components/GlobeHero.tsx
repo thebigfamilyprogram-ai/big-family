@@ -529,6 +529,13 @@ export default function GlobeHero() {
     t('landing.acreditaciones.triAssociation.description'),
   ]
 
+  // Validaciones tags — first is a translatable Spanish phrase, others are proper nouns/event names
+  const validacionesTags = [
+    t('landing.acreditaciones.institutionalTag'),
+    VALIDACIONES[1].tag,
+    VALIDACIONES[2].tag,
+  ]
+
   const mouseX  = useMotionValue(0)
   const mouseY  = useMotionValue(0)
   const springX = useSpring(mouseX, { stiffness: 100, damping: 25 })
@@ -1600,7 +1607,7 @@ export default function GlobeHero() {
                     <circle cx="26" cy="19" r="9" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5"/>
                     <path d="M8 46C8 37.163 16.163 30 26 30C35.837 30 44 37.163 44 46" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
-                  <span style={{ color:'rgba(255,255,255,0.08)', fontFamily:'"Satoshi",sans-serif', fontSize:10, letterSpacing:'.18em', textTransform:'uppercase' }}>Foto del programa</span>
+                  <span style={{ color:'rgba(255,255,255,0.08)', fontFamily:'"Satoshi",sans-serif', fontSize:10, letterSpacing:'.18em', textTransform:'uppercase' }}>{t('landing.about.photoPlaceholder')}</span>
                 </div>
               </m.div>
             </div>
@@ -1691,9 +1698,9 @@ export default function GlobeHero() {
               transition={{ type: 'spring', stiffness: 140, damping: 20 }}
               style={{ textAlign: 'center', marginBottom: 48 }}
             >
-              <div style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: '.2em', textTransform: 'uppercase', color: '#C0392B', marginBottom: 14 }}>Comunidad Big Family</div>
-              <h2 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 900, fontSize: 'clamp(28px,4vw,44px)', letterSpacing: '-.025em', color: 'var(--ink,#0D0D0D)', marginBottom: 12 }}>Historias de Éxito</h2>
-              <p style={{ fontSize: 15, color: 'var(--mute,#6B6B6B)', maxWidth: 480, margin: '0 auto', lineHeight: 1.6 }}>Estudiantes que transformaron sus comunidades a través del liderazgo.</p>
+              <div style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: '.2em', textTransform: 'uppercase', color: '#C0392B', marginBottom: 14 }}>{t('landing.successStoriesSection.eyebrow')}</div>
+              <h2 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 900, fontSize: 'clamp(28px,4vw,44px)', letterSpacing: '-.025em', color: 'var(--ink,#0D0D0D)', marginBottom: 12 }}>{t('successStories.title')}</h2>
+              <p style={{ fontSize: 15, color: 'var(--mute,#6B6B6B)', maxWidth: 480, margin: '0 auto', lineHeight: 1.6 }}>{t('landing.successStoriesSection.subtitle')}</p>
             </m.div>
 
             <m.div
@@ -1734,7 +1741,7 @@ export default function GlobeHero() {
 
             <div style={{ textAlign: 'center', marginTop: 32 }}>
               <a href="/success-stories" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '11px 24px', border: '1.5px solid rgba(13,13,13,.14)', borderRadius: 999, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, color: 'var(--ink,#0D0D0D)', textDecoration: 'none', transition: 'all .2s' }}>
-                Ver todas las historias →
+                {t('landing.successStoriesSection.viewAllBtn')}
               </a>
             </div>
           </div>
@@ -1762,7 +1769,7 @@ export default function GlobeHero() {
                   <circle cx="14" cy="18" r="4" stroke="var(--ink)" strokeWidth="1.5"/>
                   <path d="M4 28L13 20l6 5 5-4 12 7" stroke="var(--ink)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span style={{ fontFamily:'"Satoshi",sans-serif', fontSize:10, letterSpacing:'.14em', textTransform:'uppercase', color:'var(--mute)' }}>Foto próximamente</span>
+                <span style={{ fontFamily:'"Satoshi",sans-serif', fontSize:10, letterSpacing:'.14em', textTransform:'uppercase', color:'var(--mute)' }}>{t('common.photoComingSoon')}</span>
               </div>
             </div>
             <div className="sec-historia__badge">
@@ -1902,7 +1909,7 @@ export default function GlobeHero() {
                     />
                   </div>
                 </div>
-                <span className="sec-valid__tag">{v.tag}</span>
+                <span className="sec-valid__tag">{validacionesTags[i]}</span>
                 <p className="sec-valid__name">{v.name}</p>
                 <p className="sec-valid__desc">{validacionesDescs[i]}</p>
               </m.div>
@@ -1984,7 +1991,7 @@ export default function GlobeHero() {
                       <circle cx="11" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.6"/>
                       <path d="M3 22l7-6 6 5 5-4 8 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    <span className="sec-prog__img-ph-label">Foto próximamente</span>
+                    <span className="sec-prog__img-ph-label">{t('common.photoComingSoon')}</span>
                   </div>
                 </div>
               </m.div>
@@ -2199,11 +2206,11 @@ export default function GlobeHero() {
             </svg>
             <div className="bf-footer__brand-name">Big Family</div>
             <p className="bf-footer__brand-desc">
-              Programa de liderazgo juvenil que conecta estudiantes de La Guajira con una red global de impacto.
+              {t('landing.footer.brandDesc')}
             </p>
           </div>
           <div>
-            <p className="bf-footer__col-title">Programa</p>
+            <p className="bf-footer__col-title">{t('landing.footer.programTitle')}</p>
             <div className="bf-footer__links">
               <a href="#historia" className="bf-footer__link">{t('nav.historia')}</a>
               <a href="#impacto" className="bf-footer__link">{t('nav.impacto')}</a>
@@ -2213,21 +2220,21 @@ export default function GlobeHero() {
             </div>
           </div>
           <div>
-            <p className="bf-footer__col-title">Acceso</p>{/* TODO: i18n */}
+            <p className="bf-footer__col-title">{t('landing.footer.accessTitle')}</p>
             <div className="bf-footer__links">
               <Link href="/login" className="bf-footer__link">{t('nav.ingresar')}</Link>
-              <Link href="/submit" className="bf-footer__link">Registro estudiante</Link>{/* TODO: i18n */}
-              <Link href="/register" className="bf-footer__link">Registro coordinador</Link>{/* TODO: i18n */}
+              <Link href="/submit" className="bf-footer__link">{t('landing.footer.studentRegister')}</Link>
+              <Link href="/register" className="bf-footer__link">{t('landing.footer.coordinatorRegister')}</Link>
               <Link href="/news" className="bf-footer__link">{t('nav.noticias')}</Link>
-              <Link href="/success-stories" className="bf-footer__link">Historias de Éxito</Link>
+              <Link href="/success-stories" className="bf-footer__link">{t('successStories.title')}</Link>
             </div>
           </div>
         </div>
         <div className="bf-footer__bottom">
           <p className="bf-footer__copy">© {new Date().getFullYear()} The Big Family Program · La Guajira, Colombia</p>
           <div className="bf-footer__legal">
-            <Link href="/timeline" className="bf-footer__legal-link" style={{ fontFamily:'"Satoshi",sans-serif', fontSize:12, color:'rgba(255,255,255,.25)', textDecoration:'none' }}>Línea del tiempo</Link>
-            <Link href="/success-stories" className="bf-footer__legal-link" style={{ fontFamily:'"Satoshi",sans-serif', fontSize:12, color:'rgba(255,255,255,.25)', textDecoration:'none' }}>Historias</Link>
+            <Link href="/timeline" className="bf-footer__legal-link" style={{ fontFamily:'"Satoshi",sans-serif', fontSize:12, color:'rgba(255,255,255,.25)', textDecoration:'none' }}>{t('landing.footer.timeline')}</Link>
+            <Link href="/success-stories" className="bf-footer__legal-link" style={{ fontFamily:'"Satoshi",sans-serif', fontSize:12, color:'rgba(255,255,255,.25)', textDecoration:'none' }}>{t('landing.footer.stories')}</Link>
           </div>
         </div>
       </footer>
@@ -2251,7 +2258,7 @@ export default function GlobeHero() {
               transition={{ type: 'spring', stiffness: 260, damping: 26 }}
               onClick={e => e.stopPropagation()}
             >
-              <button className="dm-close" onClick={() => setShowDiplomaModal(false)} aria-label="Cerrar">
+              <button className="dm-close" onClick={() => setShowDiplomaModal(false)} aria-label={t('common.close')}>
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                   <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
                 </svg>

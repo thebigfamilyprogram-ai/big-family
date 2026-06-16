@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m, useReducedMotion } from 'framer-motion'
 import ProjectCard, { type Project, type ProjectComment } from '@/components/ProjectCard'
@@ -36,6 +37,9 @@ function Sk({ w = '100%', h = 18, r = 8 }: { w?: string | number; h?: number; r?
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CoordinatorProjectsPage() {
+  const t           = useTranslations('coordinator.projectsReview')
+  const tCat        = useTranslations('projectCard.categories')
+  const tNav        = useTranslations('coordinator.topNav')
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
@@ -72,7 +76,7 @@ export default function CoordinatorProjectsPage() {
       setCoord({
         display_name:   profile?.display_name ?? '—',
         school_id:   profile?.school_id ?? '',
-        school_name: (schoolRow as any)?.name ?? 'Mi colegio',
+        school_name: (schoolRow as any)?.name ?? t('defaultSchoolName'),
         user_id:     user.id,
       })
 
@@ -154,7 +158,7 @@ export default function CoordinatorProjectsPage() {
     const proj = projects.find(p => p.id === projectId)
     if (proj?.user_id) {
       try {
-        await createNotification(supabase, { userId: proj.user_id, type: 'project_evaluated', title: 'Tu proyecto fue aprobado', body: `El proyecto "${proj.title}" fue aprobado. ¡Felicidades!`, link: '/dashboard/projects' })
+        await createNotification(supabase, { userId: proj.user_id, type: 'project_evaluated', title: t('approvedNotifTitle'), body: t('approvedNotifBody', { title: proj.title }), link: '/dashboard/projects' })
       } catch { /* non-fatal */ }
     }
   }
@@ -174,7 +178,7 @@ export default function CoordinatorProjectsPage() {
     const proj = projects.find(p => p.id === projectId)
     if (proj?.user_id) {
       try {
-        await createNotification(supabase, { userId: proj.user_id, type: 'project_evaluated', title: 'Tu proyecto recibió retroalimentación', body: reason ? `Motivo: ${reason.slice(0, 80)}` : 'El coordinador revisó tu proyecto.', link: '/dashboard/projects' })
+        await createNotification(supabase, { userId: proj.user_id, type: 'project_evaluated', title: t('rejectedNotifTitle'), body: reason ? t('rejectedNotifReason', { reason: reason.slice(0, 80) }) : t('rejectedNotifDefault'), link: '/dashboard/projects' })
       } catch { /* non-fatal */ }
     }
   }
@@ -207,11 +211,11 @@ export default function CoordinatorProjectsPage() {
   }
 
   const FILTER_TABS: { value: StatusFilter; label: string }[] = [
-    { value: 'all',      label: 'Todos' },
-    { value: 'draft',    label: 'Borrador' },
-    { value: 'pending',  label: 'En revisión' },
-    { value: 'approved', label: 'Aprobados' },
-    { value: 'rejected', label: 'Rechazados' },
+    { value: 'all',      label: t('filterAll') },
+    { value: 'draft',    label: t('filterDraft') },
+    { value: 'pending',  label: t('filterPending') },
+    { value: 'approved', label: t('filterApproved') },
+    { value: 'rejected', label: t('filterRejected') },
   ]
 
   return (
@@ -298,13 +302,13 @@ export default function CoordinatorProjectsPage() {
           {loading ? <Sk w={160} h={13} r={6} /> : coord?.school_name}
         </div>
         <div className="cpj-right">
-          <span className="cpj-badge">Coordinador</span>
-          <button className="cpj-btn" onClick={() => router.push('/coordinator')}>Panel principal</button>
-          <button className="cpj-btn cpj-btn--active">Proyectos</button>
-          <button className="cpj-btn" onClick={() => router.push('/coordinator/modules')}>Módulos</button>
-          <button className="cpj-btn" onClick={() => router.push('/coordinator/news')}>Noticias</button>
-          <button className="cpj-btn" onClick={() => router.push('/dashboard')}>Dashboard</button>
-          <button className="cpj-btn--ghost" onClick={handleLogout}>Cerrar sesión</button>
+          <span className="cpj-badge">{tNav('badge')}</span>
+          <button className="cpj-btn" onClick={() => router.push('/coordinator')}>{tNav('dashboardHome')}</button>
+          <button className="cpj-btn cpj-btn--active">{tNav('projects')}</button>
+          <button className="cpj-btn" onClick={() => router.push('/coordinator/modules')}>{tNav('modules')}</button>
+          <button className="cpj-btn" onClick={() => router.push('/coordinator/news')}>{tNav('news')}</button>
+          <button className="cpj-btn" onClick={() => router.push('/dashboard')}>{tNav('dashboard')}</button>
+          <button className="cpj-btn--ghost" onClick={handleLogout}>{tNav('logout')}</button>
         </div>
       </nav>
 
@@ -316,8 +320,8 @@ export default function CoordinatorProjectsPage() {
       >
         {/* Header */}
         <div className="cpj-header">
-          <h1>Proyectos de Liderazgo</h1>
-          <p>Revisa y aprueba proyectos para la certificación The Big Leader · {coord?.school_name}</p>
+          <h1>{t('pageTitle')}</h1>
+          <p>{t('subtitle', { school: coord?.school_name ?? '' })}</p>
         </div>
 
         {/* Stats */}
@@ -328,11 +332,11 @@ export default function CoordinatorProjectsPage() {
         ) : (
           <div className="cpj-stats">
             {([
-              { num: counts.total,    label: 'Total proyectos', color: undefined    },
-              { num: counts.draft,    label: 'Borradores',      color: '#444441'    },
-              { num: counts.pending,  label: 'En revisión',     color: '#92400E'    },
-              { num: counts.approved, label: 'Aprobados',       color: '#065F46'    },
-              { num: counts.rejected, label: 'Rechazados',      color: '#991B1B'    },
+              { num: counts.total,    label: t('statTotalProjects'), color: undefined    },
+              { num: counts.draft,    label: t('statDrafts'),        color: '#444441'    },
+              { num: counts.pending,  label: t('statPending'),       color: '#92400E'    },
+              { num: counts.approved, label: t('statApproved'),      color: '#065F46'    },
+              { num: counts.rejected, label: t('statRejected'),      color: '#991B1B'    },
             ] as { num: number; label: string; color: string | undefined }[]).map((s, i) => (
               <m.div
                 key={s.label}
@@ -370,13 +374,13 @@ export default function CoordinatorProjectsPage() {
             value={filterCategory}
             onChange={e => setFilterCategory(e.target.value)}
           >
-            <option value="">Todas las categorías</option>
-            <option value="liderazgo-comunitario">Liderazgo comunitario</option>
-            <option value="innovacion-social">Innovación social</option>
-            <option value="medio-ambiente">Medio ambiente</option>
-            <option value="educacion">Educación</option>
-            <option value="salud-bienestar">Salud y bienestar</option>
-            <option value="emprendimiento">Emprendimiento</option>
+            <option value="">{t('allCategories')}</option>
+            <option value="liderazgo-comunitario">{tCat('liderazgo-comunitario')}</option>
+            <option value="innovacion-social">{tCat('innovacion-social')}</option>
+            <option value="medio-ambiente">{tCat('medio-ambiente')}</option>
+            <option value="educacion">{tCat('educacion')}</option>
+            <option value="salud-bienestar">{tCat('salud-bienestar')}</option>
+            <option value="emprendimiento">{tCat('emprendimiento')}</option>
           </select>
 
           <div className="cpj-search-wrap">
@@ -387,7 +391,7 @@ export default function CoordinatorProjectsPage() {
             <input
               className="cpj-search"
               type="text"
-              placeholder="Buscar por estudiante o título…"
+              placeholder={t('searchPlaceholder')}
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -407,16 +411,16 @@ export default function CoordinatorProjectsPage() {
                   {projects.length === 0 ? (
                     <>
                       <div className="cpj-empty-icon">📋</div>
-                      <div className="cpj-empty-title">Aún no hay proyectos de tu colegio</div>
+                      <div className="cpj-empty-title">{t('emptyNoProjectsTitle')}</div>
                       <div className="cpj-empty-sub">
-                        Cuando tus estudiantes suban sus proyectos de liderazgo, aparecerán aquí para que puedas revisarlos y aprobarlos.
+                        {t('emptyNoProjectsBody')}
                       </div>
                     </>
                   ) : (
                     <>
                       <div className="cpj-empty-icon">🔍</div>
-                      <div className="cpj-empty-title">Sin resultados</div>
-                      <div className="cpj-empty-sub">No hay proyectos que coincidan con los filtros seleccionados.</div>
+                      <div className="cpj-empty-title">{t('emptyNoResultsTitle')}</div>
+                      <div className="cpj-empty-sub">{t('emptyNoResultsBody')}</div>
                     </>
                   )}
                 </div>
@@ -446,11 +450,11 @@ export default function CoordinatorProjectsPage() {
             {filtered.length > PROJ_PAGE_SIZE && (
               <div className="cpj-pagination">
                 <span className="cpj-page-info">
-                  Página {projPage + 1} de {totalProjPages} · {filtered.length} proyectos
+                  {t('paginationInfo', { current: projPage + 1, total: totalProjPages, count: filtered.length })}
                 </span>
                 <div className="cpj-page-btns">
-                  <button className="cpj-page-btn" disabled={projPage === 0} onClick={() => { setProjPage(p => p - 1); window.scrollTo(0, 0) }}>← Anterior</button>
-                  <button className="cpj-page-btn" disabled={projPage >= totalProjPages - 1} onClick={() => { setProjPage(p => p + 1); window.scrollTo(0, 0) }}>Siguiente →</button>
+                  <button className="cpj-page-btn" disabled={projPage === 0} onClick={() => { setProjPage(p => p - 1); window.scrollTo(0, 0) }}>{t('prevPage')}</button>
+                  <button className="cpj-page-btn" disabled={projPage >= totalProjPages - 1} onClick={() => { setProjPage(p => p + 1); window.scrollTo(0, 0) }}>{t('nextPage')}</button>
                 </div>
               </div>
             )}

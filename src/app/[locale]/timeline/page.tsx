@@ -4,8 +4,10 @@ export const dynamic = 'force-dynamic'
 
 import TimelineSection from '@/components/TimelineSection'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 export default function TimelinePage() {
+  const t = useTranslations('timeline')
   return (
     <>
       <style>{`
@@ -35,12 +37,9 @@ export default function TimelinePage() {
       </nav>
 
       <main className="tl-page-main">
-        <p className="tl-page-eyebrow">Nuestra Historia</p>
-        <h1 className="tl-page-title">Cuatro años<br />construyendo <em>líderes</em>.</h1>
-        <p className="tl-page-sub">
-          Cada hito en nuestra historia es el resultado de jóvenes que decidieron actuar,
-          aprender y transformar sus comunidades.
-        </p>
+        <p className="tl-page-eyebrow">{t('title')}</p>
+        <h1 className="tl-page-title">{t('pageTitle')}</h1>
+        <p className="tl-page-sub">{t('pageIntro')}</p>
 
         <TimelineSection theme="light" />
       </main>

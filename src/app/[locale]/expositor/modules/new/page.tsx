@@ -4,10 +4,12 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 
 export default function NewModulePage() {
   const router      = useRouter()
+  const t           = useTranslations('expositor.newModulePage')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export default function NewModulePage() {
         .from('modules')
         .insert({
           created_by:       user.id,
-          title:            'Nuevo módulo',
+          title:            t('defaultTitle'),
           status:           'draft',
           level:            'junior',
           duration_minutes: 0,
@@ -61,7 +63,7 @@ export default function NewModulePage() {
         <path d="M12 2a10 10 0 0 1 10 10" stroke="#C0392B" strokeWidth="3" strokeLinecap="round"/>
       </svg>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      <span style={{ fontSize: 14 }}>Creando módulo…</span>
+      <span style={{ fontSize: 14 }}>{t('creatingLabel')}</span>
     </div>
   )
 }

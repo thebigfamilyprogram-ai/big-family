@@ -11,7 +11,6 @@
       "ar": ""
     }
   },
-
   "common": {
     "appName": "Big Family",
     "tagline": "Formando líderes com propósito global e inovador",
@@ -52,9 +51,9 @@
     "seeLess": "Ver menos",
     "learnMore": "Saiba mais",
     "getStarted": "Começar",
-    "comingSoon": "Em breve"
+    "comingSoon": "Em breve",
+    "photoComingSoon": "Foto em breve"
   },
-
   "nav": {
     "historia": "História",
     "metodologia": "Metodologia",
@@ -64,9 +63,10 @@
     "noticias": "Notícias",
     "ingresar": "Entrar",
     "menuOpen": "Abrir menu",
-    "menuClose": "Fechar menu"
+    "menuClose": "Fechar menu",
+    "comoFunciona": "Como funciona",
+    "paises": "Países"
   },
-
   "landing": {
     "hero": {
       "eyebrow": "Programa de Liderança Jovem · La Guajira, Colômbia",
@@ -84,7 +84,6 @@
       "statSchools": "Escolas",
       "statBadges": "Insígnias"
     },
-
     "mision": {
       "eyebrow": "Missão",
       "title": "Por que existimos",
@@ -98,7 +97,6 @@
       "stat3Label": "Instituições parceiras",
       "stat4Label": "Meta global"
     },
-
     "vision": {
       "eyebrow": "Visão",
       "title": "Para onde vamos",
@@ -109,7 +107,6 @@
       "cta": "Seja parte da história",
       "animatedWords": "Até 2036, The Big Family será reconhecido globalmente como uma *referência* de excelência em *liderança.*"
     },
-
     "historia": {
       "eyebrow": "Nossa História",
       "title": "Desde 2015",
@@ -130,7 +127,6 @@
       "secTitle": "Uma ideia que nasceu em La Guajira.",
       "reconoLabel": "RECONHECIMENTOS"
     },
-
     "impacto": {
       "eyebrow": "Impacto em Números",
       "title": "O alcance do programa",
@@ -149,7 +145,6 @@
       "stat3Sub": "rede internacional",
       "stat4Sub": "20% líderes transformacionais"
     },
-
     "metodologia": {
       "eyebrow": "Metodologia",
       "title": "Como formamos líderes",
@@ -157,7 +152,6 @@
       "hoursLabel": "40 horas anuais em formato extracurricular",
       "formatLabel": "Presencial · Virtual · Assíncrono",
       "gradesLabel": "Do 3° ao 11° ano",
-
       "bigLeader": {
         "number": "01",
         "title": "The Big Leader",
@@ -189,7 +183,6 @@
       },
       "programTitle": "Um programa que transforma."
     },
-
     "aprendizaje": {
       "eyebrow": "Aprendizagem Personalizada",
       "title": "Seu perfil de líder",
@@ -212,61 +205,114 @@
       "stepRouteTitle": "Seu caminho se adapta",
       "stepRouteDesc": "Módulos, reflexões e entregáveis personalizados para você",
       "routeLabel": "SEU CAMINHO NO PROGRAMA",
-
       "archetypes": {
         "visionario": {
           "name": "O Visionário",
           "pillar": "Norte",
           "trait": "Abertura à experiência",
-          "strengths": ["Pensamento estratégico", "Criatividade", "Visão de longo prazo"],
-          "growth": ["Execução", "Atenção aos detalhes"],
+          "strengths": [
+            "Pensamento estratégico",
+            "Criatividade",
+            "Visão de longo prazo"
+          ],
+          "growth": [
+            "Execução",
+            "Atenção aos detalhes"
+          ],
           "description": "Você vê padrões onde outros veem caos. Sua mente conecta ideias distantes e constrói futuros que ainda não existem. O programa fornece as ferramentas para concretizar essa visão em projetos tangíveis.",
-          "modules": ["Liderança em Inovação", "The Great Venture", "Design Thinking"],
+          "modules": [
+            "Liderança em Inovação",
+            "The Great Venture",
+            "Design Thinking"
+          ],
           "example": "Você projeta um projeto de empreendedorismo social que conecta sua escola com parceiros em 3 países."
         },
         "conector": {
           "name": "O Conector",
           "pillar": "Vínculo",
           "trait": "Amabilidade",
-          "strengths": ["Empatia", "Trabalho em equipe", "Comunicação"],
-          "growth": ["Assertividade", "Tomada de decisão"],
+          "strengths": [
+            "Empatia",
+            "Trabalho em equipe",
+            "Comunicação"
+          ],
+          "growth": [
+            "Assertividade",
+            "Tomada de decisão"
+          ],
           "description": "Você constrói pontes entre pessoas. Sabe ler o ambiente, mediar conflitos e fazer com que cada voz conte. Sua liderança multiplica o potencial da equipe.",
-          "modules": ["Comunicação Eficaz", "Kashi", "Liderança Colaborativa"],
+          "modules": [
+            "Comunicação Eficaz",
+            "Kashi",
+            "Liderança Colaborativa"
+          ],
           "example": "Você lidera a equipe da sua escola no encontro interinstitucional e garante que todos participem."
         },
         "ejecutor": {
           "name": "O Executor",
           "pillar": "Ação",
           "trait": "Conscienciosidade",
-          "strengths": ["Disciplina", "Organização", "Responsabilidade"],
-          "growth": ["Flexibilidade", "Delegação"],
+          "strengths": [
+            "Disciplina",
+            "Organização",
+            "Responsabilidade"
+          ],
+          "growth": [
+            "Flexibilidade",
+            "Delegação"
+          ],
           "description": "Você transforma planos em realidade. Onde outros veem obstáculos, você vê etapas. Sua consistência e rigor são o motor que faz os projetos chegarem à meta.",
-          "modules": ["Gestão de Projetos", "The Leader's Game", "Hoshin Kanri"],
+          "modules": [
+            "Gestão de Projetos",
+            "The Leader's Game",
+            "Hoshin Kanri"
+          ],
           "example": "Você executa seu capstone IDEMR com um plano detalhado, cumpre todas as etapas e apresenta resultados mensuráveis."
         },
         "catalizador": {
           "name": "O Catalisador",
           "pillar": "Legado",
           "trait": "Extroversão",
-          "strengths": ["Energia", "Influência", "Motivação"],
-          "growth": ["Escuta ativa", "Paciência"],
+          "strengths": [
+            "Energia",
+            "Influência",
+            "Motivação"
+          ],
+          "growth": [
+            "Escuta ativa",
+            "Paciência"
+          ],
           "description": "Sua energia é contagiante. Você inspira outras pessoas a se mover, a ousar, a acreditar. O programa canaliza essa força para um impacto duradouro na sua comunidade.",
-          "modules": ["Oratória e Persuasão", "Liderança Social", "Alumni Network"],
+          "modules": [
+            "Oratória e Persuasão",
+            "Liderança Social",
+            "Alumni Network"
+          ],
           "example": "Você organiza o Dia de Liderança na sua escola e reúne 200 estudantes de 5 instituições."
         },
         "guardian": {
           "name": "O Guardião",
           "pillar": "Eu",
           "trait": "Estabilidade emocional",
-          "strengths": ["Resiliência", "Integridade", "Confiabilidade"],
-          "growth": ["Adaptabilidade", "Iniciativa"],
+          "strengths": [
+            "Resiliência",
+            "Integridade",
+            "Confiabilidade"
+          ],
+          "growth": [
+            "Adaptabilidade",
+            "Iniciativa"
+          ],
           "description": "Você é a âncora da equipe. Sua presença cria segurança psicológica para que outros se arrisquem. O programa desenvolve sua capacidade de liderar através da consistência e dos valores.",
-          "modules": ["Inteligência Emocional", "Ética do Líder", "Big Leader Model"],
+          "modules": [
+            "Inteligência Emocional",
+            "Ética do Líder",
+            "Big Leader Model"
+          ],
           "example": "Você é a referência de integridade na sua escola — coordenadores e colegas confiam no seu julgamento."
         }
       }
     },
-
     "valores": {
       "eyebrow": "Nossos Valores",
       "title": "O que nos guia",
@@ -295,7 +341,6 @@
         "body": "Exploramos novas formas de pensar e fazer para gerar valor único."
       }
     },
-
     "alumni": {
       "eyebrow": "Alumni",
       "title": "Líderes que já deixaram sua marca",
@@ -305,9 +350,9 @@
       "card2Program": "Bacharelado em Liderança Transformacional e Impacto Social",
       "card3Role": "Vice-Presidente de Estudantes Latinos · Concordia University, Canadá"
     },
-
     "acreditaciones": {
       "eyebrow": "Validação Internacional",
+      "institutionalTag": "Acreditação Institucional",
       "title": "Reconhecido pelas melhores organizações educacionais do mundo",
       "sub": "Organizações internacionais de excelência educacional reconheceram Big Family como um programa inovador com impacto social real.",
       "cognia": {
@@ -332,7 +377,6 @@
         "description": "A proposta 'Como alcançar um processo bem-sucedido de desenvolvimento de liderança nas escolas' obteve o terceiro lugar."
       }
     },
-
     "fundador": {
       "eyebrow": "O Fundador",
       "title": "Luis Hernando Barrios",
@@ -348,9 +392,10 @@
         "email": "luis.barrios@colegioalbania.edu.co",
         "phone": "(+57) 310 848 6706"
       },
-      "quote": "Deixando pegadas com propósito social."
+      "quote": "Deixando pegadas com propósito social.",
+      "statNumber": "10+ anos",
+      "statLabel": "formando líderes em La Guajira"
     },
-
     "red": {
       "eyebrow": "Nossa Rede Global",
       "title": "A Colômbia no centro do mundo",
@@ -384,16 +429,29 @@
           "name": "Canadá",
           "achievement": "Concordia University — Vice-Presidente Latino"
         },
-        "mexico": { "name": "México" },
-        "venezuela": { "name": "Venezuela" },
-        "brasil": { "name": "Brasil" },
-        "argentina": { "name": "Argentina" },
-        "francia": { "name": "França" },
-        "guatemala": { "name": "Guatemala" },
-        "india": { "name": "Índia" }
+        "mexico": {
+          "name": "México"
+        },
+        "venezuela": {
+          "name": "Venezuela"
+        },
+        "brasil": {
+          "name": "Brasil"
+        },
+        "argentina": {
+          "name": "Argentina"
+        },
+        "francia": {
+          "name": "França"
+        },
+        "guatemala": {
+          "name": "Guatemala"
+        },
+        "india": {
+          "name": "Índia"
+        }
       }
     },
-
     "equipo": {
       "eyebrow": "Equipe de Formação",
       "title": "Quem forma nossos líderes",
@@ -422,7 +480,6 @@
       "tagEstrategia": "Estratégia",
       "tagEstructura": "Estrutura"
     },
-
     "testimonial": {
       "eyebrow": "Depoimento",
       "sectionTitle": "Vozes da nossa família",
@@ -432,7 +489,6 @@
       "institution": "Colegio Bilingüe de Santa Marta",
       "event": "Oficina Internacional — Maio 2022"
     },
-
     "colegios": {
       "eyebrow": "Escolas participantes",
       "title": "8 instituições em La Guajira",
@@ -453,7 +509,6 @@
       "statMunicipios": "Municípios",
       "statPrimeraGen": "Primeira geração"
     },
-
     "cert": {
       "eyebrow": "CERTIFICAÇÃO OFICIAL",
       "title": "Uma conquista que abre portas.",
@@ -463,7 +518,6 @@
       "bullet2": "Imprimível e verificável",
       "bullet3": "Menção de Honra para os melhores"
     },
-
     "cta": {
       "eyebrow": "O PRÓXIMO PASSO É SEU",
       "title": "Sua liderança começa aqui.",
@@ -471,7 +525,6 @@
       "btnStudent": "Sou estudante — Entrar →",
       "btnCoordinator": "Sou coordenador →"
     },
-
     "faq": {
       "eyebrow": "PERGUNTAS FREQUENTES",
       "title": "Tudo o que você precisa saber.",
@@ -486,7 +539,6 @@
       "q5": "Como me registro?",
       "a5": "Seu coordenador entrega um código de acesso. Com esse código você cria sua conta na plataforma."
     },
-
     "testimonios": {
       "t1": {
         "quote": "O programa mudou minha forma de ver o mundo. Aprendi que liderar é servir.",
@@ -507,7 +559,6 @@
         "school": "IE Colombia Mía"
       }
     },
-
     "about": {
       "eyebrow": "SOBRE NÓS",
       "title": "Líderes que transformam La Guajira",
@@ -518,10 +569,24 @@
       "stat1Label": "Escolas participantes",
       "stat2Label": "Estudantes ativos",
       "stat3Label": "Primeira geração",
-      "cta": "Conheça o programa →"
+      "cta": "Conheça o programa →",
+      "photoPlaceholder": "Foto do programa"
+    },
+    "successStoriesSection": {
+      "eyebrow": "Comunidade Big Family",
+      "subtitle": "Estudantes que transformaram suas comunidades através da liderança.",
+      "viewAllBtn": "Ver todas as histórias →"
+    },
+    "footer": {
+      "brandDesc": "Programa de liderança juvenil que conecta estudantes de La Guajira a uma rede global de impacto.",
+      "programTitle": "Programa",
+      "accessTitle": "Acesso",
+      "studentRegister": "Registro de estudante",
+      "coordinatorRegister": "Registro de coordenador",
+      "timeline": "Linha do tempo",
+      "stories": "Histórias"
     }
   },
-
   "auth": {
     "login": {
       "title": "Entrar no Big Family",
@@ -541,7 +606,6 @@
         "tooManyAttempts": "Muitas tentativas. Aguarde alguns minutos."
       }
     },
-
     "register": {
       "title": "Criar conta",
       "subtitle": "Junte-se ao programa Big Family",
@@ -566,10 +630,30 @@
       "error": {
         "codeInvalid": "Código de acesso inválido ou já utilizado.",
         "emailInUse": "Já existe uma conta com esse e-mail.",
-        "weakPassword": "A senha deve ter pelo menos 8 caracteres."
-      }
+        "weakPassword": "A senha deve ter pelo menos 8 caracteres.",
+        "passwordsNoMatch": "As senhas não coincidem."
+      },
+      "juniorSub": "Fundamental ao 7º ano · 9 a 13 anos",
+      "juniorDesc": "Dê seus primeiros passos na liderança",
+      "seniorSub": "8º ao 11º ano · 14 a 18 anos",
+      "seniorDesc": "Lidere projetos que transformam comunidades",
+      "verifying": "Verificando…",
+      "verifyCode": "Verificar código",
+      "changeLevel": "Mudar nível",
+      "changeCode": "Mudar código",
+      "completeReg": "Complete seu cadastro",
+      "namePlaceholder": "João Silva",
+      "codeSubtitle": "Insira o código que seu coordenador te deu",
+      "trackTitle": "Qual é o seu nível?",
+      "trackSubtitle": "Selecione seu nível escolar para acessar o conteúdo adequado para você",
+      "continueBtn": "Continuar",
+      "roleCoordinator": "Coordenador",
+      "roleExpositor": "Expositor",
+      "roleStudent": "Estudante",
+      "confirmPassLabel": "Confirmar senha",
+      "creatingAccount": "Criando conta…",
+      "schoolFallback": "Escola"
     },
-
     "forgotPassword": {
       "title": "Recuperar senha",
       "subtitle": "Enviaremos um link para redefinir sua senha.",
@@ -580,7 +664,6 @@
       "backToLogin": "Voltar ao login"
     }
   },
-
   "onboarding": {
     "test": {
       "title": "Descubra seu perfil de líder",
@@ -598,7 +681,6 @@
       "submitting": "Calculando seu perfil...",
       "submitBtn": "Ver meu perfil"
     },
-
     "resultado": {
       "eyebrow": "Seu perfil de líder",
       "title": "Você é {archetype}",
@@ -611,13 +693,11 @@
       "profileSaved": "Perfil salvo"
     }
   },
-
   "dashboard": {
     "greeting": "Olá, {name}",
     "greetingMorning": "Bom dia, {name}",
     "greetingAfternoon": "Boa tarde, {name}",
     "greetingEvening": "Boa noite, {name}",
-
     "identity": {
       "track": {
         "senior": "CEO Junior",
@@ -628,7 +708,6 @@
       "portfolioPrivate": "Seu portfólio é privado",
       "pillarsTitle": "Seus pilares de liderança"
     },
-
     "kpis": {
       "xpTotal": "XP Total",
       "modulesCompleted": "Módulos concluídos",
@@ -637,7 +716,95 @@
       "network": "Rede",
       "connections": "{count} conexões"
     },
-
+    "home": {
+      "loadError": {
+        "title": "Não foi possível carregar os dados",
+        "subtitle": "Verifique sua conexão e tente novamente."
+      },
+      "closeAnnouncementAria": "Fechar aviso",
+      "onboarding": {
+        "step": "Passo 1 de 3 — Complete seu perfil",
+        "register": "Cadastro",
+        "firstModule": "Primeiro módulo",
+        "firstIC": "Primeiro IC"
+      },
+      "coordinatorPanel": "Painel do Coordenador",
+      "expositorPanel": "Painel do Palestrante",
+      "unreadNotifications": "{count} notificações não lidas",
+      "stats": {
+        "xpTotal": "XP Total",
+        "modules": "Módulos",
+        "ranking": "Ranking"
+      },
+      "portfolioLink": {
+        "configurePrefix": "Configure seu portfólio em",
+        "configureLink": "Configurações →",
+        "viewPublic": "Ver meu portfólio ↗",
+        "privatePrefix": "Seu portfólio está privado —",
+        "activateLink": "ativá-lo em Configurações"
+      },
+      "kpiLabels": {
+        "modules": "Módulos",
+        "streakDays": "Sequência de dias",
+        "schoolRanking": "Ranking da escola"
+      },
+      "charts": {
+        "xpProgress": "Progresso de XP — últimas 4 semanas",
+        "leadershipPath": "Leadership Path — progresso geral",
+        "emptyState": "Complete seu primeiro módulo para ver seu progresso",
+        "pillarVision": "Visão",
+        "pillarModules": "Módulos",
+        "pillarImpact": "Impacto",
+        "pillarCommunity": "Comunidade",
+        "pillarProjects": "Projetos"
+      },
+      "leadershipProgress": {
+        "title": "Leadership Progress",
+        "phaseBadge": "Fase 02: Implementação",
+        "strategicVision": "Visão Estratégica",
+        "communityEngagement": "Engajamento Comunitário",
+        "modulesCompletedLabel": "Módulos Concluídos",
+        "startHint": "Complete seu primeiro módulo para começar",
+        "viewFullProgram": "Ver programa completo",
+        "nextModule": "Próximo módulo →"
+      },
+      "welcomeTitle": "Bem-vindo(a) à Big Family!",
+      "welcomeBody": "Complete seu primeiro módulo e comece a ganhar Impact Credits",
+      "capstoneBanner": {
+        "unlocked": "Capstone desbloqueado!",
+        "body": "Você completou os {total} módulos. Agora você pode enviar seu projeto Capstone.",
+        "startBtn": "Iniciar Capstone →"
+      },
+      "capstoneCard": {
+        "eyebrow": "The Big Leader",
+        "title": "Capstone",
+        "lockedHint": "Complete os {total} módulos para desbloquear o Capstone",
+        "uploadProject": "Enviar projeto",
+        "approvedProjects": "Projetos aprovados",
+        "approvedCount": "{approved} de {total} projetos aprovados para a certificação.",
+        "viewDiploma": "🎓 Ver meu diploma →"
+      },
+      "nextStep": {
+        "eyebrow": "Próximo Passo",
+        "continueBtn": "Continuar →",
+        "allDone": "Você completou todos os módulos! 🎉"
+      },
+      "quoteOfDay": "Frase do dia",
+      "modulesAvailable": {
+        "title": "Módulos Disponíveis",
+        "moduleSingular": "módulo",
+        "modulePlural": "módulos",
+        "empty": "Nenhum módulo disponível ainda. Volte em breve!",
+        "diplomaUnlocked": {
+          "eyebrow": "CONQUISTA DESBLOQUEADA",
+          "title": "Sua certificação está pronta",
+          "subtitle": "The Big Leader — Ver meu diploma →"
+        },
+        "nextModuleLabel": "Próximo módulo",
+        "startNow": "Começar agora →",
+        "startBtn": "Começar"
+      }
+    },
     "modules": {
       "title": "Seus módulos",
       "progress": "{completed} de {total} concluídos",
@@ -652,7 +819,6 @@
       "reviewBtn": "Revisar",
       "xpReward": "+{xp} XP ao concluir"
     },
-
     "capstone": {
       "title": "Projeto Capstone",
       "subtitle": "IDEMR — Seu projeto de impacto social",
@@ -673,7 +839,6 @@
       "viewFeedback": "Ver feedback",
       "submitBtn": "Enviar para revisão"
     },
-
     "greatVenture": {
       "title": "The Great Venture",
       "subtitle": "Seu mapa estratégico pessoal",
@@ -690,9 +855,74 @@
         "paradigma": "Paradigma apreciativo",
         "equipo": "Equipe de poder",
         "planes": "Planos de ação"
+      },
+      "wizard": {
+        "closeBtn": "← Painel",
+        "saved": "Salvo",
+        "stepNames": {
+          "meta": "Meta",
+          "creencias": "Crenças",
+          "paradigma": "Paradigma",
+          "equipo": "Equipe",
+          "planes": "Planos"
+        },
+        "step1": {
+          "eyebrow": "PASSO 1 · EU E MEU PROPÓSITO",
+          "titleDefault": "Qual é o seu grande sonho como líder?",
+          "titleVisionario": "Seu perfil indica que você pensa grande. Qual é a visão que tira o seu sono?",
+          "titleConstructor": "Seus relacionamentos são sua força. Qual é o sonho que você compartilha com as pessoas que importam para você?",
+          "titleResiliente": "Sua disciplina é sua base. Qual é o sonho que você perseguiria mesmo quando tudo ficar difícil?",
+          "titleConector": "Sua energia ativa as pessoas. Qual é o sonho que você quer construir junto com outros?",
+          "titleEstratega": "Sua visão de longo prazo é sua vantagem. Qual é a meta que você define para os próximos 5 anos?",
+          "subtitle": "Você não precisa resolver o mundo. Comece com algo concreto que possa buscar nos próximos anos.",
+          "placeholder": "Ex.: Criar um programa de liderança na minha escola que alcance toda a região...",
+          "wordCount": "{count} / 150 palavras"
+        },
+        "step2": {
+          "eyebrow": "PASSO 2 · O QUE ME IMPULSIONA",
+          "titleDefault": "Quais crenças te dão força para perseguir essa meta?",
+          "titleVinculo": "Quais crenças sobre as pessoas te dão força quando o trabalho em equipe é difícil?",
+          "titleAccion": "Quais crenças te dão o impulso para agir mesmo quando nem tudo está pronto?",
+          "titleNorte": "Quais crenças te mantêm orientado(a) quando a visão fica confusa?",
+          "subtitle": "As crenças são as convicções profundas que te sustentam quando tudo se complica.",
+          "placeholder": "Ex.: Acredito que qualquer pessoa pode liderar de onde está. Acredito que minha comunidade merece melhores oportunidades..."
+        },
+        "step3": {
+          "eyebrow": "PASSO 3 · COMO VEJO O MUNDO",
+          "title": "Qual é a sua lente para ver o mundo?",
+          "subtitle": "Seu paradigma é a forma como você interpreta o que acontece. Um líder com paradigma apreciativo vê oportunidades onde outros veem problemas.",
+          "placeholder": "Ex.: Vejo cada obstáculo como informação. Acredito que as pessoas querem crescer se alguém as acompanha..."
+        },
+        "step4": {
+          "eyebrow": "PASSO 4 · AS PESSOAS QUE ME ACOMPANHAM",
+          "titleDefault": "Quem são as pessoas-chave no seu caminho?",
+          "titleVisionario": "Seu perfil indica que você tende a seguir sozinho(a). Quem complementa seu pensamento amplo com execução concreta?",
+          "titleEstratega": "Sua força é estratégica. Quem te ajuda a se conectar com as pessoas e colocar as ideias em prática?",
+          "subtitle": "Sua equipe de apoio são as pessoas que te complementam, te desafiam e te sustentam.",
+          "namePlaceholder": "Nome",
+          "rolePlaceholder": "Papel na sua vida (ex.: me dá feedback honesto)",
+          "addPersonBtn": "+ Adicionar pessoa",
+          "maxReached": "Máximo de 5 pessoas atingido.",
+          "removeAria": "Remover {name}"
+        },
+        "step5": {
+          "eyebrow": "PASSO 5 · OS PASSOS CONCRETOS",
+          "title": "Quais são os seus primeiros 3 passos?",
+          "subtitle": "Não o plano perfeito — os primeiros movimentos concretos em direção à sua meta.",
+          "textPlaceholder": "Descreva o passo...",
+          "addStepBtn": "+ Adicionar passo",
+          "maxReached": "Máximo de 5 passos atingido.",
+          "markIncompleteAria": "Marcar como incompleto",
+          "markCompleteAria": "Marcar como concluído",
+          "removeStepAria": "Remover passo"
+        },
+        "nav": {
+          "previous": "Anterior",
+          "next": "Próximo →",
+          "viewMap": "Ver meu mapa →"
+        }
       }
     },
-
     "leadershipPath": {
       "title": "Caminho de Liderança",
       "subtitle": "Seu progresso nos 5 pilares",
@@ -706,7 +936,6 @@
       "levelLabel": "Nível {level}",
       "nextMilestone": "Próximo marco"
     },
-
     "goals": {
       "title": "Metas Pessoais",
       "addGoal": "Adicionar meta",
@@ -741,7 +970,6 @@
         "createGoal": "Criar meta"
       }
     },
-
     "studentProfile": {
       "profileFallback": "Perfil",
       "notFoundTitle": "Perfil não encontrado",
@@ -753,13 +981,11 @@
       "badges": "Insígnias",
       "noBadges": "Este estudante ainda não tem insígnias."
     },
-
     "announcementsPage": {
       "title": "Avisos",
       "unreadCount": "{count} não lidos",
       "noAnnouncements": "Nenhum aviso ainda."
     },
-
     "projectsPage": {
       "searchingDraft": "Procurando rascunho…",
       "projectDeleted": "Projeto excluído",
@@ -792,14 +1018,12 @@
         "confirmDelete": "Sim, excluir"
       }
     },
-
     "calendarPage": {
       "leaderFallback": "Líder",
       "upcomingEvents": "Próximos eventos",
       "noUpcomingEvents": "Nenhum evento próximo.",
       "joinMeeting": "Entrar na reunião"
     },
-
     "feedPage": {
       "title": "Feed de Atividade",
       "userFallback": "Usuário",
@@ -830,7 +1054,6 @@
         "days": "há {count}d"
       }
     },
-
     "globalMap": {
       "eyebrow": "Big Family Network · Visão 2036",
       "title": "Mapa Global",
@@ -866,7 +1089,6 @@
         "ar": "Argentina"
       }
     },
-
     "greatVentureMapa": {
       "metaNucleo": "META NÚCLEO",
       "metaNucleoPlaceholder": "Sua Meta Núcleo",
@@ -893,7 +1115,6 @@
       "addPerson": "+ Adicionar pessoa",
       "addStep": "+ Adicionar passo"
     },
-
     "teamHubPage": {
       "loading": "Carregando Team Hub…",
       "subtitle": "Sua comunidade em {school}",
@@ -964,7 +1185,6 @@
         "community": "Comunidade"
       }
     },
-
     "kashi": {
       "title": "Kashi",
       "subtitle": "Rede educativa — Wayuu: lua",
@@ -973,7 +1193,6 @@
       "badge": "Novo",
       "developer": "Desenvolvido por Luis Barrios"
     },
-
     "portfolio": {
       "title": "Meu Portfólio",
       "viewPublic": "Ver portfólio público",
@@ -1000,9 +1219,87 @@
         "format": "Formato Common App",
         "exporting": "Gerando PDF..."
       }
+    },
+    "leadershipPathPage": {
+      "pageTitle": "Leadership Path",
+      "defaultLeaderName": "Líder Big Family",
+      "subtitle": "Sua trilha de aprendizagem personalizada",
+      "streakDays": "🔥 {count} dias",
+      "modulesOf": "/ {total} módulos",
+      "modulesCompleted": "{completed} de {total} módulos concluídos",
+      "xpEarned": "XP ganhos",
+      "hoursRemaining": "~{hours} horas restantes",
+      "preparingContent": "Estamos preparando o conteúdo para o seu nível. Volte em breve para começar sua trilha de liderança!",
+      "moduleCount": "{count} módulos",
+      "phaseCompleted": "✓ Fase concluída",
+      "continueHere": "Continue aqui!",
+      "unlockHint": "🔒 Conclua \"{title}\" para desbloquear",
+      "previousModule": "o módulo anterior",
+      "durationMinutes": "🕐 {minutes} min",
+      "questionCount": "📝 {count} perguntas",
+      "whatYouWillLearn": "O que você vai aprender:",
+      "learnBullets": [
+        "Desenvolver habilidades práticas de liderança",
+        "Aplicar conceitos a situações reais do seu ambiente",
+        "Construir confiança para liderar equipes"
+      ],
+      "attemptsAvailable": "✓ 2 tentativas disponíveis",
+      "attemptRemaining": "⚠ 1 tentativa restante",
+      "noAttemptsLeft": "✗ Sem tentativas disponíveis",
+      "moduleCompleted": "✓ Módulo concluído",
+      "reviewModule": "Revisar módulo",
+      "startModule": "Começar módulo →",
+      "retryApproved": "✓ Nova tentativa aprovada — você pode começar de novo",
+      "retryPending": "⏳ Solicitação enviada — aguardando aprovação do coordenador",
+      "requestRetryBtn": "Solicitar nova tentativa ao coordenador",
+      "sendingRetry": "Enviando...",
+      "startRetryBtn": "Começar nova tentativa →",
+      "phases": {
+        "phase1": "FASE 1",
+        "phase2": "FASE 2",
+        "phase3": "FASE 3",
+        "phase4": "FASE 4"
+      }
+    },
+    "modulesPage": {
+      "title": "Módulos",
+      "subtitle": "Sua trilha de aprendizagem — conclua cada módulo para avançar",
+      "viewMapBtn": "Ver no mapa →",
+      "stats": {
+        "completed": "Concluídos",
+        "xpEarned": "XP ganhos",
+        "remaining": "Restantes"
+      },
+      "emptyState": {
+        "title": "Em breve",
+        "body": "Os módulos do seu programa serão publicados em breve. Fique atento!"
+      },
+      "bestScore": "Melhor: {score}%",
+      "startBtn": "Começar →",
+      "panel": {
+        "leaderProfile": "PERFIL DE LÍDER",
+        "pillarProgress": "PROGRESSO POR PILAR",
+        "recommended": "RECOMENDADO PARA VOCÊ",
+        "summary": "RESUMO"
+      },
+      "allDone": {
+        "title": "Você concluiu todos os módulos!",
+        "body": "Agora você pode acessar sua certificação.",
+        "cta": "Ver certificado →"
+      },
+      "recommendedCta": "Começar →",
+      "noRecommended": "Nenhum módulo disponível ainda.",
+      "summaryLabels": {
+        "xpTotal": "XP Total",
+        "modules": "Módulos",
+        "streak": "Sequência"
+      },
+      "noProfile": {
+        "body": "Complete o teste de perfil de líder para ver sua trilha personalizada.",
+        "cta": "Fazer o diagnóstico →"
+      }
     }
   },
-
   "modules": {
     "videoSection": "Vídeo do módulo",
     "quizSection": "Quiz",
@@ -1034,9 +1331,18 @@
         "4": "Especialista"
       },
       "completeBtn": "Concluir autoavaliação"
+    },
+    "video": {
+      "invalid": "O vídeo não está disponível.",
+      "invalidHint": "Verifique o link. Somente URLs do YouTube ou Vimeo são aceitas.",
+      "watchedPct": "Você assistiu {pct}% do vídeo",
+      "readyForQuiz": "✓ Pronto para o questionário",
+      "goToQuiz": "Ir para o questionário →",
+      "quizLocked": "Ir para o questionário",
+      "watchMinimum": "Você deve assistir pelo menos 80% do vídeo para continuar",
+      "tabSwitchWarning": "⚠️ Você saiu da página — o vídeo foi pausado"
     }
   },
-
   "coordinator": {
     "nav": {
       "dashboard": "Dashboard",
@@ -1051,7 +1357,224 @@
       "datos": "Centro de Dados",
       "settings": "Configurações"
     },
-
+    "dashboard": {
+      "defaultSchoolName": "Minha escola",
+      "title": "Painel do Coordenador",
+      "subtitle": "Acompanhamento dos seus estudantes · {school}",
+      "notificationsCount": "{count} notificações",
+      "kpiStudents": "Estudantes",
+      "kpiAvgXp": "XP médio",
+      "kpiModulesCompleted": "Módulos concluídos",
+      "kpiActiveThisWeek": "Ativos esta semana",
+      "vsLastWeek": "vs sem. ant.",
+      "xpTop10Title": "XP por estudante — Top 10",
+      "noXpData": "Ainda não há dados de XP.",
+      "weeklyActivityTitle": "Atividade da escola — últimas 4 semanas",
+      "noActivityData": "Nenhuma atividade registrada.",
+      "xpTotal": "XP total",
+      "activeStudentsTooltip": "Estudantes ativos",
+      "activeLegend": "Ativos",
+      "studentsTableTitle": "Estudantes",
+      "searchPlaceholder": "Buscar por nome ou email…",
+      "studentCountSingular": "{count} estudante",
+      "studentCountPlural": "{count} estudantes",
+      "tableName": "Nome",
+      "tableEmail": "Email",
+      "tableRegistered": "Registro",
+      "tableModules": "Módulos",
+      "tableTabSwitches": "Saídas",
+      "tableStatus": "Status",
+      "noSearchResults": "Sem resultados para essa busca.",
+      "noStudentsYet": "Nenhum estudante registrado ainda.",
+      "viewFullProfile": "Ver perfil completo →",
+      "statusActive": "Ativo",
+      "statusInactive": "Inativo",
+      "paginationRange": "{from}–{to} de {total}",
+      "prevPage": "← Ant.",
+      "nextPage": "Próx. →"
+    },
+    "feed": {
+      "title": "Feed de Atividade",
+      "filters": {
+        "all": "Todos",
+        "module_completed": "Módulos",
+        "project_submitted": "Projetos",
+        "badge_earned": "Badges",
+        "certified": "Certificações",
+        "goal_completed": "Metas"
+      },
+      "activity": {
+        "module_completed": "concluiu um módulo",
+        "project_submitted": "enviou um projeto",
+        "badge_earned": "ganhou um badge",
+        "certified": "foi certificado(a)",
+        "goal_completed": "concluiu uma meta"
+      },
+      "defaultUserName": "Usuário",
+      "defaultCoordinatorName": "Coordenador",
+      "noActivityYet": "Ainda não há atividade.",
+      "loadingMore": "Carregando mais…",
+      "endOfFeed": "— Fim do feed —",
+      "scrollToTop": "Voltar ao topo",
+      "justNow": "agora mesmo",
+      "minutesAgo": "há {min} min",
+      "hoursAgo": "há {h}h",
+      "daysAgo": "há {d}d"
+    },
+    "modulesReview": {
+      "pageTitle": "Revisão de Módulos",
+      "loading": "Carregando…",
+      "pendingCountSingular": "{count} módulo pendente de revisão · {school}",
+      "pendingCountPlural": "{count} módulos pendentes de revisão · {school}",
+      "tabPending": "Pendentes",
+      "tabPublished": "Publicados",
+      "tabRetries": "Repetições solicitadas",
+      "noPendingRetries": "Não há repetições pendentes",
+      "noPendingRetriesHint": "Quando um estudante solicitar uma repetição, ela aparecerá aqui.",
+      "moduleLabel": "Módulo",
+      "requestedOn": "Solicitado em {date}",
+      "approving": "Aprovando…",
+      "approveRetryAction": "Aprovar repetição",
+      "noPendingModules": "Não há módulos pendentes de revisão",
+      "noPublishedModules": "Ainda não há módulos publicados",
+      "noPendingModulesHint": "Quando um expositor enviar um módulo, ele aparecerá aqui.",
+      "noPublishedModulesHint": "Aprove módulos na aba Pendentes.",
+      "defaultSchoolName": "Meu colégio",
+      "by": "Por",
+      "submittedOn": "Enviado em {date}",
+      "publishedOn": "Publicado em {date}",
+      "questionSingular": "{count} pergunta",
+      "questionPlural": "{count} perguntas",
+      "approve": "Aprovar",
+      "reject": "Rejeitar",
+      "unpublish": "Despublicar",
+      "approveModalTitle": "Publicar este módulo?",
+      "approveModalBody": "O módulo ficará visível para todos os estudantes da plataforma.",
+      "cancel": "Cancelar",
+      "publishing": "Publicando…",
+      "confirmPublish": "Sim, publicar",
+      "rejectModalTitle": "Rejeitar módulo",
+      "reasonLabel": "Motivo da rejeição (obrigatório)",
+      "reasonPlaceholder": "Explique ao expositor por que não foi aprovado e o que deve melhorar…",
+      "rejecting": "Rejeitando…",
+      "confirmReject": "Confirmar rejeição",
+      "approveError": "Erro ao aprovar o módulo",
+      "publishedToast": "\"{title}\" publicado ✓",
+      "rejectError": "Erro ao rejeitar o módulo",
+      "rejectedToast": "\"{title}\" rejeitado",
+      "unpublishError": "Erro ao despublicar",
+      "movedToDraftToast": "\"{title}\" movido para rascunho",
+      "retryApproveError": "Erro ao aprovar a repetição",
+      "retryApprovedToast": "Repetição aprovada para {name} ✓",
+      "retryNotificationTitle": "Repetição de quiz aprovada",
+      "retryNotificationBody": "Seu coordenador aprovou uma repetição para o módulo {moduleId}.",
+      "pillars": {
+        "yo": "Eu",
+        "norte": "Norte",
+        "vinculo": "Vínculo",
+        "accion": "Ação",
+        "legado": "Legado"
+      }
+    },
+    "newsManager": {
+      "pageTitle": "Minhas Notícias",
+      "loading": "Carregando…",
+      "articleCountSingular": "{count} artigo · {school}",
+      "articleCountPlural": "{count} artigos · {school}",
+      "newArticle": "+ Nova notícia",
+      "statTotal": "Total",
+      "statPublished": "Publicados",
+      "statDrafts": "Rascunhos",
+      "featuredHint": "Marque uma notícia como destaque para exibi-la na página inicial do blog",
+      "emptyTitle": "Nenhuma notícia ainda",
+      "emptyBody": "Crie sua primeira notícia para o blog da Big Family.",
+      "createFirst": "+ Criar notícia",
+      "untitled": "Sem título",
+      "statusPublished": "Publicado",
+      "statusDraft": "Rascunho",
+      "unfeature": "Remover dos destaques",
+      "markFeatured": "Marcar como destaque",
+      "edit": "Editar →",
+      "defaultSchoolName": "Meu colégio"
+    },
+    "projectsReview": {
+      "pageTitle": "Projetos de Liderança",
+      "subtitle": "Revise e aprove projetos para a certificação The Big Leader · {school}",
+      "filterAll": "Todos",
+      "filterDraft": "Rascunho",
+      "filterPending": "Em revisão",
+      "filterApproved": "Aprovados",
+      "filterRejected": "Rejeitados",
+      "statTotalProjects": "Total de projetos",
+      "statDrafts": "Rascunhos",
+      "statPending": "Em revisão",
+      "statApproved": "Aprovados",
+      "statRejected": "Rejeitados",
+      "allCategories": "Todas as categorias",
+      "searchPlaceholder": "Buscar por estudante ou título…",
+      "emptyNoProjectsTitle": "Ainda não há projetos da sua escola",
+      "emptyNoProjectsBody": "Quando seus estudantes enviarem seus projetos de liderança, eles aparecerão aqui para você revisar e aprovar.",
+      "emptyNoResultsTitle": "Sem resultados",
+      "emptyNoResultsBody": "Nenhum projeto corresponde aos filtros selecionados.",
+      "paginationInfo": "Página {current} de {total} · {count} projetos",
+      "prevPage": "← Anterior",
+      "nextPage": "Próximo →",
+      "defaultSchoolName": "Meu colégio",
+      "approvedNotifTitle": "Seu projeto foi aprovado",
+      "approvedNotifBody": "O projeto \"{title}\" foi aprovado. Parabéns!",
+      "rejectedNotifTitle": "Seu projeto recebeu um retorno",
+      "rejectedNotifReason": "Motivo: {reason}",
+      "rejectedNotifDefault": "O coordenador revisou seu projeto."
+    },
+    "topNav": {
+      "badge": "Coordenador",
+      "dashboardHome": "Painel principal",
+      "projects": "Projetos",
+      "modules": "Módulos",
+      "news": "Notícias",
+      "dashboard": "Dashboard",
+      "logout": "Sair"
+    },
+    "studentReport": {
+      "breadcrumb": "→ Relatório PDF",
+      "logout": "Sair",
+      "pageTitle": "Relatório de Estudantes",
+      "exportTooltipEmpty": "Nenhum estudante para exportar",
+      "exporting": "Gerando PDF…",
+      "exportBtn": "↓ Exportar Relatório PDF",
+      "showFewerCols": "↑ Menos colunas",
+      "showAllColsBtn": "↓ Mostrar todas as colunas",
+      "emptyStudents": "Nenhum estudante registrado.",
+      "colLevel": "Nível",
+      "colProject": "Projeto",
+      "colCapstone": "Capstone",
+      "colBadges": "Badges",
+      "colGoals": "Metas",
+      "colGreatVenture": "Great Venture",
+      "gvComplete": "✓ Completo",
+      "gvPending": "Pendente"
+    },
+    "successStories": {
+      "pageTitle": "Histórias de Sucesso",
+      "studentLabel": "Estudante *",
+      "selectPlaceholder": "— Selecione —",
+      "titleLabel": "Título *",
+      "titlePlaceholder": "Título da história",
+      "storyLabel": "História *",
+      "storyPlaceholder": "Descreva a conquista e o impacto...",
+      "savingBtn": "Salvando…",
+      "nominateBtn": "Indicar história",
+      "cancelBtn": "Cancelar",
+      "allNominationsTitle": "Todas as indicações",
+      "noNominations": "Nenhuma indicação ainda.",
+      "publishedBadge": "Publicada",
+      "inReviewBadge": "Em análise",
+      "selectStory": "Selecione uma história",
+      "selectStoryHint": "Clique em uma história para ver os detalhes e publicá-la.",
+      "publishBtn": "✓ Publicar",
+      "unpublishBtn": "Despublicar",
+      "viewPageBtn": "Ver página"
+    },
     "projects": {
       "title": "Projetos",
       "pending": "Pendentes de revisão",
@@ -1075,7 +1598,6 @@
         }
       }
     },
-
     "announcements": {
       "title": "Comunicados",
       "create": "Criar comunicado",
@@ -1089,9 +1611,74 @@
         "global": "Todas as escolas",
         "school": "Minha escola"
       },
-      "expiresLabel": "Expira em"
+      "expiresLabel": "Expira em",
+      "formTitleLabel": "Título *",
+      "titlePlaceholder": "Título do anúncio",
+      "contentLabel": "Conteúdo *",
+      "contentPlaceholder": "Escreva o conteúdo do anúncio...",
+      "categoryLabel": "Categoria",
+      "targetLabel": "Destinatário",
+      "expiresOptionalLabel": "Expira em (opcional)",
+      "saveChangesBtn": "Salvar alterações",
+      "publishBtn": "Publicar anúncio",
+      "empty": "Nenhum anúncio ainda.",
+      "allTargetShort": "Todos",
+      "expiredBadge": "Expirado"
     },
-
+    "calendar": {
+      "title": "Calendário de Eventos",
+      "days": ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+      "months": ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+      "formTitleLabel": "Título *",
+      "eventNamePlaceholder": "Nome do evento",
+      "startDateLabel": "Data de início *",
+      "startTimeLabel": "Hora de início",
+      "endDateLabel": "Data de término",
+      "endTimeLabel": "Hora de término",
+      "locationLabel": "Localização",
+      "locationPlaceholder": "Endereço ou local",
+      "meetingLinkLabel": "Link da reunião",
+      "descriptionLabel": "Descrição",
+      "saveChangesBtn": "Salvar alterações",
+      "createEventBtn": "Criar evento",
+      "upcomingEvents": "Próximos eventos",
+      "clickDateHint": "Clique em uma data com eventos.",
+      "joinLink": "🔗 Entrar"
+    },
+    "timeline": {
+      "pageTitle": "Histórico do Programa",
+      "pageSubtitle": "Gerencie os marcos da linha do tempo global · ",
+      "viewPublicLink": "Ver página pública →",
+      "addBtn": "+ Adicionar marco",
+      "editModalTitle": "Editar marco",
+      "newModalTitle": "Novo marco",
+      "eventNamePlaceholder": "Nome do marco",
+      "descriptionPlaceholder": "Descrição breve…",
+      "dateLabel": "Data *",
+      "imageUrlLabel": "URL da imagem (opcional)",
+      "saveEventBtn": "Salvar marco",
+      "noEventsYet": "Nenhum marco ainda. Adicione o primeiro!",
+      "checkingAccess": "Verificando acesso…",
+      "titleAndDateRequired": "Título e data são obrigatórios",
+      "saveError": "Erro ao salvar",
+      "eventUpdated": "Marco atualizado ✓",
+      "eventAdded": "Marco adicionado!",
+      "deleteError": "Erro ao excluir",
+      "eventDeleted": "Marco excluído"
+    },
+    "goals": {
+      "pageTitle": "Metas dos estudantes",
+      "subtitle": "{school} — Acompanhamento de metas pessoais e do programa",
+      "studentsPanelTitle": "Estudantes",
+      "colActive": "Ativas",
+      "colCompleted": "Concluídas",
+      "noStudents": "Sem estudantes",
+      "selectStudent": "Selecione um estudante",
+      "selectStudentHint": "Clique em um estudante para ver suas metas.",
+      "noGoalsRegistered": "Não possui metas registradas.",
+      "statusActive": "Ativa",
+      "statusExpired": "Expirada"
+    },
     "quizRetries": {
       "title": "Solicitações de nova tentativa",
       "approve": "Aprovar nova tentativa",
@@ -1099,7 +1686,6 @@
       "approved": "Nova tentativa aprovada",
       "denied": "Solicitação negada"
     },
-
     "datos": {
       "title": "Centro de Dados",
       "tabs": {
@@ -1114,7 +1700,6 @@
       }
     }
   },
-
   "admin": {
     "nav": {
       "dashboard": "Dashboard",
@@ -1125,9 +1710,105 @@
       "datos": "Centro de Dados"
     },
     "confirmEvaluation": "Confirmar avaliação",
-    "secondReview": "Segunda revisão"
+    "secondReview": "Segunda revisão",
+    "dashboard": {
+      "checkingAccess": "Verificando acesso…",
+      "pageTitle": "Painel de Administração",
+      "pageSubtitle": "Visão global do programa · Acesso restrito a administradores",
+      "statStudents": "Estudantes",
+      "statTotalProjects": "Total de projetos",
+      "statSubmitted": "Enviados",
+      "statApproved": "Aprovados",
+      "statRejected": "Rejeitados",
+      "chartXpBySchool": "XP médio por escola",
+      "xpAvgTooltip": "{value} XP méd.",
+      "studentsTooltip": "{count} estudantes",
+      "chartNewStudents": "Novos estudantes — últimas 8 semanas",
+      "newStudentsTooltip": "+{count} estudantes",
+      "rankingTitle": "Ranking de escolas",
+      "colSchool": "Escola",
+      "rankColAvgXp": "XP Médio",
+      "searchUsersPlaceholder": "Buscar por nome, e-mail ou escola…",
+      "noUsersMatch": "Nenhum usuário corresponde",
+      "colRole": "Função",
+      "colRegistered": "Registrado",
+      "usersCountSingular": "{count} usuário · Página {page} de {total}",
+      "usersCountPlural": "{count} usuários · Página {page} de {total}",
+      "noProjectsMatch": "Nenhum projeto corresponde a este filtro",
+      "colTitle": "Título",
+      "colSubmitted": "Enviado",
+      "untitledProject": "(Sem título)",
+      "projectsCountSingular": "{count} projeto · Página {page} de {total}",
+      "projectsCountPlural": "{count} projetos · Página {page} de {total}",
+      "statusDraft": "Rascunho",
+      "statusPending": "Pendente",
+      "statusApproved": "Aprovado",
+      "statusRejected": "Rejeitado",
+      "noEvaluationsYet": "Ainda não há avaliações de capstone",
+      "evalStudentLabel": "Estudante:",
+      "evalCoordinatorLabel": "Coordenador:",
+      "confirmedBadge": "✓ Confirmado",
+      "confirmingBtn": "Confirmando…",
+      "coordinatorFeedbackLabel": "Feedback do coordenador",
+      "confirmedCountLabel": "{confirmed} de {total} confirmadas",
+      "goalTemplatesTitle": "Modelos de metas do programa",
+      "noTemplatesYet": "Nenhum modelo ainda. Crie o primeiro →",
+      "newTemplateTitle": "Novo modelo",
+      "titlePlaceholderExample": "Ex.: Organizar uma oficina comunitária",
+      "descriptionLabel": "Descrição",
+      "descriptionPlaceholderOptional": "Descrição opcional...",
+      "xpOnCompleteLabel": "XP ao concluir",
+      "createTemplateBtn": "Criar modelo",
+      "codesGeneratorTitle": "Gerador de Códigos de Acesso",
+      "coordCodesTitle": "Códigos de Coordenador",
+      "selectSchoolPlaceholder": "Selecionar escola…",
+      "generatingBtn": "Gerando…",
+      "generateCodeBtn": "Gerar código",
+      "lastGeneratedLabel": "Gerados recentemente",
+      "usedBadge": "Usado",
+      "freeBadge": "Livre",
+      "expoCodesTitle": "Códigos de Expositor",
+      "generateExpoCodeBtn": "Gerar código de expositor",
+      "schoolsManagementTitle": "Gestão de Escolas",
+      "colCode": "Código",
+      "colCoords": "Coords",
+      "addSchoolTitle": "Adicionar escola",
+      "nameRequiredLabel": "Nome *",
+      "codeRequiredLabel": "Código *",
+      "cityLabel": "Cidade",
+      "uploadLogoOptional": "📷 Enviar logo (opcional)",
+      "createSchoolBtn": "Criar escola",
+      "editSchoolTitle": "Editar escola",
+      "changeLogoLabel": "📷 Alterar logo",
+      "saveChangesBtn": "Salvar alterações",
+      "confirmEvalError": "Erro ao confirmar avaliação",
+      "evalConfirmed": "Avaliação confirmada ✓",
+      "codeExistsError": "Esse código já existe",
+      "generateCodeError": "Erro ao gerar",
+      "codeGenerated": "Código gerado",
+      "generateExpoCodeError": "Erro ao gerar código",
+      "expoCodeGenerated": "Código de expositor gerado",
+      "copiedToClipboard": "Copiado para a área de transferência",
+      "createSchoolError": "Erro ao criar a escola",
+      "schoolCreated": "Escola criada com sucesso",
+      "updateError": "Erro ao atualizar",
+      "schoolUpdated": "Escola atualizada"
+    },
+    "report": {
+      "pageTitle": "Relatório Global",
+      "allSchoolsLabel": "Todas as escolas",
+      "adminPanelBtn": "Painel Admin",
+      "emptyData": "Sem dados.",
+      "colName": "Nome",
+      "colSchool": "Escola",
+      "colXpTotal": "XP Total",
+      "colModules": "Módulos",
+      "studentsCountSingular": "{count} estudante · {school}",
+      "studentsCountPlural": "{count} estudantes · {school}",
+      "juniorLabel": "Junior",
+      "seniorLabel": "Senior"
+    }
   },
-
   "expositor": {
     "nav": {
       "dashboard": "Dashboard",
@@ -1141,9 +1822,45 @@
       "rejected": "Rejeitado"
     },
     "submitForReview": "Enviar para revisão",
-    "editModule": "Editar módulo"
+    "editModule": "Editar módulo",
+    "modulesPage": {
+      "pageTitle": "Meus Módulos",
+      "panelSubtitle": "Painel do Expositor · {name}",
+      "newModuleBtn": "+ Novo módulo",
+      "levelJunior": "Junior",
+      "levelSenior": "Senior",
+      "statTotal": "Total",
+      "statPublished": "Publicados",
+      "statRejected": "Rejeitados",
+      "emptyTitle": "Nenhum módulo ainda",
+      "emptySubtitle": "Crie seu primeiro módulo para começar.",
+      "createModuleBtn": "+ Criar módulo",
+      "untitledModule": "Sem título",
+      "questionCountSingular": "{count} pergunta",
+      "questionCountPlural": "{count} perguntas",
+      "editBtn": "Editar →",
+      "deleteBtn": "Excluir",
+      "completedSingular": "{count} concluído",
+      "completedPlural": "{count} concluídos",
+      "quizAvgLabel": "Quiz méd.: {value}%",
+      "completionRateLabel": "{value}% concluído",
+      "rejectionReasonLabel": "Motivo da rejeição:",
+      "deleteModalTitle": "Excluir módulo?",
+      "deleteModalBody1": "Isso excluirá permanentemente",
+      "deleteModalBody2": "Todas as suas perguntas também serão excluídas. Esta ação não pode ser desfeita.",
+      "deletingBtn": "Excluindo…",
+      "confirmDeleteBtn": "Sim, excluir"
+    },
+    "newModulePage": {
+      "defaultTitle": "Novo módulo",
+      "creatingLabel": "Criando módulo…"
+    },
+    "editModulePage": {
+      "notFoundTitle": "Módulo não encontrado",
+      "notFoundBody": "Este módulo não existe ou você não tem acesso.",
+      "backToModulesBtn": "Ver meus módulos"
+    }
   },
-
   "notifications": {
     "title": "Notificações",
     "titleUpper": "NOTIFICAÇÕES",
@@ -1168,7 +1885,6 @@
       "system": "Sistema"
     }
   },
-
   "certification": {
     "title": "Certificado de Liderança",
     "subtitle": "The Big Family Program",
@@ -1184,7 +1900,6 @@
     "shareBtn": "Compartilhar",
     "confetti": "Parabéns!"
   },
-
   "verify": {
     "eyebrow": "Verificação de Diploma",
     "title": "Verificação de Certificado",
@@ -1192,12 +1907,21 @@
     "valid": {
       "badge": "Certificado válido",
       "title": "Diploma verificado",
-      "body": "Este certificado foi emitido oficialmente pelo The Big Family Program."
+      "body": "Este certificado foi emitido oficialmente pelo The Big Family Program.",
+      "certVerifiedBadge": "✓ CERTIFICADO VERIFICADO",
+      "authentic": "Este certificado é autêntico.",
+      "confirms": "The Big Family Program confirma que o(a) seguinte estudante concluiu com sucesso a certificação The Big Leader.",
+      "honorsTitle": "Menção de Honra",
+      "certTitle": "Certificado"
     },
     "invalid": {
       "badge": "Não encontrado",
       "title": "Certificado não encontrado",
-      "body": "Não encontramos um certificado com este ID. Verifique se o link ou código está correto."
+      "body": "Não encontramos um certificado com este ID. Verifique se o link ou código está correto.",
+      "certNotValidBadge": "✗ CERTIFICADO INVÁLIDO",
+      "couldNotVerify": "Não foi possível verificar este certificado.",
+      "hint": "O código pode estar incorreto ou o certificado pode ter sido revogado. Se achar que é um erro, entre em contato com o programa diretamente.",
+      "toSite": "Ir ao site oficial →"
     },
     "fields": {
       "student": "Estudante",
@@ -1207,9 +1931,14 @@
       "archetype": "Arquétipo"
     },
     "verifiedAt": "Verificado em {date}",
-    "legalNote": "Este documento é emitido pelo The Big Family Program. Para consultas, entrar em contato com luis.barrios@colegioalbania.edu.co"
+    "legalNote": "Este documento é emitido pelo The Big Family Program. Para consultas, entrar em contato com luis.barrios@colegioalbania.edu.co",
+    "stats": {
+      "xp": "Pontos de impacto",
+      "modules": "Módulos concluídos"
+    },
+    "accreditedBy": "PROGRAMA RECONHECIDO POR",
+    "viewProgram": "Ver programa completo →"
   },
-
   "portfolio": {
     "publicBadge": "Portfólio público",
     "sections": {
@@ -1240,9 +1969,48 @@
       "btn": "Exportar PDF",
       "format": "Formato Common App",
       "share": "Compartilhar portfólio"
-    }
+    },
+    "notFound": "Portfólio não encontrado",
+    "notFoundBody": "O usuário @{username} não existe ou não tem um portfólio ativo.",
+    "backToSite": "← Voltar ao site principal",
+    "privateTitle": "Este portfólio é privado",
+    "privateBody": "O(A) estudante configurou seu portfólio como privado.",
+    "leaderProfile": "PERFIL DE LÍDER",
+    "impact": "IMPACTO",
+    "statXP": "Pontos de Impacto",
+    "statModules": "Módulos Concluídos",
+    "statBadges": "Conquistas Obtidas",
+    "statDays": "Dias no Programa",
+    "honorsTitle": "✦ Menção de Honra",
+    "certTitle": "✓ Certificado",
+    "verifyLink": "Verificar autenticidade →",
+    "recognizedBy": "RECONHECIDO POR",
+    "editPrivacy": "Editar privacidade →",
+    "heroEyebrow": "PORTFÓLIO DE LIDERANÇA",
+    "heroSubWith": "Estudante do programa The Big Family, certificado/a como {arquetipo} com impacto demonstrado em {school}, La Guajira, Colômbia.",
+    "heroSubWithout": "Estudante do programa The Big Family com impacto demonstrado em {school}, La Guajira, Colômbia.",
+    "capstoneSectionLabel": "PROJETO DE LIDERANÇA COMUNITÁRIA",
+    "idemr": {
+      "identify": "I · Identificar",
+      "design": "D · Desenhar",
+      "execute": "E · Executar",
+      "measure": "M · Medir",
+      "reflect": "R · Refletir"
+    },
+    "gvCreencias": "CRENÇAS",
+    "gvParadigma": "PARADIGMA",
+    "gvEquipo": "EQUIPE",
+    "gvPlanes": "PLANOS",
+    "gvViewMap": "Ver mapa completo →",
+    "uniStepTitle": "Pronto para o próximo passo?",
+    "uniStepSub": "Este portfólio e certificado são reconhecidos internacionalmente. Use-os na sua candidatura universitária.",
+    "applyBtn": "Candidatar-se →",
+    "exportLabel": "EXPORTAR",
+    "exportTitle": "Pronto para Common App.",
+    "exportSub": "Baixe seu portfólio formatado para a seção \"Additional Information\" do Common App, UCAS, ou qualquer plataforma de admissão.",
+    "footerBy": "Portfólio verificado por",
+    "footerEducator": "É educador(a)? Conheça o programa"
   },
-
   "news": {
     "title": "Notícias",
     "subtitle": "Novidades do programa",
@@ -1252,23 +2020,31 @@
     "markRead": "Marcar como lido",
     "read": "Lido",
     "share": "Compartilhar",
-    "noArticles": "Nenhum artigo publicado ainda."
+    "noArticles": "Nenhum artigo publicado ainda.",
+    "eyebrow": "Blog",
+    "featured": "Em destaque",
+    "by": "Por",
+    "moreArticles": "Mais notícias",
+    "comingSoon": "Em breve",
+    "readArticle": "Ler artigo →"
   },
-
   "timeline": {
     "title": "Nossa História",
     "subtitle": "A trajetória do programa desde 2015",
-    "noEvents": "Não há eventos na linha do tempo."
+    "noEvents": "Não há eventos na linha do tempo.",
+    "pageTitle": "Quatro anos formando líderes",
+    "pageIntro": "Cada marco em nossa história é resultado de jovens que decidiram agir, aprender e transformar suas comunidades."
   },
-
   "successStories": {
     "title": "Histórias de Sucesso",
     "subtitle": "Líderes que estão transformando seu entorno",
     "nominateBtn": "Indicar um líder",
     "readStory": "Ler história",
-    "noStories": "Nenhuma história publicada ainda."
+    "noStories": "Nenhuma história publicada ainda.",
+    "eyebrow": "Comunidade Big Family",
+    "student": "Estudante",
+    "myDashboard": "Meu painel"
   },
-
   "calendar": {
     "title": "Calendário",
     "createEvent": "Criar evento",
@@ -1281,16 +2057,40 @@
     },
     "noEvents": "Não há eventos este mês.",
     "months": {
-      "1": "Janeiro", "2": "Fevereiro", "3": "Março", "4": "Abril",
-      "5": "Maio", "6": "Junho", "7": "Julho", "8": "Agosto",
-      "9": "Setembro", "10": "Outubro", "11": "Novembro", "12": "Dezembro"
+      "1": "Janeiro",
+      "2": "Fevereiro",
+      "3": "Março",
+      "4": "Abril",
+      "5": "Maio",
+      "6": "Junho",
+      "7": "Julho",
+      "8": "Agosto",
+      "9": "Setembro",
+      "10": "Outubro",
+      "11": "Novembro",
+      "12": "Dezembro"
     },
     "days": {
-      "short": ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
-      "long": ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"]
+      "short": [
+        "Dom",
+        "Seg",
+        "Ter",
+        "Qua",
+        "Qui",
+        "Sex",
+        "Sáb"
+      ],
+      "long": [
+        "Domingo",
+        "Segunda-feira",
+        "Terça-feira",
+        "Quarta-feira",
+        "Quinta-feira",
+        "Sexta-feira",
+        "Sábado"
+      ]
     }
   },
-
   "teamHub": {
     "title": "Team Hub",
     "chat": "Chat da equipe",
@@ -1300,16 +2100,17 @@
     "rankingStudents": "Top Estudantes",
     "rankingSchools": "Top Escolas"
   },
-
   "settings": {
     "title": "Configurações",
+    "brandEyebrow": "The Big Leader",
     "sections": {
       "profile": "Perfil",
       "account": "Conta",
       "portfolio": "Portfólio",
       "notifications": "Notificações",
       "security": "Segurança",
-      "danger": "Zona de perigo"
+      "danger": "Zona de perigo",
+      "appearance": "Aparência"
     },
     "profile": {
       "displayName": "Nome de exibição",
@@ -1342,9 +2143,141 @@
       "deleteConfirmPlaceholder": "Digite EXCLUIR para confirmar",
       "deleteConfirmWord": "EXCLUIR",
       "deleteBtn": "Excluir minha conta definitivamente"
+    },
+    "theme": {
+      "light": {
+        "label": "Claro",
+        "desc": "Interface luminosa"
+      },
+      "dark": {
+        "label": "Escuro",
+        "desc": "Modo noturno"
+      },
+      "auto": {
+        "label": "Automático",
+        "desc": "Segue o sistema"
+      }
+    },
+    "toasts": {
+      "profileUpdated": "Perfil atualizado com sucesso",
+      "profileError": "Erro ao salvar o perfil",
+      "emailError": "Erro ao enviar o e-mail",
+      "resetSent": "E-mail de redefinição enviado",
+      "prefsError": "Erro ao salvar preferências",
+      "prefsSaved": "Preferências salvas",
+      "saveError": "Erro ao salvar",
+      "deleteAccountError": "Erro ao excluir a conta. Entre em contato com o suporte."
+    },
+    "pwValidation": {
+      "tooShort": "A nova senha deve ter pelo menos 8 caracteres.",
+      "mismatch": "As senhas não coincidem.",
+      "wrongCurrent": "A senha atual está incorreta.",
+      "genericError": "Erro ao alterar a senha. Tente novamente."
+    },
+    "profileCard": {
+      "title": "Informações pessoais",
+      "subtitle": "Seu perfil visível para coordenadores e colegas.",
+      "coordinatorSubtitle": "Seu perfil visível na plataforma.",
+      "newPhotoSelected": "Nova foto selecionada",
+      "profilePhoto": "Foto de perfil",
+      "photoUploadHint": "A foto será enviada ao salvar o perfil.",
+      "cancelPhoto": "× Cancelar",
+      "uploadHint": "Clique para enviar uma imagem.",
+      "uploadFormats": "JPG, PNG ou WEBP · máx. 2MB",
+      "displayNameLabel": "Nome de exibição",
+      "displayNamePlaceholder": "Seu nome",
+      "bioPlaceholder": "Conte um pouco sobre você...",
+      "institutionLabel": "Instituição",
+      "roleLabel": "Função",
+      "saveBtn": "Salvar alterações",
+      "savingBtn": "Salvando…"
+    },
+    "badgesCard": {
+      "title": "Insígnias",
+      "subtitle": "Reconhecimentos obtidos no programa."
+    },
+    "appearanceCard": {
+      "title": "Aparência",
+      "subtitle": "Escolha a aparência da interface da Big Family."
+    },
+    "accountSection": {
+      "emailCardTitle": "E-mail",
+      "emailCardSub": "Seu endereço de e-mail vinculado à conta.",
+      "emailLabel": "E-mail",
+      "changePwTitle": "Alterar senha",
+      "changePwSub": "Atualize sua senha de acesso.",
+      "pwUpdated": "✓ Senha atualizada com sucesso.",
+      "currentPwLabel": "Senha atual",
+      "newPwLabel": "Nova senha",
+      "confirmPwLabel": "Confirmar nova senha",
+      "pwPlaceholder": "••••••••",
+      "newPwPlaceholder": "Mínimo de 8 caracteres",
+      "confirmPwPlaceholder": "Repita a nova senha",
+      "changingBtn": "Alterando…",
+      "changeBtn": "Alterar senha",
+      "forgotPwTitle": "Esqueci minha senha",
+      "forgotPwSub": "Você receberá um e-mail com instruções para redefinir sua senha.",
+      "resetEmailSent": "✓ E-mail enviado. Verifique sua caixa de entrada.",
+      "sendResetBtn": "Enviar e-mail de redefinição",
+      "dangerZoneTitle": "Zona de perigo",
+      "dangerZoneSub": "Estas ações são permanentes e não podem ser desfeitas.",
+      "signOutAllTitle": "Sair de todos os dispositivos",
+      "signOutAllSub": "Isso encerrará a sessão em todos os dispositivos onde você está conectado.",
+      "signOutAllBtn": "Sair de todos os dispositivos",
+      "deleteAccountSub": "Todos os seus dados, projetos e progresso serão excluídos permanentemente.",
+      "deleteAccountBtn": "Excluir minha conta"
+    },
+    "notificationsCard": {
+      "title": "Notificações",
+      "subtitle": "Escolha como deseja receber atualizações do programa.",
+      "email": {
+        "label": "Notificações por e-mail",
+        "sub": "Atualizações sobre projetos e módulos"
+      },
+      "push": {
+        "label": "Notificações push",
+        "sub": "Alertas em tempo real no navegador"
+      },
+      "weekly": {
+        "label": "Resumo semanal",
+        "sub": "Um e-mail toda segunda-feira com seu progresso"
+      },
+      "saving": "Salvando…"
+    },
+    "portfolioCard": {
+      "title": "Meu Portfólio Público",
+      "subtitle": "Controle o que universidades e diretores veem ao visitar seu portfólio.",
+      "publicSub": "Ative sua página em big-family-nu.vercel.app/p/{username}",
+      "capstone": {
+        "label": "Mostrar projeto capstone",
+        "sub": "Inclui o título, a descrição e os resultados do seu projeto"
+      },
+      "greatVentureSub": "Inclui sua meta núcleo e mapa de liderança",
+      "xp": {
+        "label": "Mostrar estatísticas de XP",
+        "sub": "Pontos de impacto, módulos e dias no programa"
+      },
+      "linkCardTitle": "Link do seu portfólio",
+      "linkCardSub": "Compartilhe este link em suas candidaturas universitárias.",
+      "publicUrlLabel": "URL pública",
+      "copyBtn": "Copiar link",
+      "copiedBtn": "✓ Copiado!",
+      "viewPortfolioLink": "Ver meu portfólio ↗"
+    },
+    "deleteModal": {
+      "title": "Excluir sua conta?",
+      "bodyPart1": "Esta ação é ",
+      "bodyIrreversible": "irreversível",
+      "bodyPart2": ". Todos os seus dados, projetos, insígnias e progresso no programa serão excluídos.",
+      "bodyPart3Pre": "Digite ",
+      "bodyPart3Post": " para confirmar.",
+      "confirmWord": "ELIMINAR",
+      "placeholder": "ELIMINAR",
+      "cancelBtn": "Cancelar",
+      "deleteBtn": "Excluir conta",
+      "deletingBtn": "Excluindo…"
     }
   },
-
   "diploma": {
     "loading": "Preparando seu diploma...",
     "confetti": "Parabéns!",
@@ -1352,17 +2285,16 @@
     "downloadBtn": "Baixar PDF",
     "verifyBtn": "Verificar autenticidade"
   },
-
   "errors": {
-    "404": {
-      "title": "Página não encontrada",
-      "body": "A página que você está procurando não existe ou foi movida.",
-      "btn": "Voltar ao início"
-    },
     "401": {
       "title": "Acesso negado",
       "body": "Você não tem permissão para ver esta página.",
       "btn": "Entrar"
+    },
+    "404": {
+      "title": "Página não encontrada",
+      "body": "A página que você está procurando não existe ou foi movida.",
+      "btn": "Voltar ao início"
     },
     "500": {
       "title": "Erro do servidor",
@@ -1375,14 +2307,12 @@
       "btn": "Tentar novamente"
     }
   },
-
   "roles": {
     "student": "Estudante",
     "coordinator": "Coordenador",
     "expositor": "Expositor",
     "admin": "Administrador"
   },
-
   "sidebar": {
     "newProject": "+ Novo projeto",
     "newModule": "+ Novo módulo",
@@ -1434,7 +2364,6 @@
     "logout": "Sair",
     "openMenu": "Abrir menu"
   },
-
   "submit": {
     "title": "Envie seu Projeto de Liderança",
     "subtitle": "Preencha o formulário com seu projeto e envie ao seu coordenador",
@@ -1524,7 +2453,6 @@
       "logoutBtn": "Sair"
     }
   },
-
   "quiz": {
     "tabSwitchWarning": "Troca de aba detectada — mantenha o foco no quiz",
     "reflectionPlaceholder": "Escreva sua reflexão aqui…",
@@ -1533,7 +2461,6 @@
     "verdadero": "✓ Verdadeiro",
     "falso": "✗ Falso"
   },
-
   "modulePersonalization": {
     "forProfile": "PARA O SEU PERFIL",
     "reflectionsTitle": "REFLEXÕES PERSONALIZADAS",
@@ -1545,9 +2472,13 @@
     "selfEvalDone": "✓ Autoavaliação concluída",
     "selfEvalBtn": "Completar autoavaliação",
     "saving": "Salvando…",
-    "scaleLabels": ["1 · Início", "2 · Desenvolvimento", "3 · Proficiência", "4 · Maestria"]
+    "scaleLabels": [
+      "1 · Início",
+      "2 · Desenvolvimento",
+      "3 · Proficiência",
+      "4 · Maestria"
+    ]
   },
-
   "projectEditor": {
     "backToProjects": "Meus projetos",
     "lockedBanner": "Este projeto está em revisão. Você não pode editá-lo até receber uma resposta do seu coordenador.",
@@ -1651,9 +2582,37 @@
       "dificil": "O que foi mais difícil?"
     },
     "photoCount": "{count}/10 fotos · JPG, PNG, WEBP",
-    "leaderSuffix": "Leader"
+    "leaderSuffix": "Leader",
+    "toolbar": {
+      "bold": "Negrito (**texto**)",
+      "italic": "Itálico (*texto*)",
+      "underline": "Sublinhado (<u>texto</u>)",
+      "strikethrough": "Tachado (~~texto~~)",
+      "highlight": "Realçado (==texto==)",
+      "quote": "Citação (> texto)",
+      "heading": "Título (## Título)",
+      "bulletList": "Lista de pontos (- item)",
+      "numberedList": "Lista numerada (1. item)",
+      "divider": "Separador (---)",
+      "link": "Link ([texto](url))",
+      "undo": "Desfazer",
+      "redo": "Refazer",
+      "clearFmt": "Limpar formatação (selecione o texto primeiro)",
+      "linkPrompt": "URL do link:"
+    },
+    "wrapText": {
+      "text": "texto",
+      "quote": "citação",
+      "heading": "Título",
+      "item": "item"
+    },
+    "errConnection": "Erro de conexão",
+    "errSubmit": "Erro ao enviar o projeto",
+    "successSubmit": "Projeto enviado ao coordenador ✓",
+    "errPhotoUpload": "Erro ao enviar a foto",
+    "errPdfUpload": "Erro ao enviar o PDF",
+    "successPdfUpload": "PDF enviado ✓"
   },
-
   "newsEditor": {
     "backToNews": "Minhas notícias",
     "editorOnly": "Somente editor",
@@ -1705,7 +2664,6 @@
     "statPlaceholderLabel": "estudantes",
     "statPlaceholderDesc": "participaram do projeto"
   },
-
   "moduleEditor": {
     "backToModules": "Meus módulos",
     "lockedBanner": "Este módulo está em revisão. Você não pode editá-lo até receber uma resposta.",
@@ -1754,7 +2712,6 @@
     "typeTrueFalse": "V / F",
     "typeReflection": "Reflexão"
   },
-
   "projectCard": {
     "noTitle": "Sem título",
     "coordinatorComments": "Comentários do coordenador",
@@ -1782,7 +2739,6 @@
       "emprendimiento": "Empreendedorismo"
     }
   },
-
   "footer": {
     "tagline": "Formando líderes com propósito global e inovador",
     "location": "La Guajira, Colômbia",
@@ -1797,5 +2753,166 @@
       "terms": "Termos e condições"
     },
     "copyright": "© {year} The Big Family Program. Todos os direitos reservados."
+  },
+  "datos": {
+    "title": "Central de Dados",
+    "subtitle": "Análise completa do programa Big Family",
+    "updated": "Atualizado {time}",
+    "tabs": {
+      "resumen": "Resumo",
+      "constructor": "Construtor",
+      "insights": "IA Insights"
+    },
+    "kpis": {
+      "students": "Alunos",
+      "totalXp": "XP Total",
+      "avgXp": "XP Médio",
+      "modulesCompleted": "Módulos concluídos",
+      "badgesAwarded": "Selos concedidos",
+      "projectsSubmitted": "Projetos enviados",
+      "activeThisWeek": "Ativos esta semana",
+      "retention": "Retenção de 30 dias"
+    },
+    "status": {
+      "pending": "Enviados",
+      "approved": "Aprovados",
+      "rejected": "Rejeitados"
+    },
+    "charts": {
+      "avgXpBySchool": "XP médio por escola",
+      "projectsByStatus": "Projetos por status",
+      "weeklyGrowth": "Crescimento semanal (8 sem.)",
+      "weeklyActivity": "Atividade semanal geral",
+      "modulesBySchool": "Módulos por escola",
+      "avgXpSeries": "XP Méd.",
+      "newSeries": "Novos",
+      "actionsSeries": "Ações",
+      "modulesSeries": "Módulos",
+      "valueSeries": "Valor",
+      "avgSeries": "Média"
+    },
+    "table": {
+      "title": "Ranking de escolas",
+      "exportCsv": "Exportar CSV",
+      "school": "Escola",
+      "students": "Alunos",
+      "totalXp": "XP Total",
+      "avgXp": "XP Méd.",
+      "modules": "Módulos",
+      "projects": "Projetos",
+      "score": "Pontuação"
+    },
+    "csv": {
+      "school": "Escola",
+      "students": "Alunos",
+      "totalXp": "XP_Total",
+      "avgXp": "XP_Medio",
+      "modules": "Modulos",
+      "projects": "Projetos",
+      "approved": "Aprovados",
+      "score": "Pontuacao"
+    },
+    "constructor": {
+      "modeQuick": "Modo rápido",
+      "modeAdvanced": "Avançado",
+      "presetLabel": "Métrica predefinida",
+      "presets": {
+        "xpSchool": "XP por escola",
+        "studentsSchool": "Alunos por escola",
+        "modulesSchool": "Progresso dos módulos",
+        "projectsStatus": "Projetos por status",
+        "activityWeekly": "Atividade semanal",
+        "ranking": "Rankings comparativos"
+      },
+      "metricLabel": "Métrica (eixo Y)",
+      "metrics": {
+        "xpAvg": "XP Médio",
+        "xpTotal": "XP Total",
+        "students": "Número de alunos",
+        "modules": "Módulos concluídos",
+        "projects": "Projetos aprovados",
+        "badges": "Selos concedidos",
+        "activity": "Atividade (ações)"
+      },
+      "dimensionLabel": "Dimensão (eixo X)",
+      "dimensions": {
+        "school": "Por escola",
+        "week": "Por semana",
+        "status": "Por status"
+      },
+      "chartTypeLabel": "Tipo de gráfico",
+      "chartTypes": {
+        "bar": "Barras",
+        "line": "Linha",
+        "area": "Área",
+        "pie": "Pizza"
+      },
+      "showValues": "Mostrar valores",
+      "showAvgLine": "Linha de média",
+      "generate": "Gerar gráfico",
+      "generating": "Gerando…",
+      "myDashboards": "Meus painéis",
+      "load": "Carregar",
+      "emptyChart": "Configure e clique em \"Gerar gráfico\"",
+      "saveDashboard": "Salvar painel",
+      "exportPng": "Exportar PNG",
+      "dashboardNamePlaceholder": "Nome do painel"
+    },
+    "insights": {
+      "autoAnalysis": "Análise automática",
+      "regenerate": "Regenerar",
+      "analyzing": "Analisando…",
+      "waitingForData": "Aguardando dados para gerar a análise…",
+      "footnote": "Análise baseada em dados reais do Supabase · Gerado por Claude",
+      "askTitle": "Faça uma pergunta sobre seus dados",
+      "messagesCount": "{count}/20 mensagens",
+      "inputPlaceholder": "Faça uma pergunta sobre os dados…",
+      "limitReached": "Limite atingido",
+      "serverError": "Erro do servidor",
+      "unexpectedError": "Erro inesperado",
+      "unknownError": "desconhecido",
+      "errorPrefix": "Erro",
+      "autoPrompt": "Gere uma análise completa do programa com os dados fornecidos. Identifique os pontos fortes, os pontos fracos e 3 ações prioritárias concretas.",
+      "chips": {
+        "schoolAttention": "Qual escola precisa de mais atenção?",
+        "xpTrend": "Qual é a tendência de XP este mês?",
+        "leastCompletedModule": "Qual módulo tem menos conclusões?",
+        "mostDropout": "Onde a evasão é mais alta?",
+        "executiveSummary": "Resumo executivo do programa"
+      }
+    }
+  },
+  "diaLiderazgo": {
+    "navHome": "Início",
+    "navSubmitProject": "Enviar projeto →",
+    "titleLine1": "Dia da",
+    "titleLine2": "Liderança",
+    "subtitle": "8 escolas. 1 dia. Um projeto que transforma sua comunidade.",
+    "countdown": {
+      "days": "Dias",
+      "hours": "Horas",
+      "minutes": "Minutos",
+      "seconds": "Segundos"
+    },
+    "expiredMessage": "O evento começou! 🎉",
+    "heroCta": "Enviar meu projeto →",
+    "schoolsEyebrow": "Participantes",
+    "schoolsTitle": "Escolas participantes",
+    "copyCode": "Copiar código",
+    "stats": {
+      "schoolsLabel": "Escolas participantes",
+      "departmentLabel": "Departamento anfitrião",
+      "departmentValue": "Guajira",
+      "dateLabel": "Data do evento",
+      "dateValue": "Maio 2026"
+    },
+    "aboutEyebrow": "DIA DA LIDERANÇA · LA GUAJIRA",
+    "aboutTitle": "O que é o Dia da Liderança?",
+    "aboutText": "Um dia em que estudantes de La Guajira documentam e apresentam seus projetos de liderança comunitária. Cada projeto é avaliado pelos coordenadores do programa The Big Leader da Big Family.",
+    "aboutCta": "Participar agora →",
+    "finalTitle": "Pronto para enviar seu projeto?",
+    "finalSubtitle": "Termine seu projeto e envie até 16 de maio",
+    "finalCta": "Começar agora →",
+    "footerTagline": "The Big Leader · Dia da Liderança 2026 · La Guajira"
   }
 }

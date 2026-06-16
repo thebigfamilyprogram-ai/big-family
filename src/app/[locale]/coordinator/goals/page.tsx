@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m } from 'framer-motion'
 
@@ -32,6 +33,9 @@ function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?
 
 export default function CoordinatorGoalsPage() {
   const router      = useRouter()
+  const t           = useTranslations('coordinator.goals')
+  const tDash       = useTranslations('coordinator.dashboard')
+  const tGoals      = useTranslations('dashboard.goals')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,    setLoading]    = useState(true)
@@ -125,12 +129,12 @@ export default function CoordinatorGoalsPage() {
       `}</style>
 
       <m.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 28 }}>
-        <h1 className="page-h">Metas de estudiantes</h1>
-        <p className="page-sub">{schoolName} — Seguimiento de objetivos personales y del programa</p>
+        <h1 className="page-h">{t('pageTitle')}</h1>
+        <p className="page-sub">{t('subtitle', { school: schoolName })}</p>
 
         <div className="grid">
           <div className="panel">
-            <div className="panel__title">Estudiantes</div>
+            <div className="panel__title">{t('studentsPanelTitle')}</div>
             {loading ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[1,2,3,4].map(i => <Sk key={i} h={40} r={8} />)}
@@ -140,14 +144,14 @@ export default function CoordinatorGoalsPage() {
                 <table className="tbl">
                   <thead>
                     <tr>
-                      <th>Nombre</th>
-                      <th>Activas</th>
-                      <th>Completadas</th>
+                      <th>{tDash('tableName')}</th>
+                      <th>{t('colActive')}</th>
+                      <th>{t('colCompleted')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {students.length === 0 ? (
-                      <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--mute)', padding: '24px 0' }}>Sin estudiantes</td></tr>
+                      <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--mute)', padding: '24px 0' }}>{t('noStudents')}</td></tr>
                     ) : students.map(s => (
                       <tr key={s.id} className={selected?.id === s.id ? 'sel' : ''} onClick={() => handleSelectStudent(s)}>
                         <td style={{ fontWeight: 500 }}>{s.display_name}</td>
@@ -171,28 +175,28 @@ export default function CoordinatorGoalsPage() {
 
           <div className="panel">
             <div className="panel__title">
-              {selected ? `${selected.display_name}` : 'Selecciona un estudiante'}
+              {selected ? `${selected.display_name}` : t('selectStudent')}
             </div>
             {!selected && (
-              <p style={{ fontSize: 13, color: 'var(--mute)' }}>Haz clic en un estudiante para ver sus metas.</p>
+              <p style={{ fontSize: 13, color: 'var(--mute)' }}>{t('selectStudentHint')}</p>
             )}
             {loadDetail && <Sk h={40} r={8} />}
             {selected && !loadDetail && detail.length === 0 && (
-              <p style={{ fontSize: 13, color: 'var(--mute)' }}>No tiene metas registradas.</p>
+              <p style={{ fontSize: 13, color: 'var(--mute)' }}>{t('noGoalsRegistered')}</p>
             )}
             {selected && !loadDetail && detail.map(g => (
               <div key={g.id} className="goal-row">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <span style={{ fontWeight: 600, fontSize: 13.5, color: g.status === 'completed' ? 'var(--mute)' : 'var(--ink)', textDecoration: g.status === 'completed' ? 'line-through' : 'none' }}>{g.title}</span>
                   <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: g.status === 'completed' ? '#D1FAE5' : g.status === 'expired' ? '#FEE2E2' : 'rgba(192,57,43,.1)', color: g.status === 'completed' ? '#065F46' : g.status === 'expired' ? '#991B1B' : '#C0392B' }}>
-                    {g.status === 'active' ? 'Activa' : g.status === 'completed' ? 'Completada' : 'Expirada'}
+                    {g.status === 'active' ? t('statusActive') : g.status === 'completed' ? tGoals('completedBadge') : t('statusExpired')}
                   </span>
                   <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: 'var(--line)', color: 'var(--mute)' }}>
-                    {g.type === 'program' ? 'Programa' : 'Personal'}
+                    {g.type === 'program' ? tGoals('typeProgram') : tGoals('typePersonal')}
                   </span>
                 </div>
                 <div style={{ display: 'flex', gap: 12, marginTop: 5, fontSize: 11.5, color: 'var(--mute)' }}>
-                  {g.due_date && <span>Vence: {new Date(g.due_date).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}</span>}
+                  {g.due_date && <span>{tGoals('dueDate', { date: new Date(g.due_date).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) })}</span>}
                   <span style={{ color: '#b25a00', fontWeight: 600 }}>+{g.xp_reward} XP</span>
                   {g.completed_at && <span style={{ color: '#065F46' }}>✓ {new Date(g.completed_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })}</span>}
                 </div>

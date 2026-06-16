@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { m, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { showToast, ToastContainer } from '@/components/Toast'
@@ -64,6 +65,9 @@ function fireConfetti() {
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function CoordinatorTimelinePage() {
   const router      = useRouter()
+  const t           = useTranslations('coordinator.timeline')
+  const tCommon     = useTranslations('common')
+  const tCalendar   = useTranslations('coordinator.calendar')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,     setLoading]     = useState(true)
@@ -129,7 +133,7 @@ export default function CoordinatorTimelinePage() {
   // ── Save ──────────────────────────────────────────────────────────────────
   async function handleSave() {
     if (!form.title.trim() || !form.event_date) {
-      showToast('error', 'Título y fecha son obligatorios')
+      showToast('error', t('titleAndDateRequired'))
       return
     }
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -147,9 +151,9 @@ export default function CoordinatorTimelinePage() {
     if (editId) {
       const { error } = await supabase.from('timeline_events').update(payload).eq('id', editId)
       setSaving(false)
-      if (error) { showToast('error', 'Error al guardar'); return }
+      if (error) { showToast('error', t('saveError')); return }
       setEvents(prev => prev.map(e => e.id === editId ? { ...e, ...payload } : e))
-      showToast('success', 'Hito actualizado ✓')
+      showToast('success', t('eventUpdated'))
       setFlashId(editId)
     } else {
       const { data, error } = await supabase
@@ -158,9 +162,9 @@ export default function CoordinatorTimelinePage() {
         .select('id, title, description, event_date, image_url, created_by, created_at')
         .maybeSingle()
       setSaving(false)
-      if (error || !data) { showToast('error', 'Error al guardar'); return }
+      if (error || !data) { showToast('error', t('saveError')); return }
       setEvents(prev => [...prev, data].sort((a, b) => a.event_date.localeCompare(b.event_date)))
-      showToast('success', '¡Hito agregado!')
+      showToast('success', t('eventAdded'))
       setFlashId(data.id)
       fireConfetti()
     }
@@ -177,16 +181,16 @@ export default function CoordinatorTimelinePage() {
     setDeletingId(id)
     const { error } = await supabase.from('timeline_events').delete().eq('id', id)
     setDeletingId(null)
-    if (error) { showToast('error', 'Error al eliminar'); return }
+    if (error) { showToast('error', t('deleteError')); return }
     setEvents(prev => prev.filter(e => e.id !== id))
-    showToast('info', 'Hito eliminado')
+    showToast('info', t('eventDeleted'))
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--bg,#F5F3EF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Satoshi,sans-serif', color: 'var(--mute)', fontSize: 14 }}>
-        Verificando acceso…
+        {t('checkingAccess')}
       </div>
     )
   }
@@ -239,10 +243,10 @@ export default function CoordinatorTimelinePage() {
         {/* Header */}
         <div className="ct-header">
           <div>
-            <h1>Historia del Programa</h1>
-            <p>Gestiona los hitos de la línea de tiempo global · <a href="/timeline" target="_blank" rel="noopener noreferrer" style={{ color: '#C0392B', textDecoration: 'none' }}>Ver pública →</a></p>
+            <h1>{t('pageTitle')}</h1>
+            <p>{t('pageSubtitle')}<a href="/timeline" target="_blank" rel="noopener noreferrer" style={{ color: '#C0392B', textDecoration: 'none' }}>{t('viewPublicLink')}</a></p>
           </div>
-          <button className="ct-btn ct-btn--primary" onClick={openAdd}>+ Agregar hito</button>
+          <button className="ct-btn ct-btn--primary" onClick={openAdd}>{t('addBtn')}</button>
         </div>
 
         {/* Add/Edit form — AnimatePresence slide down */}
@@ -256,38 +260,38 @@ export default function CoordinatorTimelinePage() {
               style={{ overflow: 'hidden' }}
             >
               <div className="ct-form">
-                <h2>{editId ? 'Editar hito' : 'Nuevo hito'}</h2>
+                <h2>{editId ? t('editModalTitle') : t('newModalTitle')}</h2>
 
                 <div className="ct-field">
-                  <label className="ct-label">Título *</label>
-                  <input className="ct-input" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Nombre del hito" autoFocus />
+                  <label className="ct-label">{tCalendar('formTitleLabel')}</label>
+                  <input className="ct-input" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder={t('eventNamePlaceholder')} autoFocus />
                 </div>
 
                 <div className="ct-field">
-                  <label className="ct-label">Descripción</label>
-                  <textarea className="ct-input ct-textarea" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Descripción breve…" />
+                  <label className="ct-label">{tCalendar('descriptionLabel')}</label>
+                  <textarea className="ct-input ct-textarea" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder={t('descriptionPlaceholder')} />
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                   <div className="ct-field">
-                    <label className="ct-label">Fecha *</label>
+                    <label className="ct-label">{t('dateLabel')}</label>
                     <input className="ct-input" type="date" value={form.event_date} onChange={e => setForm(f => ({ ...f, event_date: e.target.value }))} />
                   </div>
                   <div className="ct-field">
-                    <label className="ct-label">URL de imagen (opcional)</label>
+                    <label className="ct-label">{t('imageUrlLabel')}</label>
                     <input className="ct-input" value={form.image_url} onChange={e => setForm(f => ({ ...f, image_url: e.target.value }))} placeholder="https://…" />
                   </div>
                 </div>
 
                 <div className="ct-form-row">
-                  <button className="ct-btn ct-btn--ghost" onClick={closeForm} disabled={saving}>Cancelar</button>
+                  <button className="ct-btn ct-btn--ghost" onClick={closeForm} disabled={saving}>{tCommon('cancel')}</button>
                   <button
                     className="ct-btn ct-btn--primary"
                     onClick={handleSave}
                     disabled={saving || !form.title.trim() || !form.event_date}
                     style={{ minWidth: 120, opacity: saving ? .6 : 1 }}
                   >
-                    {saving ? 'Guardando…' : (editId ? 'Guardar cambios' : 'Guardar hito')}
+                    {saving ? tCommon('saving') : (editId ? tCalendar('saveChangesBtn') : t('saveEventBtn'))}
                   </button>
                 </div>
               </div>
@@ -298,7 +302,7 @@ export default function CoordinatorTimelinePage() {
         {/* Events list */}
         {events.length === 0 ? (
           <div className="ct-empty">
-            No hay hitos aún. ¡Agrega el primero!
+            {t('noEventsYet')}
           </div>
         ) : (
           <div className="ct-list">
@@ -333,13 +337,13 @@ export default function CoordinatorTimelinePage() {
                       {ev.description && <div className="ct-event-desc">{ev.description}</div>}
                     </div>
                     <div className="ct-actions">
-                      <button className="ct-btn ct-btn--edit" onClick={() => openEdit(ev)}>Editar</button>
+                      <button className="ct-btn ct-btn--edit" onClick={() => openEdit(ev)}>{tCommon('edit')}</button>
                       <button
                         className="ct-btn ct-btn--danger"
                         onClick={() => handleDelete(ev.id)}
                         disabled={deletingId === ev.id}
                       >
-                        {deletingId === ev.id ? '…' : 'Eliminar'}
+                        {deletingId === ev.id ? '…' : tCommon('delete')}
                       </button>
                     </div>
                   </m.div>

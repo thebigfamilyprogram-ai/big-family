@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m, useReducedMotion } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
@@ -23,7 +24,8 @@ function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?
 }
 
 export default function SuccessStoriesPage() {
-  const router      = useRouter()
+  const router = useRouter()
+  const t      = useTranslations('successStories')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const pref        = useReducedMotion()
 
@@ -46,7 +48,7 @@ export default function SuccessStoriesPage() {
       ])
 
       const profMap: Record<string, string> = {}
-      profiles?.forEach((p: { id: string; display_name: string | null }) => { profMap[p.id] = p.display_name ?? 'Estudiante' })
+      profiles?.forEach((p: { id: string; display_name: string | null }) => { profMap[p.id] = p.display_name ?? t('student') })
       const schoolMap: Record<string, string> = {}
       schools?.forEach((s: { id: string; name: string }) => { schoolMap[s.id] = s.name })
 
@@ -93,15 +95,15 @@ export default function SuccessStoriesPage() {
           Big Family
         </a>
         <div className="nav__right">
-          <button className="btn-sm" onClick={() => router.push('/dashboard')}>Mi Dashboard</button>
+          <button className="btn-sm" onClick={() => router.push('/dashboard')}>{t('myDashboard')}</button>
         </div>
       </nav>
 
       <div className="page">
         <div className="hero">
-          <div className="hero__eyebrow">Comunidad Big Family</div>
-          <h1 className="hero__h1">Historias de Éxito</h1>
-          <p className="hero__sub">Estudiantes que transformaron su comunidad. Historias reales de liderazgo y cambio.</p>
+          <div className="hero__eyebrow">{t('eyebrow')}</div>
+          <h1 className="hero__h1">{t('title')}</h1>
+          <p className="hero__sub">{t('subtitle')}</p>
         </div>
 
         {loading ? (
@@ -120,7 +122,7 @@ export default function SuccessStoriesPage() {
           </div>
         ) : stories.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--mute)', fontSize: 14 }}>
-            No hay historias publicadas todavía. ¡Vuelve pronto!
+            {t('noStories')}
           </div>
         ) : (
           <m.div

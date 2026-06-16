@@ -4,12 +4,6 @@ import { memo } from 'react'
 import { m, useReducedMotion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 
-const CREDENTIALS = [
-  'M.S. Multidisciplinary Studies — University at Buffalo',
-  'Estudios en Liderazgo, Creatividad e Innovación',
-  'MIT · Javeriana · Uninorte · Unisabana',
-]
-
 const SCHOOL_BADGES = ['University at Buffalo', 'MIT', 'Javeriana University', 'Uninorte', 'Unisabana']
 
 function FounderSection() {
@@ -87,8 +81,8 @@ function FounderSection() {
           </div>
 
           <div className="sf-stat">
-            <div className="sf-stat__num">10+ años</div>
-            <div className="sf-stat__lbl">formando líderes en La Guajira</div>
+            <div className="sf-stat__num">{t('landing.fundador.statNumber')}</div>
+            <div className="sf-stat__lbl">{t('landing.fundador.statLabel')}</div>
           </div>
         </m.div>
 

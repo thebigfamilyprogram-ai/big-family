@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useRef, useState } from 'react'
 import { m, useInView, useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { fadeUp } from '@/lib/animations'
 import { createClient } from '@/lib/supabase'
 
@@ -31,12 +32,6 @@ const SCHOOL_NAMES = [
 function getInitials(name: string): string {
   return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase()
 }
-
-const STATS = [
-  { value: 8,           display: null,        label: 'Colegios participantes', countUp: true  },
-  { value: null,        display: 'Guajira',   label: 'Departamento sede',      countUp: false },
-  { value: null,        display: 'Mayo 2026', label: 'Fecha del evento',       countUp: false },
-] as const
 
 function useCountdown(target: Date) {
   const calc = () => {
@@ -86,6 +81,8 @@ function PinIcon() {
 }
 
 function CodeBadge({ code }: { code: string }) {
+  const t  = useTranslations('diaLiderazgo')
+  const tc = useTranslations('common')
   const [copied, setCopied] = useState(false)
 
   function handleCopy() {
@@ -98,7 +95,7 @@ function CodeBadge({ code }: { code: string }) {
   return (
     <button
       onClick={handleCopy}
-      title="Copiar código"
+      title={t('copyCode')}
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
         fontFamily: 'var(--font-mono),monospace', fontSize: 11,
@@ -113,7 +110,7 @@ function CodeBadge({ code }: { code: string }) {
           <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
             <path d="M2 6l3 3 5-5" stroke="#065F46" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Copiado!
+          {tc('copied')}
         </>
       ) : (
         <>
@@ -145,10 +142,18 @@ function Logo({ light = false }: { light?: boolean }) {
 }
 
 export default function DiaLiderazgoPage() {
-  const cd      = useCountdown(TARGET_DATE)
-  const pref    = useReducedMotion()
+  const t   = useTranslations('diaLiderazgo')
+  const tf  = useTranslations('footer')
+  const cd  = useCountdown(TARGET_DATE)
+  const pref = useReducedMotion()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const [mounted, setMounted] = useState(false)
+
+  const STATS = [
+    { value: 8,    display: null,                       label: t('stats.schoolsLabel'),    countUp: true  },
+    { value: null, display: t('stats.departmentValue'), label: t('stats.departmentLabel'), countUp: false },
+    { value: null, display: t('stats.dateValue'),       label: t('stats.dateLabel'),       countUp: false },
+  ]
 
   // Initialise immediately; logo_url + code fill in from DB
   const [schools, setSchools] = useState<SchoolData[]>(
@@ -289,9 +294,9 @@ export default function DiaLiderazgoPage() {
       <nav className="dl-nav">
         <Logo light />
         <div className="dl-nav-links">
-          <a href="/">Inicio</a>
-          <a href="/news">Noticias</a>
-          <a href="/submit" style={{ color: '#C0392B', fontWeight: 700 }}>Subir proyecto →</a>
+          <a href="/">{t('navHome')}</a>
+          <a href="/news">{tf('links.noticias')}</a>
+          <a href="/submit" style={{ color: '#C0392B', fontWeight: 700 }}>{t('navSubmitProject')}</a>
         </div>
       </nav>
 
@@ -307,40 +312,40 @@ export default function DiaLiderazgoPage() {
           </m.div>
 
           <m.h1 className="dl-title" variants={fadeUp}>
-            Día de<br /><em>Liderazgo</em>
+            {t('titleLine1')}<br /><em>{t('titleLine2')}</em>
           </m.h1>
 
           <m.p className="dl-subtitle" variants={fadeUp}>
-            8 colegios. 1 día. Un proyecto que cambia tu comunidad.
+            {t('subtitle')}
           </m.p>
 
           <m.div variants={fadeUp} style={{ display: 'flex', justifyContent: 'center', marginBottom: 48 }}>
             {cd.expired ? (
-              <p className="dl-expired-msg">¡El evento ha comenzado! 🎉</p>
+              <p className="dl-expired-msg">{t('expiredMessage')}</p>
             ) : (
               <div className="dl-countdown">
                 <div className="dl-countdown-unit">
                   <div className="dl-countdown-num">{String(cd.days).padStart(2, '0')}</div>
-                  <div className="dl-countdown-label">Días</div>
+                  <div className="dl-countdown-label">{t('countdown.days')}</div>
                 </div>
                 <div className="dl-countdown-unit">
                   <div className="dl-countdown-num">{String(cd.hours).padStart(2, '0')}</div>
-                  <div className="dl-countdown-label">Horas</div>
+                  <div className="dl-countdown-label">{t('countdown.hours')}</div>
                 </div>
                 <div className="dl-countdown-unit">
                   <div className="dl-countdown-num">{String(cd.minutes).padStart(2, '0')}</div>
-                  <div className="dl-countdown-label">Minutos</div>
+                  <div className="dl-countdown-label">{t('countdown.minutes')}</div>
                 </div>
                 <div className="dl-countdown-unit" style={{ borderRight: 'none' }}>
                   <div className="dl-countdown-num">{String(cd.seconds).padStart(2, '0')}</div>
-                  <div className="dl-countdown-label">Segundos</div>
+                  <div className="dl-countdown-label">{t('countdown.seconds')}</div>
                 </div>
               </div>
             )}
           </m.div>
 
           <m.div variants={fadeUp}>
-            <Link href="/submit" className="dl-cta-primary">Subir mi proyecto →</Link>
+            <Link href="/submit" className="dl-cta-primary">{t('heroCta')}</Link>
           </m.div>
         </m.div>
       </section>
@@ -355,8 +360,8 @@ export default function DiaLiderazgoPage() {
             viewport={{ once: true, margin: '-80px' }}
             variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
           >
-            <m.div className="dl-section-eyebrow" variants={fadeUp}>Participantes</m.div>
-            <m.h2 className="dl-section-title" variants={fadeUp}>Colegios participantes</m.h2>
+            <m.div className="dl-section-eyebrow" variants={fadeUp}>{t('schoolsEyebrow')}</m.div>
+            <m.h2 className="dl-section-title" variants={fadeUp}>{t('schoolsTitle')}</m.h2>
           </m.div>
 
           <m.div
@@ -402,16 +407,16 @@ export default function DiaLiderazgoPage() {
               variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
             >
               <m.div className="dl-about-eyebrow" variants={fadeUp}>
-                DÍA DE LIDERAZGO · LA GUAJIRA
+                {t('aboutEyebrow')}
               </m.div>
               <m.h2 className="dl-about-title" variants={fadeUp}>
-                ¿Qué es el Día de Liderazgo?
+                {t('aboutTitle')}
               </m.h2>
               <m.p className="dl-about-text" variants={fadeUp}>
-                Una jornada donde estudiantes de La Guajira documentan y presentan sus proyectos de liderazgo comunitario. Cada proyecto es evaluado por coordinadores del programa The Big Leader de Big Family.
+                {t('aboutText')}
               </m.p>
               <m.div variants={fadeUp}>
-                <Link href="/submit" className="dl-cta-primary">Participar ahora →</Link>
+                <Link href="/submit" className="dl-cta-primary">{t('aboutCta')}</Link>
               </m.div>
             </m.div>
 
@@ -449,13 +454,13 @@ export default function DiaLiderazgoPage() {
           style={{ position: 'relative', zIndex: 2 }}
         >
           <m.h2 className="dl-final-title" variants={fadeUp}>
-            ¿Listo para subir tu proyecto?
+            {t('finalTitle')}
           </m.h2>
           <m.p className="dl-final-sub" variants={fadeUp}>
-            Completa tu proyecto y envíalo antes del 16 de mayo
+            {t('finalSubtitle')}
           </m.p>
           <m.div variants={fadeUp}>
-            <Link href="/submit" className="dl-cta-primary">Comenzar ahora →</Link>
+            <Link href="/submit" className="dl-cta-primary">{t('finalCta')}</Link>
           </m.div>
         </m.div>
       </section>
@@ -463,7 +468,7 @@ export default function DiaLiderazgoPage() {
       {/* ── Footer ── */}
       <footer className="dl-footer">
         <Logo light />
-        <span className="dl-footer-text">The Big Leader · Día de Liderazgo 2026 · La Guajira</span>
+        <span className="dl-footer-text">{t('footerTagline')}</span>
       </footer>
     </>
   )

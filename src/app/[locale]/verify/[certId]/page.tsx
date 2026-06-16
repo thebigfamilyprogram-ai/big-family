@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { m } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE } from '@/lib/mockData'
@@ -61,6 +62,7 @@ function Sk({ w = '100%', h = 16, r = 6 }: { w?: string | number; h?: number; r?
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function VerifyPage() {
+  const t       = useTranslations('verify')
   const params  = useParams()
   const rawId   = params?.certId
   const certId  = typeof rawId === 'string' ? rawId : Array.isArray(rawId) ? (rawId[0] ?? '') : ''
@@ -147,7 +149,7 @@ export default function VerifyPage() {
       } catch { /* non-fatal */ }
 
       setVerified({
-        studentName:      profileTyped?.display_name ?? 'Estudiante',
+        studentName:      profileTyped?.display_name ?? t('fields.student'),
         schoolName,
         resultado:        eval_.resultado as 'certificado' | 'mencion_honor',
         certDate:         eval_.created_at,
@@ -241,14 +243,11 @@ export default function VerifyPage() {
               /* Invalid certificate */
               <>
                 <m.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={sp(0.2)}>
-                  <span className="vfy-pill fail">✗ CERTIFICADO NO VÁLIDO</span>
+                  <span className="vfy-pill fail">{t('invalid.certNotValidBadge')}</span>
                 </m.div>
-                <h1 className="vfy-title">No pudimos verificar este certificado.</h1>
-                <p className="vfy-sub">
-                  El código puede ser incorrecto o el certificado puede haber sido revocado.
-                  Si crees que es un error, contacta al programa directamente.
-                </p>
-                <a href="/" className="vfy-cta">Ir al sitio oficial →</a>
+                <h1 className="vfy-title">{t('invalid.couldNotVerify')}</h1>
+                <p className="vfy-sub">{t('invalid.hint')}</p>
+                <a href="/" className="vfy-cta">{t('invalid.toSite')}</a>
               </>
             ) : verified ? (
               /* Valid certificate */
@@ -258,14 +257,11 @@ export default function VerifyPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={sp(0.2)}
                 >
-                  <span className="vfy-pill ok">✓ CERTIFICADO VERIFICADO</span>
+                  <span className="vfy-pill ok">{t('valid.certVerifiedBadge')}</span>
                 </m.div>
 
-                <h1 className="vfy-title">Este certificado es auténtico.</h1>
-                <p className="vfy-sub">
-                  The Big Family Program confirma que el siguiente estudiante completó
-                  exitosamente la certificación The Big Leader.
-                </p>
+                <h1 className="vfy-title">{t('valid.authentic')}</h1>
+                <p className="vfy-sub">{t('valid.confirms')}</p>
 
                 <div className="vfy-sep" />
 
@@ -282,7 +278,7 @@ export default function VerifyPage() {
                   <p className="vfy-meta">{verified.schoolName}</p>
                   <p className="vfy-meta" style={{ marginBottom: 12 }}>
                     <span className={`vfy-badge ${verified.resultado === 'mencion_honor' ? 'honor' : 'cert'}`}>
-                      {verified.resultado === 'mencion_honor' ? 'Mención de Honor' : 'Certificado'}
+                      {verified.resultado === 'mencion_honor' ? t('valid.honorsTitle') : t('valid.certTitle')}
                     </span>
                     {' '}· {formatDate(verified.certDate)}
                   </p>
@@ -290,12 +286,12 @@ export default function VerifyPage() {
                   {/* Stats */}
                   <div className="vfy-stats">
                     <div className="vfy-stat">
-                      <div className="vfy-stat__num">{verified.totalXP.toLocaleString('es-CO')}</div>
-                      <div className="vfy-stat__lbl">Puntos de impacto</div>
+                      <div className="vfy-stat__num">{verified.totalXP.toLocaleString()}</div>
+                      <div className="vfy-stat__lbl">{t('stats.xp')}</div>
                     </div>
                     <div className="vfy-stat">
                       <div className="vfy-stat__num">{verified.modulesCompleted}</div>
-                      <div className="vfy-stat__lbl">Módulos completados</div>
+                      <div className="vfy-stat__lbl">{t('stats.modules')}</div>
                     </div>
                   </div>
                 </m.div>
@@ -309,7 +305,7 @@ export default function VerifyPage() {
                   transition={sp(0.4)}
                 >
                   <p style={{ textAlign: 'center', fontFamily: '"Satoshi",sans-serif', fontSize: 10, letterSpacing: '.24em', textTransform: 'uppercase', color: 'var(--mute,#6B6B6B)', marginBottom: 12 }}>
-                    PROGRAMA RECONOCIDO POR
+                    {t('accreditedBy')}
                   </p>
                   <div className="vfy-logos">
                     <img src="/cognia.png"                               alt="Cognia"                   className="vfy-logo" />
@@ -329,13 +325,10 @@ export default function VerifyPage() {
               animate={{ opacity: 1 }}
               transition={sp(0.5)}
             >
-              <p className="vfy-footer-date">Verificado el {verifiedAt}</p>
+              <p className="vfy-footer-date">{t('verifiedAt', { date: verifiedAt })}</p>
               <p className="vfy-footer-certid">{verified.certId}</p>
-              <a href="/" className="vfy-cta">Ver programa completo →</a>
-              <p className="vfy-legal">
-                Este documento fue generado automáticamente por The Big Family Platform.
-                Para consultas: <a href="mailto:luis.barrios@colegioalbania.edu.co" style={{ color: 'inherit' }}>luis.barrios@colegioalbania.edu.co</a>
-              </p>
+              <a href="/" className="vfy-cta">{t('viewProgram')}</a>
+              <p className="vfy-legal">{t('legalNote')}</p>
             </m.div>
           )}
 

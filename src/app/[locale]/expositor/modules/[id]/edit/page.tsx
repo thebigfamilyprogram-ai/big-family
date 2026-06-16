@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import ExpositorSidebar from '@/components/ExpositorSidebar'
 import ModuleEditor, { type ModuleData, type QuestionData } from '@/components/ModuleEditor'
@@ -18,6 +19,8 @@ export default function EditModulePage() {
   const router      = useRouter()
   const params      = useParams()
   const moduleId    = params.id as string
+  const t           = useTranslations('expositor.editModulePage')
+  const tRoles      = useTranslations('roles')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,     setLoading]     = useState(true)
@@ -41,7 +44,7 @@ export default function EditModulePage() {
       if (cancelled) return
       if (!profile || profile.role !== 'expositor') { router.replace('/login'); return }
 
-      const fullName = profile.display_name ?? user.email ?? 'Expositor'
+      const fullName = profile.display_name ?? user.email ?? tRoles('expositor')
       setUserName(fullName)
       setUserInitial(fullName.charAt(0).toUpperCase())
 
@@ -108,16 +111,16 @@ export default function EditModulePage() {
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 22, color: 'var(--ink)', marginBottom: 10 }}>
-              Módulo no encontrado
+              {t('notFoundTitle')}
             </div>
             <p style={{ fontSize: 14, color: 'var(--mute)', marginBottom: 20 }}>
-              Este módulo no existe o no tienes acceso.
+              {t('notFoundBody')}
             </p>
             <button
               onClick={() => router.push('/expositor')}
               style={{ padding: '10px 22px', borderRadius: 999, background: '#C0392B', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 14 }}
             >
-              Ver mis módulos
+              {t('backToModulesBtn')}
             </button>
           </div>
         </div>

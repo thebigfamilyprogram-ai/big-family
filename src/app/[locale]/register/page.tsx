@@ -28,21 +28,21 @@ const GOOGLE_SVG = (
   </svg>
 )
 
-const TRACKS: { id: Level; emoji: string; iconBg: string; title: string; sub: string; desc: string }[] = [
-  {
-    id: 'junior', emoji: '🌱', iconBg: '#FEF3C7',
-    title: 'Junior Leader', sub: 'Primaria a 7° bachillerato · 9 a 13 años',
-    desc: 'Da tus primeros pasos en el liderazgo',
-  },
-  {
-    id: 'senior', emoji: '⚡', iconBg: 'rgba(192,57,43,0.1)',
-    title: 'Senior Leader', sub: '8° bachillerato a 11° · 14 a 18 años',
-    desc: 'Lidera proyectos que transforman comunidades',
-  },
-]
-
 export default function RegisterPage() {
   const t           = useTranslations('auth.register')
+
+  const TRACKS: { id: Level; emoji: string; iconBg: string; title: string; sub: string; desc: string }[] = [
+    {
+      id: 'junior', emoji: '🌱', iconBg: '#FEF3C7',
+      title: 'Junior Leader', sub: t('juniorSub'),
+      desc: t('juniorDesc'),
+    },
+    {
+      id: 'senior', emoji: '⚡', iconBg: 'rgba(192,57,43,0.1)',
+      title: 'Senior Leader', sub: t('seniorSub'),
+      desc: t('seniorDesc'),
+    },
+  ]
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
@@ -90,7 +90,7 @@ export default function RegisterPage() {
 
     if (coord) {
       setCodeLoading(false)
-      const schoolName = (coord.schools as any)?.name ?? 'Colegio'
+      const schoolName = (coord.schools as any)?.name ?? t('schoolFallback')
       setResolved({
         schoolId:    coord.school_id,
         schoolName,
@@ -152,7 +152,7 @@ export default function RegisterPage() {
     e.preventDefault()
     setFormError('')
     if (password.length < 8) { setFormError(t('error.weakPassword')); return }
-    if (password !== confirmPass) { setFormError('Las contraseñas no coinciden.'); return }
+    if (password !== confirmPass) { setFormError(t('error.passwordsNoMatch')); return }
     setFormLoading(true)
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
@@ -291,7 +291,7 @@ export default function RegisterPage() {
           {step === 1 && (
             <>
               <h1 className="card-title">{t('title')}</h1>
-              <p className="card-sub">Ingresa el código que te dio tu coordinador</p>{/* TODO: i18n */}
+              <p className="card-sub">{t('codeSubtitle')}</p>
 
               {codeError && <div className="err">{codeError}</div>}
 
@@ -307,7 +307,7 @@ export default function RegisterPage() {
                   />
                 </div>
                 <button className="btn-main" type="submit" disabled={codeLoading}>
-                  {codeLoading ? 'Verificando…' : 'Verificar código'}
+                  {codeLoading ? t('verifying') : t('verifyCode')}
                 </button>
               </form>
 
@@ -325,13 +325,11 @@ export default function RegisterPage() {
                 onClick={() => { setStep(1); setResolved(null); setSchoolCode('') }}
                 type="button"
               >
-                ← Cambiar código
+                ← {t('changeCode')}
               </button>
 
-              <h1 className="card-title">¿Cuál es tu track?</h1>
-              <p className="card-sub">
-                Selecciona tu rango escolar para acceder al contenido adecuado para ti
-              </p>
+              <h1 className="card-title">{t('trackTitle')}</h1>
+              <p className="card-sub">{t('trackSubtitle')}</p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
                 {TRACKS.map(lv => (
@@ -366,7 +364,7 @@ export default function RegisterPage() {
                 onClick={() => { if (selectedLevel) setStep(2) }}
                 type="button"
               >
-                Continuar
+                {t('continueBtn')}
               </button>
             </>
           )}
@@ -387,18 +385,18 @@ export default function RegisterPage() {
                 }}
                 type="button"
               >
-                ← {resolved.userType === 'student' ? 'Cambiar nivel' : 'Cambiar código'}
+                ← {resolved.userType === 'student' ? t('changeLevel') : t('changeCode')}
               </button>
 
               <h1 className="card-title">{t('title')}</h1>
-              <p className="card-sub" style={{ marginBottom: 20 }}>Completa tu registro</p>{/* TODO: i18n */}
+              <p className="card-sub" style={{ marginBottom: 20 }}>{t('completeReg')}</p>
 
               <div className={`badge ${isCoord ? 'coordinator' : isExpo ? 'expositor' : 'student'}`}>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <circle cx="8" cy="8" r="7" fill="currentColor" opacity=".18"/>
                   <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                {isCoord ? 'Coordinador' : isExpo ? 'Expositor' : 'Estudiante'} · {resolved.schoolName}
+                {isCoord ? t('roleCoordinator') : isExpo ? t('roleExpositor') : t('roleStudent')} · {resolved.schoolName}
               </div>
 
               <button className="btn-google" onClick={handleGoogle} type="button">
@@ -415,7 +413,7 @@ export default function RegisterPage() {
                   <label htmlFor="name">{t('displayNameLabel')}</label>
                   {/* TODO: i18n placeholder */}
                   <input
-                    id="name" type="text" placeholder="Juan García"
+                    id="name" type="text" placeholder={t('namePlaceholder')}
                     value={fullName} onChange={e => setFullName(e.target.value)} required
                   />
                 </div>
@@ -435,14 +433,14 @@ export default function RegisterPage() {
                   <span className="hint">{t('passwordHint')}</span>
                 </div>
                 <div className="field">
-                  <label htmlFor="confirm">Confirmar contraseña</label>{/* TODO: i18n */}
+                  <label htmlFor="confirm">{t('confirmPassLabel')}</label>
                   <input
                     id="confirm" type="password" placeholder="••••••••"
                     value={confirmPass} onChange={e => setConfirmPass(e.target.value)} required
                   />
                 </div>
                 <button className="btn-main" type="submit" disabled={formLoading}>
-                  {formLoading ? 'Creando cuenta…' /* TODO: i18n */ : t('submitBtn')}
+                  {formLoading ? t('creatingAccount') : t('submitBtn')}
                 </button>
               </form>
 

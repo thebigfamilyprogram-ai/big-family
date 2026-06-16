@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m, AnimatePresence } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
@@ -28,6 +29,7 @@ function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?
 }
 
 export default function CoordinatorSuccessStoriesPage() {
+  const t           = useTranslations('coordinator.successStories')
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
@@ -146,32 +148,32 @@ export default function CoordinatorSuccessStoriesPage() {
       `}</style>
 
       <m.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 28 }}>
-        <h1 style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 24 }}>Historias de Éxito</h1>
+        <h1 style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: 24 }}>{t('pageTitle')}</h1>
 
         <AnimatePresence>
           {showCreate && (
             <m.div key="form" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={springNatural} style={{ overflow: 'hidden', marginBottom: 20 }}>
               <div className="panel" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 <div className="field" style={{ gridColumn: '1 / -1' }}>
-                  <label>Estudiante *</label>
+                  <label>{t('studentLabel')}</label>
                   <select value={createForm.student_id} onChange={e => setCreateForm(f => ({ ...f, student_id: e.target.value }))}>
-                    <option value="">— Selecciona —</option>
+                    <option value="">{t('selectPlaceholder')}</option>
                     {students.map(s => <option key={s.id} value={s.id}>{s.display_name}</option>)}
                   </select>
                 </div>
                 <div className="field" style={{ gridColumn: '1 / -1' }}>
-                  <label>Título *</label>
-                  <input value={createForm.title} onChange={e => setCreateForm(f => ({ ...f, title: e.target.value }))} placeholder="Título de la historia" />
+                  <label>{t('titleLabel')}</label>
+                  <input value={createForm.title} onChange={e => setCreateForm(f => ({ ...f, title: e.target.value }))} placeholder={t('titlePlaceholder')} />
                 </div>
                 <div className="field" style={{ gridColumn: '1 / -1' }}>
-                  <label>Historia *</label>
-                  <textarea value={createForm.story} onChange={e => setCreateForm(f => ({ ...f, story: e.target.value }))} rows={5} style={{ resize: 'vertical', padding: '9px 12px', border: '1px solid var(--line)', borderRadius: 9, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--bg-2)', color: 'var(--ink)' }} placeholder="Describe el logro y el impacto..." />
+                  <label>{t('storyLabel')}</label>
+                  <textarea value={createForm.story} onChange={e => setCreateForm(f => ({ ...f, story: e.target.value }))} rows={5} style={{ resize: 'vertical', padding: '9px 12px', border: '1px solid var(--line)', borderRadius: 9, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--bg-2)', color: 'var(--ink)' }} placeholder={t('storyPlaceholder')} />
                 </div>
                 <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10 }}>
                   <button className="btn-primary" onClick={handleCreate} disabled={!createForm.title.trim() || !createForm.story.trim() || !createForm.student_id || saving}>
-                    {saving ? 'Guardando…' : 'Nominar historia'}
+                    {saving ? t('savingBtn') : t('nominateBtn')}
                   </button>
-                  <button onClick={() => setShowCreate(false)} style={{ padding: '10px 18px', border: '1px solid var(--line)', borderRadius: 10, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--mute)' }}>Cancelar</button>
+                  <button onClick={() => setShowCreate(false)} style={{ padding: '10px 18px', border: '1px solid var(--line)', borderRadius: 10, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--mute)' }}>{t('cancelBtn')}</button>
                 </div>
               </div>
             </m.div>
@@ -180,19 +182,19 @@ export default function CoordinatorSuccessStoriesPage() {
 
         <div className="grid">
           <div className="panel">
-            <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Todas las nominaciones</div>
+            <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15, marginBottom: 16 }}>{t('allNominationsTitle')}</div>
             {loading ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {[1,2,3].map(i => <Sk key={i} h={60} r={10} />)}
               </div>
             ) : stories.length === 0 ? (
-              <p style={{ fontSize: 13, color: 'var(--mute)' }}>Sin nominaciones todavía.</p>
+              <p style={{ fontSize: 13, color: 'var(--mute)' }}>{t('noNominations')}</p>
             ) : stories.map(s => (
               <div key={s.id} className={`story-row ${selected?.id === s.id ? 'sel' : ''}`} onClick={() => setSelected(s)}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, color: 'var(--ink)' }}>{s.title}</span>
                   <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: s.published ? '#D1FAE5' : 'rgba(192,57,43,.1)', color: s.published ? '#065F46' : '#C0392B' }}>
-                    {s.published ? 'Publicada' : 'En revisión'}
+                    {s.published ? t('publishedBadge') : t('inReviewBadge')}
                   </span>
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--mute)', marginTop: 3 }}>
@@ -205,10 +207,10 @@ export default function CoordinatorSuccessStoriesPage() {
 
           <div className="panel">
             <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15, marginBottom: 12 }}>
-              {selected ? selected.title : 'Selecciona una historia'}
+              {selected ? selected.title : t('selectStory')}
             </div>
             {!selected ? (
-              <p style={{ fontSize: 13, color: 'var(--mute)' }}>Haz clic en una historia para ver detalles y publicarla.</p>
+              <p style={{ fontSize: 13, color: 'var(--mute)' }}>{t('selectStoryHint')}</p>
             ) : (
               <AnimatePresence mode="wait">
                 <m.div key={selected.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={springNatural}>
@@ -226,7 +228,7 @@ export default function CoordinatorSuccessStoriesPage() {
                         disabled={publishing === selected.id}
                         style={{ padding: '10px 18px', background: '#065F46', border: 'none', borderRadius: 10, color: '#fff', fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: publishing === selected.id ? 0.5 : 1 }}
                       >
-                        {publishing === selected.id ? '…' : '✓ Publicar'}
+                        {publishing === selected.id ? '…' : t('publishBtn')}
                       </button>
                     ) : (
                       <button
@@ -234,11 +236,11 @@ export default function CoordinatorSuccessStoriesPage() {
                         disabled={publishing === selected.id}
                         style={{ padding: '10px 18px', background: 'transparent', border: '1px solid var(--line)', borderRadius: 10, color: 'var(--mute)', fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 13, cursor: 'pointer', opacity: publishing === selected.id ? 0.5 : 1 }}
                       >
-                        Despublicar
+                        {t('unpublishBtn')}
                       </button>
                     )}
                     <a href={`/success-stories/${selected.id}`} target="_blank" rel="noopener noreferrer" style={{ padding: '10px 18px', border: '1px solid var(--line)', borderRadius: 10, fontSize: 13, color: 'var(--ink)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
-                      Ver página
+                      {t('viewPageBtn')}
                     </a>
                   </div>
                 </m.div>

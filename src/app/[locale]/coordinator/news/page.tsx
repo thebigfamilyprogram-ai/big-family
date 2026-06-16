@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { m } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 
@@ -30,6 +31,7 @@ function StarIcon({ filled }: { filled: boolean }) {
 }
 
 export default function CoordinatorNewsPage() {
+  const t           = useTranslations('coordinator.newsManager')
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
@@ -60,7 +62,7 @@ export default function CoordinatorNewsPage() {
 
       setUserId(user.id)
       setCoordName(profile.display_name ?? '—')
-      setSchoolName((school as any)?.name ?? 'Mi colegio')
+      setSchoolName((school as any)?.name ?? t('defaultSchoolName'))
 
       const { data: rows } = await supabase
         .from('news')
@@ -145,11 +147,11 @@ export default function CoordinatorNewsPage() {
       <main className="cn-main">
         <div className="cn-header">
           <div>
-            <h1>Mis Noticias</h1>
-            <p>{loading ? 'Cargando…' : `${news.length} artículo${news.length !== 1 ? 's' : ''} · ${schoolName}`}</p>
+            <h1>{t('pageTitle')}</h1>
+            <p>{loading ? t('loading') : (news.length === 1 ? t('articleCountSingular', { count: news.length, school: schoolName }) : t('articleCountPlural', { count: news.length, school: schoolName }))}</p>
           </div>
           <button className="btn-new-news" onClick={() => router.push('/coordinator/news/new')}>
-            + Nueva noticia
+            {t('newArticle')}
           </button>
         </div>
 
@@ -158,15 +160,15 @@ export default function CoordinatorNewsPage() {
           <div className="cn-stats">
             <div className="cn-stat">
               <div className="cn-stat__num">{news.length}</div>
-              <div className="cn-stat__label">Total</div>
+              <div className="cn-stat__label">{t('statTotal')}</div>
             </div>
             <div className="cn-stat">
               <div className="cn-stat__num" style={{ color:'#065F46' }}>{published}</div>
-              <div className="cn-stat__label">Publicados</div>
+              <div className="cn-stat__label">{t('statPublished')}</div>
             </div>
             <div className="cn-stat">
               <div className="cn-stat__num" style={{ color:'#444441' }}>{drafts}</div>
-              <div className="cn-stat__label">Borradores</div>
+              <div className="cn-stat__label">{t('statDrafts')}</div>
             </div>
           </div>
         )}
@@ -177,7 +179,7 @@ export default function CoordinatorNewsPage() {
             <svg width="14" height="14" viewBox="0 0 16 16" fill="#E8A417" stroke="none">
               <path d="M8 1.5l1.8 3.8 4.2.6-3 3 .7 4.2L8 11l-3.7 2.1.7-4.2-3-3 4.2-.6L8 1.5Z"/>
             </svg>
-            Marca una noticia como destacada para mostrarla en la portada del blog
+            {t('featuredHint')}
           </div>
         )}
 
@@ -196,9 +198,9 @@ export default function CoordinatorNewsPage() {
           </div>
         ) : news.length === 0 ? (
           <div className="cn-empty">
-            <div style={{ fontFamily:'Satoshi,sans-serif', fontWeight:700, fontSize:16, marginBottom:6 }}>Sin noticias todavía</div>
-            <div style={{ fontSize:13.5, marginBottom:20 }}>Crea tu primera noticia para el blog de Big Family.</div>
-            <button className="btn-new-news" onClick={() => router.push('/coordinator/news/new')}>+ Crear noticia</button>
+            <div style={{ fontFamily:'Satoshi,sans-serif', fontWeight:700, fontSize:16, marginBottom:6 }}>{t('emptyTitle')}</div>
+            <div style={{ fontSize:13.5, marginBottom:20 }}>{t('emptyBody')}</div>
+            <button className="btn-new-news" onClick={() => router.push('/coordinator/news/new')}>{t('createFirst')}</button>
           </div>
         ) : (
           <div className="cn-feed">
@@ -210,19 +212,19 @@ export default function CoordinatorNewsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ type:'spring', stiffness:140, damping:20, delay: i * 0.04 }}
               >
-                <div className="cn-item-title">{item.title || <span style={{ color:'var(--mute)', fontStyle:'italic' }}>Sin título</span>}</div>
+                <div className="cn-item-title">{item.title || <span style={{ color:'var(--mute)', fontStyle:'italic' }}>{t('untitled')}</span>}</div>
                 <span style={{ padding:'3px 10px', borderRadius:999, fontSize:11.5, fontWeight:700, background: item.published ? '#D1FAE5' : '#F1EFE8', color: item.published ? '#065F46' : '#444441', flexShrink:0 }}>
-                  {item.published ? 'Publicado' : 'Borrador'}
+                  {item.published ? t('statusPublished') : t('statusDraft')}
                 </span>
                 <div className="cn-item-meta">
                   {item.published && item.published_at
                     ? new Date(item.published_at).toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' })
-                    : 'Borrador'}
+                    : t('statusDraft')}
                 </div>
                 {/* Star / featured toggle */}
                 <button
                   className={`cn-star${item.featured ? ' featured' : ''}`}
-                  title={item.featured ? 'Quitar de destacados' : 'Marcar como destacada'}
+                  title={item.featured ? t('unfeature') : t('markFeatured')}
                   disabled={featuringId !== null}
                   onClick={() => handleToggleFeatured(item)}
                 >
@@ -234,7 +236,7 @@ export default function CoordinatorNewsPage() {
                   onMouseEnter={e => { e.currentTarget.style.borderColor='#C0392B'; e.currentTarget.style.color='#C0392B' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(13,13,13,.14)'; e.currentTarget.style.color='#0D0D0D' }}
                 >
-                  Editar →
+                  {t('edit')}
                 </button>
               </m.div>
             ))}

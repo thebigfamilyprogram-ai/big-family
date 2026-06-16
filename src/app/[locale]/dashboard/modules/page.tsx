@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { m, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE, MOCK } from '@/lib/mockData'
@@ -131,12 +132,14 @@ function PanelPentagon({ bf, fortalezas, crec }: {
 // ─── Module Card ──────────────────────────────────────────────────────────────
 
 function ModuleCard({ mod, idx, onStart }: { mod: StudentModule; idx: number; onStart: () => void }) {
+  const t = useTranslations('dashboard.modules')
+  const tm = useTranslations('dashboard.modulesPage')
   const isCompleted = mod.state === 'completed'
   const isActive    = mod.state === 'active'
   const isLocked    = mod.state === 'locked'
   const stateColor  = isCompleted ? 'var(--success-text,#065F46)' : isActive ? 'var(--accent)' : 'var(--mute)'
   const stateBg     = isCompleted ? 'var(--success-bg,#D1FAE5)'   : isActive ? 'rgba(192,57,43,.07)' : 'var(--bg-2)'
-  const stateLabel  = isCompleted ? 'Completado' : isActive ? 'Disponible' : 'Bloqueado'
+  const stateLabel  = isCompleted ? t('completed') : isActive ? t('available') : t('locked')
 
   return (
     <m.div
@@ -196,7 +199,7 @@ function ModuleCard({ mod, idx, onStart }: { mod: StudentModule; idx: number; on
           )}
           {isCompleted && mod.best_score != null && (
             <span style={{ fontSize: 12, color: 'var(--success-text,#065F46)', fontWeight: 600 }}>
-              Mejor: {mod.best_score}%
+              {tm('bestScore', { score: mod.best_score })}
             </span>
           )}
         </div>
@@ -213,7 +216,7 @@ function ModuleCard({ mod, idx, onStart }: { mod: StudentModule; idx: number; on
             fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 13,
             color: isCompleted ? 'var(--ink)' : '#fff', whiteSpace: 'nowrap',
           }}>
-            {isCompleted ? 'Revisar' : 'Comenzar →'}
+            {isCompleted ? t('reviewBtn') : tm('startBtn')}
           </div>
         </div>
       )}
@@ -227,6 +230,7 @@ export default function ModulesListPage() {
   const router  = useRouter()
   const pref    = useReducedMotion()
   const sbRef   = useRef<ReturnType<typeof createClient> | null>(null)
+  const t       = useTranslations('dashboard.modulesPage')
 
   const [loading,       setLoading]       = useState(true)
   const [modules,       setModules]       = useState<StudentModule[]>([])
@@ -435,8 +439,8 @@ export default function ModulesListPage() {
         {/* ── Header ── */}
         <div className="mod-header">
           <div>
-            <h1>Módulos</h1>
-            <p>Tu ruta de aprendizaje — completa cada módulo para avanzar</p>
+            <h1>{t('title')}</h1>
+            <p>{t('subtitle')}</p>
           </div>
           {!loading && (
             <m.button
@@ -447,7 +451,7 @@ export default function ModulesListPage() {
               whileTap={{ scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
-              Ver en mapa →
+              {t('viewMapBtn')}
             </m.button>
           )}
         </div>
@@ -467,15 +471,15 @@ export default function ModulesListPage() {
               >
                 <div className="mod-stat">
                   <div className="mod-stat__num">{completedCount}/{modules.length}</div>
-                  <div className="mod-stat__label">Completados</div>
+                  <div className="mod-stat__label">{t('stats.completed')}</div>
                 </div>
                 <div className="mod-stat">
                   <div className="mod-stat__num" style={{ color: 'var(--accent)' }}>{totalXPFull.toLocaleString()}</div>
-                  <div className="mod-stat__label">XP ganados</div>
+                  <div className="mod-stat__label">{t('stats.xpEarned')}</div>
                 </div>
                 <div className="mod-stat">
                   <div className="mod-stat__num">{modules.length - completedCount}</div>
-                  <div className="mod-stat__label">Restantes</div>
+                  <div className="mod-stat__label">{t('stats.remaining')}</div>
                 </div>
               </m.div>
             )}
@@ -496,8 +500,8 @@ export default function ModulesListPage() {
                   <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(192,57,43,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   </div>
-                  <p style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 18, color: 'var(--ink)' }}>Próximamente</p>
-                  <p style={{ fontSize: 14, color: 'var(--mute)', lineHeight: 1.6, maxWidth: 320 }}>Los módulos de tu programa se publicarán pronto. ¡Mantente atento!</p>
+                  <p style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 18, color: 'var(--ink)' }}>{t('emptyState.title')}</p>
+                  <p style={{ fontSize: 14, color: 'var(--mute)', lineHeight: 1.6, maxWidth: 320 }}>{t('emptyState.body')}</p>
                 </div>
               ) : (
                 modules.map((mod, idx) => (
@@ -523,7 +527,7 @@ export default function ModulesListPage() {
               <>
                 {/* Bloque 1 — Perfil de líder */}
                 <div>
-                  <div className="panel-label">PERFIL DE LÍDER</div>
+                  <div className="panel-label">{t('panel.leaderProfile')}</div>
                   <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
                     <PanelPentagon bf={leaderProfile.big_five} fortalezas={leaderProfile.fortalezas} crec={leaderProfile.areasCrecimiento} />
                   </div>
@@ -540,7 +544,7 @@ export default function ModulesListPage() {
 
                 {/* Bloque 2 — Progreso por pilar */}
                 <div>
-                  <div className="panel-label">PROGRESO POR PILAR</div>
+                  <div className="panel-label">{t('panel.pillarProgress')}</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {pillarProgress.map(({ pillar, pct, isStrength, isGrowth }) => (
                       <div key={pillar}>
@@ -569,20 +573,20 @@ export default function ModulesListPage() {
 
                 {/* Bloque 3 — Recomendado */}
                 <div>
-                  <div className="panel-label">RECOMENDADO PARA TI</div>
+                  <div className="panel-label">{t('panel.recommended')}</div>
                   {allDone ? (
                     <div style={{ textAlign: 'center', padding: '8px 0' }}>
                       <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 13, fontWeight: 700, color: 'var(--accent-teal,#0F7B6C)', marginBottom: 6 }}>
-                        ¡Todos los módulos completados!
+                        {t('allDone.title')}
                       </p>
                       <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 12, color: 'var(--mute)', lineHeight: 1.5, marginBottom: 10 }}>
-                        Ya puedes acceder a tu certificación.
+                        {t('allDone.body')}
                       </p>
                       <button
                         onClick={() => router.push('/certificacion')}
                         style={{ padding: '8px 16px', borderRadius: 999, background: '#C0392B', border: 'none', fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 12, color: '#fff', cursor: 'pointer' }}
                       >
-                        Ver certificado →
+                        {t('allDone.cta')}
                       </button>
                     </div>
                   ) : recommendedModule ? (
@@ -601,12 +605,12 @@ export default function ModulesListPage() {
                           onClick={() => router.push(`/dashboard/modules/${recommendedModule.id}`)}
                           style={{ padding: '7px 14px', borderRadius: 999, background: '#C0392B', border: 'none', fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 12, color: '#fff', cursor: 'pointer' }}
                         >
-                          Comenzar →
+                          {t('recommendedCta')}
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 13, color: 'var(--mute)' }}>No hay módulos disponibles aún.</p>
+                    <p style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 13, color: 'var(--mute)' }}>{t('noRecommended')}</p>
                   )}
                 </div>
 
@@ -614,12 +618,12 @@ export default function ModulesListPage() {
 
                 {/* Bloque 4 — Stats rápidos */}
                 <div>
-                  <div className="panel-label">RESUMEN</div>
+                  <div className="panel-label">{t('panel.summary')}</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
                     {[
-                      { num: totalXPFull.toLocaleString('es-CO'), lbl: 'XP Total' },
-                      { num: `${completedCount}`, lbl: 'Módulos' },
-                      { num: `${streak}`, lbl: 'Racha' },
+                      { num: totalXPFull.toLocaleString('es-CO'), lbl: t('summaryLabels.xpTotal') },
+                      { num: `${completedCount}`, lbl: t('summaryLabels.modules') },
+                      { num: `${streak}`, lbl: t('summaryLabels.streak') },
                     ].map(({ num, lbl }) => (
                       <div key={lbl} style={{ textAlign: 'center', padding: '10px 6px', background: 'var(--bg-2)', borderRadius: 10 }}>
                         <div className="panel-stat__num">{num}</div>
@@ -632,11 +636,11 @@ export default function ModulesListPage() {
             ) : (
               // No profile — minimal panel
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div className="panel-label">RESUMEN</div>
+                <div className="panel-label">{t('panel.summary')}</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   {[
-                    { num: `${completedCount}/${modules.length}`, lbl: 'Completados', color: 'var(--accent)' },
-                    { num: totalXPFull.toLocaleString('es-CO'),   lbl: 'XP Total',    color: '#C0392B' },
+                    { num: `${completedCount}/${modules.length}`, lbl: t('stats.completed'), color: 'var(--accent)' },
+                    { num: totalXPFull.toLocaleString('es-CO'),   lbl: t('summaryLabels.xpTotal'), color: '#C0392B' },
                   ].map(({ num, lbl, color }) => (
                     <div key={lbl} style={{ textAlign: 'center', padding: '14px 10px', background: 'var(--bg-2)', borderRadius: 12 }}>
                       <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: '1.3rem', color, fontVariantNumeric: 'tabular-nums' }}>{num}</div>
@@ -645,13 +649,13 @@ export default function ModulesListPage() {
                   ))}
                 </div>
                 <div style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 12, color: 'var(--mute)', lineHeight: 1.5, paddingTop: 4 }}>
-                  Completa el test de perfil de líder para ver tu ruta personalizada.
+                  {t('noProfile.body')}
                 </div>
                 <button
                   onClick={() => router.push('/onboarding/test')}
                   style={{ padding: '9px 16px', borderRadius: 999, background: '#C0392B', border: 'none', fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 12, color: '#fff', cursor: 'pointer', width: '100%' }}
                 >
-                  Completar diagnóstico →
+                  {t('noProfile.cta')}
                 </button>
               </div>
             )}

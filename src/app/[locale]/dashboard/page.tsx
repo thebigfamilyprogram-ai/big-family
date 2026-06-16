@@ -9,6 +9,7 @@ import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import NotificationDrawer from '@/components/NotificationDrawer'
 import { m, useReducedMotion } from 'framer-motion'
 import { fadeUp } from '@/lib/animations'
+import { useTranslations } from 'next-intl'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, RadialBarChart, RadialBar,
@@ -226,6 +227,9 @@ export default function DashboardPage() {
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const pref        = useReducedMotion()
+  const t           = useTranslations('dashboard.home')
+  const tModules    = useTranslations('dashboard.modules')
+  const tCommon     = useTranslations('common')
 
   const [loading,      setLoading]      = useState(true)
   const [loadError,    setLoadError]    = useState(false)
@@ -461,10 +465,10 @@ export default function DashboardPage() {
               <path d="M11 7v5M11 15v.5" stroke="#C0392B" strokeWidth="1.8" strokeLinecap="round"/>
             </svg>
           </div>
-          <div className="load-error__title">No se pudieron cargar los datos</div>
-          <div className="load-error__sub">Verifica tu conexión e intenta de nuevo.</div>
+          <div className="load-error__title">{t('loadError.title')}</div>
+          <div className="load-error__sub">{t('loadError.subtitle')}</div>
           <button className="load-error__btn" onClick={() => { setLoadError(false); setRetryKey(k => k + 1) }}>
-            Reintentar
+            {tCommon('retry')}
           </button>
         </div>
       </div>
@@ -717,28 +721,28 @@ export default function DashboardPage() {
                 <div className="ann-banner__title">{annBanner.title}</div>
                 <div className="ann-banner__body">{annBanner.content}</div>
               </div>
-              <button className="ann-banner__dismiss" onClick={dismissBanner} aria-label="Cerrar anuncio">×</button>
+              <button className="ann-banner__dismiss" onClick={dismissBanner} aria-label={t('closeAnnouncementAria')}>×</button>
             </div>
           )}
 
           {/* Onboarding banner — only for new users */}
           {isNewUser && (
             <div className="onboard">
-              <div className="onboard-label">Paso 1 de 3 — Completa tu perfil</div>
+              <div className="onboard-label">{t('onboarding.step')}</div>
               <div className="onboard-steps">
                 <div className="ob-step">
                   <div className="ob-dot done">✓</div>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#22c55e' }}>Registro</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#22c55e' }}>{t('onboarding.register')}</span>
                 </div>
                 <div className="ob-sep" />
                 <div className="ob-step">
                   <div className="ob-dot next">2</div>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>Primer módulo</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>{t('onboarding.firstModule')}</span>
                 </div>
                 <div className="ob-sep" />
                 <div className="ob-step">
                   <div className="ob-dot idle">3</div>
-                  <span style={{ fontSize: 13, color: 'var(--mute)' }}>Primer IC</span>
+                  <span style={{ fontSize: 13, color: 'var(--mute)' }}>{t('onboarding.firstIC')}</span>
                 </div>
               </div>
             </div>
@@ -798,15 +802,15 @@ export default function DashboardPage() {
                 {/* Role buttons + bell */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto', flexShrink: 0 }}>
                   {user?.role === 'coordinator' && (
-                    <button className="btn-coordinator" onClick={() => router.push('/coordinator')}>Panel Coordinador</button>
+                    <button className="btn-coordinator" onClick={() => router.push('/coordinator')}>{t('coordinatorPanel')}</button>
                   )}
                   {user?.role === 'expositor' && (
-                    <button className="btn-coordinator" onClick={() => router.push('/expositor')}>Panel Expositor</button>
+                    <button className="btn-coordinator" onClick={() => router.push('/expositor')}>{t('expositorPanel')}</button>
                   )}
                   <button
                     className="bell-btn"
                     onClick={() => setNotifOpen(true)}
-                    title={notifCount > 0 ? `${notifCount} notificaciones sin leer` : 'Notificaciones'}
+                    title={notifCount > 0 ? t('unreadNotifications', { count: notifCount }) : tCommon('notifications')}
                   >
                     <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                       <path d="M10 2A5 5 0 0 0 5 7v3l-1.5 2.5h13L15 10V7A5 5 0 0 0 10 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
@@ -821,17 +825,17 @@ export default function DashboardPage() {
               <div className="identity-bottom">
                 <div className="identity-stat">
                   <div className="identity-stat__num">{loading ? '…' : (user?.total_xp ?? 0).toLocaleString('es-CO')}</div>
-                  <div className="identity-stat__label">XP Total</div>
+                  <div className="identity-stat__label">{t('stats.xpTotal')}</div>
                 </div>
                 <div className="identity-divider" />
                 <div className="identity-stat">
                   <div className="identity-stat__num">{loading ? '…' : completedCount}</div>
-                  <div className="identity-stat__label">Módulos</div>
+                  <div className="identity-stat__label">{t('stats.modules')}</div>
                 </div>
                 <div className="identity-divider" />
                 <div className="identity-stat">
                   <div className="identity-stat__num">{loading ? '…' : (rankPos === 0 || rankPos === null ? '—' : `#${rankPos}`)}</div>
-                  <div className="identity-stat__label">Ranking</div>
+                  <div className="identity-stat__label">{t('stats.ranking')}</div>
                 </div>
               </div>
             </div>
@@ -868,8 +872,8 @@ export default function DashboardPage() {
                     color: 'var(--mute)', textDecoration: 'none',
                   }}
                 >
-                  Configura tu portafolio en{' '}
-                  <span style={{ color: '#C0392B', fontWeight: 600 }}>Configuración →</span>
+                  {t('portfolioLink.configurePrefix')}{' '}
+                  <span style={{ color: '#C0392B', fontWeight: 600 }}>{t('portfolioLink.configureLink')}</span>
                 </a>
               ) : user.portfolio_public ? (
                 /* Portafolio activo */
@@ -887,14 +891,14 @@ export default function DashboardPage() {
                   onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = '#C0392B'; (e.currentTarget as HTMLAnchorElement).style.color = '#C0392B' }}
                   onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--line)'; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--mute)' }}
                 >
-                  Ver mi portafolio ↗
+                  {t('portfolioLink.viewPublic')}
                 </a>
               ) : (
                 /* Portafolio privado */
                 <span style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 12, color: 'var(--mute)' }}>
-                  Tu portafolio está privado —{' '}
+                  {t('portfolioLink.privatePrefix')}{' '}
                   <a href="/dashboard/settings" style={{ color: '#C0392B', textDecoration: 'none', fontWeight: 600 }}>
-                    activarlo en Configuración
+                    {t('portfolioLink.activateLink')}
                   </a>
                 </span>
               )}
@@ -909,10 +913,10 @@ export default function DashboardPage() {
             variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
           >
             {([
-              { label: 'XP Total',        val: loading ? null : (user?.total_xp ?? 0), color: 'var(--accent-amber,#D4821A)', border: 'var(--accent-amber,#D4821A)', isRank: false },
-              { label: 'Módulos',         val: loading ? null : completedCount,         color: 'var(--accent-teal,#0F7B6C)',  border: 'var(--accent-teal,#0F7B6C)',  isRank: false },
-              { label: 'Racha de días',   val: loading ? null : streak,                 color: 'var(--ink)',                  border: 'var(--line-strong)',            isRank: false },
-              { label: 'Ranking colegio', val: loading ? null : (rankPos ?? 0),         color: 'var(--accent,#C0392B)',       border: 'var(--accent,#C0392B)',        isRank: true  },
+              { label: t('stats.xpTotal'),        val: loading ? null : (user?.total_xp ?? 0), color: 'var(--accent-amber,#D4821A)', border: 'var(--accent-amber,#D4821A)', isRank: false },
+              { label: t('kpiLabels.modules'),    val: loading ? null : completedCount,         color: 'var(--accent-teal,#0F7B6C)',  border: 'var(--accent-teal,#0F7B6C)',  isRank: false },
+              { label: t('kpiLabels.streakDays'), val: loading ? null : streak,                 color: 'var(--ink)',                  border: 'var(--line-strong)',            isRank: false },
+              { label: t('kpiLabels.schoolRanking'), val: loading ? null : (rankPos ?? 0),      color: 'var(--accent,#C0392B)',       border: 'var(--accent,#C0392B)',        isRank: true  },
             ]).map(({ label, val, color, border, isRank }) => (
               <m.div
                 key={label}
@@ -973,7 +977,7 @@ export default function DashboardPage() {
             {/* XP Line Chart */}
             <div className="card" style={{ padding: '22px 20px 16px' }}>
               <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 16 }}>
-                Progreso XP — últimas 4 semanas
+                {t('charts.xpProgress')}
               </div>
               {loading || weeklyXP.length === 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -1010,17 +1014,17 @@ export default function DashboardPage() {
             {/* Leadership RadialBarChart */}
             <div className="card" style={{ padding: '22px 20px 16px' }}>
               <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 16 }}>
-                Leadership Path — avance general
+                {t('charts.leadershipPath')}
               </div>
               {loading ? (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 140 }}><Sk w={120} h={120} r={999} /></div>
               ) : (() => {
                 const pillars = [
-                  { name: 'Visión',    fill: '#C0392B', value: visionPct },
-                  { name: 'Módulos',   fill: '#D4821A', value: totalModules > 0 ? Math.round(completedCount / totalModules * 100) : 0 },
-                  { name: 'Impacto',   fill: '#0F7B6C', value: diploma ? 100 : 0 },
-                  { name: 'Comunidad', fill: '#8C7B6E', value: 0 },
-                  { name: 'Proyectos', fill: '#6B6B6B', value: 0 },
+                  { name: t('charts.pillarVision'),    fill: '#C0392B', value: visionPct },
+                  { name: t('charts.pillarModules'),   fill: '#D4821A', value: totalModules > 0 ? Math.round(completedCount / totalModules * 100) : 0 },
+                  { name: t('charts.pillarImpact'),    fill: '#0F7B6C', value: diploma ? 100 : 0 },
+                  { name: t('charts.pillarCommunity'), fill: '#8C7B6E', value: 0 },
+                  { name: t('charts.pillarProjects'),  fill: '#6B6B6B', value: 0 },
                 ]
                 const hasProgress = pillars.some(p => p.value > 0)
 
@@ -1033,7 +1037,7 @@ export default function DashboardPage() {
                         <circle cx="16" cy="16" r="2.5" fill="var(--mute)"/>
                       </svg>
                       <div style={{ fontSize: 12.5, color: 'var(--mute)', textAlign: 'center', lineHeight: 1.5, fontFamily: '"Satoshi",sans-serif' }}>
-                        Completa tu primer módulo para ver tu avance
+                        {t('charts.emptyState')}
                       </div>
                     </div>
                   )
@@ -1079,14 +1083,14 @@ export default function DashboardPage() {
           {/* Leadership Progress */}
           <div className="card">
             <div className="prog-header">
-              <span className="prog-title">Leadership Progress</span>
-              <span className="prog-badge">Phase 02: Deployment</span>
+              <span className="prog-title">{t('leadershipProgress.title')}</span>
+              <span className="prog-badge">{t('leadershipProgress.phaseBadge')}</span>
             </div>
 
             {/* Strategic Vision = overall module completion */}
             <div className="prog-row">
               <div className="prog-label">
-                <span>Strategic Vision</span>
+                <span>{t('leadershipProgress.strategicVision')}</span>
                 <span>{loading ? '…' : `${visionPct}%`}</span>
               </div>
               <div className="prog-track">
@@ -1099,14 +1103,14 @@ export default function DashboardPage() {
                 />
               </div>
               {!loading && visionPct === 0 && (
-                <div className="prog-hint">Completa tu primer módulo para comenzar</div>
+                <div className="prog-hint">{t('leadershipProgress.startHint')}</div>
               )}
             </div>
 
             {/* Community Engagement */}
             <div className="prog-row" style={{ marginTop: 16 }}>
               <div className="prog-label">
-                <span>Community Engagement</span>
+                <span>{t('leadershipProgress.communityEngagement')}</span>
                 <span>{loading ? '…' : '0%'}</span>
               </div>
               <div className="prog-track">
@@ -1119,7 +1123,7 @@ export default function DashboardPage() {
                 />
               </div>
               {!loading && (
-                <div className="prog-hint">Completa tu primer módulo para comenzar</div>
+                <div className="prog-hint">{t('leadershipProgress.startHint')}</div>
               )}
             </div>
 
@@ -1134,9 +1138,9 @@ export default function DashboardPage() {
                       <path d="M7.5 9.5L5 12M14.5 9.5L17 12" stroke="#C0392B" strokeWidth="1.4" strokeLinecap="round" opacity=".5"/>
                     </svg>
                   </div>
-                  <div className="motiv-title">¡Bienvenido a Big Family!</div>
-                  <div className="motiv-sub">Completa tu primer módulo y comienza a ganar Impact Credits</div>
-                  <button className="motiv-btn" onClick={() => router.push('/dashboard/leadership-path')}>Comenzar ahora →</button>
+                  <div className="motiv-title">{t('welcomeTitle')}</div>
+                  <div className="motiv-sub">{t('welcomeBody')}</div>
+                  <button className="motiv-btn" onClick={() => router.push('/dashboard/leadership-path')}>{t('modulesAvailable.startNow')}</button>
                 </div>
               )
               : loading
@@ -1144,7 +1148,7 @@ export default function DashboardPage() {
                 : (
                   <div className="prog-row" style={{ marginTop: 16 }}>
                     <div className="prog-label">
-                      <span>Modules Completed</span>
+                      <span>{t('leadershipProgress.modulesCompletedLabel')}</span>
                       <span>{completedCount} / {totalModules}</span>
                     </div>
                     <div className="prog-track">
@@ -1167,7 +1171,7 @@ export default function DashboardPage() {
                 whileHover={pref ? undefined : { scale: 1.02 }}
                 whileTap={pref ? undefined : { scale: 0.97 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-              >Ver programa completo</m.button>
+              >{t('leadershipProgress.viewFullProgram')}</m.button>
               {nextModule && (
                 <m.button
                   className="btn-solid"
@@ -1175,7 +1179,7 @@ export default function DashboardPage() {
                   whileHover={pref ? undefined : { scale: 1.02 }}
                   whileTap={pref ? undefined : { scale: 0.97 }}
                   transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                >Siguiente módulo →</m.button>
+                >{t('leadershipProgress.nextModule')}</m.button>
               )}
             </div>
           </div>
@@ -1189,8 +1193,8 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <div>
-                <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, color: '#15803d' }}>¡Capstone desbloqueado!</div>
-                <div style={{ fontSize: 12.5, color: '#166534', marginTop: 2 }}>Completaste los {totalModules} módulos. Ya puedes subir tu proyecto Capstone.</div>
+                <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, color: '#15803d' }}>{t('capstoneBanner.unlocked')}</div>
+                <div style={{ fontSize: 12.5, color: '#166534', marginTop: 2 }}>{t('capstoneBanner.body', { total: totalModules })}</div>
               </div>
               <m.button
                 style={{ marginLeft: 'auto', padding: '9px 18px', background: '#16a34a', border: 'none', borderRadius: 10, fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 13, color: '#fff', cursor: 'pointer', flexShrink: 0 }}
@@ -1199,7 +1203,7 @@ export default function DashboardPage() {
                 whileTap={pref ? undefined : { scale: 0.97 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 22 }}
               >
-                Comenzar Capstone →
+                {t('capstoneBanner.startBtn')}
               </m.button>
             </div>
           )}
@@ -1208,8 +1212,8 @@ export default function DashboardPage() {
           <div className="cards-row">
             {/* Card 1 — Capstone / Certificación */}
             <div className="card">
-              <div className="cert-eyebrow">The Big Leader</div>
-              <div className="cert-title">Capstone</div>
+              <div className="cert-eyebrow">{t('capstoneCard.eyebrow')}</div>
+              <div className="cert-title">{t('capstoneCard.title')}</div>
               {capstoneLocked ? (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', background: 'var(--line)', borderRadius: 10, margin: '12px 0 16px' }}>
@@ -1218,27 +1222,27 @@ export default function DashboardPage() {
                       <path d="M5 7V5a3 3 0 1 1 6 0v2" stroke="var(--mute)" strokeWidth="1.4" strokeLinecap="round"/>
                     </svg>
                     <span style={{ fontSize: 12.5, color: 'var(--mute)', lineHeight: 1.4 }}>
-                      Completa los {totalModules || 7} módulos para desbloquear el Capstone
+                      {t('capstoneCard.lockedHint', { total: totalModules || 7 })}
                     </span>
                   </div>
                   <div className="prog-track" style={{ marginBottom: 16 }}>
                     <div className="prog-bar" style={{ width: `${visionPct}%` }} />
                   </div>
                   <button className="btn-upload" disabled>
-                    Subir proyecto
+                    {t('capstoneCard.uploadProject')}
                   </button>
                 </>
               ) : (
                 <>
                   <div className="cert-prog-label">
-                    <span>Proyectos aprobados</span>
+                    <span>{t('capstoneCard.approvedProjects')}</span>
                     <span>0 / 3</span>
                   </div>
                   <div className="prog-track">
                     <div className="prog-bar" style={{ width: '0%' }} />
                   </div>
                   <div className="cert-text">
-                    0 de 3 proyectos aprobados para obtener la certificación.
+                    {t('capstoneCard.approvedCount', { approved: 0, total: 3 })}
                   </div>
                   {diploma ? (
                     <m.button
@@ -1249,7 +1253,7 @@ export default function DashboardPage() {
                       transition={{ type: 'spring', stiffness: 200, damping: 22 }}
                       style={{ background: '#16a34a' }}
                     >
-                      🎓 Ver mi diploma →
+                      {t('capstoneCard.viewDiploma')}
                     </m.button>
                   ) : (
                     <m.button
@@ -1259,7 +1263,7 @@ export default function DashboardPage() {
                       whileTap={pref ? undefined : { scale: 0.97 }}
                       transition={{ type: 'spring', stiffness: 200, damping: 22 }}
                     >
-                      Subir proyecto
+                      {t('capstoneCard.uploadProject')}
                     </m.button>
                   )}
                 </>
@@ -1271,7 +1275,7 @@ export default function DashboardPage() {
 
               {/* Card 2 — Próximo módulo */}
               <div className="card">
-                <div className="next-eyebrow">Siguiente Paso</div>
+                <div className="next-eyebrow">{t('nextStep.eyebrow')}</div>
                 {loading ? (
                   <>
                     <Sk w="85%" h={18} r={6} />
@@ -1294,12 +1298,12 @@ export default function DashboardPage() {
                       whileTap={pref ? undefined : { scale: 0.97 }}
                       transition={{ type: 'spring', stiffness: 200, damping: 22 }}
                     >
-                      Continuar →
+                      {t('nextStep.continueBtn')}
                     </m.button>
                   </>
                 ) : (
                   <div style={{ fontSize: 13, color: 'var(--mute)', textAlign: 'center', padding: '20px 0', lineHeight: 1.6 }}>
-                    ¡Completaste todos los módulos! 🎉
+                    {t('nextStep.allDone')}
                   </div>
                 )}
               </div>
@@ -1316,7 +1320,7 @@ export default function DashboardPage() {
                   <div style={{ background: 'rgba(192,57,43,0.04)', border: '1px solid rgba(192,57,43,0.12)', borderRadius: 16, padding: 20, position: 'relative', overflow: 'hidden' }}>
                     <span style={{ position: 'absolute', top: 4, left: 12, fontFamily: "'Instrument Serif',serif", fontSize: 28, color: 'rgba(192,57,43,0.2)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none' }}>&ldquo;</span>
                     <div style={{ paddingLeft: 4 }}>
-                      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: accent, marginBottom: 8 }}>{q.category} · Frase del día</div>
+                      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: accent, marginBottom: 8 }}>{q.category} · {t('quoteOfDay')}</div>
                       <p style={{ fontFamily: "'Instrument Serif', serif", fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-2)', lineHeight: 1.65, margin: '0 0 14px 0', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{q.quote}</p>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{ width: 22, height: 22, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #0D0D0D)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: '#fff', fontFamily: '"Satoshi", sans-serif', flexShrink: 0 }}>{qInitials}</div>
@@ -1333,9 +1337,9 @@ export default function DashboardPage() {
           {/* Modules Available */}
           <div>
             <div className="mods-header">
-              <span className="mods-title">Módulos Disponibles</span>
+              <span className="mods-title">{t('modulesAvailable.title')}</span>
               {!loading && (
-                <span className="mods-count">{totalModules} módulo{totalModules !== 1 ? 's' : ''}</span>
+                <span className="mods-count">{totalModules} {totalModules !== 1 ? t('modulesAvailable.modulePlural') : t('modulesAvailable.moduleSingular')}</span>
               )}
             </div>
 
@@ -1371,7 +1375,7 @@ export default function DashboardPage() {
               </>
             ) : totalModules === 0 ? (
               <div className="mods-empty">
-                No hay módulos disponibles aún. ¡Vuelve pronto!
+                {t('modulesAvailable.empty')}
               </div>
             ) : (
               <>
@@ -1392,9 +1396,9 @@ export default function DashboardPage() {
                       </svg>
                     </div>
                     <div className="cert-unlocked__body">
-                      <div className="cert-unlocked__eyebrow">LOGRO DESBLOQUEADO</div>
-                      <div className="cert-unlocked__title">Tu certificación está lista</div>
-                      <div className="cert-unlocked__sub">The Big Leader — Ver mi diploma →</div>
+                      <div className="cert-unlocked__eyebrow">{t('modulesAvailable.diplomaUnlocked.eyebrow')}</div>
+                      <div className="cert-unlocked__title">{t('modulesAvailable.diplomaUnlocked.title')}</div>
+                      <div className="cert-unlocked__sub">{t('modulesAvailable.diplomaUnlocked.subtitle')}</div>
                     </div>
                     <div className="cert-unlocked__arrow" aria-hidden="true">›</div>
                   </m.button>
@@ -1416,7 +1420,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="mod-next__body">
                       <div className="mod-next__eyebrow">
-                        <span>Siguiente módulo</span>
+                        <span>{t('modulesAvailable.nextModuleLabel')}</span>
                         <span style={{ opacity: .45 }}>·</span>
                         <span style={{ color: 'var(--mute)', fontWeight: 500 }}>
                           {String(nextModule.order_index).padStart(2, '0')}
@@ -1425,9 +1429,9 @@ export default function DashboardPage() {
                           const pillar = MODULE_PILLAR[nextModule.order_index]
                           if (!pillar) return null
                           if (leaderProfile.fortalezas.includes(pillar))
-                            return <span className="mod-profile-badge strength">Tu fortaleza</span>
+                            return <span className="mod-profile-badge strength">{tModules('strengthBadge')}</span>
                           if (leaderProfile.areas_crecimiento.includes(pillar))
-                            return <span className="mod-profile-badge growth">Área clave</span>
+                            return <span className="mod-profile-badge growth">{tModules('growthBadge')}</span>
                           return null
                         })()}
                       </div>
@@ -1447,7 +1451,7 @@ export default function DashboardPage() {
                           whileTap={pref ? undefined : { scale: 0.97 }}
                           transition={{ type: 'spring', stiffness: 200, damping: 22 }}
                         >
-                          Comenzar ahora →
+                          {t('modulesAvailable.startNow')}
                         </m.button>
                       </div>
                     </div>
@@ -1488,9 +1492,9 @@ export default function DashboardPage() {
                                 const pillar = MODULE_PILLAR[mod.order_index]
                                 if (!pillar) return null
                                 if (leaderProfile.fortalezas.includes(pillar))
-                                  return <span className="mod-profile-badge strength">Tu fortaleza</span>
+                                  return <span className="mod-profile-badge strength">{tModules('strengthBadge')}</span>
                                 if (leaderProfile.areas_crecimiento.includes(pillar))
-                                  return <span className="mod-profile-badge growth">Área clave</span>
+                                  return <span className="mod-profile-badge growth">{tModules('growthBadge')}</span>
                                 return null
                               })()}
                             </div>
@@ -1520,7 +1524,7 @@ export default function DashboardPage() {
                                     strokeLinejoin="round"
                                   />
                                 </svg>
-                                Completado
+                                {tModules('completed')}
                               </div>
                             ) : isLocked ? (
                               <div className="lock-badge">
@@ -1528,7 +1532,7 @@ export default function DashboardPage() {
                                   <rect x="2" y="6" width="10" height="7" rx="2" stroke="currentColor" strokeWidth="1.4"/>
                                   <path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
                                 </svg>
-                                Bloqueado
+                                {tModules('locked')}
                               </div>
                             ) : (
                               <m.button
@@ -1538,7 +1542,7 @@ export default function DashboardPage() {
                                 whileTap={pref ? undefined : { scale: 0.97 }}
                                 transition={{ type: 'spring', stiffness: 200, damping: 22 }}
                               >
-                                Empezar
+                                {t('modulesAvailable.startBtn')}
                               </m.button>
                             )}
                           </m.div>

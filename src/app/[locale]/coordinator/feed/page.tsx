@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
@@ -23,32 +24,25 @@ type FeedFilter = 'all' | 'module_completed' | 'project_submitted' | 'badge_earn
 
 const PAGE_SIZE = 20
 
-const TYPE_META: Record<string, { icon: string; label: string; color: string; border: string }> = {
-  module_completed:  { icon: '📚', label: 'completó un módulo',  color: '#2A9D8F', border: '#2A9D8F' },
-  project_submitted: { icon: '📤', label: 'envió un proyecto',   color: '#C0392B', border: '#C0392B' },
-  badge_earned:      { icon: '🏅', label: 'ganó un badge',       color: '#D4821A', border: '#D4821A' },
-  certified:         { icon: '🎓', label: 'fue certificado/a',   color: '#27AE60', border: '#27AE60' },
-  goal_completed:    { icon: '🎯', label: 'completó una meta',   color: '#2A9D8F', border: '#2A9D8F' },
+const TYPE_META: Record<string, { icon: string; color: string; border: string }> = {
+  module_completed:  { icon: '📚', color: '#2A9D8F', border: '#2A9D8F' },
+  project_submitted: { icon: '📤', color: '#C0392B', border: '#C0392B' },
+  badge_earned:      { icon: '🏅', color: '#D4821A', border: '#D4821A' },
+  certified:         { icon: '🎓', color: '#27AE60', border: '#27AE60' },
+  goal_completed:    { icon: '🎯', color: '#2A9D8F', border: '#2A9D8F' },
 }
 
-const FILTER_LABELS: Record<FeedFilter, string> = {
-  all:               'Todos',
-  module_completed:  'Módulos',
-  project_submitted: 'Proyectos',
-  badge_earned:      'Badges',
-  certified:         'Certificaciones',
-  goal_completed:    'Metas',
-}
+const FILTER_KEYS: FeedFilter[] = ['all', 'module_completed', 'project_submitted', 'badge_earned', 'certified', 'goal_completed']
 
-function timeAgo(ts: string): string {
+function timeAgo(ts: string, t: ReturnType<typeof useTranslations>): string {
   const diff = Date.now() - new Date(ts).getTime()
   const min = Math.floor(diff / 60000)
-  if (min < 1) return 'hace un momento'
-  if (min < 60) return `hace ${min} min`
+  if (min < 1) return t('justNow')
+  if (min < 60) return t('minutesAgo', { min })
   const h = Math.floor(min / 60)
-  if (h < 24) return `hace ${h}h`
+  if (h < 24) return t('hoursAgo', { h })
   const d = Math.floor(h / 24)
-  if (d < 7) return `hace ${d}d`
+  if (d < 7) return t('daysAgo', { d })
   return new Date(ts).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })
 }
 
@@ -58,6 +52,7 @@ function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?
 
 export default function CoordinatorFeedPage() {
   const router      = useRouter()
+  const t           = useTranslations('coordinator.feed')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const pref        = useReducedMotion()
 
@@ -104,7 +99,7 @@ export default function CoordinatorFeedPage() {
 
     const mapped: FeedItem[] = feedRows.map((r: { id: string; user_id: string; type: string; metadata: Record<string, string> | null; created_at: string }) => {
       const prof = profileMap[r.user_id]
-      const name = prof?.name ?? 'Usuario'
+      const name = prof?.name ?? t('defaultUserName')
       const initials = name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() || 'U'
       return { ...r, display_name: name, school_name: prof?.school_id ? (schoolMap[prof.school_id] ?? null) : null, initials }
     })
@@ -124,7 +119,7 @@ export default function CoordinatorFeedPage() {
       const { data: profile } = await sb!.from('profiles').select('display_name, role, school_id').eq('id', user.id).maybeSingle()
       if (profile?.role !== 'coordinator') { router.replace('/dashboard'); return }
 
-      setUserName(profile?.display_name ?? 'Coordinador')
+      setUserName(profile?.display_name ?? t('defaultCoordinatorName'))
       setUserInit((profile?.display_name ?? 'C')[0].toUpperCase())
 
       if (profile?.school_id) {
@@ -198,12 +193,12 @@ export default function CoordinatorFeedPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 220, damping: 28 }}
         >
-          <div className="page-title">Feed de Actividad</div>
+          <div className="page-title">{t('title')}</div>
 
           <div className="filter-row">
-            {(Object.keys(FILTER_LABELS) as FeedFilter[]).map(f => (
+            {FILTER_KEYS.map(f => (
               <button type="button" key={f} className={`filter-btn ${filter === f ? 'active' : ''}`} onClick={() => handleFilterChange(f)}>
-                {FILTER_LABELS[f]}
+                {t(`filters.${f}`)}
               </button>
             ))}
           </div>
@@ -222,7 +217,7 @@ export default function CoordinatorFeedPage() {
                 ))}
               </div>
             ) : items.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--mute)', fontSize: 13 }}>No hay actividad todavía.</div>
+              <div style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--mute)', fontSize: 13 }}>{t('noActivityYet')}</div>
             ) : (
               <m.div
                 initial={pref ? false : 'hidden'}
@@ -230,7 +225,7 @@ export default function CoordinatorFeedPage() {
                 variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.025 } } }}
               >
                 {items.map((item, idx) => {
-                  const meta = TYPE_META[item.type] ?? { icon: '⚡', label: item.type, color: '#C0392B', border: '#C0392B' }
+                  const meta = TYPE_META[item.type] ?? { icon: '⚡', color: '#C0392B', border: '#C0392B' }
                   const desc = getDescription(item)
                   const itemVariants = idx < 8
                     ? { hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: springNatural } }
@@ -252,12 +247,12 @@ export default function CoordinatorFeedPage() {
                         <div className="feed-name">{item.display_name}</div>
                         <div className="feed-action">
                           <span style={{ marginRight: 5 }}>{meta.icon}</span>
-                          <span style={{ color: meta.color, fontWeight: 600 }}>{meta.label}</span>
+                          <span style={{ color: meta.color, fontWeight: 600 }}>{t(`activity.${item.type}`)}</span>
                           {desc && <span style={{ color: 'var(--mute)' }}> — {desc}</span>}
                         </div>
                         <div className="feed-meta">
                           {item.school_name && <span style={{ marginRight: 8 }}>🏫 {item.school_name}</span>}
-                          <span>{timeAgo(item.created_at)}</span>
+                          <span>{timeAgo(item.created_at, t)}</span>
                         </div>
                       </div>
                     </m.div>
@@ -268,11 +263,11 @@ export default function CoordinatorFeedPage() {
 
             <div ref={loadRef} style={{ height: 1 }} />
             {loadMore && (
-              <div style={{ textAlign: 'center', padding: '16px 0', fontSize: 13, color: 'var(--mute)' }}>Cargando más…</div>
+              <div style={{ textAlign: 'center', padding: '16px 0', fontSize: 13, color: 'var(--mute)' }}>{t('loadingMore')}</div>
             )}
             {!hasMore && items.length > 0 && (
               <div style={{ textAlign: 'center', padding: '16px 0', fontSize: 12, color: 'var(--mute)', borderTop: '1px solid var(--line-soft)', marginTop: 4 }}>
-                — Fin del feed —
+                {t('endOfFeed')}
               </div>
             )}
           </div>
@@ -287,7 +282,7 @@ export default function CoordinatorFeedPage() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-            aria-label="Volver arriba"
+            aria-label={t('scrollToTop')}
           >
             ↑
           </m.button>

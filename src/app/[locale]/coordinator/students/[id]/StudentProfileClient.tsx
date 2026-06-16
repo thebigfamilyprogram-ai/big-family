@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m } from 'framer-motion'
 
@@ -31,6 +32,9 @@ function Sk({ w = '100%', h = 16, r = 7 }: { w?: string | number; h?: number; r?
 }
 
 export default function CoordinatorReportPage() {
+  const t           = useTranslations('coordinator.studentReport')
+  const tDash       = useTranslations('coordinator.dashboard')
+  const tNav        = useTranslations('coordinator.topNav')
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
@@ -204,36 +208,36 @@ export default function CoordinatorReportPage() {
 
       <nav className="nav">
         <a className="nav__brand" href="/coordinator">Big Family</a>
-        <span style={{ fontSize: 12, color: 'var(--mute)' }}>→ Reporte PDF</span>
+        <span style={{ fontSize: 12, color: 'var(--mute)' }}>{t('breadcrumb')}</span>
         <div className="nav__right">
           <span style={{ fontSize: 13, color: 'var(--mute)' }}>{coordName} · {schoolName}</span>
-          <button className="btn-sm" onClick={() => router.push('/coordinator')}>Panel principal</button>
-          <button className="btn-sm" onClick={handleLogout}>Salir</button>
+          <button className="btn-sm" onClick={() => router.push('/coordinator')}>{tNav('dashboardHome')}</button>
+          <button className="btn-sm" onClick={handleLogout}>{t('logout')}</button>
         </div>
       </nav>
 
       <m.div className="main" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 28 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 28 }}>
           <div>
-            <h1 className="page-h">Reporte de Estudiantes</h1>
-            <p className="page-sub">{schoolName} · {students.length} estudiante{students.length !== 1 ? 's' : ''}</p>
+            <h1 className="page-h">{t('pageTitle')}</h1>
+            <p className="page-sub">{schoolName} · {students.length === 1 ? tDash('studentCountSingular', { count: students.length }) : tDash('studentCountPlural', { count: students.length })}</p>
           </div>
           <m.button
             className="btn-export"
             onClick={handleExport}
             disabled={loading || exporting || students.length === 0}
-            title={students.length === 0 ? 'No hay estudiantes para exportar' : undefined}
+            title={students.length === 0 ? t('exportTooltipEmpty') : undefined}
             whileHover={loading || students.length === 0 ? undefined : { scale: 1.02 }}
             whileTap={loading || students.length === 0 ? undefined : { scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
           >
-            {exporting ? 'Generando PDF…' : '↓ Exportar Reporte PDF'}
+            {exporting ? t('exporting') : t('exportBtn')}
           </m.button>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
           <button type="button" className="col-toggle" onClick={() => setShowAllCols(s => !s)}>
-            {showAllCols ? '↑ Menos columnas' : '↓ Mostrar todas las columnas'}
+            {showAllCols ? t('showFewerCols') : t('showAllColsBtn')}
           </button>
         </div>
 
@@ -243,19 +247,19 @@ export default function CoordinatorReportPage() {
               {[1,2,3,4,5].map(i => <Sk key={i} h={20} r={6} />)}
             </div>
           ) : students.length === 0 ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--mute)', fontSize: 13 }}>Sin estudiantes registrados.</div>
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--mute)', fontSize: 13 }}>{t('emptyStudents')}</div>
           ) : (
             <table>
               <thead>
                 <tr>
-                  <th>Nombre</th>
-                  <th>Nivel</th>
-                  <th>XP Total</th>
-                  <th>Módulos</th>
-                  <th>Proyecto</th>
-                  <th>Capstone</th>
-                  <th>Great Venture</th>
-                  {showAllCols && <><th>Email</th><th>Badges</th><th>Estado</th><th>Metas</th><th>Registro</th></>}
+                  <th>{tDash('tableName')}</th>
+                  <th>{t('colLevel')}</th>
+                  <th>{tDash('xpTotal')}</th>
+                  <th>{tDash('tableModules')}</th>
+                  <th>{t('colProject')}</th>
+                  <th>{t('colCapstone')}</th>
+                  <th>{t('colGreatVenture')}</th>
+                  {showAllCols && <><th>{tDash('tableEmail')}</th><th>{t('colBadges')}</th><th>{tDash('tableStatus')}</th><th>{t('colGoals')}</th><th>{tDash('tableRegistered')}</th></>}
                 </tr>
               </thead>
               <tbody>
@@ -269,8 +273,8 @@ export default function CoordinatorReportPage() {
                     <td>{s.capstone_resultado ? <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: 'rgba(34,197,94,.15)', color: '#065F46' }}>{s.capstone_resultado}</span> : '—'}</td>
                     <td style={{ textAlign: 'center' }}>
                       {s.great_venture_done
-                        ? <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: 'rgba(15,123,108,.12)', color: '#0F7B6C' }}>✓ Completo</span>
-                        : <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: 'rgba(212,130,26,.1)', color: '#D4821A' }}>Pendiente</span>
+                        ? <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: 'rgba(15,123,108,.12)', color: '#0F7B6C' }}>{t('gvComplete')}</span>
+                        : <span style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, background: 'rgba(212,130,26,.1)', color: '#D4821A' }}>{t('gvPending')}</span>
                       }
                     </td>
                     {showAllCols && <>

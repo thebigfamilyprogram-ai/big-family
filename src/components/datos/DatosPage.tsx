@@ -1,6 +1,7 @@
 'use client'
 
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { m, AnimatePresence } from 'framer-motion'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -258,9 +259,9 @@ async function fetchSummary(sb: ReturnType<typeof createClient>): Promise<Summar
   const xpBySchool     = schoolStats.slice(0, 7).map(s => ({ school: shortName(s.school_name), avg_xp: s.avg_xp }))
   const modulesBySchool = schoolStats.slice(0, 7).map(s => ({ school: shortName(s.school_name), modules: s.modules_completed }))
   const projectsByStatus = [
-    { name: 'Enviados',   value: pendingProjects  },
-    { name: 'Aprobados',  value: approvedProjects },
-    { name: 'Rechazados', value: rejectedProjects },
+    { name: 'pending',  value: pendingProjects  },
+    { name: 'approved', value: approvedProjects },
+    { name: 'rejected', value: rejectedProjects },
   ].filter(p => p.value > 0)
 
   return {
@@ -286,6 +287,7 @@ function ChartSkeleton({ h = 280 }: { h?: number }) {
 }
 
 function ErrorCard({ msg, onRetry }: { msg: string; onRetry: () => void }) {
+  const tc = useTranslations('common')
   return (
     <div style={{
       padding: '20px 24px', borderRadius: 12,
@@ -301,7 +303,7 @@ function ErrorCard({ msg, onRetry }: { msg: string; onRetry: () => void }) {
           background: 'transparent', color: 'var(--accent,#C0392B)',
           fontSize: 12, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, cursor: 'pointer',
         }}
-      >Reintentar</button>
+      >{tc('retry')}</button>
     </div>
   )
 }
@@ -354,6 +356,8 @@ const ResumenContent = memo(function ResumenContent({
   data, loading, error, onRetry,
 }: { data: SummaryData | null; loading: boolean; error: string; onRetry: () => void }) {
 
+  const t = useTranslations('datos')
+
   const [sortKey, setSortKey] = useState<SortKey>('score')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
 
@@ -367,17 +371,27 @@ const ResumenContent = memo(function ResumenContent({
     return sortDir === 'desc' ? -v : v
   }) ?? []
 
+  const statusLabels: Record<string, string> = {
+    pending:  t('status.pending'),
+    approved: t('status.approved'),
+    rejected: t('status.rejected'),
+  }
+  const projectsByStatusDisplay = (data?.projectsByStatus ?? []).map(e => ({
+    ...e,
+    label: statusLabels[e.name] ?? e.name,
+  }))
+
   function exportSchoolCSV() {
     if (!data?.schoolStats.length) return
     downloadCSV(data.schoolStats.map(s => ({
-      Colegio:     s.school_name,
-      Estudiantes: s.student_count,
-      XP_Total:    s.total_xp,
-      XP_Promedio: s.avg_xp,
-      Módulos:     s.modules_completed,
-      Proyectos:   s.projects_total,
-      Aprobados:   s.projects_approved,
-      Score:       s.score,
+      [t('csv.school')]:    s.school_name,
+      [t('csv.students')]:  s.student_count,
+      [t('csv.totalXp')]:   s.total_xp,
+      [t('csv.avgXp')]:     s.avg_xp,
+      [t('csv.modules')]:   s.modules_completed,
+      [t('csv.projects')]:  s.projects_total,
+      [t('csv.approved')]:  s.projects_approved,
+      [t('csv.score')]:     s.score,
     })), 'ranking-colegios.csv')
   }
 
@@ -391,14 +405,14 @@ const ResumenContent = memo(function ResumenContent({
         {loading
           ? Array.from({ length: 8 }).map((_, i) => <ChartSkeleton key={i} h={100} />)
           : [
-            { num: data?.totalStudents  ?? 0, label: 'Estudiantes',            accent: false                  },
-            { num: data?.totalXP        ?? 0, label: 'XP Total',               accent: false, suffix: ' xp'  },
-            { num: data?.avgXP          ?? 0, label: 'XP Promedio',            accent: true                   },
-            { num: data?.modulesCompleted ?? 0, label: 'Módulos completados',  accent: false                  },
-            { num: data?.badgesAwarded  ?? 0, label: 'Badges otorgados',       accent: false                  },
-            { num: (data?.pendingProjects ?? 0) + (data?.approvedProjects ?? 0) + (data?.rejectedProjects ?? 0), label: 'Proyectos enviados', accent: false },
-            { num: data?.activeThisWeek ?? 0, label: 'Activos esta semana',    accent: false                  },
-            { num: data?.retentionRate  ?? 0, label: 'Retención 30 días',      accent: false, suffix: '%'    },
+            { num: data?.totalStudents  ?? 0, label: t('kpis.students'),         accent: false                  },
+            { num: data?.totalXP        ?? 0, label: t('kpis.totalXp'),          accent: false, suffix: ' xp'  },
+            { num: data?.avgXP          ?? 0, label: t('kpis.avgXp'),            accent: true                   },
+            { num: data?.modulesCompleted ?? 0, label: t('kpis.modulesCompleted'), accent: false                },
+            { num: data?.badgesAwarded  ?? 0, label: t('kpis.badgesAwarded'),    accent: false                  },
+            { num: (data?.pendingProjects ?? 0) + (data?.approvedProjects ?? 0) + (data?.rejectedProjects ?? 0), label: t('kpis.projectsSubmitted'), accent: false },
+            { num: data?.activeThisWeek ?? 0, label: t('kpis.activeThisWeek'),   accent: false                  },
+            { num: data?.retentionRate  ?? 0, label: t('kpis.retention'),        accent: false, suffix: '%'    },
           ].map((kpi, i) => (
             <StatCard key={i} {...kpi} />
           ))}
@@ -406,32 +420,32 @@ const ResumenContent = memo(function ResumenContent({
 
       {/* Charts row 1 */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <ChartCard title="XP promedio por colegio" loading={loading}>
+        <ChartCard title={t('charts.avgXpBySchool')} loading={loading}>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={data?.xpBySchool ?? []} layout="vertical" margin={{ left: 0, right: 16 }}>
               <CartesianGrid {...GRID_STYLE} horizontal={false} />
               <XAxis type="number" tick={TICK_STYLE} />
               <YAxis type="category" dataKey="school" tick={TICK_STYLE} width={90} />
               <Tooltip content={<CT />} />
-              <Bar dataKey="avg_xp" name="XP Prom." fill={C.accent} radius={[0, 6, 6, 0]} />
+              <Bar dataKey="avg_xp" name={t('charts.avgXpSeries')} fill={C.accent} radius={[0, 6, 6, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="Proyectos por estado" loading={loading}>
+        <ChartCard title={t('charts.projectsByStatus')} loading={loading}>
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
               <Pie
-                data={data?.projectsByStatus ?? []}
-                dataKey="value" nameKey="name"
+                data={projectsByStatusDisplay}
+                dataKey="value" nameKey="label"
                 cx="50%" cy="50%"
                 outerRadius={90} innerRadius={50}
                 paddingAngle={3}
                 label={({ name, percent }) => `${name} ${Math.round((percent ?? 0) * 100)}%`}
                 labelLine={false}
               >
-                {(data?.projectsByStatus ?? []).map((entry, i) => (
-                  <Cell key={i} fill={PIE_COLORS[entry.name.toLowerCase().replace('enviados','pending').replace('aprobados','approved').replace('rechazados','rejected')] ?? CHART_COLORS[i]} />
+                {projectsByStatusDisplay.map((entry, i) => (
+                  <Cell key={i} fill={PIE_COLORS[entry.name] ?? CHART_COLORS[i]} />
                 ))}
               </Pie>
               <Tooltip content={<CT />} />
@@ -442,19 +456,19 @@ const ResumenContent = memo(function ResumenContent({
 
       {/* Charts row 2 */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
-        <ChartCard title="Crecimiento semanal (8 sem.)" loading={loading}>
+        <ChartCard title={t('charts.weeklyGrowth')} loading={loading}>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={data?.weeklyGrowth ?? []}>
               <CartesianGrid {...GRID_STYLE} />
               <XAxis dataKey="week" tick={TICK_STYLE} />
               <YAxis tick={TICK_STYLE} />
               <Tooltip content={<CT />} />
-              <Line type="monotone" dataKey="students" name="Nuevos" stroke={C.teal} strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="students" name={t('charts.newSeries')} stroke={C.teal} strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="Actividad semanal global" loading={loading}>
+        <ChartCard title={t('charts.weeklyActivity')} loading={loading}>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={data?.weeklyActivity ?? []}>
               <defs>
@@ -467,19 +481,19 @@ const ResumenContent = memo(function ResumenContent({
               <XAxis dataKey="week" tick={TICK_STYLE} />
               <YAxis tick={TICK_STYLE} />
               <Tooltip content={<CT />} />
-              <Area type="monotone" dataKey="actions" name="Acciones" stroke={C.accent} strokeWidth={2} fill="url(#actGrad)" />
+              <Area type="monotone" dataKey="actions" name={t('charts.actionsSeries')} stroke={C.accent} strokeWidth={2} fill="url(#actGrad)" />
             </AreaChart>
           </ResponsiveContainer>
         </ChartCard>
 
-        <ChartCard title="Módulos por colegio" loading={loading}>
+        <ChartCard title={t('charts.modulesBySchool')} loading={loading}>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={data?.modulesBySchool ?? []}>
               <CartesianGrid {...GRID_STYLE} />
               <XAxis dataKey="school" tick={{ ...TICK_STYLE, fontSize: 9 }} />
               <YAxis tick={TICK_STYLE} />
               <Tooltip content={<CT />} />
-              <Bar dataKey="modules" name="Módulos" fill={C.purple} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="modules" name={t('charts.modulesSeries')} fill={C.purple} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -488,11 +502,11 @@ const ResumenContent = memo(function ResumenContent({
       {/* Ranking table */}
       <div style={{ background: 'var(--card-bg,#fff)', border: '1px solid var(--card-border,rgba(13,13,13,.08))', borderRadius: 14, overflow: 'hidden' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid var(--line,rgba(13,13,13,.08))' }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#0D0D0D)', fontFamily: '"Satoshi",sans-serif' }}>Ranking de colegios</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink,#0D0D0D)', fontFamily: '"Satoshi",sans-serif' }}>{t('table.title')}</span>
           <button
             onClick={exportSchoolCSV}
             style={{ padding: '7px 14px', borderRadius: 8, border: '1px solid var(--line,rgba(13,13,13,.1))', background: 'transparent', fontSize: 12, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, color: 'var(--mute,#6B6B6B)', cursor: 'pointer' }}
-          >Exportar CSV</button>
+          >{t('table.exportCsv')}</button>
         </div>
         <div style={{ overflowX: 'auto' }}>
           {loading ? <div style={{ padding: 20 }}><ChartSkeleton h={160} /></div> : (
@@ -500,13 +514,13 @@ const ResumenContent = memo(function ResumenContent({
               <thead>
                 <tr style={{ background: 'var(--bg-2,#EFECE6)' }}>
                   {([
-                    { k: null,               label: 'Colegio'       },
-                    { k: 'student_count',    label: 'Estudiantes'   },
-                    { k: 'total_xp',         label: 'XP Total'      },
-                    { k: 'avg_xp',           label: 'XP Prom.'      },
-                    { k: 'modules_completed',label: 'Módulos'       },
-                    { k: 'projects_total',   label: 'Proyectos'     },
-                    { k: 'score',            label: 'Score'         },
+                    { k: null,               label: t('table.school')    },
+                    { k: 'student_count',    label: t('table.students')  },
+                    { k: 'total_xp',         label: t('table.totalXp')   },
+                    { k: 'avg_xp',           label: t('table.avgXp')     },
+                    { k: 'modules_completed',label: t('table.modules')   },
+                    { k: 'projects_total',   label: t('table.projects')  },
+                    { k: 'score',            label: t('table.score')     },
                   ] as { k: SortKey | null; label: string }[]).map(({ k, label }) => (
                     <th
                       key={label}
@@ -567,38 +581,6 @@ function ChartCard({ title, loading, children }: { title: string; loading: boole
 
 // ── TAB 2 — Constructor ───────────────────────────────────────────────────────
 
-const QUICK_PRESETS = [
-  { value: 'xp_school',       label: 'XP por colegio'          },
-  { value: 'students_school', label: 'Estudiantes por colegio'  },
-  { value: 'modules_school',  label: 'Progreso de módulos'      },
-  { value: 'projects_status', label: 'Proyectos por estado'     },
-  { value: 'activity_weekly', label: 'Actividad semanal'        },
-  { value: 'ranking',         label: 'Rankings comparativos'    },
-]
-
-const METRICS: { value: MetricKey; label: string }[] = [
-  { value: 'xp_avg',    label: 'XP Promedio'            },
-  { value: 'xp_total',  label: 'XP Total'               },
-  { value: 'students',  label: 'Conteo estudiantes'      },
-  { value: 'modules',   label: 'Módulos completados'     },
-  { value: 'projects',  label: 'Proyectos aprobados'     },
-  { value: 'badges',    label: 'Badges otorgados'        },
-  { value: 'activity',  label: 'Actividad (acciones)'    },
-]
-
-const DIMENSIONS: { value: DimensionKey; label: string }[] = [
-  { value: 'school', label: 'Por colegio'   },
-  { value: 'week',   label: 'Por semana'    },
-  { value: 'status', label: 'Por estado'    },
-]
-
-const CHART_TYPES: { value: ChartType; label: string; icon: string }[] = [
-  { value: 'bar',  label: 'Barras',  icon: '▬' },
-  { value: 'line', label: 'Línea',   icon: '╱' },
-  { value: 'area', label: 'Área',    icon: '◺' },
-  { value: 'pie',  label: 'Pastel',  icon: '◒' },
-]
-
 const DEFAULT_CONFIG: ConstructorConfig = {
   mode:        'quick',
   quickPreset: 'xp_school',
@@ -612,6 +594,41 @@ const DEFAULT_CONFIG: ConstructorConfig = {
 const ConstructorContent = memo(function ConstructorContent({
   summaryData,
 }: { summaryData: SummaryData | null }) {
+
+  const t  = useTranslations('datos')
+  const tc = useTranslations('common')
+
+  const QUICK_PRESETS = [
+    { value: 'xp_school',       label: t('constructor.presets.xpSchool')      },
+    { value: 'students_school', label: t('constructor.presets.studentsSchool') },
+    { value: 'modules_school',  label: t('constructor.presets.modulesSchool')  },
+    { value: 'projects_status', label: t('constructor.presets.projectsStatus') },
+    { value: 'activity_weekly', label: t('constructor.presets.activityWeekly') },
+    { value: 'ranking',         label: t('constructor.presets.ranking')        },
+  ]
+
+  const METRICS: { value: MetricKey; label: string }[] = [
+    { value: 'xp_avg',   label: t('constructor.metrics.xpAvg')    },
+    { value: 'xp_total', label: t('constructor.metrics.xpTotal')   },
+    { value: 'students', label: t('constructor.metrics.students')  },
+    { value: 'modules',  label: t('constructor.metrics.modules')   },
+    { value: 'projects', label: t('constructor.metrics.projects')  },
+    { value: 'badges',   label: t('constructor.metrics.badges')    },
+    { value: 'activity', label: t('constructor.metrics.activity')  },
+  ]
+
+  const DIMENSIONS: { value: DimensionKey; label: string }[] = [
+    { value: 'school', label: t('constructor.dimensions.school') },
+    { value: 'week',   label: t('constructor.dimensions.week')   },
+    { value: 'status', label: t('constructor.dimensions.status') },
+  ]
+
+  const CHART_TYPES: { value: ChartType; label: string; icon: string }[] = [
+    { value: 'bar',  label: t('constructor.chartTypes.bar'),  icon: '▬' },
+    { value: 'line', label: t('constructor.chartTypes.line'), icon: '╱' },
+    { value: 'area', label: t('constructor.chartTypes.area'), icon: '◺' },
+    { value: 'pie',  label: t('constructor.chartTypes.pie'),  icon: '◒' },
+  ]
 
   const [config,        setConfig]        = useState<ConstructorConfig>(DEFAULT_CONFIG)
   const [chartData,     setChartData]     = useState<Record<string, unknown>[]>([])
@@ -640,12 +657,12 @@ const ConstructorContent = memo(function ConstructorContent({
   function getPresetData(preset: string): { data: Record<string, unknown>[]; chartType: ChartType; xKey: string; yKey: string; yLabel: string } {
     if (!summaryData) return { data: [], chartType: 'bar', xKey: 'x', yKey: 'y', yLabel: '' }
     switch (preset) {
-      case 'xp_school':       return { data: summaryData.xpBySchool.map(r => ({ x: r.school, y: r.avg_xp })), chartType: 'bar',  xKey: 'x', yKey: 'y', yLabel: 'XP Prom.' }
-      case 'students_school': return { data: summaryData.schoolStats.map(s => ({ x: shortName(s.school_name), y: s.student_count })), chartType: 'bar', xKey: 'x', yKey: 'y', yLabel: 'Estudiantes' }
-      case 'modules_school':  return { data: summaryData.modulesBySchool.map(r => ({ x: r.school, y: r.modules })), chartType: 'bar', xKey: 'x', yKey: 'y', yLabel: 'Módulos' }
-      case 'projects_status': return { data: summaryData.projectsByStatus.map(r => ({ x: r.name, y: r.value })), chartType: 'pie', xKey: 'x', yKey: 'y', yLabel: 'Proyectos' }
-      case 'activity_weekly': return { data: summaryData.weeklyActivity.map(r => ({ x: r.week, y: r.actions })), chartType: 'area', xKey: 'x', yKey: 'y', yLabel: 'Acciones' }
-      case 'ranking':         return { data: summaryData.schoolStats.map(s => ({ x: shortName(s.school_name), y: s.score })), chartType: 'bar', xKey: 'x', yKey: 'y', yLabel: 'Score' }
+      case 'xp_school':       return { data: summaryData.xpBySchool.map(r => ({ x: r.school, y: r.avg_xp })), chartType: 'bar',  xKey: 'x', yKey: 'y', yLabel: t('charts.avgXpSeries') }
+      case 'students_school': return { data: summaryData.schoolStats.map(s => ({ x: shortName(s.school_name), y: s.student_count })), chartType: 'bar', xKey: 'x', yKey: 'y', yLabel: t('kpis.students') }
+      case 'modules_school':  return { data: summaryData.modulesBySchool.map(r => ({ x: r.school, y: r.modules })), chartType: 'bar', xKey: 'x', yKey: 'y', yLabel: t('charts.modulesSeries') }
+      case 'projects_status': return { data: summaryData.projectsByStatus.map(r => ({ x: r.name, y: r.value })), chartType: 'pie', xKey: 'x', yKey: 'y', yLabel: t('table.projects') }
+      case 'activity_weekly': return { data: summaryData.weeklyActivity.map(r => ({ x: r.week, y: r.actions })), chartType: 'area', xKey: 'x', yKey: 'y', yLabel: t('charts.actionsSeries') }
+      case 'ranking':         return { data: summaryData.schoolStats.map(s => ({ x: shortName(s.school_name), y: s.score })), chartType: 'bar', xKey: 'x', yKey: 'y', yLabel: t('table.score') }
       default:                return { data: [], chartType: 'bar', xKey: 'x', yKey: 'y', yLabel: '' }
     }
   }
@@ -705,8 +722,8 @@ const ConstructorContent = memo(function ConstructorContent({
         <XAxis dataKey="x" tick={TICK_STYLE} />
         <YAxis tick={TICK_STYLE} />
         <Tooltip content={<CT />} />
-        <Line type="monotone" dataKey="y" name="Valor" stroke={C.accent} strokeWidth={2} dot={false} />
-        {config.showAvg && <Line type="monotone" dataKey={() => avg} name="Promedio" stroke={C.muted} strokeDasharray="4 4" dot={false} />}
+        <Line type="monotone" dataKey="y" name={t('charts.valueSeries')} stroke={C.accent} strokeWidth={2} dot={false} />
+        {config.showAvg && <Line type="monotone" dataKey={() => avg} name={t('charts.avgSeries')} stroke={C.muted} strokeDasharray="4 4" dot={false} />}
       </LineChart>
     )
     if (cType === 'area') return (
@@ -721,7 +738,7 @@ const ConstructorContent = memo(function ConstructorContent({
         <XAxis dataKey="x" tick={TICK_STYLE} />
         <YAxis tick={TICK_STYLE} />
         <Tooltip content={<CT />} />
-        <Area type="monotone" dataKey="y" name="Valor" stroke={C.accent} strokeWidth={2} fill="url(#cg)" />
+        <Area type="monotone" dataKey="y" name={t('charts.valueSeries')} stroke={C.accent} strokeWidth={2} fill="url(#cg)" />
       </AreaChart>
     )
     return (
@@ -730,7 +747,7 @@ const ConstructorContent = memo(function ConstructorContent({
         <XAxis dataKey="x" tick={{ ...TICK_STYLE, fontSize: 10 }} />
         <YAxis tick={TICK_STYLE} />
         <Tooltip content={<CT />} />
-        <Bar dataKey="y" name="Valor" fill={C.accent} radius={[4, 4, 0, 0]}>
+        <Bar dataKey="y" name={t('charts.valueSeries')} fill={C.accent} radius={[4, 4, 0, 0]}>
           {data.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
         </Bar>
       </BarChart>
@@ -771,13 +788,13 @@ const ConstructorContent = memo(function ConstructorContent({
             <button key={m}
               onClick={() => setConfig(p => ({ ...p, mode: m }))}
               style={{ flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 12, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, cursor: 'pointer', border: '1px solid', borderColor: config.mode === m ? 'var(--accent,#C0392B)' : 'var(--line,rgba(13,13,13,.1))', background: config.mode === m ? 'rgba(192,57,43,.08)' : 'transparent', color: config.mode === m ? 'var(--accent,#C0392B)' : 'var(--mute,#6B6B6B)' }}
-            >{m === 'quick' ? 'Modo rápido' : 'Avanzado'}</button>
+            >{m === 'quick' ? t('constructor.modeQuick') : t('constructor.modeAdvanced')}</button>
           ))}
         </div>
 
         {config.mode === 'quick' ? (
           <div>
-            <span style={lbl}>Métrica predefinida</span>
+            <span style={lbl}>{t('constructor.presetLabel')}</span>
             <select style={sel} value={config.quickPreset} onChange={e => setConfig(p => ({ ...p, quickPreset: e.target.value }))}>
               {QUICK_PRESETS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
@@ -785,19 +802,19 @@ const ConstructorContent = memo(function ConstructorContent({
         ) : (
           <>
             <div>
-              <span style={lbl}>Métrica (eje Y)</span>
+              <span style={lbl}>{t('constructor.metricLabel')}</span>
               <select style={sel} value={config.metric} onChange={e => setConfig(p => ({ ...p, metric: e.target.value as MetricKey }))}>
                 {METRICS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
             <div>
-              <span style={lbl}>Dimensión (eje X)</span>
+              <span style={lbl}>{t('constructor.dimensionLabel')}</span>
               <select style={sel} value={config.dimension} onChange={e => setConfig(p => ({ ...p, dimension: e.target.value as DimensionKey }))}>
                 {DIMENSIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
             <div>
-              <span style={lbl}>Tipo de gráfica</span>
+              <span style={lbl}>{t('constructor.chartTypeLabel')}</span>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 6 }}>
                 {CHART_TYPES.map(ct => (
                   <button key={ct.value}
@@ -811,11 +828,11 @@ const ConstructorContent = memo(function ConstructorContent({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontFamily: '"Satoshi",sans-serif', color: 'var(--ink-2,#2D2D2D)', cursor: 'pointer' }}>
                 <input type="checkbox" checked={config.showValues} onChange={e => setConfig(p => ({ ...p, showValues: e.target.checked }))} />
-                Mostrar valores
+                {t('constructor.showValues')}
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontFamily: '"Satoshi",sans-serif', color: 'var(--ink-2,#2D2D2D)', cursor: 'pointer' }}>
                 <input type="checkbox" checked={config.showAvg} onChange={e => setConfig(p => ({ ...p, showAvg: e.target.checked }))} />
-                Línea de promedio
+                {t('constructor.showAvgLine')}
               </label>
             </div>
           </>
@@ -825,17 +842,17 @@ const ConstructorContent = memo(function ConstructorContent({
           onClick={generate}
           disabled={generating || !summaryData}
           style={{ padding: '11px 0', borderRadius: 10, background: 'var(--accent,#C0392B)', color: '#fff', border: 'none', fontSize: 13, fontFamily: '"Satoshi",sans-serif', fontWeight: 700, cursor: 'pointer', opacity: (!summaryData || generating) ? 0.5 : 1 }}
-        >{generating ? 'Generando…' : 'Generar gráfica'}</button>
+        >{generating ? t('constructor.generating') : t('constructor.generate')}</button>
 
         {/* Saved dashboards */}
         {savedDashes.length > 0 && (
           <div>
-            <span style={lbl}>Mis dashboards</span>
+            <span style={lbl}>{t('constructor.myDashboards')}</span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {savedDashes.map(d => (
                 <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--bg-2,#EFECE6)' }}>
                   <span style={{ flex: 1, fontSize: 12, fontFamily: '"Satoshi",sans-serif', color: 'var(--ink,#0D0D0D)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.name}</span>
-                  <button onClick={() => { setConfig(d.config); setChartReady(false) }} style={{ fontSize: 11, color: 'var(--accent,#C0392B)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: '"Satoshi",sans-serif', fontWeight: 600 }}>Cargar</button>
+                  <button onClick={() => { setConfig(d.config); setChartReady(false) }} style={{ fontSize: 11, color: 'var(--accent,#C0392B)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: '"Satoshi",sans-serif', fontWeight: 600 }}>{t('constructor.load')}</button>
                   <button onClick={() => deleteDashboard(d.id)} style={{ fontSize: 11, color: 'var(--mute,#6B6B6B)', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
                 </div>
               ))}
@@ -849,7 +866,7 @@ const ConstructorContent = memo(function ConstructorContent({
         <div ref={chartRef} style={{ background: 'var(--card-bg,#fff)', border: '1px solid var(--card-border,rgba(13,13,13,.08))', borderRadius: 14, padding: '20px 20px 14px', minHeight: 340 }}>
           {!chartReady ? (
             <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--mute,#6B6B6B)', fontSize: 13, fontFamily: '"Satoshi",sans-serif' }}>
-              Configura y presiona &ldquo;Generar gráfica&rdquo;
+              {t('constructor.emptyChart')}
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
@@ -860,12 +877,12 @@ const ConstructorContent = memo(function ConstructorContent({
 
         {chartReady && (
           <div style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => setSaveModal(true)} style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--card-bg,#fff)', fontSize: 12, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, color: 'var(--ink-2,#2D2D2D)', cursor: 'pointer' }}>Guardar dashboard</button>
-            <button onClick={() => exportChartPNG(chartRef)} style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--card-bg,#fff)', fontSize: 12, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, color: 'var(--ink-2,#2D2D2D)', cursor: 'pointer' }}>Exportar PNG</button>
+            <button onClick={() => setSaveModal(true)} style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--card-bg,#fff)', fontSize: 12, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, color: 'var(--ink-2,#2D2D2D)', cursor: 'pointer' }}>{t('constructor.saveDashboard')}</button>
+            <button onClick={() => exportChartPNG(chartRef)} style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--card-bg,#fff)', fontSize: 12, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, color: 'var(--ink-2,#2D2D2D)', cursor: 'pointer' }}>{t('constructor.exportPng')}</button>
             <button
               onClick={() => downloadCSV(chartData, 'datos-grafica.csv')}
               style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--card-bg,#fff)', fontSize: 12, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, color: 'var(--ink-2,#2D2D2D)', cursor: 'pointer' }}
-            >Exportar CSV</button>
+            >{t('table.exportCsv')}</button>
           </div>
         )}
       </div>
@@ -884,18 +901,18 @@ const ConstructorContent = memo(function ConstructorContent({
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 28 }}
             >
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)', fontFamily: '"Satoshi",sans-serif', marginBottom: 16 }}>Guardar dashboard</h3>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)', fontFamily: '"Satoshi",sans-serif', marginBottom: 16 }}>{t('constructor.saveDashboard')}</h3>
               <input
                 value={saveName}
                 onChange={e => setSaveName(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') void saveDashboard() }}
-                placeholder="Nombre del dashboard"
+                placeholder={t('constructor.dashboardNamePlaceholder')}
                 style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--line)', fontSize: 13, fontFamily: '"Satoshi",sans-serif', background: 'var(--bg-2,#EFECE6)', color: 'var(--ink)', outline: 'none', boxSizing: 'border-box' }}
                 autoFocus
               />
               <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-                <button onClick={() => setSaveModal(false)} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid var(--line)', background: 'transparent', fontSize: 13, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, color: 'var(--mute)', cursor: 'pointer' }}>Cancelar</button>
-                <button onClick={() => void saveDashboard()} disabled={saving || !saveName.trim()} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: 'var(--accent,#C0392B)', color: '#fff', fontSize: 13, fontFamily: '"Satoshi",sans-serif', fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.6 : 1 }}>{saving ? 'Guardando…' : 'Guardar'}</button>
+                <button onClick={() => setSaveModal(false)} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1px solid var(--line)', background: 'transparent', fontSize: 13, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, color: 'var(--mute)', cursor: 'pointer' }}>{tc('cancel')}</button>
+                <button onClick={() => void saveDashboard()} disabled={saving || !saveName.trim()} style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: 'var(--accent,#C0392B)', color: '#fff', fontSize: 13, fontFamily: '"Satoshi",sans-serif', fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.6 : 1 }}>{saving ? tc('saving') : tc('save')}</button>
               </div>
             </m.div>
           </>
@@ -907,17 +924,19 @@ const ConstructorContent = memo(function ConstructorContent({
 
 // ── TAB 3 — IA Insights ───────────────────────────────────────────────────────
 
-const CHIPS = [
-  '¿Qué colegio necesita más atención?',
-  '¿Cuál es la tendencia de XP este mes?',
-  '¿Qué módulo tiene menos completaciones?',
-  '¿Dónde hay más abandono?',
-  'Resumen ejecutivo del programa',
-]
-
 const InsightsContent = memo(function InsightsContent({
   summaryData, loading: dataLoading,
 }: { summaryData: SummaryData | null; loading: boolean }) {
+
+  const t = useTranslations('datos')
+
+  const CHIPS = [
+    t('insights.chips.schoolAttention'),
+    t('insights.chips.xpTrend'),
+    t('insights.chips.leastCompletedModule'),
+    t('insights.chips.mostDropout'),
+    t('insights.chips.executiveSummary'),
+  ]
 
   const [autoInsight,  setAutoInsight]  = useState('')
   const [aiLoading,    setAiLoading]    = useState(false)
@@ -961,10 +980,10 @@ const InsightsContent = memo(function InsightsContent({
     if (dataLoading || !summaryData) return
     setAiLoading(true); setAiError('')
     try {
-      const text = await callInsights([{ role: 'user', content: 'Genera un análisis completo del programa con los datos proporcionados. Identifica fortalezas, debilidades, y 3 acciones concretas prioritarias.' }])
+      const text = await callInsights([{ role: 'user', content: t('insights.autoPrompt') }])
       setAutoInsight(text)
     } catch (e) {
-      setAiError(e instanceof Error ? e.message : 'Error inesperado')
+      setAiError(e instanceof Error ? e.message : t('insights.unexpectedError'))
     }
     setAiLoading(false)
   }
@@ -985,7 +1004,7 @@ const InsightsContent = memo(function InsightsContent({
       const reply = await callInsights(next)
       setMessages(m => [...m, { role: 'assistant', content: reply }])
     } catch (e) {
-      setMessages(m => [...m, { role: 'assistant', content: `Error: ${e instanceof Error ? e.message : 'desconocido'}` }])
+      setMessages(m => [...m, { role: 'assistant', content: `${t('insights.errorPrefix')}: ${e instanceof Error ? e.message : t('insights.unknownError')}` }])
     }
     setChatLoading(false)
     setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
@@ -998,11 +1017,11 @@ const InsightsContent = memo(function InsightsContent({
       <div style={{ background: 'var(--card-bg,#fff)', border: '1px solid var(--card-border,rgba(13,13,13,.08))', borderRadius: 14, overflow: 'hidden' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid var(--line)', background: 'var(--bg-2,#EFECE6)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)', fontFamily: '"Satoshi",sans-serif' }}>Análisis automático</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)', fontFamily: '"Satoshi",sans-serif' }}>{t('insights.autoAnalysis')}</span>
             <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', background: 'rgba(192,57,43,.1)', color: 'var(--accent,#C0392B)', borderRadius: 999, padding: '3px 9px', fontFamily: '"Satoshi",sans-serif', animation: aiLoading ? 'pulse 1.5s ease infinite' : 'none' }}>IA</span>
           </div>
           <button onClick={generateAuto} disabled={aiLoading || dataLoading} style={{ padding: '7px 14px', borderRadius: 8, border: '1px solid var(--line)', background: 'transparent', fontSize: 12, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, color: 'var(--mute)', cursor: 'pointer', opacity: (aiLoading || dataLoading) ? 0.5 : 1 }}>
-            {aiLoading ? 'Analizando…' : 'Regenerar'}
+            {aiLoading ? t('insights.analyzing') : t('insights.regenerate')}
           </button>
         </div>
         <div style={{ padding: '20px 24px', maxHeight: 520, overflowY: 'auto' }}>
@@ -1016,19 +1035,19 @@ const InsightsContent = memo(function InsightsContent({
             <div>{renderMd(autoInsight)}</div>
           )}
           {!aiLoading && !autoInsight && !aiError && (
-            <p style={{ color: 'var(--mute)', fontSize: 13, fontFamily: '"Satoshi",sans-serif' }}>Esperando datos para generar análisis…</p>
+            <p style={{ color: 'var(--mute)', fontSize: 13, fontFamily: '"Satoshi",sans-serif' }}>{t('insights.waitingForData')}</p>
           )}
         </div>
         <div style={{ padding: '10px 24px', borderTop: '1px solid var(--line)', fontSize: 10.5, color: 'var(--mute)', fontFamily: '"Satoshi",sans-serif' }}>
-          Análisis basado en datos reales de Supabase · Generado por Claude
+          {t('insights.footnote')}
         </div>
       </div>
 
       {/* Chat panel */}
       <div style={{ background: 'var(--card-bg,#fff)', border: '1px solid var(--card-border,rgba(13,13,13,.08))', borderRadius: 14, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--line)', background: 'var(--bg-2,#EFECE6)' }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', fontFamily: '"Satoshi",sans-serif' }}>Pregunta sobre tus datos</span>
-          <span style={{ marginLeft: 8, fontSize: 10, color: 'var(--mute)', fontFamily: '"Satoshi",sans-serif' }}>{messages.length}/20 mensajes</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', fontFamily: '"Satoshi",sans-serif' }}>{t('insights.askTitle')}</span>
+          <span style={{ marginLeft: 8, fontSize: 10, color: 'var(--mute)', fontFamily: '"Satoshi",sans-serif' }}>{t('insights.messagesCount', { count: messages.length })}</span>
         </div>
 
         {/* Suggestion chips */}
@@ -1070,7 +1089,7 @@ const InsightsContent = memo(function InsightsContent({
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void sendMessage(input) } }}
-            placeholder={messages.length >= 20 ? 'Límite alcanzado' : 'Pregunta sobre los datos…'}
+            placeholder={messages.length >= 20 ? t('insights.limitReached') : t('insights.inputPlaceholder')}
             disabled={messages.length >= 20 || chatLoading}
             style={{ flex: 1, padding: '9px 12px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--bg-2,#EFECE6)', fontSize: 13, fontFamily: '"Satoshi",sans-serif', color: 'var(--ink)', outline: 'none' }}
           />
@@ -1087,12 +1106,6 @@ const InsightsContent = memo(function InsightsContent({
 
 // ── Main DatosPage ────────────────────────────────────────────────────────────
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'resumen',     label: 'Resumen'       },
-  { key: 'constructor', label: 'Constructor'   },
-  { key: 'insights',    label: 'IA Insights'   },
-]
-
 export default memo(function DatosPage({
   role = 'coordinator',
   showSidebar = true,
@@ -1100,6 +1113,14 @@ export default memo(function DatosPage({
   userInitial = 'U',
   schoolName,
 }: DatosPageProps) {
+  const t = useTranslations('datos')
+
+  const TABS: { key: TabKey; label: string }[] = [
+    { key: 'resumen',     label: t('tabs.resumen')     },
+    { key: 'constructor', label: t('tabs.constructor') },
+    { key: 'insights',    label: t('tabs.insights')    },
+  ]
+
   const [tab,         setTab]         = useState<TabKey>('resumen')
   const [summary,     setSummary]     = useState<SummaryData | null>(null)
   const [loadingData, setLoadingData] = useState(true)
@@ -1140,9 +1161,9 @@ export default memo(function DatosPage({
           xpBySchool:       MOCK.schools.map(s => ({ school: s.name.replace(/^(I\.?E\.?|C\.?E\.?|Instituto|Colegio)\s+/i,'').slice(0,16), avg_xp: s.avgXP })),
           modulesBySchool:  MOCK.schools.map(s => ({ school: s.name.replace(/^(I\.?E\.?|C\.?E\.?|Instituto|Colegio)\s+/i,'').slice(0,16), modules: s.modulesCompleted })),
           projectsByStatus: [
-            { name:'Enviados',   value: k.projectsPending },
-            { name:'Aprobados',  value: k.projectsApproved },
-            { name:'Rechazados', value: k.projectsRejected },
+            { name: 'pending',  value: k.projectsPending  },
+            { name: 'approved', value: k.projectsApproved },
+            { name: 'rejected', value: k.projectsRejected },
           ],
         })
         setUpdatedAt(new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }))
@@ -1153,7 +1174,7 @@ export default memo(function DatosPage({
       setSummary(data)
       setUpdatedAt(new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }))
     } catch (e) {
-      setDataError(e instanceof Error ? e.message : 'Error cargando datos')
+      setDataError(e instanceof Error ? e.message : t('insights.serverError'))
     }
     setLoadingData(false)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -1166,12 +1187,12 @@ export default memo(function DatosPage({
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <div>
-              <h1 style={{ fontSize: 28, fontWeight: 600, color: 'var(--ink,#0D0D0D)', fontFamily: '"Satoshi",sans-serif', letterSpacing: '-.02em', margin: 0 }}>Centro de Datos</h1>
-              <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--mute,#6B6B6B)', fontFamily: '"Satoshi",sans-serif' }}>Análisis completo del programa Big Family</p>
+              <h1 style={{ fontSize: 28, fontWeight: 600, color: 'var(--ink,#0D0D0D)', fontFamily: '"Satoshi",sans-serif', letterSpacing: '-.02em', margin: 0 }}>{t('title')}</h1>
+              <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--mute,#6B6B6B)', fontFamily: '"Satoshi",sans-serif' }}>{t('subtitle')}</p>
             </div>
             {updatedAt && (
               <span style={{ fontSize: 11, color: 'var(--mute,#6B6B6B)', fontFamily: '"Satoshi",sans-serif', background: 'var(--card-bg,#fff)', border: '1px solid var(--line)', borderRadius: 999, padding: '5px 12px' }}>
-                Actualizado {updatedAt}
+                {t('updated', { time: updatedAt })}
               </span>
             )}
           </div>

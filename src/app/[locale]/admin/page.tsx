@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import { showToast, ToastContainer } from '@/components/Toast'
@@ -71,33 +72,39 @@ interface WeeklyUsers {
   count: number
 }
 
-// ── Meta maps ─────────────────────────────────────────────────────────────────
-const RESULTADO_META: Record<string, { label: string; color: string; bg: string }> = {
-  mencion_honor:     { label: 'Mención de Honor',  color: '#713F12', bg: '#FEF9C3' },
-  certificado:       { label: 'Certificado',        color: '#065F46', bg: '#D1FAE5' },
-  retroalimentacion: { label: 'Retroalimentación',  color: '#92400E', bg: '#FEF3C7' },
-  no_certificado:    { label: 'No certificado',     color: '#991B1B', bg: '#FEE2E2' },
-}
-
-const STATUS_META: Record<string, { label: string; variant: 'draft' | 'pending' | 'approved' | 'rejected' }> = {
-  draft:    { label: 'Borrador',  variant: 'draft'    },
-  pending:  { label: 'Pendiente', variant: 'pending'  },
-  approved: { label: 'Aprobado',  variant: 'approved' },
-  rejected: { label: 'Rechazado', variant: 'rejected' },
-}
-
-const ROLE_META: Record<string, { label: string; color: string; bg: string }> = {
-  student:     { label: 'Estudiante',  color: 'var(--ink)',       bg: 'rgba(13,13,13,.07)'       },
-  coordinator: { label: 'Coordinador', color: 'var(--ink)',       bg: 'var(--bg-2,#EFECE6)'      },
-  expositor:   { label: 'Expositor',   color: '#065F46',          bg: '#D1FAE5'                  },
-  admin:       { label: 'Admin',       color: 'var(--bg,#F5F3EF)', bg: 'var(--accent,#C0392B)'   },
-}
-
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function AdminPage() {
   const router      = useRouter()
   const pref        = useReducedMotion()
+  const t           = useTranslations('admin.dashboard')
+  const tAdmin      = useTranslations('admin')
+  const tCommon     = useTranslations('common')
+  const tDash       = useTranslations('coordinator.dashboard')
+  const tRoles      = useTranslations('roles')
+  const tOutcomes   = useTranslations('coordinator.projects.rubric.outcomes')
+  const tProjReview = useTranslations('coordinator.projectsReview')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
+
+  const RESULTADO_META: Record<string, { label: string; color: string; bg: string }> = {
+    mencion_honor:     { label: tOutcomes('honorMention'),  color: '#713F12', bg: '#FEF9C3' },
+    certificado:       { label: tOutcomes('certificate'),   color: '#065F46', bg: '#D1FAE5' },
+    retroalimentacion: { label: tOutcomes('feedback'),      color: '#92400E', bg: '#FEF3C7' },
+    no_certificado:    { label: tOutcomes('noCertificate'), color: '#991B1B', bg: '#FEE2E2' },
+  }
+
+  const STATUS_META: Record<string, { label: string; variant: 'draft' | 'pending' | 'approved' | 'rejected' }> = {
+    draft:    { label: t('statusDraft'),    variant: 'draft'    },
+    pending:  { label: t('statusPending'),  variant: 'pending'  },
+    approved: { label: t('statusApproved'), variant: 'approved' },
+    rejected: { label: t('statusRejected'), variant: 'rejected' },
+  }
+
+  const ROLE_META: Record<string, { label: string; color: string; bg: string }> = {
+    student:     { label: tRoles('student'),     color: 'var(--ink)',       bg: 'rgba(13,13,13,.07)'       },
+    coordinator: { label: tRoles('coordinator'), color: 'var(--ink)',       bg: 'var(--bg-2,#EFECE6)'      },
+    expositor:   { label: tRoles('expositor'),   color: '#065F46',          bg: '#D1FAE5'                  },
+    admin:       { label: tRoles('admin'),       color: 'var(--bg,#F5F3EF)', bg: 'var(--accent,#C0392B)'   },
+  }
 
   const [tab,       setTab]       = useState<Tab>('stats')
   const [booting,   setBooting]   = useState(true)
@@ -408,9 +415,9 @@ export default function AdminPage() {
     const { error } = await supabase
       .from('capstone_evaluations').update({ admin_confirmed: true }).eq('id', evalId)
     setConfirmingId(null)
-    if (error) { showToast('error', 'Error al confirmar evaluación'); return }
+    if (error) { showToast('error', t('confirmEvalError')); return }
     setEvals(prev => prev.map(e => e.id === evalId ? { ...e, admin_confirmed: true } : e))
-    showToast('success', 'Evaluación confirmada ✓')
+    showToast('success', t('evalConfirmed'))
   }
 
   async function fetchGoalTemplates() {
@@ -483,10 +490,10 @@ export default function AdminPage() {
       setGeneratingCoord(false); return
     }
     const { error } = await sb.from('coordinator_codes').insert({ code, school_id: selCoordSchool, used: false })
-    if (error) { showToast('error', error.code === '23505' ? 'Ese código ya existe' : 'Error al generar'); setGeneratingCoord(false); return }
+    if (error) { showToast('error', error.code === '23505' ? t('codeExistsError') : t('generateCodeError')); setGeneratingCoord(false); return }
     setLastCoordCode(code)
     setCoordCodesList(prev => [{ id: Date.now().toString(), code, used: false, created_at: new Date().toISOString(), school_name: school?.name }, ...prev].slice(0, 10))
-    showToast('success', 'Código generado')
+    showToast('success', t('codeGenerated'))
     setGeneratingCoord(false)
   }
 
@@ -503,15 +510,15 @@ export default function AdminPage() {
       setGeneratingExpo(false); return
     }
     const { error } = await sb.from('expositor_codes').insert({ code, used: false })
-    if (error) { showToast('error', 'Error al generar código'); setGeneratingExpo(false); return }
+    if (error) { showToast('error', t('generateExpoCodeError')); setGeneratingExpo(false); return }
     setLastExpoCode(code)
     setExpoCodesList(prev => [{ id: Date.now().toString(), code, used: false, created_at: new Date().toISOString() }, ...prev].slice(0, 10))
-    showToast('success', 'Código de expositor generado')
+    showToast('success', t('expoCodeGenerated'))
     setGeneratingExpo(false)
   }
 
   function copyCode(code: string) {
-    navigator.clipboard.writeText(code).then(() => showToast('success', 'Copiado al portapapeles'))
+    navigator.clipboard.writeText(code).then(() => showToast('success', t('copiedToClipboard')))
   }
 
   // ── Schools helpers ────────────────────────────────────────────────────────────
@@ -547,10 +554,10 @@ export default function AdminPage() {
       if (up) { const { data: { publicUrl } } = sb.storage.from('school-logos').getPublicUrl(up.path); logo_url = publicUrl }
     }
     const { data, error } = await sb.from('schools').insert({ name: sfName.trim(), code: sfCode.trim().toUpperCase(), city: sfCity.trim() || null, logo_url }).select().maybeSingle()
-    if (error) { showToast('error', error.code === '23505' ? 'Ese código ya existe' : 'Error al crear el colegio'); setSavingSchool(false); return }
+    if (error) { showToast('error', error.code === '23505' ? t('codeExistsError') : t('createSchoolError')); setSavingSchool(false); return }
     if (data) setSchoolsList(prev => [{ ...data, coord_count: 0, student_count: 0 }, ...prev])
     setSfName(''); setSfCode(''); setSfCity(''); setSfLogoFile(null); setSfLogoPreview('')
-    showToast('success', 'Colegio creado correctamente')
+    showToast('success', t('schoolCreated'))
     setSavingSchool(false)
   }
 
@@ -565,9 +572,9 @@ export default function AdminPage() {
       if (up) { const { data: { publicUrl } } = sb.storage.from('school-logos').getPublicUrl(up.path); logo_url = publicUrl }
     }
     const { error } = await sb.from('schools').update({ name: efName.trim(), city: efCity.trim() || null, logo_url }).eq('id', editSchool.id)
-    if (error) { showToast('error', 'Error al actualizar'); setSavingEdit(false); return }
+    if (error) { showToast('error', t('updateError')); setSavingEdit(false); return }
     setSchoolsList(prev => prev.map(s => s.id === editSchool.id ? { ...s, name: efName.trim(), city: efCity.trim() || null, logo_url } : s))
-    showToast('success', 'Colegio actualizado')
+    showToast('success', t('schoolUpdated'))
     setEditSchool(null); setEfLogoFile(null); setEfLogoPreview('')
     setSavingEdit(false)
   }
@@ -602,7 +609,7 @@ export default function AdminPage() {
       <>
         <style>{``}</style>
         <div style={{ minHeight: '100vh', background: 'var(--bg,#F5F3EF)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--mute)', fontSize: 14 }}>
-          Verificando acceso…
+          {t('checkingAccess')}
         </div>
       </>
     )
@@ -724,12 +731,12 @@ export default function AdminPage() {
         {/* Header */}
         <div className="adm-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div>
-            <h1>Panel de Administración</h1>
-            <p>Vista global del programa · Solo accesible para administradores</p>
+            <h1>{t('pageTitle')}</h1>
+            <p>{t('pageSubtitle')}</p>
           </div>
           <button
             onClick={() => setNotifOpen(true)}
-            title={notifCount > 0 ? `${notifCount} notificaciones` : 'Notificaciones'}
+            title={notifCount > 0 ? tDash('notificationsCount', { count: notifCount }) : tCommon('notifications')}
             style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 8, color: 'var(--mute)', transition: 'color .15s', flexShrink: 0, marginTop: 2 }}
             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--ink)' }}
             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--mute)' }}
@@ -753,11 +760,11 @@ export default function AdminPage() {
             >
               {stats ? (
                 ([
-                  { num: stats.students,       label: 'Estudiantes',       accentColor: 'var(--accent,#C0392B)' },
-                  { num: stats.total_projects, label: 'Proyectos totales', accentColor: 'var(--line-strong)'    },
-                  { num: stats.submitted,      label: 'Enviados',          accentColor: 'var(--accent-amber,#D4821A)' },
-                  { num: stats.approved,       label: 'Aprobados',         accentColor: 'var(--accent-teal,#0F7B6C)' },
-                  { num: stats.rejected,       label: 'Rechazados',        accentColor: 'var(--accent,#C0392B)'  },
+                  { num: stats.students,       label: t('statStudents'),       accentColor: 'var(--accent,#C0392B)' },
+                  { num: stats.total_projects, label: t('statTotalProjects'), accentColor: 'var(--line-strong)'    },
+                  { num: stats.submitted,      label: t('statSubmitted'),          accentColor: 'var(--accent-amber,#D4821A)' },
+                  { num: stats.approved,       label: t('statApproved'),         accentColor: 'var(--accent-teal,#0F7B6C)' },
+                  { num: stats.rejected,       label: t('statRejected'),        accentColor: 'var(--accent,#C0392B)'  },
                 ] as const).map(s => (
                   <m.div
                     key={s.label}
@@ -780,7 +787,7 @@ export default function AdminPage() {
             <div className="adm-charts-row">
               {/* XP por colegio */}
               <div className="adm-chart-panel">
-                <div className="adm-chart-title">XP promedio por colegio</div>
+                <div className="adm-chart-title">{t('chartXpBySchool')}</div>
                 {schoolXP.length === 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {[90, 70, 80, 60].map((w, i) => <Skeleton key={i} h={12} r={4} w={`${w}%`} />)}
@@ -800,8 +807,8 @@ export default function AdminPage() {
                             return (
                               <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 10, padding: '10px 14px', fontSize: 12, boxShadow: 'var(--shadow-raised)', fontFamily: '"Satoshi",sans-serif' }}>
                                 <div style={{ fontWeight: 700, color: 'var(--ink)', marginBottom: 3 }}>{d.name}</div>
-                                <div style={{ color: 'var(--accent-amber,#D4821A)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{d.avgXp.toLocaleString('es-CO')} XP avg</div>
-                                <div style={{ color: 'var(--mute)', fontSize: 11 }}>{d.count} estudiantes</div>
+                                <div style={{ color: 'var(--accent-amber,#D4821A)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{t('xpAvgTooltip', { value: d.avgXp.toLocaleString('es-CO') })}</div>
+                                <div style={{ color: 'var(--mute)', fontSize: 11 }}>{t('studentsTooltip', { count: d.count })}</div>
                               </div>
                             )
                           }}
@@ -822,7 +829,7 @@ export default function AdminPage() {
 
               {/* Crecimiento de usuarios */}
               <div className="adm-chart-panel">
-                <div className="adm-chart-title">Nuevos estudiantes — últimas 8 semanas</div>
+                <div className="adm-chart-title">{t('chartNewStudents')}</div>
                 {weeklyUsers.length === 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {[60, 80, 50, 90].map((w, i) => <Skeleton key={i} h={10} r={4} w={`${w}%`} />)}
@@ -840,7 +847,7 @@ export default function AdminPage() {
                             return (
                               <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 10, padding: '8px 12px', fontSize: 12, boxShadow: 'var(--shadow-raised)', fontFamily: '"Satoshi",sans-serif' }}>
                                 <div style={{ color: 'var(--mute)', fontSize: 10, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 4 }}>{label}</div>
-                                <span style={{ fontWeight: 700, color: 'var(--accent-teal,#0F7B6C)', fontVariantNumeric: 'tabular-nums' }}>+{payload[0].value} estudiantes</span>
+                                <span style={{ fontWeight: 700, color: 'var(--accent-teal,#0F7B6C)', fontVariantNumeric: 'tabular-nums' }}>{t('newStudentsTooltip', { count: payload[0].value as number })}</span>
                               </div>
                             )
                           }}
@@ -856,15 +863,15 @@ export default function AdminPage() {
             {/* ── School ranking table ── */}
             {schoolXP.length > 0 && (
               <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 16, padding: '20px', boxShadow: 'var(--shadow-card)', marginTop: 20 }}>
-                <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 13.5, color: 'var(--ink)', marginBottom: 14 }}>Ranking de colegios</div>
+                <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 13.5, color: 'var(--ink)', marginBottom: 14 }}>{t('rankingTitle')}</div>
                 <div style={{ overflowX: 'auto' }}>
                   <table className="adm-rank-table">
                     <thead>
                       <tr>
                         <th>#</th>
-                        <th>Colegio</th>
-                        <th style={{ textAlign: 'right' }}>XP Promedio</th>
-                        <th style={{ textAlign: 'right' }}>Estudiantes</th>
+                        <th>{t('colSchool')}</th>
+                        <th style={{ textAlign: 'right' }}>{t('rankColAvgXp')}</th>
+                        <th style={{ textAlign: 'right' }}>{t('statStudents')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -891,7 +898,7 @@ export default function AdminPage() {
           <>
             <input
               className="adm-search"
-              placeholder="Buscar por nombre, email o colegio…"
+              placeholder={t('searchUsersPlaceholder')}
               value={userSearch}
               onChange={e => setUserSearch(e.target.value)}
             />
@@ -902,16 +909,16 @@ export default function AdminPage() {
                     {[...Array(6)].map((_, i) => <Skeleton key={i} h={18} r={6} />)}
                   </div>
                 ) : filteredUsers.length === 0 ? (
-                  <div className="adm-empty">No hay usuarios que coincidan</div>
+                  <div className="adm-empty">{t('noUsersMatch')}</div>
                 ) : (
                   <table>
                     <thead>
                       <tr>
-                        <th>Nombre</th>
-                        <th>Email</th>
-                        <th>Colegio</th>
-                        <th>Rol</th>
-                        <th>Registrado</th>
+                        <th>{tDash('tableName')}</th>
+                        <th>{tDash('tableEmail')}</th>
+                        <th>{t('colSchool')}</th>
+                        <th>{t('colRole')}</th>
+                        <th>{t('colRegistered')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -937,11 +944,13 @@ export default function AdminPage() {
             {filteredUsers.length > 0 && (
               <div className="adm-pagination">
                 <span className="adm-page-info">
-                  {filteredUsers.length} usuario{filteredUsers.length !== 1 ? 's' : ''} · Página {userPage + 1} de {totalUserPages}
+                  {filteredUsers.length === 1
+                    ? t('usersCountSingular', { count: filteredUsers.length, page: userPage + 1, total: totalUserPages })
+                    : t('usersCountPlural', { count: filteredUsers.length, page: userPage + 1, total: totalUserPages })}
                 </span>
                 <div className="adm-page-btns">
-                  <m.button className="adm-page-btn" disabled={userPage === 0} onClick={() => setUserPage(p => p - 1)} whileHover={pref ? undefined : { scale: 1.02 }} whileTap={pref ? undefined : { scale: 0.96 }} transition={{ type: 'spring', stiffness: 200, damping: 22 }}>← Anterior</m.button>
-                  <m.button className="adm-page-btn" disabled={userPage >= totalUserPages - 1} onClick={() => setUserPage(p => p + 1)} whileHover={pref ? undefined : { scale: 1.02 }} whileTap={pref ? undefined : { scale: 0.96 }} transition={{ type: 'spring', stiffness: 200, damping: 22 }}>Siguiente →</m.button>
+                  <m.button className="adm-page-btn" disabled={userPage === 0} onClick={() => setUserPage(p => p - 1)} whileHover={pref ? undefined : { scale: 1.02 }} whileTap={pref ? undefined : { scale: 0.96 }} transition={{ type: 'spring', stiffness: 200, damping: 22 }}>{tProjReview('prevPage')}</m.button>
+                  <m.button className="adm-page-btn" disabled={userPage >= totalUserPages - 1} onClick={() => setUserPage(p => p + 1)} whileHover={pref ? undefined : { scale: 1.02 }} whileTap={pref ? undefined : { scale: 0.96 }} transition={{ type: 'spring', stiffness: 200, damping: 22 }}>{tProjReview('nextPage')}</m.button>
                 </div>
               </div>
             )}
@@ -958,7 +967,7 @@ export default function AdminPage() {
                   className={`adm-filter-btn${projectStatus === s ? ' active' : ''}`}
                   onClick={() => setProjectStatus(s)}
                 >
-                  {s === 'all' ? 'Todos' : (STATUS_META[s]?.label ?? s)}
+                  {s === 'all' ? tProjReview('filterAll') : (STATUS_META[s]?.label ?? s)}
                 </button>
               ))}
             </div>
@@ -969,16 +978,16 @@ export default function AdminPage() {
                     {[...Array(6)].map((_, i) => <Skeleton key={i} h={18} r={6} />)}
                   </div>
                 ) : filteredProjects.length === 0 ? (
-                  <div className="adm-empty">No hay proyectos con este filtro</div>
+                  <div className="adm-empty">{t('noProjectsMatch')}</div>
                 ) : (
                   <table>
                     <thead>
                       <tr>
-                        <th>Título</th>
-                        <th>Estudiante</th>
-                        <th>Colegio</th>
-                        <th>Estado</th>
-                        <th>Enviado</th>
+                        <th>{t('colTitle')}</th>
+                        <th>{tRoles('student')}</th>
+                        <th>{t('colSchool')}</th>
+                        <th>{tDash('tableStatus')}</th>
+                        <th>{t('colSubmitted')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -986,7 +995,7 @@ export default function AdminPage() {
                         const sm = STATUS_META[p.status] ?? { label: p.status, variant: 'draft' as const }
                         return (
                           <tr key={p.id}>
-                            <td style={{ fontWeight: 600, maxWidth: 280 }}>{p.title || '(Sin título)'}</td>
+                            <td style={{ fontWeight: 600, maxWidth: 280 }}>{p.title || t('untitledProject')}</td>
                             <td>{p.student_name ?? '—'}</td>
                             <td>{p.school_name ?? '—'}</td>
                             <td><Badge label={sm.label} variant={sm.variant} /></td>
@@ -1006,11 +1015,13 @@ export default function AdminPage() {
             {filteredProjects.length > 0 && (
               <div className="adm-pagination">
                 <span className="adm-page-info">
-                  {filteredProjects.length} proyecto{filteredProjects.length !== 1 ? 's' : ''} · Página {projectPage + 1} de {totalProjectPages}
+                  {filteredProjects.length === 1
+                    ? t('projectsCountSingular', { count: filteredProjects.length, page: projectPage + 1, total: totalProjectPages })
+                    : t('projectsCountPlural', { count: filteredProjects.length, page: projectPage + 1, total: totalProjectPages })}
                 </span>
                 <div className="adm-page-btns">
-                  <m.button className="adm-page-btn" disabled={projectPage === 0} onClick={() => setProjectPage(p => p - 1)} whileHover={pref ? undefined : { scale: 1.02 }} whileTap={pref ? undefined : { scale: 0.96 }} transition={{ type: 'spring', stiffness: 200, damping: 22 }}>← Anterior</m.button>
-                  <m.button className="adm-page-btn" disabled={projectPage >= totalProjectPages - 1} onClick={() => setProjectPage(p => p + 1)} whileHover={pref ? undefined : { scale: 1.02 }} whileTap={pref ? undefined : { scale: 0.96 }} transition={{ type: 'spring', stiffness: 200, damping: 22 }}>Siguiente →</m.button>
+                  <m.button className="adm-page-btn" disabled={projectPage === 0} onClick={() => setProjectPage(p => p - 1)} whileHover={pref ? undefined : { scale: 1.02 }} whileTap={pref ? undefined : { scale: 0.96 }} transition={{ type: 'spring', stiffness: 200, damping: 22 }}>{tProjReview('prevPage')}</m.button>
+                  <m.button className="adm-page-btn" disabled={projectPage >= totalProjectPages - 1} onClick={() => setProjectPage(p => p + 1)} whileHover={pref ? undefined : { scale: 1.02 }} whileTap={pref ? undefined : { scale: 0.96 }} transition={{ type: 'spring', stiffness: 200, damping: 22 }}>{tProjReview('nextPage')}</m.button>
                 </div>
               </div>
             )}
@@ -1029,7 +1040,7 @@ export default function AdminPage() {
               ))}
             </div>
           ) : evals.length === 0 ? (
-            <div className="adm-card"><div className="adm-empty">No hay evaluaciones de capstone aún</div></div>
+            <div className="adm-card"><div className="adm-empty">{t('noEvaluationsYet')}</div></div>
           ) : (
             <div className="adm-eval-list">
               {evals.map(ev => {
@@ -1038,10 +1049,10 @@ export default function AdminPage() {
                   <div key={ev.id} className="adm-eval-card">
                     <div className="adm-eval-top">
                       <div style={{ minWidth: 0 }}>
-                        <div className="adm-eval-title">{ev.project_title ?? '(Sin título)'}</div>
+                        <div className="adm-eval-title">{ev.project_title ?? t('untitledProject')}</div>
                         <div className="adm-eval-meta">
-                          Estudiante: <strong>{ev.student_name ?? '—'}</strong>
-                          {' · '}Coordinador: <strong>{ev.coordinator_name ?? '—'}</strong>
+                          {t('evalStudentLabel')} <strong>{ev.student_name ?? '—'}</strong>
+                          {' · '}{t('evalCoordinatorLabel')} <strong>{ev.coordinator_name ?? '—'}</strong>
                           {' · '}{new Date(ev.evaluated_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </div>
                         {rm && <div style={{ marginTop: 8 }}><Badge label={rm.label} color={rm.color} bg={rm.bg} /></div>}
@@ -1058,7 +1069,7 @@ export default function AdminPage() {
                               animate={{ opacity: 1, scale: 1 }}
                               transition={{ type: 'spring', stiffness: 200, damping: 22 }}
                             >
-                              ✓ Confirmado
+                              {t('confirmedBadge')}
                             </m.span>
                           ) : (
                             <m.button
@@ -1070,7 +1081,7 @@ export default function AdminPage() {
                               exit={{ opacity: 0, scale: 0.8 }}
                               transition={{ type: 'spring', stiffness: 200, damping: 22 }}
                             >
-                              {confirmingId === ev.id ? 'Confirmando…' : 'Confirmar evaluación'}
+                              {confirmingId === ev.id ? t('confirmingBtn') : tAdmin('confirmEvaluation')}
                             </m.button>
                           )}
                         </AnimatePresence>
@@ -1079,7 +1090,7 @@ export default function AdminPage() {
 
                     {ev.feedback && (
                       <div className="adm-eval-feedback">
-                        <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--mute)', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: 6 }}>Retroalimentación del coordinador</div>
+                        <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--mute)', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: 6 }}>{t('coordinatorFeedbackLabel')}</div>
                         {ev.feedback}
                       </div>
                     )}
@@ -1087,7 +1098,7 @@ export default function AdminPage() {
                 )
               })}
               <p style={{ fontSize: 12.5, color: 'var(--mute)' }}>
-                {evals.filter(e => e.admin_confirmed).length} de {evals.length} confirmadas
+                {t('confirmedCountLabel', { confirmed: evals.filter(e => e.admin_confirmed).length, total: evals.length })}
               </p>
             </div>
           )
@@ -1096,44 +1107,44 @@ export default function AdminPage() {
         {tab === 'goals' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 20 }}>
             <div className="adm-card" style={{ padding: 24 }}>
-              <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Plantillas de metas del programa</div>
+              <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, marginBottom: 16 }}>{t('goalTemplatesTitle')}</div>
               {loadingGoals ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {[1,2,3].map(i => <Skeleton key={i} h={52} r={10} />)}
                 </div>
               ) : goalTemplates.length === 0 ? (
-                <div className="adm-empty">Sin plantillas todavía. Crea la primera →</div>
-              ) : goalTemplates.map(t => (
-                <div key={t.id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, padding: '14px 0', borderBottom: '1px solid var(--line-soft,rgba(13,13,13,.05))' }}>
+                <div className="adm-empty">{t('noTemplatesYet')}</div>
+              ) : goalTemplates.map(tmpl => (
+                <div key={tmpl.id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, padding: '14px 0', borderBottom: '1px solid var(--line-soft,rgba(13,13,13,.05))' }}>
                   <div>
-                    <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 600, fontSize: 14 }}>{t.title}</div>
-                    {t.description && <div style={{ fontSize: 12, color: 'var(--mute)', marginTop: 3 }}>{t.description}</div>}
-                    <div style={{ fontSize: 11.5, color: '#b25a00', fontWeight: 600, marginTop: 4 }}>+{t.xp_reward} XP</div>
+                    <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 600, fontSize: 14 }}>{tmpl.title}</div>
+                    {tmpl.description && <div style={{ fontSize: 12, color: 'var(--mute)', marginTop: 3 }}>{tmpl.description}</div>}
+                    <div style={{ fontSize: 11.5, color: '#b25a00', fontWeight: 600, marginTop: 4 }}>+{tmpl.xp_reward} XP</div>
                   </div>
                   <button
-                    onClick={() => handleDeleteTemplate(t.id)}
-                    disabled={deletingTmpl === t.id}
-                    style={{ padding: '5px 12px', borderRadius: 999, border: '1px solid #FCA5A5', background: 'none', color: '#991B1B', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', opacity: deletingTmpl === t.id ? 0.5 : 1 }}
+                    onClick={() => handleDeleteTemplate(tmpl.id)}
+                    disabled={deletingTmpl === tmpl.id}
+                    style={{ padding: '5px 12px', borderRadius: 999, border: '1px solid #FCA5A5', background: 'none', color: '#991B1B', fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', opacity: deletingTmpl === tmpl.id ? 0.5 : 1 }}
                   >
-                    {deletingTmpl === t.id ? '…' : 'Eliminar'}
+                    {deletingTmpl === tmpl.id ? '…' : tCommon('delete')}
                   </button>
                 </div>
               ))}
             </div>
 
             <div className="adm-card" style={{ padding: 24, alignSelf: 'start' }}>
-              <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Nueva plantilla</div>
+              <div style={{ fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 15, marginBottom: 16 }}>{t('newTemplateTitle')}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.06em' }}>Título</label>
-                  <input value={tmplFormTitle} onChange={e => setTmplFormTitle(e.target.value)} placeholder="Ej: Organizar un taller comunitario" style={{ padding: '10px 14px', border: '1.5px solid rgba(13,13,13,.12)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--card-bg,#fff)', color: 'var(--ink,#0D0D0D)' }} />
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.06em' }}>{t('colTitle')}</label>
+                  <input value={tmplFormTitle} onChange={e => setTmplFormTitle(e.target.value)} placeholder={t('titlePlaceholderExample')} style={{ padding: '10px 14px', border: '1.5px solid rgba(13,13,13,.12)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--card-bg,#fff)', color: 'var(--ink,#0D0D0D)' }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.06em' }}>Descripción</label>
-                  <textarea value={tmplFormDesc} onChange={e => setTmplFormDesc(e.target.value)} placeholder="Descripción opcional..." rows={3} style={{ padding: '10px 14px', border: '1.5px solid rgba(13,13,13,.12)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--card-bg,#fff)', resize: 'vertical', color: 'var(--ink,#0D0D0D)' }} />
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.06em' }}>{t('descriptionLabel')}</label>
+                  <textarea value={tmplFormDesc} onChange={e => setTmplFormDesc(e.target.value)} placeholder={t('descriptionPlaceholderOptional')} rows={3} style={{ padding: '10px 14px', border: '1.5px solid rgba(13,13,13,.12)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--card-bg,#fff)', resize: 'vertical', color: 'var(--ink,#0D0D0D)' }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.06em' }}>XP al completar</label>
+                  <label style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.06em' }}>{t('xpOnCompleteLabel')}</label>
                   <input type="number" value={tmplFormXp} onChange={e => setTmplFormXp(Number(e.target.value))} min={10} max={500} step={10} style={{ padding: '10px 14px', border: '1.5px solid rgba(13,13,13,.12)', borderRadius: 10, fontSize: 13.5, fontFamily: 'inherit', outline: 'none', background: 'var(--card-bg,#fff)', color: 'var(--ink,#0D0D0D)' }} />
                 </div>
                 <button
@@ -1141,7 +1152,7 @@ export default function AdminPage() {
                   disabled={!tmplFormTitle.trim() || savingTmpl}
                   style={{ padding: '10px', background: tmplFormTitle.trim() ? '#0D0D0D' : 'rgba(13,13,13,.1)', border: 'none', borderRadius: 10, fontFamily: 'Satoshi,sans-serif', fontWeight: 700, fontSize: 13, color: tmplFormTitle.trim() ? '#fff' : '#6B6B6B', cursor: tmplFormTitle.trim() ? 'pointer' : 'default', transition: 'all .2s' }}
                 >
-                  {savingTmpl ? 'Guardando…' : 'Crear plantilla'}
+                  {savingTmpl ? tCommon('saving') : t('createTemplateBtn')}
                 </button>
               </div>
             </div>
@@ -1151,18 +1162,18 @@ export default function AdminPage() {
         {/* ── CÓDIGOS ── */}
         {tab === 'codes' && (
           <m.div initial={pref ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 24 }}>
-            <div className="adm-section-title" style={{ marginBottom: 24 }}>Generador de Códigos de Acceso</div>
+            <div className="adm-section-title" style={{ marginBottom: 24 }}>{t('codesGeneratorTitle')}</div>
 
             {/* Coordinator codes */}
             <div className="codes-section">
-              <div className="codes-section-title">Códigos de Coordinador</div>
+              <div className="codes-section-title">{t('coordCodesTitle')}</div>
               {loadingCodes ? (
                 <Skeleton w="100%" h={40} r={10} />
               ) : (
                 <>
                   <div className="codes-gen-row">
                     <select className="codes-select" value={selCoordSchool} onChange={e => setSelCoordSchool(e.target.value)}>
-                      <option value="">Seleccionar colegio…</option>
+                      <option value="">{t('selectSchoolPlaceholder')}</option>
                       {codesSchools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
                     <button
@@ -1170,25 +1181,25 @@ export default function AdminPage() {
                       disabled={!selCoordSchool || generatingCoord}
                       onClick={generateCoordCode}
                     >
-                      {generatingCoord ? 'Generando…' : 'Generar código'}
+                      {generatingCoord ? t('generatingBtn') : t('generateCodeBtn')}
                     </button>
                   </div>
                   {lastCoordCode && (
                     <div className="codes-output-row">
                       <div className="codes-output">{lastCoordCode}</div>
-                      <button className="adm-btn adm-btn-ghost" onClick={() => copyCode(lastCoordCode)}>Copiar</button>
+                      <button className="adm-btn adm-btn-ghost" onClick={() => copyCode(lastCoordCode)}>{tCommon('copy')}</button>
                     </div>
                   )}
                   {coordCodesList.length > 0 && (
                     <div style={{ marginTop: 8 }}>
-                      <div style={{ fontSize: 11.5, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--mute)', marginBottom: 8, fontWeight: 600 }}>Últimos generados</div>
+                      <div style={{ fontSize: 11.5, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--mute)', marginBottom: 8, fontWeight: 600 }}>{t('lastGeneratedLabel')}</div>
                       {coordCodesList.map(row => (
                         <div key={row.id} className="codes-list-row">
                           <div>
                             <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 13, color: 'var(--ink)', letterSpacing: '.02em' }}>{row.code}</div>
                             {row.school_name && <div style={{ fontSize: 12, color: 'var(--mute)', marginTop: 1 }}>{row.school_name}</div>}
                           </div>
-                          <span className={row.used ? 'codes-badge-used' : 'codes-badge-free'}>{row.used ? 'Usado' : 'Libre'}</span>
+                          <span className={row.used ? 'codes-badge-used' : 'codes-badge-free'}>{row.used ? t('usedBadge') : t('freeBadge')}</span>
                         </div>
                       ))}
                     </div>
@@ -1199,29 +1210,29 @@ export default function AdminPage() {
 
             {/* Expositor codes */}
             <div className="codes-section">
-              <div className="codes-section-title">Códigos de Expositor</div>
+              <div className="codes-section-title">{t('expoCodesTitle')}</div>
               <div className="codes-gen-row">
                 <button
                   className="adm-btn adm-btn-primary"
                   disabled={generatingExpo}
                   onClick={generateExpoCode}
                 >
-                  {generatingExpo ? 'Generando…' : 'Generar código de expositor'}
+                  {generatingExpo ? t('generatingBtn') : t('generateExpoCodeBtn')}
                 </button>
               </div>
               {lastExpoCode && (
                 <div className="codes-output-row">
                   <div className="codes-output">{lastExpoCode}</div>
-                  <button className="adm-btn adm-btn-ghost" onClick={() => copyCode(lastExpoCode)}>Copiar</button>
+                  <button className="adm-btn adm-btn-ghost" onClick={() => copyCode(lastExpoCode)}>{tCommon('copy')}</button>
                 </div>
               )}
               {expoCodesList.length > 0 && (
                 <div style={{ marginTop: 8 }}>
-                  <div style={{ fontSize: 11.5, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--mute)', marginBottom: 8, fontWeight: 600 }}>Últimos generados</div>
+                  <div style={{ fontSize: 11.5, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--mute)', marginBottom: 8, fontWeight: 600 }}>{t('lastGeneratedLabel')}</div>
                   {expoCodesList.map(row => (
                     <div key={row.id} className="codes-list-row">
                       <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 13, color: 'var(--ink)', letterSpacing: '.02em' }}>{row.code}</div>
-                      <span className={row.used ? 'codes-badge-used' : 'codes-badge-free'}>{row.used ? 'Usado' : 'Libre'}</span>
+                      <span className={row.used ? 'codes-badge-used' : 'codes-badge-free'}>{row.used ? t('usedBadge') : t('freeBadge')}</span>
                     </div>
                   ))}
                 </div>
@@ -1233,7 +1244,7 @@ export default function AdminPage() {
         {/* ── COLEGIOS ── */}
         {tab === 'schools' && (
           <m.div initial={pref ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 24 }}>
-            <div className="adm-section-title" style={{ marginBottom: 24 }}>Gestión de Colegios</div>
+            <div className="adm-section-title" style={{ marginBottom: 24 }}>{t('schoolsManagementTitle')}</div>
             <div className="sch-grid">
 
               {/* Table */}
@@ -1246,10 +1257,10 @@ export default function AdminPage() {
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                     <thead>
                       <tr>
-                        <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 600, background: 'var(--bg-2)', borderBottom: '1px solid var(--line)' }}>Colegio</th>
-                        <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 600, background: 'var(--bg-2)', borderBottom: '1px solid var(--line)' }}>Código</th>
-                        <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 600, background: 'var(--bg-2)', borderBottom: '1px solid var(--line)' }}>Coords</th>
-                        <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 600, background: 'var(--bg-2)', borderBottom: '1px solid var(--line)' }}>Estudiantes</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 600, background: 'var(--bg-2)', borderBottom: '1px solid var(--line)' }}>{t('colSchool')}</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 600, background: 'var(--bg-2)', borderBottom: '1px solid var(--line)' }}>{t('colCode')}</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 600, background: 'var(--bg-2)', borderBottom: '1px solid var(--line)' }}>{t('colCoords')}</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--mute)', fontWeight: 600, background: 'var(--bg-2)', borderBottom: '1px solid var(--line)' }}>{t('statStudents')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1285,17 +1296,17 @@ export default function AdminPage() {
 
               {/* Add form */}
               <div className="sch-form-card">
-                <div className="sch-form-title">Agregar colegio</div>
+                <div className="sch-form-title">{t('addSchoolTitle')}</div>
                 <div className="sch-field">
-                  <label className="sch-label">Nombre *</label>
+                  <label className="sch-label">{t('nameRequiredLabel')}</label>
                   <input className="sch-input" value={sfName} onChange={e => setSfName(e.target.value)} placeholder="IE Técnica María Inmaculada" />
                 </div>
                 <div className="sch-field">
-                  <label className="sch-label">Código *</label>
+                  <label className="sch-label">{t('codeRequiredLabel')}</label>
                   <input className="sch-input" value={sfCode} onChange={e => setSfCode(e.target.value.toUpperCase())} placeholder="BF-COL-MIM-2026" style={{ letterSpacing: '.05em' }} />
                 </div>
                 <div className="sch-field">
-                  <label className="sch-label">Ciudad</label>
+                  <label className="sch-label">{t('cityLabel')}</label>
                   <input className="sch-input" value={sfCity} onChange={e => setSfCity(e.target.value)} placeholder="Riohacha" />
                 </div>
                 {/* Logo upload */}
@@ -1305,7 +1316,7 @@ export default function AdminPage() {
                 >
                   {sfLogoPreview
                     ? <img src={sfLogoPreview} alt="Logo preview" className="sch-logo-preview" />
-                    : <div style={{ fontSize: 13, color: 'var(--mute)' }}>📷 Subir logo (opcional)</div>
+                    : <div style={{ fontSize: 13, color: 'var(--mute)' }}>{t('uploadLogoOptional')}</div>
                   }
                   <input
                     ref={logoInputRef} type="file" accept="image/*" style={{ display: 'none' }}
@@ -1317,7 +1328,7 @@ export default function AdminPage() {
                   disabled={!sfName.trim() || !sfCode.trim() || savingSchool}
                   onClick={handleAddSchool}
                 >
-                  {savingSchool ? 'Guardando…' : 'Crear colegio'}
+                  {savingSchool ? tCommon('saving') : t('createSchoolBtn')}
                 </button>
               </div>
 
@@ -1330,21 +1341,21 @@ export default function AdminPage() {
                   <m.div className="sch-edit-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} onClick={() => setEditSchool(null)} />
                   <m.div className="sch-edit-panel" initial={{ x: 360 }} animate={{ x: 0 }} exit={{ x: 360 }} transition={{ type: 'spring', stiffness: 260, damping: 28 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                      <div className="sch-edit-title">Editar colegio</div>
+                      <div className="sch-edit-title">{t('editSchoolTitle')}</div>
                       <button onClick={() => setEditSchool(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mute)', fontSize: 20 }}>×</button>
                     </div>
                     <div className="sch-field">
-                      <label className="sch-label">Nombre *</label>
+                      <label className="sch-label">{t('nameRequiredLabel')}</label>
                       <input className="sch-input" value={efName} onChange={e => setEfName(e.target.value)} />
                     </div>
                     <div className="sch-field">
-                      <label className="sch-label">Ciudad</label>
+                      <label className="sch-label">{t('cityLabel')}</label>
                       <input className="sch-input" value={efCity} onChange={e => setEfCity(e.target.value)} />
                     </div>
                     <div className="sch-logo-area" onClick={() => editLogoRef.current?.click()} style={{ marginBottom: 20 }}>
                       {efLogoPreview
                         ? <img src={efLogoPreview} alt="Logo" className="sch-logo-preview" />
-                        : <div style={{ fontSize: 13, color: 'var(--mute)' }}>📷 Cambiar logo</div>
+                        : <div style={{ fontSize: 13, color: 'var(--mute)' }}>{t('changeLogoLabel')}</div>
                       }
                       <input
                         ref={editLogoRef} type="file" accept="image/*" style={{ display: 'none' }}
@@ -1356,7 +1367,7 @@ export default function AdminPage() {
                       disabled={!efName.trim() || savingEdit}
                       onClick={handleEditSchool}
                     >
-                      {savingEdit ? 'Guardando…' : 'Guardar cambios'}
+                      {savingEdit ? tCommon('saving') : t('saveChangesBtn')}
                     </button>
                   </m.div>
                 </>

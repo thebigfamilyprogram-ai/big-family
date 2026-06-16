@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE, MOCK } from '@/lib/mockData'
@@ -25,7 +26,7 @@ interface LeaderProfile {
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const STEP_NAMES = ['Meta', 'Creencias', 'Paradigma', 'Equipo', 'Planes'] as const
+const STEP_NAMES = ['meta', 'creencias', 'paradigma', 'equipo', 'planes'] as const
 const TOTAL = 5
 
 const EMPTY: GVData = { meta_nucleo: '', creencias: '', paradigma: '', equipo: [], planes: [] }
@@ -45,37 +46,40 @@ const MOCK_GV: GVData = {
 const genId = () => `p_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
 
 // ── Adaptive titles ───────────────────────────────────────────────────────────
-function getStep1Title(profile: LeaderProfile | null): string {
-  if (!profile) return '¿Cuál es tu gran sueño como líder?'
+type WizardT = ReturnType<typeof useTranslations<'dashboard.greatVenture.wizard'>>
+
+function getStep1Title(profile: LeaderProfile | null, t: WizardT): string {
+  if (!profile) return t('step1.titleDefault')
   const a = profile.arquetipo.toLowerCase()
-  if (a.includes('visionari')) return 'Tu perfil indica que piensas en grande. ¿Cuál es la visión que te quita el sueño?'
-  if (a.includes('constructor')) return 'Tus relaciones son tu fortaleza. ¿Cuál es el sueño que compartes con las personas que te importan?'
-  if (a.includes('resilient')) return 'Tu disciplina es tu base. ¿Cuál es el sueño que perseguirías incluso cuando todo se complique?'
-  if (a.includes('conector')) return 'Tu energía activa personas. ¿Cuál es el sueño que quieres construir junto a otros?'
-  if (a.includes('estratega')) return 'Tu visión de largo plazo es tu ventaja. ¿Cuál es la meta que defines para los próximos 5 años?'
-  return '¿Cuál es tu gran sueño como líder?'
+  if (a.includes('visionari')) return t('step1.titleVisionario')
+  if (a.includes('constructor')) return t('step1.titleConstructor')
+  if (a.includes('resilient')) return t('step1.titleResiliente')
+  if (a.includes('conector')) return t('step1.titleConector')
+  if (a.includes('estratega')) return t('step1.titleEstratega')
+  return t('step1.titleDefault')
 }
 
-function getStep2Title(profile: LeaderProfile | null): string {
-  if (!profile) return '¿Qué creencias te dan fuerza para perseguir esa meta?'
+function getStep2Title(profile: LeaderProfile | null, t: WizardT): string {
+  if (!profile) return t('step2.titleDefault')
   const crec = profile.areas_crecimiento[0]
-  if (crec === 'Vínculo') return '¿Qué creencias sobre las personas te dan fuerza cuando el trabajo colaborativo es difícil?'
-  if (crec === 'Acción')  return '¿Qué creencias te dan el impulso para actuar aunque no todo esté listo?'
-  if (crec === 'Norte')   return '¿Qué creencias te mantienen orientado/a cuando la visión se vuelve difusa?'
-  return '¿Qué creencias te dan fuerza para perseguir esa meta?'
+  if (crec === 'Vínculo') return t('step2.titleVinculo')
+  if (crec === 'Acción')  return t('step2.titleAccion')
+  if (crec === 'Norte')   return t('step2.titleNorte')
+  return t('step2.titleDefault')
 }
 
-function getStep4Title(profile: LeaderProfile | null): string {
-  if (!profile) return '¿Quiénes son las personas clave en tu camino?'
+function getStep4Title(profile: LeaderProfile | null, t: WizardT): string {
+  if (!profile) return t('step4.titleDefault')
   const a = profile.arquetipo.toLowerCase()
-  if (a.includes('visionari')) return 'Tu perfil indica que tiendes a ir solo/a. ¿Quién complementa tu pensamiento grande con ejecución concreta?'
-  if (a.includes('estratega'))  return 'Tu fortaleza es estratégica. ¿Quién te ayuda a conectar con las personas y bajar las ideas al terreno?'
-  return '¿Quiénes son las personas clave en tu camino?'
+  if (a.includes('visionari')) return t('step4.titleVisionario')
+  if (a.includes('estratega'))  return t('step4.titleEstratega')
+  return t('step4.titleDefault')
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function GreatVenturePage() {
   const router      = useRouter()
+  const t           = useTranslations('dashboard.greatVenture.wizard')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const pref        = useReducedMotion()
   const saveTimer   = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -253,7 +257,7 @@ export default function GreatVenturePage() {
       `}</style>
 
       {/* Close / back to dashboard */}
-      <button className="gv-close" onClick={() => router.push('/dashboard')}>← Dashboard</button>
+      <button className="gv-close" onClick={() => router.push('/dashboard')}>{t('closeBtn')}</button>
 
       {/* Auto-save indicator */}
       <AnimatePresence>
@@ -269,7 +273,7 @@ export default function GreatVenturePage() {
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            Guardado
+            {t('saved')}
           </m.div>
         )}
       </AnimatePresence>
@@ -298,7 +302,7 @@ export default function GreatVenturePage() {
           </div>
           <div className="gv-names">
             {STEP_NAMES.map((name, i) => (
-              <div key={i} className={`gv-sname${i === step ? ' active' : ''}`}>{name}</div>
+              <div key={i} className={`gv-sname${i === step ? ' active' : ''}`}>{t(`stepNames.${name}`)}</div>
             ))}
           </div>
         </div>
@@ -379,7 +383,7 @@ export default function GreatVenturePage() {
             whileTap={pref ? undefined : { scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
           >
-            Anterior
+            {t('nav.previous')}
           </m.button>
           <m.button
             className="gv-btn-next"
@@ -388,7 +392,7 @@ export default function GreatVenturePage() {
             whileTap={pref ? undefined : { scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
           >
-            {step === TOTAL - 1 ? 'Ver mi mapa →' : 'Siguiente →'}
+            {step === TOTAL - 1 ? t('nav.viewMap') : t('nav.next')}
           </m.button>
         </div>
       </div>
@@ -400,19 +404,20 @@ export default function GreatVenturePage() {
 function StepMeta({ data, profile, wordCount, onChange }: {
   data: GVData; profile: LeaderProfile | null; wordCount: number; onChange: (v: string) => void
 }) {
+  const t = useTranslations('dashboard.greatVenture.wizard')
   const barPct = Math.min((wordCount / 150) * 100, 100)
   const barColor = wordCount < 20 ? '#D4821A' : wordCount > 150 ? '#C0392B' : '#0F7B6C'
 
   return (
     <>
-      <div className="gv-eyebrow">PASO 1 · YO Y MI PROPÓSITO</div>
-      <h2 className="gv-q">{getStep1Title(profile)}</h2>
-      <p className="gv-sub">No tienes que resolver el mundo. Empieza con algo concreto que puedas perseguir en los próximos años.</p>
+      <div className="gv-eyebrow">{t('step1.eyebrow')}</div>
+      <h2 className="gv-q">{getStep1Title(profile, t)}</h2>
+      <p className="gv-sub">{t('step1.subtitle')}</p>
       <textarea
         className="gv-ta"
         value={data.meta_nucleo}
         onChange={e => onChange(e.target.value)}
-        placeholder="Ej: Crear un programa de liderazgo en mi colegio que llegue a toda la región..."
+        placeholder={t('step1.placeholder')}
         maxLength={1500}
       />
       <div className="gv-wc">
@@ -420,7 +425,7 @@ function StepMeta({ data, profile, wordCount, onChange }: {
           <div className="gv-wc-fill" style={{ width: `${barPct}%`, background: barColor }} />
         </div>
         <span className="gv-wc-txt" style={{ color: wordCount < 20 ? '#D4821A' : wordCount > 150 ? '#C0392B' : 'var(--mute)' }}>
-          {wordCount} / 150 palabras
+          {t('step1.wordCount', { count: wordCount })}
         </span>
       </div>
     </>
@@ -431,16 +436,17 @@ function StepMeta({ data, profile, wordCount, onChange }: {
 function StepCreencias({ data, profile, onChange }: {
   data: GVData; profile: LeaderProfile | null; onChange: (v: string) => void
 }) {
+  const t = useTranslations('dashboard.greatVenture.wizard')
   return (
     <>
-      <div className="gv-eyebrow">PASO 2 · LO QUE ME IMPULSA</div>
-      <h2 className="gv-q">{getStep2Title(profile)}</h2>
-      <p className="gv-sub">Las creencias son las convicciones profundas que te sostienen cuando todo se complica.</p>
+      <div className="gv-eyebrow">{t('step2.eyebrow')}</div>
+      <h2 className="gv-q">{getStep2Title(profile, t)}</h2>
+      <p className="gv-sub">{t('step2.subtitle')}</p>
       <textarea
         className="gv-ta"
         value={data.creencias}
         onChange={e => onChange(e.target.value)}
-        placeholder="Ej: Creo que cualquier persona puede liderar desde donde está. Creo que mi comunidad merece mejores oportunidades..."
+        placeholder={t('step2.placeholder')}
         maxLength={1500}
       />
     </>
@@ -451,16 +457,17 @@ function StepCreencias({ data, profile, onChange }: {
 function StepParadigma({ data, onChange }: {
   data: GVData; onChange: (v: string) => void
 }) {
+  const t = useTranslations('dashboard.greatVenture.wizard')
   return (
     <>
-      <div className="gv-eyebrow">PASO 3 · CÓMO VEO EL MUNDO</div>
-      <h2 className="gv-q">¿Cuál es tu lente para ver el mundo?</h2>
-      <p className="gv-sub">Tu paradigma es la forma en que interpretas lo que pasa. Un líder con paradigma apreciativo ve oportunidades donde otros ven problemas.</p>
+      <div className="gv-eyebrow">{t('step3.eyebrow')}</div>
+      <h2 className="gv-q">{t('step3.title')}</h2>
+      <p className="gv-sub">{t('step3.subtitle')}</p>
       <textarea
         className="gv-ta"
         value={data.paradigma}
         onChange={e => onChange(e.target.value)}
-        placeholder="Ej: Veo cada obstáculo como información. Creo que las personas quieren crecer si alguien las acompaña..."
+        placeholder={t('step3.placeholder')}
         maxLength={1500}
       />
     </>
@@ -474,6 +481,7 @@ function StepEquipo({ data, profile, teamNombre, teamRol, onNombre, onRol, onAdd
   onNombre: (v: string) => void; onRol: (v: string) => void
   onAdd: () => void; onRemove: (i: number) => void
 }) {
+  const t = useTranslations('dashboard.greatVenture.wizard')
   const canAdd = teamNombre.trim().length > 0 && data.equipo.length < 5
 
   function handleKey(e: React.KeyboardEvent) {
@@ -482,14 +490,14 @@ function StepEquipo({ data, profile, teamNombre, teamRol, onNombre, onRol, onAdd
 
   return (
     <>
-      <div className="gv-eyebrow">PASO 4 · LAS PERSONAS QUE ME ACOMPAÑAN</div>
-      <h2 className="gv-q">{getStep4Title(profile)}</h2>
-      <p className="gv-sub">Tu equipo de poder son las personas que te complementan, te retan y te sostienen.</p>
+      <div className="gv-eyebrow">{t('step4.eyebrow')}</div>
+      <h2 className="gv-q">{getStep4Title(profile, t)}</h2>
+      <p className="gv-sub">{t('step4.subtitle')}</p>
 
       <div className="gv-row2">
         <input
           className="gv-input"
-          placeholder="Nombre"
+          placeholder={t('step4.namePlaceholder')}
           value={teamNombre}
           onChange={e => onNombre(e.target.value)}
           onKeyDown={handleKey}
@@ -497,7 +505,7 @@ function StepEquipo({ data, profile, teamNombre, teamRol, onNombre, onRol, onAdd
         />
         <input
           className="gv-input"
-          placeholder="Rol en tu vida (ej: me da feedback honesto)"
+          placeholder={t('step4.rolePlaceholder')}
           value={teamRol}
           onChange={e => onRol(e.target.value)}
           onKeyDown={handleKey}
@@ -505,10 +513,10 @@ function StepEquipo({ data, profile, teamNombre, teamRol, onNombre, onRol, onAdd
         />
       </div>
       <button className="gv-add" onClick={onAdd} disabled={!canAdd}>
-        + Agregar persona
+        {t('step4.addPersonBtn')}
       </button>
       {data.equipo.length >= 5 && (
-        <p style={{ fontSize: 12, color: 'var(--mute)', marginTop: 8 }}>Máximo 5 personas alcanzado.</p>
+        <p style={{ fontSize: 12, color: 'var(--mute)', marginTop: 8 }}>{t('step4.maxReached')}</p>
       )}
 
       <div className="gv-chips">
@@ -524,7 +532,7 @@ function StepEquipo({ data, profile, teamNombre, teamRol, onNombre, onRol, onAdd
             >
               <span style={{ fontWeight: 700 }}>{mem.nombre}</span>
               {mem.rol && <span style={{ color: 'var(--mute)', fontSize: 12 }}>— {mem.rol}</span>}
-              <button className="gv-chip-x" onClick={() => onRemove(i)} aria-label={`Eliminar ${mem.nombre}`}>×</button>
+              <button className="gv-chip-x" onClick={() => onRemove(i)} aria-label={t('step4.removeAria', { name: mem.nombre })}>×</button>
             </m.div>
           ))}
         </AnimatePresence>
@@ -540,6 +548,7 @@ function StepPlanes({ data, planTexto, planFecha, onTexto, onFecha, onAdd, onRem
   onTexto: (v: string) => void; onFecha: (v: string) => void
   onAdd: () => void; onRemove: (id: string) => void; onToggle: (id: string) => void
 }) {
+  const t = useTranslations('dashboard.greatVenture.wizard')
   const canAdd = planTexto.trim().length > 0 && data.planes.length < 5
 
   function handleKey(e: React.KeyboardEvent) {
@@ -548,14 +557,14 @@ function StepPlanes({ data, planTexto, planFecha, onTexto, onFecha, onAdd, onRem
 
   return (
     <>
-      <div className="gv-eyebrow">PASO 5 · LOS PASOS CONCRETOS</div>
-      <h2 className="gv-q">¿Cuáles son tus primeros 3 pasos?</h2>
-      <p className="gv-sub">No el plan perfecto — los primeros movimientos concretos hacia tu meta.</p>
+      <div className="gv-eyebrow">{t('step5.eyebrow')}</div>
+      <h2 className="gv-q">{t('step5.title')}</h2>
+      <p className="gv-sub">{t('step5.subtitle')}</p>
 
       <div className="gv-row2">
         <input
           className="gv-input"
-          placeholder="Describe el paso..."
+          placeholder={t('step5.textPlaceholder')}
           value={planTexto}
           onChange={e => onTexto(e.target.value)}
           onKeyDown={handleKey}
@@ -570,10 +579,10 @@ function StepPlanes({ data, planTexto, planFecha, onTexto, onFecha, onAdd, onRem
         />
       </div>
       <button className="gv-add" onClick={onAdd} disabled={!canAdd}>
-        + Agregar paso
+        {t('step5.addStepBtn')}
       </button>
       {data.planes.length >= 5 && (
-        <p style={{ fontSize: 12, color: 'var(--mute)', marginTop: 8 }}>Máximo 5 pasos alcanzado.</p>
+        <p style={{ fontSize: 12, color: 'var(--mute)', marginTop: 8 }}>{t('step5.maxReached')}</p>
       )}
 
       <div className="gv-plan-list">
@@ -590,7 +599,7 @@ function StepPlanes({ data, planTexto, planFecha, onTexto, onFecha, onAdd, onRem
               <button
                 className={`gv-plan-check${p.completado ? ' done' : ''}`}
                 onClick={() => onToggle(p.id)}
-                aria-label={p.completado ? 'Marcar incompleto' : 'Marcar completado'}
+                aria-label={p.completado ? t('step5.markIncompleteAria') : t('step5.markCompleteAria')}
               >
                 {p.completado && (
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -606,7 +615,7 @@ function StepPlanes({ data, planTexto, planFecha, onTexto, onFecha, onAdd, onRem
                   </div>
                 )}
               </div>
-              <button className="gv-plan-x" onClick={() => onRemove(p.id)} aria-label="Eliminar paso">×</button>
+              <button className="gv-plan-x" onClick={() => onRemove(p.id)} aria-label={t('step5.removeStepAria')}>×</button>
             </m.div>
           ))}
         </AnimatePresence>
