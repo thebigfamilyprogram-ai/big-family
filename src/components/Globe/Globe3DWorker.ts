@@ -2,10 +2,24 @@
 // Uses three-globe for globe/arcs/points, manual THREE for camera/lights/renderer.
 // NO DOM access allowed in Workers — textures loaded via fetch + createImageBitmap.
 
-// MUST be first: three-globe reads `window.THREE` at module init time with no guard.
-import './Globe3DWindowPolyfill'
-import ThreeGlobe from 'three-globe'
+// three is Worker-safe (uses typeof window guard). three-globe is NOT — it reads
+// window.THREE / window.innerWidth at module eval time. We dynamic-import it inside
+// initGlobe AFTER the polyfill below has run, so window exists when three-globe loads.
+import type ThreeGlobe from 'three-globe'  // type-only: erased at compile time
 import * as THREE from 'three'
+
+// Polyfill window for three-globe (no typeof guard in its dist).
+// Runs synchronously at module eval, before initGlobe ever calls import('three-globe').
+if (typeof window === 'undefined') {
+  ;(globalThis as any).window = {  // eslint-disable-line @typescript-eslint/no-explicit-any
+    THREE:               undefined,
+    innerWidth:          800,
+    innerHeight:         600,
+    devicePixelRatio:    1,
+    addEventListener:    () => {},
+    removeEventListener: () => {},
+  }
+}
 
 // ── Arc data (all from Colombia 4.57°N, 74.30°W) ─────────────────────────────
 const ALL_ARCS = [
@@ -130,6 +144,9 @@ async function initGlobe(
   try {
     isMobile = mobile
 
+    // Dynamic import: three-globe evaluates here, AFTER the globalThis.window polyfill
+    const { default: ThreeGlobeLib } = await import('three-globe')
+
     renderer = new THREE.WebGLRenderer({ canvas, antialias: dpr < 2, alpha: true,
       powerPreference: 'high-performance' })
     renderer.setPixelRatio(Math.min(dpr, 2))
@@ -157,7 +174,7 @@ async function initGlobe(
     })
 
     // ThreeGlobe — atmosphere via API, no globeImageUrl (would break in Worker)
-    globe = new ThreeGlobe()
+    globe = new ThreeGlobeLib()
       .showAtmosphere(true)
       .atmosphereColor('#C0392B')
       .atmosphereAltitude(isDark ? 0.22 : 0.18)
