@@ -7,6 +7,7 @@ export async function GET() {
     throw new Error('Test error - Sentry integration check')
   } catch (error) {
     Sentry.captureException(error)
+    await Sentry.flush(2000)
     return new Response('Test error sent to Sentry', { status: 200 })
   }
 }
