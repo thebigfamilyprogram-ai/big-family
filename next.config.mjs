@@ -20,7 +20,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https: https://flagcdn.com",
       "font-src 'self'",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://*.sentry.io https://o*.ingest.sentry.io",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://*.sentry.io https://o*.ingest.sentry.io https://*.ingest.de.sentry.io",
       // Kashi iframe + YouTube/Vimeo for module videos
       "frame-src 'self' https://luishernandobarrios.com https://www.youtube.com https://player.vimeo.com",
       "media-src 'self' https:",
