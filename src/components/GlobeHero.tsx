@@ -17,7 +17,7 @@ import { createClient } from '@/lib/supabase'
 import AnimatedNumber from '@/components/AnimatedNumber'
 import { useRealtimeStats } from '@/hooks/useRealtimeStats'
 
-const HeroCollage = dynamic(() => import('@/components/HeroCollage'), { ssr: false })
+const Globe3DHero = dynamic(() => import('@/components/Globe3DHero'), { ssr: false })
 
 // ── Country scramble — cycles through connected countries with text scramble ──
 const SCRAMBLE_WORDS = [
@@ -1203,15 +1203,7 @@ export default function GlobeHero() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', stiffness: 80, damping: 18, delay: 0.4 }}
         >
-          <div style={{
-            position: 'relative',
-            width: '100%',
-            height: '100%',
-            minHeight: '580px',
-            overflow: 'hidden',
-          }}>
-            <HeroCollage />
-          </div>
+          <Globe3DHero />
         </m.div>
 
         <div
