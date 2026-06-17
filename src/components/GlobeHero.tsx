@@ -3,7 +3,7 @@
 import { memo, useEffect, useRef, useState } from 'react'
 import { Link } from 'next-view-transitions'
 import dynamic from 'next/dynamic'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { m, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll } from 'framer-motion'
 
@@ -213,7 +213,6 @@ const LOCALES = [
 ]
 
 const LanguageSelector = memo(function LanguageSelector() {
-  const router        = useRouter()
   const pathname      = usePathname()
   const currentLocale = useLocale()
   const [open, setOpen] = useState(false)
@@ -241,7 +240,7 @@ const LanguageSelector = memo(function LanguageSelector() {
       }
     }
     const newPath = newLocale === 'es' ? cleanPath : `/${newLocale}${cleanPath}`
-    router.push(newPath)
+    window.location.href = newPath
     setOpen(false)
   }
 
