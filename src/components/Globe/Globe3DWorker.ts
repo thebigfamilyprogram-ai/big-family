@@ -130,7 +130,7 @@ function animate(now: number) {
   if (now - lastTime < 33) return   // ~30fps cap
   lastTime = now
 
-  if (globeGroup) globeGroup.rotation.y += 0.0005
+  if (globeGroup) globeGroup.rotation.y += 0.0015
 
   // Animate arc dashes by decrementing dashOffset (exists at runtime, missing in d.ts)
   if (arcGroup) {
@@ -170,8 +170,8 @@ async function initGlobe(
     camera.position.set(0, 0, 4.2)
 
     ;[dayTex, nightTex] = await Promise.all([
-      loadTex(['/textures/earth-day.webp',   '/textures/earth-day.jpg']),
-      loadTex(['/textures/earth-night.webp', '/textures/earth-night.jpg']),
+      loadTex(['/textures/earth-new/earth-day.jpg']),
+      loadTex(['/textures/earth-new/earth-night.jpg']),
     ])
 
     globeGroup = new THREE.Group()
