@@ -20,8 +20,11 @@ Sentry.init({
   ],
 
   beforeSend(event) {
-    // Suprimir en desarrollo — solo enviar en producción
-    if (process.env.NODE_ENV !== 'production') return null
-    return event
+    if (process.env.NODE_ENV === 'production') return event
+    // En desarrollo, solo permitir el evento de prueba manual de Sentry
+    if (event.exception?.values?.[0]?.value?.includes('Sentry integration check')) {
+      return event
+    }
+    return null
   },
 })
