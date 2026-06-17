@@ -1,5 +1,6 @@
 import bundleAnalyzer from '@next/bundle-analyzer'
 import createNextIntlPlugin from 'next-intl/plugin'
+import { withSentryConfig } from '@sentry/nextjs'
 
 const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === 'true' })
 const withNextIntl = createNextIntlPlugin('./src/i18n.ts')
@@ -19,7 +20,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https: https://flagcdn.com",
       "font-src 'self'",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://*.sentry.io https://o*.ingest.sentry.io",
       // Kashi iframe + YouTube/Vimeo for module videos
       "frame-src 'self' https://luishernandobarrios.com https://www.youtube.com https://player.vimeo.com",
       "media-src 'self' https:",
@@ -59,4 +60,17 @@ const nextConfig = {
   },
 }
 
-export default withNextIntl(withBundleAnalyzer(nextConfig))
+export default withSentryConfig(
+  withNextIntl(withBundleAnalyzer(nextConfig)),
+  {
+    silent: true,
+    org:     process.env.SENTRY_ORG     ?? '',
+    project: process.env.SENTRY_PROJECT ?? '',
+  },
+  {
+    widenClientFileUpload:    true,
+    hideSourceMaps:           true,
+    disableLogger:            true,
+    automaticVercelMonitors:  false,
+  }
+)

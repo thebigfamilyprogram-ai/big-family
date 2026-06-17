@@ -1,6 +1,12 @@
 'use client'
 
-export default function Error({ reset }: { error: Error; reset: () => void }) {
+import { useEffect } from 'react'
+import * as Sentry from '@sentry/nextjs'
+
+export default function Error({ error, reset }: { error: Error; reset: () => void }) {
+  useEffect(() => {
+    Sentry.captureException(error)
+  }, [error])
   return (
     <div style={{
       display: 'flex', flexDirection: 'column',
