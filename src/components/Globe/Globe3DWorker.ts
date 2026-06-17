@@ -20,17 +20,15 @@ const ALL_ARCS = [
 ]
 
 // ── Module state ──────────────────────────────────────────────────────────────
-let renderer:   THREE.WebGLRenderer       | null = null
-let scene:      THREE.Scene               | null = null
-let camera:     THREE.PerspectiveCamera   | null = null
-let globeGroup: THREE.Group               | null = null
-let globeMat:   THREE.MeshPhongMaterial   | null = null
-let atmosMesh:  THREE.Mesh                | null = null
-let arcGroup:   THREE.Group               | null = null
-let ambLight:   THREE.AmbientLight        | null = null
-let pointLight: THREE.PointLight          | null = null
-let dayTex:     THREE.Texture             | null = null
-let nightTex:   THREE.Texture             | null = null
+let renderer:   THREE.WebGLRenderer     | null = null
+let scene:      THREE.Scene             | null = null
+let camera:     THREE.PerspectiveCamera | null = null
+let globeGroup: THREE.Group             | null = null
+let globeMat:   THREE.MeshBasicMaterial | null = null   // Basic: shows texture without lights
+let atmosMesh:  THREE.Mesh              | null = null
+let arcGroup:   THREE.Group             | null = null
+let dayTex:     THREE.Texture           | null = null
+let nightTex:   THREE.Texture           | null = null
 
 let rafId     = 0
 let lastTime  = 0
@@ -94,18 +92,6 @@ async function loadTex(urls: string[]): Promise<THREE.Texture | null> {
   return null
 }
 
-// ── Lights ────────────────────────────────────────────────────────────────────
-function buildLights(isDark: boolean) {
-  if (!scene) return
-  if (ambLight)   { scene.remove(ambLight);   ambLight   = null }
-  if (pointLight) { scene.remove(pointLight); pointLight = null }
-  ambLight   = new THREE.AmbientLight(0xffffff, isDark ? 0.4 : 0.6)
-  pointLight = new THREE.PointLight(0xffffff,   isDark ? 1.6 : 1.2)
-  pointLight.position.set(200, 100, 200)
-  scene.add(ambLight)
-  scene.add(pointLight)
-}
-
 // ── Arc group (rebuilt on theme change) ───────────────────────────────────────
 function buildArcs(isDark: boolean) {
   if (!globeGroup) return
@@ -130,12 +116,10 @@ function applyTheme(isDark: boolean) {
     globeMat.needsUpdate = true
   }
   if (atmosMesh) {
-    const m = atmosMesh.material as THREE.MeshPhongMaterial
+    const m = atmosMesh.material as THREE.MeshBasicMaterial
     m.opacity    = isDark ? 0.14 : 0.09
     m.needsUpdate = true
   }
-  if (ambLight)   ambLight.intensity   = isDark ? 0.4 : 0.6
-  if (pointLight) pointLight.intensity = isDark ? 1.6 : 1.2
   buildArcs(isDark)
 }
 
@@ -194,16 +178,14 @@ async function initGlobe(
     globeGroup.rotation.x = 0.1
     globeGroup.rotation.y = Math.PI * 0.55
 
-    // Earth sphere
-    globeMat = new THREE.MeshPhongMaterial({
-      map:       isDark ? (nightTex ?? dayTex) : dayTex,
-      specular:  new THREE.Color(0x333333),
-      shininess: 15,
+    // Earth sphere — MeshBasicMaterial: shows texture as-is, no lighting needed
+    globeMat = new THREE.MeshBasicMaterial({
+      map: isDark ? (nightTex ?? dayTex) : dayTex,
     })
     globeGroup.add(new THREE.Mesh(new THREE.SphereGeometry(1, 64, 64), globeMat))
 
     // Atmosphere halo (backside sphere, slightly larger, red tint)
-    const atmosMat = new THREE.MeshPhongMaterial({
+    const atmosMat = new THREE.MeshBasicMaterial({
       color:       new THREE.Color('#C0392B'),
       transparent: true,
       opacity:     isDark ? 0.14 : 0.09,
@@ -222,7 +204,6 @@ async function initGlobe(
     globeGroup.add(dot)
 
     buildArcs(isDark)
-    buildLights(isDark)
     scene.add(globeGroup)
 
     lastTime = 0
@@ -244,7 +225,7 @@ function destroyGlobe() {
       if (mesh.material) {
         const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
         mats.forEach((m) => {
-          const mat = m as THREE.MeshPhongMaterial
+          const mat = m as THREE.MeshBasicMaterial
           if (mat.map) mat.map.dispose()
           mat.dispose()
         })
@@ -253,8 +234,7 @@ function destroyGlobe() {
   }
   if (renderer) { renderer.dispose(); renderer.forceContextLoss(); renderer = null }
   scene = null; camera = null; globeGroup = null; globeMat = null
-  atmosMesh = null; arcGroup = null; ambLight = null; pointLight = null
-  dayTex = null; nightTex = null
+  atmosMesh = null; arcGroup = null; dayTex = null; nightTex = null
 }
 
 // ── Message handler ───────────────────────────────────────────────────────────
