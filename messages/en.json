@@ -2039,6 +2039,33 @@
     "pageTitle": "Four years building leaders",
     "pageIntro": "Every milestone in our history is the result of young people who chose to act, learn, and transform their communities."
   },
+  "suggestions": {
+    "button": "Suggestion",
+    "title": "Send suggestion",
+    "categories": {
+      "bug": "Bug",
+      "idea": "Idea",
+      "queja": "Complaint",
+      "otro": "Other"
+    },
+    "placeholder": "Describe the problem or idea...",
+    "submit": "Send",
+    "success": "Thank you! Your suggestion was sent.",
+    "notifTitle": "New suggestion received",
+    "panelTitle": "Suggestion box",
+    "status": {
+      "pending": "Pending",
+      "reviewed": "Reviewed",
+      "resolved": "Resolved",
+      "dismissed": "Dismissed"
+    },
+    "empty": "No suggestions yet.",
+    "filterAll": "All",
+    "student": "Student",
+    "page": "Page",
+    "notes": "Notes",
+    "save": "Save"
+  },
   "successStories": {
     "title": "Success Stories",
     "subtitle": "Leaders who are transforming their communities",
@@ -2354,7 +2381,8 @@
       "users": "Users",
       "evaluations": "Evaluations",
       "codes": "Codes",
-      "schools": "Schools"
+      "schools": "Schools",
+      "suggestions": "Suggestions"
     },
     "badge": {
       "pending": "Pending",

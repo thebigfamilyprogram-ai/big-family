@@ -2039,6 +2039,33 @@
     "pageTitle": "Quatro anos formando líderes",
     "pageIntro": "Cada marco em nossa história é resultado de jovens que decidiram agir, aprender e transformar suas comunidades."
   },
+  "suggestions": {
+    "button": "Sugestão",
+    "title": "Enviar sugestão",
+    "categories": {
+      "bug": "Bug",
+      "idea": "Ideia",
+      "queja": "Reclamação",
+      "otro": "Outro"
+    },
+    "placeholder": "Descreva o problema ou ideia...",
+    "submit": "Enviar",
+    "success": "Obrigado! Sua sugestão foi enviada.",
+    "notifTitle": "Nova sugestão recebida",
+    "panelTitle": "Caixa de sugestões",
+    "status": {
+      "pending": "Pendente",
+      "reviewed": "Revisado",
+      "resolved": "Resolvido",
+      "dismissed": "Descartado"
+    },
+    "empty": "Nenhuma sugestão ainda.",
+    "filterAll": "Todas",
+    "student": "Estudante",
+    "page": "Página",
+    "notes": "Notas",
+    "save": "Salvar"
+  },
   "successStories": {
     "title": "Histórias de Sucesso",
     "subtitle": "Líderes que estão transformando seu entorno",
@@ -2354,7 +2381,8 @@
       "users": "Usuários",
       "evaluations": "Avaliações",
       "codes": "Códigos",
-      "schools": "Escolas"
+      "schools": "Escolas",
+      "suggestions": "Sugestões"
     },
     "badge": {
       "pending": "Pendente",

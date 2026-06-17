@@ -7,6 +7,7 @@ export type NotificationType =
   | 'quiz_retry_approved'
   | 'kashi_session'
   | 'great_venture_reminder'
+  | 'suggestion'
 
 interface CreateNotificationParams {
   userId: string

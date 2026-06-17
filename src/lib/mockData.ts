@@ -235,4 +235,12 @@ export const MOCK = {
       { week:'S5', actions:201 },{ week:'S6', actions:178 },{ week:'S7', actions:218 },{ week:'S8', actions:234 },
     ],
   },
+
+  suggestions: [
+    { id:'mock-s-1', category:'idea',  message:'Sería genial tener un modo oscuro para usar la plataforma de noche. Los ojos se cansan mucho con el fondo blanco.', page_url:'/dashboard', status:'pending', admin_notes:null, created_at:'2026-06-10T10:00:00Z', user_name:'Valentina Torres Ospino' },
+    { id:'mock-s-2', category:'bug',   message:'El quiz del Módulo 3 no guarda mi respuesta cuando hago clic en "Siguiente". Tengo que empezar desde cero cada vez.', page_url:'/dashboard/modules/3', status:'pending', admin_notes:null, created_at:'2026-06-11T09:15:00Z', user_name:'Carlos Andrés Mendoza' },
+    { id:'mock-s-3', category:'queja', message:'El tiempo de carga de la página principal es muy lento en mi celular. Tarda más de 10 segundos.', page_url:'/dashboard', status:'reviewed', admin_notes:'Estamos optimizando las imágenes del hero. Esperamos mejorar 40% en la próxima versión.', created_at:'2026-06-09T08:30:00Z', user_name:'Ana María Gutiérrez' },
+    { id:'mock-s-4', category:'idea',  message:'¿Podrían añadir un chat entre estudiantes del mismo colegio? Sería útil para coordinarse en proyectos.', page_url:'/dashboard/team-hub', status:'resolved', admin_notes:'Esta funcionalidad ya existe en Team Hub. Te enviamos un tutorial.', created_at:'2026-06-08T14:00:00Z', user_name:'Diego Rincón Pérez' },
+    { id:'mock-s-5', category:'otro',  message:'No encuentro cómo descargar mi certificado de participación. ¿Existe esa opción?', page_url:'/dashboard', status:'dismissed', admin_notes:'Los certificados se generan al completar el módulo final. Aún no has completado todos los módulos requeridos.', created_at:'2026-06-07T11:00:00Z', user_name:'Sofía Linares Castro' },
+  ],
 }

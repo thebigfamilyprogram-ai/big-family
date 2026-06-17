@@ -2325,6 +2325,33 @@
     "pageTitle": "Cuatro años construyendo líderes",
     "pageIntro": "Cada hito en nuestra historia es el resultado de jóvenes que decidieron actuar, aprender y transformar sus comunidades."
   },
+  "suggestions": {
+    "button": "Sugerencia",
+    "title": "Enviar sugerencia",
+    "categories": {
+      "bug": "Bug",
+      "idea": "Idea",
+      "queja": "Queja",
+      "otro": "Otro"
+    },
+    "placeholder": "Descríbenos el problema o idea...",
+    "submit": "Enviar",
+    "success": "¡Gracias! Tu sugerencia fue enviada.",
+    "notifTitle": "Nueva sugerencia recibida",
+    "panelTitle": "Buzón de sugerencias",
+    "status": {
+      "pending": "Pendiente",
+      "reviewed": "Revisado",
+      "resolved": "Resuelto",
+      "dismissed": "Descartado"
+    },
+    "empty": "No hay sugerencias aún.",
+    "filterAll": "Todas",
+    "student": "Estudiante",
+    "page": "Página",
+    "notes": "Notas",
+    "save": "Guardar"
+  },
   "successStories": {
     "title": "Historias de Éxito",
     "subtitle": "Líderes que están transformando su entorno",
@@ -2640,7 +2667,8 @@
       "users": "Usuarios",
       "evaluations": "Evaluaciones",
       "codes": "Códigos",
-      "schools": "Colegios"
+      "schools": "Colegios",
+      "suggestions": "Sugerencias"
     },
     "badge": {
       "pending": "Pendiente",

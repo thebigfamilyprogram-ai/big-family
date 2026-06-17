@@ -11,10 +11,11 @@ export default function CoordinatorLayout({ children }: { children: React.ReactN
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
-  const [userName,   setUserName]   = useState('')
-  const [userInit,   setUserInit]   = useState('')
-  const [schoolName, setSchoolName] = useState<string | undefined>(undefined)
-  const [unread,     setUnread]     = useState(0)
+  const [userName,          setUserName]          = useState('')
+  const [userInit,          setUserInit]          = useState('')
+  const [schoolName,        setSchoolName]        = useState<string | undefined>(undefined)
+  const [unread,            setUnread]            = useState(0)
+  const [pendingSuggestions,setPendingSuggestions] = useState(0)
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -66,6 +67,12 @@ export default function CoordinatorLayout({ children }: { children: React.ReactN
       setUnread(
         (anns ?? []).filter((a: { id: string }) => !readIds.has(a.id)).length
       )
+
+      const { count: pendingCount } = await sb
+        .from('suggestions')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending')
+      setPendingSuggestions(pendingCount ?? 0)
     }
     load()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -78,6 +85,7 @@ export default function CoordinatorLayout({ children }: { children: React.ReactN
         userInitial={userInit}
         schoolName={schoolName}
         unreadAnnouncements={unread}
+        pendingSuggestions={pendingSuggestions}
       />
       <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         {children}

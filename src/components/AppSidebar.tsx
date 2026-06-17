@@ -20,6 +20,7 @@ export interface AppSidebarProps {
   activeTab?: string
   onTabChange?: (tab: string) => void
   unreadAnnouncements?: number
+  pendingSuggestions?: number
 }
 
 type NavItem = {
@@ -62,6 +63,7 @@ const I = {
   compass:   <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><path d="M8 2v1M8 13v1M2 8h1M13 8h1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><path d="M10.5 5.5L9 9l-3.5 1.5L7 7l3.5-1.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>,
   portcard:  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><circle cx="5.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M8.5 7h4M8.5 10h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
   moon:      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13.5 9.5A6 6 0 0 1 6.5 2.5a6 6 0 1 0 7 7z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  lightbulb: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5a4 4 0 0 1 2.5 7.1V11a.5.5 0 0 1-.5.5h-4A.5.5 0 0 1 5.5 11V8.6A4 4 0 0 1 8 1.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M6 13h4M6.5 15h3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
 }
 
 // ── Nav definitions per role ──────────────────────────────────────────────────
@@ -79,6 +81,7 @@ function getNav(
   ventureCompleted?: boolean | null,
   portfolioUsername?: string | null,
   portfolioPublic?: boolean | null,
+  pendingSuggestions?: number,
 ): Section[] {
   const n = t.raw('nav') as Record<string, string>
   const s = t.raw('sections') as Record<string, string>
@@ -152,10 +155,11 @@ function getNav(
     },
     {
       key: 'gestion', label: s.gestion, items: [
-        { label: n.datos,    href: '/coordinator/datos',    icon: I.barChart },
-        { label: n.calendar, href: '/coordinator/calendar', icon: I.calendar },
-        { label: n.reports,  href: '/coordinator/report',   icon: I.report   },
-        { label: n.settings, href: '/coordinator/settings', icon: I.settings },
+        { label: n.datos,        href: '/coordinator/datos',        icon: I.barChart                                         },
+        { label: n.calendar,     href: '/coordinator/calendar',     icon: I.calendar                                         },
+        { label: n.reports,      href: '/coordinator/report',       icon: I.report                                           },
+        { label: n.suggestions,  href: '/coordinator/suggestions',  icon: I.lightbulb, badge: pendingSuggestions || undefined },
+        { label: n.settings,     href: '/coordinator/settings',     icon: I.settings                                         },
       ],
     },
   ]
@@ -175,7 +179,8 @@ function getNav(
     },
     {
       key: 'analitica', label: s.analitica, items: [
-        { label: n.datos, href: '/admin/datos', icon: I.barChart },
+        { label: n.datos,       href: '/admin/datos',        icon: I.barChart                                         },
+        { label: n.suggestions, href: '/admin/suggestions',  icon: I.lightbulb, badge: pendingSuggestions || undefined },
       ],
     },
   ]
@@ -193,6 +198,7 @@ export default function AppSidebar({
   activeTab,
   onTabChange,
   unreadAnnouncements = 0,
+  pendingSuggestions,
 }: AppSidebarProps) {
   const router      = useRouter()
   const pathname    = usePathname()
@@ -239,7 +245,7 @@ export default function AppSidebar({
     checkStudentData()
   }, [role])
 
-  const sections    = getNav(role, unreadAnnouncements, tSb, ventureCompleted, portfolioUsername, portfolioPublic)
+  const sections    = getNav(role, unreadAnnouncements, tSb, ventureCompleted, portfolioUsername, portfolioPublic, pendingSuggestions)
   const defaultOpen = Object.fromEntries(sections.map(s => [s.key, true]))
 
   // useEffect reads localStorage to avoid SSR/client hydration mismatch

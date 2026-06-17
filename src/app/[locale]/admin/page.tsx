@@ -108,10 +108,11 @@ export default function AdminPage() {
 
   const [tab,       setTab]       = useState<Tab>('stats')
   const [booting,   setBooting]   = useState(true)
-  const [adminName,    setAdminName]    = useState('Admin')
-  const [adminUserId,  setAdminUserId]  = useState('')
-  const [notifOpen,    setNotifOpen]    = useState(false)
-  const [notifCount,   setNotifCount]   = useState(0)
+  const [adminName,          setAdminName]          = useState('Admin')
+  const [adminUserId,        setAdminUserId]        = useState('')
+  const [notifOpen,          setNotifOpen]          = useState(false)
+  const [notifCount,         setNotifCount]         = useState(0)
+  const [pendingSuggestions, setPendingSuggestions] = useState(0)
 
   const [users,       setUsers]       = useState<UserRow[]>([])
   const [projects,    setProjects]    = useState<ProjectRow[]>([])
@@ -183,6 +184,7 @@ export default function AdminPage() {
         setStats({ students: k.totalStudents, total_projects: k.projectsSubmitted, submitted: k.projectsSubmitted, approved: k.projectsApproved, rejected: k.projectsRejected })
         setSchoolXP(MOCK.schools.map(s => ({ name: s.name, avgXp: s.avgXP, count: s.students })))
         setWeeklyUsers(MOCK.analytics.weeklyGrowth.map(w => ({ week: w.week, count: w.students })))
+        setPendingSuggestions((MOCK.suggestions as { status: string }[]).filter(s => s.status === 'pending').length)
         setBooting(false)
         return
       }
@@ -199,6 +201,10 @@ export default function AdminPage() {
       try {
         const { count } = await supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('read', false)
         setNotifCount(count ?? 0)
+      } catch { /* non-fatal */ }
+      try {
+        const { count } = await supabase.from('suggestions').select('*', { count: 'exact', head: true }).eq('status', 'pending')
+        setPendingSuggestions(count ?? 0)
       } catch { /* non-fatal */ }
       await fetchStats(supabase)
       setBooting(false)
@@ -725,6 +731,7 @@ export default function AdminPage() {
         userInitial={adminName[0]?.toUpperCase() ?? 'A'}
         activeTab={tab}
         onTabChange={(t) => setTab(t as Tab)}
+        pendingSuggestions={pendingSuggestions}
       />
 
       <main className="adm-main">

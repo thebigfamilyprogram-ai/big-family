@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import DashboardSidebar from '@/components/DashboardSidebar'
+import SuggestionButton from '@/components/SuggestionButton'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router      = useRouter()
@@ -63,6 +64,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div style={{ flex: 1, minWidth: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         {children}
       </div>
+      <SuggestionButton />
     </div>
   )
 }
