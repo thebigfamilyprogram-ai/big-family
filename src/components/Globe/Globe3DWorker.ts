@@ -2,6 +2,8 @@
 // Uses three-globe for globe/arcs/points, manual THREE for camera/lights/renderer.
 // NO DOM access allowed in Workers — textures loaded via fetch + createImageBitmap.
 
+// MUST be first: three-globe reads `window.THREE` at module init time with no guard.
+import './Globe3DWindowPolyfill'
 import ThreeGlobe from 'three-globe'
 import * as THREE from 'three'
 
