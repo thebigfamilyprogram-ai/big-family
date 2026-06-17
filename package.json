@@ -32,7 +32,6 @@
     "recharts": "^3.8.1",
     "remark-gfm": "^4.0.1",
     "three": "^0.160.0",
-    "three-globe": "^2.32.1",
     "topojson-client": "^3.1.0"
   },
   "devDependencies": {
