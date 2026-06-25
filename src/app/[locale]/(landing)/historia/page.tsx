@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { m, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 
+import TimelineSection from '@/components/TimelineSection'
+
 export default function HistoriaPage() {
   const t              = useTranslations()
   const prefersReduced = useReducedMotion()
@@ -16,6 +18,7 @@ export default function HistoriaPage() {
   useEffect(() => setMounted(true), [])
 
   return (
+    <>
     <section id="historia" className="sec-historia">
       <div className="sec-historia__inner">
         {/* Columna izquierda — imagen */}
@@ -67,5 +70,8 @@ export default function HistoriaPage() {
         </m.div>
       </div>
     </section>
+
+    <TimelineSection />
+    </>
   )
 }
