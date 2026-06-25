@@ -814,12 +814,31 @@
       },
       "capstoneCard": {
         "eyebrow": "The Big Leader",
-        "title": "Capstone",
+        "title": "Projeto Capstone",
         "lockedHint": "Complete os {total} módulos para desbloquear o Capstone",
         "uploadProject": "Enviar projeto",
+        "continueProject": "Continuar projeto",
+        "inReview": "Seu projeto está em avaliação",
+        "viewProject": "Ver meu projeto",
         "approvedProjects": "Projetos aprovados",
         "approvedCount": "{approved} de {total} projetos aprovados para a certificação.",
-        "viewDiploma": "🎓 Ver meu diploma →"
+        "viewDiploma": "🎓 Ver meu diploma →",
+        "states": {
+          "bloqueado": "Bloqueado",
+          "en_progreso": "Em andamento",
+          "enviado": "Enviado",
+          "evaluado": "Avaliado"
+        }
+      },
+      "zone1": {
+        "greeting": "Olá, {name}",
+        "statsXp": "XP",
+        "statsModules": "módulos",
+        "statsStreak": "dias"
+      },
+      "zone3": {
+        "modulesTitle": "Meus módulos",
+        "toggleLabel": "Ver meu progresso completo"
       },
       "nextStep": {
         "eyebrow": "Próximo Passo",

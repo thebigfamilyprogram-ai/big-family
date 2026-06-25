@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase'
 import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import NotificationDrawer from '@/components/NotificationDrawer'
 import EventCard, { type EventCardEvent, type RsvpStatus } from '@/components/EventCard'
-import { m, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion, AnimatePresence } from 'framer-motion'
 import { fadeUp } from '@/lib/animations'
 import { useTranslations } from 'next-intl'
 import {
@@ -251,6 +251,22 @@ export default function DashboardPage() {
   const [leaderProfile, setLeaderProfile] = useState<LeaderProfile | null>(null)
   const [nextEvent,     setNextEvent]     = useState<EventCardEvent | null>(null)
   const [nextEventRsvp, setNextEventRsvp] = useState<RsvpStatus>(null)
+  const [userProjects,  setUserProjects]  = useState<{ id: string; status: string }[]>([])
+  const [progressOpen,  setProgressOpen]  = useState(false)
+
+  // Estado del colapsable "Ver mi progreso completo" — persistido en localStorage
+  useEffect(() => {
+    if (typeof localStorage !== 'undefined') {
+      setProgressOpen(localStorage.getItem('bf-dashboard-progress-open') === '1')
+    }
+  }, [])
+  function toggleProgress() {
+    setProgressOpen(p => {
+      const next = !p
+      if (typeof localStorage !== 'undefined') localStorage.setItem('bf-dashboard-progress-open', next ? '1' : '0')
+      return next
+    })
+  }
 
   // Next upcoming event relevant to this user — self-contained fetch (own
   // school_id/role lookup), kept independent from the larger effect below.
@@ -323,6 +339,7 @@ export default function DashboardPage() {
         setAnnBanner({ id: MOCK.announcements[0].id, title: MOCK.announcements[0].title, content: MOCK.announcements[0].content, category: MOCK.announcements[0].category })
         setUnreadAnnCount(MOCK.announcements.length)
         setDiploma({ projectId: 'mock-project-1', resultado: 'certificado' })
+        setUserProjects([{ id: 'mock-project-1', status: 'approved' }])
         setLeaderProfile(MOCK_LEADER_PROFILE)
         setNotifCount(2) // 2 unread notifications in mock
         setLoading(false)
@@ -341,7 +358,7 @@ export default function DashboardPage() {
         supabase.from('xp_log').select('amount').eq('user_id', authUser.id),
         supabase.from('modules').select('*').eq('status', 'published').order('order_index'),
         supabase.from('progress').select('module_id, completed').eq('user_id', authUser.id),
-        supabase.from('projects').select('id, status').eq('user_id', authUser.id).in('status', ['approved']),
+        supabase.from('projects').select('id, status').eq('user_id', authUser.id),
       ])
       if (modsRes.error || xpRes.error) { setLoadError(true); setLoading(false); return }
       const profile      = profileRes.data
@@ -466,6 +483,7 @@ export default function DashboardPage() {
 
       setModules(mods ?? [])
       setProgressRows(prog ?? [])
+      setUserProjects(userProjects ?? [])
       setLoading(false)
     }
     load()
@@ -493,6 +511,12 @@ export default function DashboardPage() {
   const allModulesDone = totalModules > 0 && completedCount >= totalModules
   const capstoneLocked = !allModulesDone
   const nextModule = sortedModules.find(m => !completedIds.has(m.id) && !lockedIds.has(m.id)) ?? null
+
+  const capstoneState: 'bloqueado' | 'enviado' | 'evaluado' | 'en_progreso' =
+    capstoneLocked                                          ? 'bloqueado'   :
+    userProjects.some(p => p.status === 'pending')          ? 'enviado'     :
+    diploma || userProjects.some(p => p.status === 'approved') ? 'evaluado' :
+                                                                 'en_progreso'
 
   async function dismissBanner() {
     if (!annBanner || !supabaseRef.current) return
@@ -561,69 +585,20 @@ export default function DashboardPage() {
         .ob-dot.idle{background:var(--line);color:var(--mute);}
         .ob-sep{flex:1;height:1px;background:var(--line);margin:0 12px;min-width:24px;}
 
-        /* ── User header ── */
-        .user-header{display:flex;align-items:center;gap:18px;}
-        .user-avatar-wrap{position:relative;flex-shrink:0;}
-        .user-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#C0392B 0%,#8B1A1A 100%);color:#fff;font-family:"Satoshi",sans-serif;font-weight:900;font-size:22px;display:flex;align-items:center;justify-content:center;border:3px solid var(--card-bg);box-shadow:0 4px 16px -4px rgba(192,57,43,.35);}
-        .online-badge{position:absolute;bottom:2px;right:2px;background:#22c55e;border:2px solid var(--card-bg);border-radius:999px;padding:2px 6px;font-size:9px;font-weight:700;color:#fff;letter-spacing:.08em;line-height:1;}
-        .user-info{flex:1;min-width:0;}
-        .user-name{font-family:"Satoshi",sans-serif;font-weight:900;font-size:22px;letter-spacing:-0.02em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-        .user-sub{font-size:13px;color:var(--mute);margin-top:3px;}
-        .user-sub strong{color:#C0392B;font-weight:700;}
-        .user-stats{display:flex;gap:20px;flex-shrink:0;}
-        .ustat{text-align:center;}
-        .ustat__num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:20px;color:var(--ink);}
-        .ustat__label{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin-top:2px;}
-
         /* ── Cards ── */
         .card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:24px;box-shadow:0 2px 16px -6px rgba(13,13,13,.08);}
 
-        /* ── Progress card ── */
-        .prog-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
-        .prog-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:18px;color:var(--ink);}
-        .prog-badge{padding:4px 12px;background:rgba(192,57,43,.08);color:#C0392B;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.04em;}
-        .prog-row{margin-bottom:16px;}
-        .prog-row:last-of-type{margin-bottom:0;}
-        .prog-label{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-2);font-weight:500;margin-bottom:7px;}
-        .prog-label span:last-child{color:#C0392B;font-weight:700;}
+        /* ── Progress bar (reusada por la card de Capstone en Zona 3A) ── */
         .prog-track{height:8px;background:var(--line);border-radius:999px;overflow:hidden;}
         .prog-bar{height:100%;background:#C0392B;border-radius:999px;transition:width .6s cubic-bezier(.4,0,.2,1);}
-        .prog-hint{font-size:11px;color:var(--mute);margin-top:5px;}
-        .prog-actions{display:flex;gap:10px;margin-top:22px;}
         .btn-ghost{padding:10px 18px;background:none;border:1px solid var(--line);border-radius:10px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;transition:border-color .2s cubic-bezier(0.22,1,0.36,1),background .2s cubic-bezier(0.22,1,0.36,1);font-family:"Satoshi",sans-serif;}
         .btn-ghost:hover{border-color:var(--ink);}
         .btn-ghost:active{transform:scale(0.98);}
-        .btn-solid{padding:10px 18px;background:#C0392B;border:none;border-radius:10px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;transition:background .2s cubic-bezier(0.22,1,0.36,1);font-family:"Satoshi",sans-serif;}
-        .btn-solid:hover{background:#a93226;}
-        .btn-solid:active{transform:scale(0.98);}
-
-        /* ── Motivational block ── */
-        .motiv{display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 12px 4px;gap:8px;}
-        .motiv-icon{width:44px;height:44px;background:rgba(192,57,43,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;}
-        .motiv-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:15px;color:var(--ink);}
-        .motiv-sub{font-size:12.5px;color:var(--mute);line-height:1.5;max-width:280px;}
-        .motiv-btn{margin-top:4px;padding:10px 22px;background:#C0392B;border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .2s;}
-        .motiv-btn:hover{background:#a93226;}
-
         /* ── Modules section ── */
         .mods-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
         .mods-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:18px;color:var(--ink);}
+        .zone3b-title{font-size:20px;font-weight:600;margin-bottom:20px;}
         .mods-count{padding:3px 10px;background:var(--line);color:var(--mute);border-radius:999px;font-size:11px;font-weight:600;}
-
-        /* ── Next module — featured card ── */
-        .mod-next{background:var(--card-bg);border:1px solid var(--card-border);border-left:3px solid var(--accent,#C0392B);border-radius:14px;padding:24px 28px;box-shadow:var(--shadow-raised);display:flex;gap:28px;align-items:flex-start;margin-bottom:16px;cursor:pointer;transition:box-shadow .25s cubic-bezier(0.22,1,0.36,1),transform .25s cubic-bezier(0.22,1,0.36,1);}
-        .mod-next:hover{box-shadow:0 8px 32px -8px rgba(13,13,13,.16);transform:translateY(-1px);}
-        .mod-next:active{transform:scale(0.99);}
-        .mod-next__icon{width:52px;height:52px;border-radius:12px;background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-        .mod-next__body{flex:1;min-width:0;}
-        .mod-next__eyebrow{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#C0392B);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
-        .mod-next__title{font-family:"Satoshi",sans-serif;font-weight:600;font-size:18px;color:var(--ink);line-height:1.3;margin-bottom:10px;}
-        .mod-next__desc{font-size:13.5px;color:var(--mute);line-height:1.6;margin-bottom:16px;}
-        .mod-next__footer{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-        .mod-next__xp{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(192,57,43,.08);color:#C0392B;border-radius:999px;font-size:11px;font-weight:700;}
-        .mod-next__cta{padding:10px 22px;background:#C0392B;border:none;border-radius:9px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .2s cubic-bezier(0.22,1,0.36,1);white-space:nowrap;}
-        .mod-next__cta:hover{background:#a93226;}
-        .mod-next__cta:active{transform:scale(0.98);}
 
         /* ── Standard module grid ── */
         .mods-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
@@ -672,8 +647,8 @@ export default function DashboardPage() {
         .charts-row{display:grid;grid-template-columns:8fr 4fr;gap:16px;}
         @media(max-width:860px){.charts-row{grid-template-columns:1fr;}}
 
-        /* ── Side-by-side cards row ── */
-        .cards-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+        /* ── Zona 3A: Mi Capstone (58%) + Frase del día (42%) ── */
+        .zone3a-row{display:grid;grid-template-columns:58fr 42fr;gap:16px;}
 
         /* ── Diploma unlocked banner ── */
         .cert-unlocked{display:flex;align-items:center;gap:20px;background:var(--ink,#0D0D0D);border:1px solid rgba(192,57,43,.35);border-radius:16px;padding:20px 24px;cursor:pointer;transition:border-color .2s cubic-bezier(0.22,1,0.36,1);text-decoration:none;margin-bottom:20px;width:100%;}
@@ -687,20 +662,10 @@ export default function DashboardPage() {
         /* ── Certification card ── */
         .cert-eyebrow{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:#C0392B;font-weight:700;font-family:"Satoshi",sans-serif;margin-bottom:10px;}
         .cert-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:20px;color:var(--ink);margin-bottom:18px;}
-        .cert-prog-label{display:flex;justify-content:space-between;font-size:12px;color:var(--mute);margin-bottom:7px;}
-        .cert-prog-label span:last-child{color:#C0392B;font-weight:700;}
         .cert-text{font-size:14px;color:var(--mute);line-height:1.55;margin-bottom:20px;margin-top:12px;}
         .btn-upload{width:100%;padding:12px;background:#C0392B;border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .2s cubic-bezier(0.22,1,0.36,1);}
         .btn-upload:hover{background:#a93226;}
         .btn-upload:active{transform:scale(0.98);}
-
-        /* ── Next module card ── */
-        .next-eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);font-weight:600;font-family:"Satoshi",sans-serif;margin-bottom:12px;}
-        .next-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:18px;color:var(--ink);margin-bottom:12px;line-height:1.3;}
-        .next-xp{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(192,57,43,.1);color:#C0392B;border-radius:999px;font-size:11px;font-weight:700;margin-bottom:20px;}
-        .btn-continue{width:100%;padding:12px;background:var(--ink);border:none;border-radius:10px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:var(--bg);cursor:pointer;transition:background .2s cubic-bezier(0.22,1,0.36,1);}
-        .btn-continue:hover{background:#C0392B;}
-        .btn-continue:active{transform:scale(0.98);}
 
         /* ── Coordinator button ── */
         .btn-coordinator{padding:8px 16px;background:transparent;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;transition:border-color .2s,color .2s;white-space:nowrap;flex-shrink:0;}
@@ -708,35 +673,59 @@ export default function DashboardPage() {
 
         @media(max-width:1200px){.mods-grid{grid-template-columns:repeat(2,1fr);}}
         @media(max-width:860px){
-          .cards-row{grid-template-columns:1fr;}
+          .zone3a-row{grid-template-columns:1fr;}
           .mods-grid{grid-template-columns:1fr;}
         }
+        /* Zona 3 en mobile: el grid de módulos vuelve a 2 columnas (no 1) —
+           esta regla debe ir DESPUÉS de la de 860px para ganar la cascada,
+           misma especificidad, gana la última en orden de aparición. */
+        @media(max-width:768px){.mods-grid{grid-template-columns:repeat(2,1fr);}}
 
-        /* ── Identity card ── */
-        .identity-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:24px;box-shadow:var(--shadow-card);display:flex;align-items:center;gap:28px;}
-        .identity-left{flex:1;min-width:0;display:flex;flex-direction:column;gap:0;}
-        .identity-top{display:flex;align-items:flex-start;gap:16px;}
-        .identity-text{flex:1;min-width:0;}
-        .identity-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:20px;letter-spacing:-0.01em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;}
-        .identity-archetype{font-family:"Instrument Serif",serif;font-style:italic;font-size:16px;color:#C0392B;margin-top:4px;line-height:1.2;}
-        .identity-bottom{display:flex;align-items:center;gap:16px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line);}
-        .identity-stat{display:flex;flex-direction:column;align-items:center;gap:2px;}
-        .identity-stat__num{font-family:"Satoshi",sans-serif;font-weight:900;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums;}
-        .identity-stat__label{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);}
-        .identity-divider{width:1px;height:28px;background:var(--line);flex-shrink:0;}
-        /* Right column: flex column so pills sit under the SVG, centered */
-        .identity-right{flex-shrink:0;width:auto;max-width:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
-        /* Profile pills under SVG (desktop) */
+        /* ── Zona 1 — Header personal ── */
+        .zone1-header{display:grid;grid-template-columns:60fr 40fr;gap:28px;align-items:start;}
+        .zone1-left{min-width:0;display:flex;flex-direction:column;}
+        .zone1-greeting{font-family:"Satoshi",sans-serif;font-weight:600;font-size:28px;letter-spacing:-0.01em;color:var(--ink);line-height:1.2;}
+        .zone1-archetype-row{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
+        .identity-archetype{font-family:"Instrument Serif",serif;font-style:italic;font-size:18px;color:#C0392B;line-height:1.2;}
+        .zone1-stats{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:14px;}
+        .zone1-stat-num{font-family:"Satoshi",sans-serif;font-weight:600;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums;}
+        .zone1-stat-label{font-size:11px;color:var(--mute);}
+        .zone1-sep{color:var(--mute);}
+        /* Right column: pentagon + pills, centered */
+        .zone1-right{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
+        .zone1-pentagon-mobile{display:none;}
+        /* Profile pills under SVG */
         .identity-pent-pills{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;}
         .identity-pent-pill{padding:2px 8px;border-radius:999px;font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;}
         .identity-pent-pill.strength{background:rgba(15,123,108,.1);color:var(--accent-teal,#0F7B6C);border:1px solid rgba(15,123,108,.2);}
         .identity-pent-pill.growth{background:rgba(192,57,43,.08);color:#C0392B;border:1px solid rgba(192,57,43,.2);}
-        /* Mobile pills (shown under name when pentagon is hidden) */
-        .identity-mobile-pills{display:none;gap:5px;flex-wrap:wrap;margin-top:8px;}
         @media(max-width:768px){
-          .identity-right{display:none;}
-          .identity-mobile-pills{display:flex;}
+          .zone1-header{grid-template-columns:1fr;}
+          .zone1-right{margin-top:8px;}
+          .zone1-pentagon-desktop{display:none;}
+          .zone1-pentagon-mobile{display:block;}
         }
+
+        /* ── Zona 2 — Acción principal ── */
+        .zone2-hero{display:grid;grid-template-columns:65fr 35fr;gap:24px;background:var(--card-bg);border:1px solid var(--card-border);border-left:4px solid #C0392B;border-radius:14px;padding:28px 32px;align-items:center;}
+        .zone2-hero__eyebrow{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,#C0392B);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+        .zone2-hero__title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:28px;color:var(--ink);line-height:1.25;margin-bottom:8px;}
+        .zone2-hero__desc{font-size:13px;color:var(--mute);line-height:1.5;margin-bottom:18px;}
+        .zone2-hero__footer{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+        .zone2-hero__xp{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(192,57,43,.08);color:#C0392B;border-radius:999px;font-size:11px;font-weight:700;}
+        .zone2-hero__cta{padding:12px 28px;background:#C0392B;border:none;border-radius:100px;font-family:"Satoshi",sans-serif;font-weight:600;font-size:14px;color:#fff;cursor:pointer;transition:background .2s cubic-bezier(0.22,1,0.36,1);white-space:nowrap;}
+        .zone2-hero__cta:hover{background:#a93226;}
+        .zone2-hero__cta:active{transform:scale(0.98);}
+        .zone2-hero__right{display:flex;align-items:center;justify-content:center;background:var(--bg-2);border-radius:10px;padding:32px;}
+        @media(max-width:768px){
+          .zone2-hero{grid-template-columns:1fr;padding:22px 20px;}
+          .zone2-hero__right{display:none;}
+          .zone2-hero__title{font-size:22px;}
+          .zone2-hero__cta{width:100%;text-align:center;}
+        }
+
+        /* ── Zona 3C — toggle "Ver mi progreso completo" ── */
+        .zone3c-toggle{display:inline-flex;align-items:center;gap:8px;background:var(--bg-2);border:1px solid var(--card-border);border-radius:100px;padding:10px 20px;font-family:"Satoshi",sans-serif;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;}
 
         /* ── Pillar pills ── */
         .pillar-pills{display:flex;gap:10px;flex-wrap:wrap;}
@@ -795,59 +784,23 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ── Identity card ── */}
+          {/* ══════════════════════════════════════════════════════════════
+              ZONA 1 — Header personal (compacto)
+          ══════════════════════════════════════════════════════════════ */}
           <m.div
-            className="identity-card"
+            className="zone1-header"
             initial={pref ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 200, damping: 26 }}
           >
-            <div className="identity-left">
-              {/* Top row: avatar + text */}
-              <div className="identity-top">
-                <div className="user-avatar-wrap" style={{ flexShrink: 0 }}>
-                  <div className="user-avatar">{loading ? 'L' : initials}</div>
-                  <span className="online-badge">ONLINE</span>
-                </div>
-
-                <div className="identity-text">
-                  {loading ? (
-                    <><Sk w="70%" h={20} r={6} /><div style={{ marginTop: 8 }}><Sk w="50%" h={13} r={5} /></div></>
-                  ) : (
-                    <>
-                      <div className="identity-name">{displayName}</div>
-                      {(() => {
-                        const lv = LEVEL_MAP[user?.school_level ?? 'senior'] ?? LEVEL_MAP['senior']
-                        return (
-                          <>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
-                              <span style={{ padding: '2px 9px', borderRadius: 999, background: lv.bg, color: lv.color, fontSize: 11, fontWeight: 700, fontFamily: '"Satoshi",sans-serif', whiteSpace: 'nowrap' }}>
-                                {lv.label}
-                              </span>
-                              {leaderProfile && (
-                                <div className="identity-archetype">{leaderProfile.arquetipo}</div>
-                              )}
-                            </div>
-                            {/* Mobile-only: pills de perfil bajo el nombre */}
-                            {(leaderProfile ?? (MOCK_MODE ? MOCK_LEADER_PROFILE : null)) && (
-                              <div className="identity-mobile-pills">
-                                {(leaderProfile ?? MOCK_LEADER_PROFILE)!.fortalezas.map(p => (
-                                  <span key={p} className="identity-pent-pill strength">{p} ↑</span>
-                                ))}
-                                {(leaderProfile ?? MOCK_LEADER_PROFILE)!.areas_crecimiento.map(p => (
-                                  <span key={p} className="identity-pent-pill growth">{p} ↓</span>
-                                ))}
-                              </div>
-                            )}
-                          </>
-                        )
-                      })()}
-                    </>
-                  )}
-                </div>
-
-                {/* Role buttons + bell */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto', flexShrink: 0 }}>
+            <div className="zone1-left">
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                {loading ? (
+                  <Sk w="60%" h={28} r={6} />
+                ) : (
+                  <div className="zone1-greeting">{t('zone1.greeting', { name: displayName })}</div>
+                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                   {user?.role === 'coordinator' && (
                     <button className="btn-coordinator" onClick={() => router.push('/coordinator')}>{t('coordinatorPanel')}</button>
                   )}
@@ -868,42 +821,62 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Bottom row: stats */}
-              <div className="identity-bottom">
-                <div className="identity-stat">
-                  <div className="identity-stat__num">{loading ? '…' : (user?.total_xp ?? 0).toLocaleString('es-CO')}</div>
-                  <div className="identity-stat__label">{t('stats.xpTotal')}</div>
-                </div>
-                <div className="identity-divider" />
-                <div className="identity-stat">
-                  <div className="identity-stat__num">{loading ? '…' : completedCount}</div>
-                  <div className="identity-stat__label">{t('stats.modules')}</div>
-                </div>
-                <div className="identity-divider" />
-                <div className="identity-stat">
-                  <div className="identity-stat__num">{loading ? '…' : (rankPos === 0 || rankPos === null ? '—' : `#${rankPos}`)}</div>
-                  <div className="identity-stat__label">{t('stats.ranking')}</div>
-                </div>
-              </div>
+              {loading ? (
+                <div style={{ marginTop: 10 }}><Sk w="40%" h={16} r={5} /></div>
+              ) : (
+                <>
+                  {(() => {
+                    const lv = LEVEL_MAP[user?.school_level ?? 'senior'] ?? LEVEL_MAP['senior']
+                    return (
+                      <div className="zone1-archetype-row">
+                        {leaderProfile && <div className="identity-archetype">{leaderProfile.arquetipo}</div>}
+                        <span style={{ padding: '2px 9px', borderRadius: 999, background: lv.bg, color: lv.color, fontSize: 11, fontWeight: 700, fontFamily: '"Satoshi",sans-serif', whiteSpace: 'nowrap' }}>
+                          {lv.label}
+                        </span>
+                      </div>
+                    )
+                  })()}
+
+                  <div className="zone1-stats">
+                    <span><span className="zone1-stat-num">{(user?.total_xp ?? 0).toLocaleString('es-CO')}</span> <span className="zone1-stat-label">{t('zone1.statsXp')}</span></span>
+                    <span className="zone1-sep">·</span>
+                    <span><span className="zone1-stat-num">{completedCount}</span> <span className="zone1-stat-label">{t('zone1.statsModules')}</span></span>
+                    <span className="zone1-sep">·</span>
+                    <span><span className="zone1-stat-num">{streak}</span> <span className="zone1-stat-label">{t('zone1.statsStreak')}</span></span>
+                    <span className="zone1-sep">·</span>
+                    <span className="zone1-stat-num">{rankPos === 0 || rankPos === null ? '—' : `#${rankPos}`}</span>
+                  </div>
+                </>
+              )}
             </div>
 
-            {/* Right: pentagon 220px + profile pills */}
+            {/* Right: pentagon (140px desktop / 100px mobile) + pills de fortaleza */}
             {!loading && (leaderProfile ?? (MOCK_MODE ? MOCK_LEADER_PROFILE : null)) && (
-              <div className="identity-right">
-                <CompactPentagon profile={(leaderProfile ?? MOCK_LEADER_PROFILE)!} size={220} />
+              <div className="zone1-right">
+                <div className="zone1-pentagon-desktop">
+                  <CompactPentagon profile={(leaderProfile ?? MOCK_LEADER_PROFILE)!} size={140} />
+                </div>
+                <div className="zone1-pentagon-mobile">
+                  <CompactPentagon profile={(leaderProfile ?? MOCK_LEADER_PROFILE)!} size={100} />
+                </div>
                 <div className="identity-pent-pills">
                   {(leaderProfile ?? MOCK_LEADER_PROFILE)!.fortalezas.map(p => (
                     <span key={p} className="identity-pent-pill strength">{p} ↑</span>
-                  ))}
-                  {(leaderProfile ?? MOCK_LEADER_PROFILE)!.areas_crecimiento.map(p => (
-                    <span key={p} className="identity-pent-pill growth">{p} ↓</span>
                   ))}
                 </div>
               </div>
             )}
           </m.div>
 
-          {/* ── Portfolio public link — solo para estudiantes ── */}
+          {/* ── Entre Zona 1 y Zona 2: próximo evento + link de portafolio ── */}
+          {nextEvent && (
+            <EventCard
+              event={nextEvent}
+              userRsvp={nextEventRsvp}
+              onRsvp={(_, status) => setNextEventRsvp(status)}
+            />
+          )}
+
           {!loading && user?.role === 'student' && (
             <m.div
               initial={pref ? false : { opacity: 0, y: 6 }}
@@ -952,295 +925,10 @@ export default function DashboardPage() {
             </m.div>
           )}
 
-          {nextEvent && (
-            <EventCard
-              event={nextEvent}
-              userRsvp={nextEventRsvp}
-              onRsvp={(_, status) => setNextEventRsvp(status)}
-            />
-          )}
-
-          {/* ── KPI Bento ── */}
-          <m.div
-            className="kpi-bento"
-            initial={pref ? false : 'hidden'}
-            animate="visible"
-            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
-          >
-            {([
-              { label: t('stats.xpTotal'),        val: loading ? null : (user?.total_xp ?? 0), color: 'var(--accent-amber,#D4821A)', border: 'var(--accent-amber,#D4821A)', isRank: false },
-              { label: t('kpiLabels.modules'),    val: loading ? null : completedCount,         color: 'var(--accent-teal,#0F7B6C)',  border: 'var(--accent-teal,#0F7B6C)',  isRank: false },
-              { label: t('kpiLabels.streakDays'), val: loading ? null : streak,                 color: 'var(--ink)',                  border: 'var(--line-strong)',            isRank: false },
-              { label: t('kpiLabels.schoolRanking'), val: loading ? null : (rankPos ?? 0),      color: 'var(--accent,#C0392B)',       border: 'var(--accent,#C0392B)',        isRank: true  },
-            ]).map(({ label, val, color, border, isRank }) => (
-              <m.div
-                key={label}
-                className="kpi-card"
-                style={{ borderLeft: `3px solid ${border}` }}
-                variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 200, damping: 22 } } }}
-              >
-                {val === null
-                  ? <><Sk w="50%" h={32} r={6} /><div style={{ marginTop: 9 }}><Sk w="70%" h={10} r={4} /></div></>
-                  : <>
-                      <div className="kpi-num" style={{ color }}>
-                        {isRank
-                          ? (val === 0 ? '—' : `#${val}`)
-                          : <AnimatedKPI value={val} />}
-                      </div>
-                      <div className="kpi-label">{label}</div>
-                    </>
-                }
-              </m.div>
-            ))}
-          </m.div>
-
-          {/* ── Pillar pills ── */}
-          <div className="pillar-pills">
-            {PILLAR_ORDER.map(pillar => {
-              const modsInPillar = PILLAR_MODS[pillar]
-              const completedInPillar = loading ? 0 : modules.filter(m => modsInPillar.includes(m.order_index) && completedIds.has(m.id)).length
-              const pct = modsInPillar.length > 0 ? Math.round(completedInPillar / modsInPillar.length * 100) : 0
-              const isStrength = leaderProfile?.fortalezas.includes(pillar)
-              const isGrowth   = leaderProfile?.areas_crecimiento.includes(pillar)
-              const color = isStrength
-                ? 'var(--accent-teal,#0F7B6C)'
-                : isGrowth
-                  ? '#C0392B'
-                  : 'var(--mute)'
-              return (
-                <div key={pillar} className="pillar-pill">
-                  {loading ? (
-                    <><Sk w="60%" h={10} r={4} /><Sk w="100%" h={3} r={999} /></>
-                  ) : (
-                    <>
-                      <div className="pillar-pill__header">
-                        <span className="pillar-pill__name" style={{ color }}>{pillar}</span>
-                        <span className="pillar-pill__pct" style={{ color }}>{pct}%</span>
-                      </div>
-                      <div className="pillar-pill__track">
-                        <div className="pillar-pill__bar" style={{ width: `${pct}%`, background: color }} />
-                      </div>
-                    </>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-
-          {/* ── Charts bento ── */}
-          <div className="charts-row">
-            {/* XP Line Chart */}
-            <div className="card" style={{ padding: '22px 20px 16px' }}>
-              <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 16 }}>
-                {t('charts.xpProgress')}
-              </div>
-              {loading || weeklyXP.length === 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {[80, 60, 100, 70].map((w, i) => <Sk key={i} w={`${w}%`} h={10} r={4} />)}
-                </div>
-              ) : (
-                <m.div
-                  initial={pref ? false : { opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ type: 'spring', stiffness: 180, damping: 26 }}
-                >
-                  <ResponsiveContainer width="100%" height={140}>
-                    <LineChart data={weeklyXP} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" strokeOpacity={0.5} vertical={false} />
-                      <XAxis dataKey="week" tick={{ fontSize: 11, fill: 'var(--mute)', fontFamily: 'Satoshi,sans-serif' }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 10, fill: 'var(--mute)' }} axisLine={false} tickLine={false} />
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (!active || !payload?.[0]) return null
-                          return (
-                            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 10, padding: '8px 12px', fontSize: 12, boxShadow: 'var(--shadow-raised)', fontFamily: '"Satoshi",sans-serif' }}>
-                              <span style={{ fontWeight: 700, color: 'var(--accent-amber,#D4821A)' }}>{payload[0].value?.toLocaleString('es-CO')} XP</span>
-                            </div>
-                          )
-                        }}
-                      />
-                      <Line type="monotone" dataKey="xp" stroke="var(--accent-amber,#D4821A)" strokeWidth={2} dot={{ r: 3, fill: 'var(--accent-amber,#D4821A)', strokeWidth: 0 }} activeDot={{ r: 5, fill: 'var(--accent-amber,#D4821A)' }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </m.div>
-              )}
-            </div>
-
-            {/* Leadership RadialBarChart */}
-            <div className="card" style={{ padding: '22px 20px 16px' }}>
-              <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 16 }}>
-                {t('charts.leadershipPath')}
-              </div>
-              {loading ? (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 140 }}><Sk w={120} h={120} r={999} /></div>
-              ) : (() => {
-                const pillars = [
-                  { name: t('charts.pillarVision'),    fill: '#C0392B', value: visionPct },
-                  { name: t('charts.pillarModules'),   fill: '#D4821A', value: totalModules > 0 ? Math.round(completedCount / totalModules * 100) : 0 },
-                  { name: t('charts.pillarImpact'),    fill: '#0F7B6C', value: diploma ? 100 : 0 },
-                  { name: t('charts.pillarCommunity'), fill: '#8C7B6E', value: 0 },
-                  { name: t('charts.pillarProjects'),  fill: '#6B6B6B', value: 0 },
-                ]
-                const hasProgress = pillars.some(p => p.value > 0)
-
-                if (!hasProgress) {
-                  return (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 140, gap: 10, padding: '0 12px' }}>
-                      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style={{ opacity: 0.3 }}>
-                        <circle cx="16" cy="16" r="13" stroke="var(--mute)" strokeWidth="2"/>
-                        <circle cx="16" cy="16" r="8" stroke="var(--mute)" strokeWidth="1.5" strokeDasharray="4 3"/>
-                        <circle cx="16" cy="16" r="2.5" fill="var(--mute)"/>
-                      </svg>
-                      <div style={{ fontSize: 12.5, color: 'var(--mute)', textAlign: 'center', lineHeight: 1.5, fontFamily: '"Satoshi",sans-serif' }}>
-                        {t('charts.emptyState')}
-                      </div>
-                    </div>
-                  )
-                }
-
-                return (
-                  <m.div
-                    initial={pref ? false : { opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ type: 'spring', stiffness: 180, damping: 26, delay: 0.1 }}
-                  >
-                    <ResponsiveContainer width="100%" height={140}>
-                      <RadialBarChart cx="50%" cy="50%" innerRadius={20} outerRadius={68} data={pillars} startAngle={90} endAngle={-270}>
-                        <RadialBar dataKey="value" cornerRadius={4} background={{ fill: 'var(--line)' }} />
-                        <Tooltip
-                          content={({ active, payload }) => {
-                            if (!active || !payload?.[0]) return null
-                            const d = payload[0].payload
-                            return (
-                              <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 10, padding: '8px 12px', fontSize: 12, boxShadow: 'var(--shadow-raised)', fontFamily: '"Satoshi",sans-serif' }}>
-                                <span style={{ fontWeight: 700, color: 'var(--ink)' }}>{d.name}: </span>
-                                <span style={{ color: d.fill }}>{d.value}%</span>
-                              </div>
-                            )
-                          }}
-                        />
-                      </RadialBarChart>
-                    </ResponsiveContainer>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px', marginTop: 4 }}>
-                      {pillars.map(p => (
-                        <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                          <div style={{ width: 7, height: 7, borderRadius: 2, background: p.fill, flexShrink: 0 }} />
-                          <span style={{ fontSize: 11, color: 'var(--mute)', fontFamily: '"Satoshi",sans-serif' }}>{p.name} {p.value}%</span>
-                        </div>
-                      ))}
-                    </div>
-                  </m.div>
-                )
-              })()}
-            </div>
-          </div>
-
-          {/* Leadership Progress */}
-          <div className="card">
-            <div className="prog-header">
-              <span className="prog-title">{t('leadershipProgress.title')}</span>
-              <span className="prog-badge">{t('leadershipProgress.phaseBadge')}</span>
-            </div>
-
-            {/* Strategic Vision = overall module completion */}
-            <div className="prog-row">
-              <div className="prog-label">
-                <span>{t('leadershipProgress.strategicVision')}</span>
-                <span>{loading ? '…' : `${visionPct}%`}</span>
-              </div>
-              <div className="prog-track">
-                <m.div
-                  className="prog-bar"
-                  initial={{ width: '0%' }}
-                  whileInView={{ width: loading ? '0%' : `${visionPct}%` }}
-                  viewport={{ once: true }}
-                  transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.3 }}
-                />
-              </div>
-              {!loading && visionPct === 0 && (
-                <div className="prog-hint">{t('leadershipProgress.startHint')}</div>
-              )}
-            </div>
-
-            {/* Community Engagement */}
-            <div className="prog-row" style={{ marginTop: 16 }}>
-              <div className="prog-label">
-                <span>{t('leadershipProgress.communityEngagement')}</span>
-                <span>{loading ? '…' : '0%'}</span>
-              </div>
-              <div className="prog-track">
-                <m.div
-                  className="prog-bar"
-                  initial={{ width: '0%' }}
-                  whileInView={{ width: '0%' }}
-                  viewport={{ once: true }}
-                  transition={{ type: 'spring', stiffness: 140, damping: 20 }}
-                />
-              </div>
-              {!loading && (
-                <div className="prog-hint">{t('leadershipProgress.startHint')}</div>
-              )}
-            </div>
-
-            {/* Modules completed — motivational if zero */}
-            {!loading && completedCount === 0
-              ? (
-                <div className="motiv">
-                  <div className="motiv-icon">
-                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                      <path d="M11 2C11 2 7 6 7 11a4 4 0 0 0 8 0c0-5-4-9-4-9Z" fill="#C0392B" opacity=".9"/>
-                      <path d="M11 14v4M9 18h4" stroke="#C0392B" strokeWidth="1.5" strokeLinecap="round"/>
-                      <path d="M7.5 9.5L5 12M14.5 9.5L17 12" stroke="#C0392B" strokeWidth="1.4" strokeLinecap="round" opacity=".5"/>
-                    </svg>
-                  </div>
-                  <div className="motiv-title">{t('welcomeTitle')}</div>
-                  <div className="motiv-sub">{t('welcomeBody')}</div>
-                  <button className="motiv-btn" onClick={() => router.push('/dashboard/leadership-path')}>{t('modulesAvailable.startNow')}</button>
-                </div>
-              )
-              : loading
-                ? <div style={{ marginTop: 16 }}><Sk w="100%" h={36} r={10} /></div>
-                : (
-                  <div className="prog-row" style={{ marginTop: 16 }}>
-                    <div className="prog-label">
-                      <span>{t('leadershipProgress.modulesCompletedLabel')}</span>
-                      <span>{completedCount} / {totalModules}</span>
-                    </div>
-                    <div className="prog-track">
-                      <m.div
-                        className="prog-bar"
-                        initial={{ width: '0%' }}
-                        whileInView={{ width: `${visionPct}%` }}
-                        viewport={{ once: true }}
-                        transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.3 }}
-                      />
-                    </div>
-                  </div>
-                )
-            }
-
-            <div className="prog-actions">
-              <m.button
-                className="btn-ghost"
-                onClick={() => router.push('/dashboard/leadership-path')}
-                whileHover={pref ? undefined : { scale: 1.02 }}
-                whileTap={pref ? undefined : { scale: 0.97 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-              >{t('leadershipProgress.viewFullProgram')}</m.button>
-              {nextModule && (
-                <m.button
-                  className="btn-solid"
-                  onClick={() => router.push('/dashboard/leadership-path')}
-                  whileHover={pref ? undefined : { scale: 1.02 }}
-                  whileTap={pref ? undefined : { scale: 0.97 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                >{t('leadershipProgress.nextModule')}</m.button>
-              )}
-            </div>
-          </div>
-
-          {/* Capstone unlocked banner */}
-          {!loading && allModulesDone && (
+          {/* ══════════════════════════════════════════════════════════════
+              ZONA 2 — Acción principal
+          ══════════════════════════════════════════════════════════════ */}
+          {!loading && allModulesDone ? (
             <div className="capstone-banner">
               <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(34,197,94,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -1258,112 +946,138 @@ export default function DashboardPage() {
                 whileTap={pref ? undefined : { scale: 0.97 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 22 }}
               >
-                {t('capstoneBanner.startBtn')}
+                {t('capstoneCard.uploadProject')}
               </m.button>
             </div>
-          )}
+          ) : !loading && nextModule ? (
+            <m.div
+              className="zone2-hero"
+              initial={pref ? false : { opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+            >
+              <div className="zone2-hero__left">
+                <div className="zone2-hero__eyebrow">
+                  <span>{t('modulesAvailable.nextModuleLabel')}</span>
+                  <span style={{ opacity: .45 }}>·</span>
+                  <span style={{ color: 'var(--mute)', fontWeight: 500, textTransform: 'none' }}>
+                    {String(nextModule.order_index).padStart(2, '0')}
+                  </span>
+                  {leaderProfile && (() => {
+                    const pillar = MODULE_PILLAR[nextModule.order_index]
+                    if (!pillar) return null
+                    if (leaderProfile.fortalezas.includes(pillar))
+                      return <span className="mod-profile-badge strength">{tModules('strengthBadge')}</span>
+                    if (leaderProfile.areas_crecimiento.includes(pillar))
+                      return <span className="mod-profile-badge growth">{tModules('growthBadge')}</span>
+                    return null
+                  })()}
+                </div>
+                <div className="zone2-hero__title">{nextModule.title}</div>
+                <div className="zone2-hero__desc">{nextModule.description}</div>
+                <div className="zone2-hero__footer">
+                  <span className="zone2-hero__xp">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                      <path d="M5 0L6.2 3.8H10L6.9 6.1L8.1 10L5 7.6L1.9 10L3.1 6.1L0 3.8H3.8L5 0Z"/>
+                    </svg>
+                    {nextModule.xp_reward ?? 100} XP
+                  </span>
+                  <m.button
+                    className="zone2-hero__cta"
+                    onClick={() => router.push(`/dashboard/modules/${nextModule.id}`)}
+                    whileHover={pref ? undefined : { scale: 1.02 }}
+                    whileTap={pref ? undefined : { scale: 0.97 }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                  >
+                    {t('modulesAvailable.startNow')}
+                  </m.button>
+                </div>
+              </div>
+              <div className="zone2-hero__right" aria-hidden="true">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                  <path d="M5 3l14 9-14 9V3Z" fill="var(--mute)"/>
+                </svg>
+              </div>
+            </m.div>
+          ) : null}
 
-          {/* Certification + Next Step + Quote row */}
-          <div className="cards-row">
-            {/* Card 1 — Capstone / Certificación */}
+          {/* KPI bento, pillar pills y charts bento ahora viven dentro de la
+              Zona 3C colapsable — ver el bloque "Ver mi progreso completo"
+              más abajo, justo después de la Zona 3B (Mis módulos). */}
+
+          {/* La antigua Leadership Progress Card se recortó: Strategic Vision
+              duplicaba el % de módulos (ya visible en Zona 1/3A), Community
+              Engagement estaba hardcodeada en 0% sin dato real, y el botón
+              "siguiente módulo" enlazaba a /leadership-path en vez del módulo
+              directo (ya resuelto mejor por la Zona 2). Solo sobrevive el
+              botón "Ver programa completo", reubicado dentro de Zona 3C.
+              El banner de Capstone desbloqueado se reubicó dentro de Zona 2. */}
+
+          {/* ══════════════════════════════════════════════════════════════
+              ZONA 3A — Mi Capstone + Frase del día
+          ══════════════════════════════════════════════════════════════ */}
+          <div className="zone3a-row">
+            {/* Izquierda — Mi Capstone, 4 estados */}
             <div className="card">
               <div className="cert-eyebrow">{t('capstoneCard.eyebrow')}</div>
               <div className="cert-title">{t('capstoneCard.title')}</div>
-              {capstoneLocked ? (
-                <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', background: 'var(--line)', borderRadius: 10, margin: '12px 0 16px' }}>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <rect x="3" y="7" width="10" height="8" rx="2" stroke="var(--mute)" strokeWidth="1.4"/>
-                      <path d="M5 7V5a3 3 0 1 1 6 0v2" stroke="var(--mute)" strokeWidth="1.4" strokeLinecap="round"/>
-                    </svg>
-                    <span style={{ fontSize: 12.5, color: 'var(--mute)', lineHeight: 1.4 }}>
-                      {t('capstoneCard.lockedHint', { total: totalModules || 7 })}
-                    </span>
-                  </div>
-                  <div className="prog-track" style={{ marginBottom: 16 }}>
-                    <div className="prog-bar" style={{ width: `${visionPct}%` }} />
-                  </div>
-                  <button className="btn-upload" disabled>
-                    {t('capstoneCard.uploadProject')}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="cert-prog-label">
-                    <span>{t('capstoneCard.approvedProjects')}</span>
-                    <span>0 / 3</span>
-                  </div>
-                  <div className="prog-track">
-                    <div className="prog-bar" style={{ width: '0%' }} />
-                  </div>
-                  <div className="cert-text">
-                    {t('capstoneCard.approvedCount', { approved: 0, total: 3 })}
-                  </div>
-                  {diploma ? (
-                    <m.button
-                      className="btn-upload"
-                      onClick={() => router.push(`/certificacion/${diploma.projectId}`)}
-                      whileHover={pref ? undefined : { scale: 1.02 }}
-                      whileTap={pref ? undefined : { scale: 0.97 }}
-                      transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                      style={{ background: '#16a34a' }}
-                    >
-                      {t('capstoneCard.viewDiploma')}
-                    </m.button>
-                  ) : (
-                    <m.button
-                      className="btn-upload"
-                      onClick={() => router.push('/dashboard/projects/new')}
-                      whileHover={pref ? undefined : { scale: 1.02 }}
-                      whileTap={pref ? undefined : { scale: 0.97 }}
-                      transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                    >
-                      {t('capstoneCard.uploadProject')}
-                    </m.button>
-                  )}
-                </>
+
+              {(() => {
+                const STATE_STYLE: Record<typeof capstoneState, { bg: string; color: string }> = {
+                  bloqueado:   { bg: 'var(--line)',             color: 'var(--mute)'  },
+                  en_progreso: { bg: 'var(--bg-2)',              color: 'var(--ink-2)' },
+                  enviado:     { bg: '#FEF3C7',                  color: '#92400E'      },
+                  evaluado:    { bg: 'rgba(34,197,94,.12)',      color: '#16a34a'      },
+                }
+                const s = STATE_STYLE[capstoneState]
+                return (
+                  <span style={{ display: 'inline-flex', padding: '3px 11px', borderRadius: 999, background: s.bg, color: s.color, fontSize: 11, fontWeight: 700, fontFamily: '"Satoshi",sans-serif', marginBottom: 14 }}>
+                    {t(`capstoneCard.states.${capstoneState}`)}
+                  </span>
+                )
+              })()}
+
+              <div className="prog-track" style={{ marginBottom: 16 }}>
+                <div className="prog-bar" style={{ width: `${visionPct}%` }} />
+              </div>
+
+              {capstoneState === 'bloqueado' && (
+                <button className="btn-upload" disabled>
+                  {t('capstoneCard.uploadProject')}
+                </button>
+              )}
+              {capstoneState === 'en_progreso' && (
+                <m.button
+                  className="btn-upload"
+                  onClick={() => router.push('/dashboard/projects/new')}
+                  whileHover={pref ? undefined : { scale: 1.02 }}
+                  whileTap={pref ? undefined : { scale: 0.97 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                >
+                  {t('capstoneCard.continueProject')}
+                </m.button>
+              )}
+              {capstoneState === 'enviado' && (
+                <div className="cert-text" style={{ marginBottom: 0, textAlign: 'center' }}>
+                  {t('capstoneCard.inReview')}
+                </div>
+              )}
+              {capstoneState === 'evaluado' && (
+                <m.button
+                  className="btn-upload"
+                  onClick={() => router.push(diploma ? `/certificacion/${diploma.projectId}` : '/dashboard/projects')}
+                  whileHover={pref ? undefined : { scale: 1.02 }}
+                  whileTap={pref ? undefined : { scale: 0.97 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                  style={{ background: '#16a34a' }}
+                >
+                  {diploma ? t('capstoneCard.viewDiploma') : t('capstoneCard.viewProject')}
+                </m.button>
               )}
             </div>
 
-            {/* Right column: Siguiente Paso + Quote stacked */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-              {/* Card 2 — Próximo módulo */}
-              <div className="card">
-                <div className="next-eyebrow">{t('nextStep.eyebrow')}</div>
-                {loading ? (
-                  <>
-                    <Sk w="85%" h={18} r={6} />
-                    <div style={{ marginTop: 10 }}><Sk w="60px" h={22} r={999} /></div>
-                    <div style={{ marginTop: 20 }}><Sk w="100%" h={40} r={10} /></div>
-                  </>
-                ) : nextModule ? (
-                  <>
-                    <div className="next-title">{nextModule.title}</div>
-                    <div className="next-xp">
-                      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
-                        <path d="M5 0L6.2 3.8H10L6.9 6.1L8.1 10L5 7.6L1.9 10L3.1 6.1L0 3.8H3.8L5 0Z"/>
-                      </svg>
-                      {nextModule.xp_reward ?? 100} XP
-                    </div>
-                    <m.button
-                      className="btn-continue"
-                      onClick={() => router.push('/dashboard/leadership-path')}
-                      whileHover={pref ? undefined : { scale: 1.02 }}
-                      whileTap={pref ? undefined : { scale: 0.97 }}
-                      transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                    >
-                      {t('nextStep.continueBtn')}
-                    </m.button>
-                  </>
-                ) : (
-                  <div style={{ fontSize: 13, color: 'var(--mute)', textAlign: 'center', padding: '20px 0', lineHeight: 1.6 }}>
-                    {t('nextStep.allDone')}
-                  </div>
-                )}
-              </div>
-
-              {/* Card 3 — Frase motivacional del día */}
+            {/* Derecha — Frase del día */}
+            <div>
               {(() => {
                 const q = getDailyQuote()
                 const accent = CATEGORY_COLORS[q.category] ?? '#C0392B'
@@ -1389,10 +1103,12 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Modules Available */}
+          {/* ══════════════════════════════════════════════════════════════
+              ZONA 3B — Mis módulos
+          ══════════════════════════════════════════════════════════════ */}
           <div>
             <div className="mods-header">
-              <span className="mods-title">{t('modulesAvailable.title')}</span>
+              <span className="mods-title zone3b-title">{t('zone3.modulesTitle')}</span>
               {!loading && (
                 <span className="mods-count">{totalModules} {totalModules !== 1 ? t('modulesAvailable.modulePlural') : t('modulesAvailable.moduleSingular')}</span>
               )}
@@ -1400,21 +1116,7 @@ export default function DashboardPage() {
 
             {loading ? (
               <>
-                {/* Next module skeleton */}
-                <div className="mod-next" style={{ cursor: 'default', marginBottom: 16 }}>
-                  <Sk w={52} h={52} r={12} />
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <Sk w="30%" h={10} r={4} />
-                    <Sk w="65%" h={18} r={6} />
-                    <Sk w="100%" h={13} r={5} />
-                    <Sk w="100%" h={13} r={5} />
-                    <div style={{ display: 'flex', gap: 10 }}>
-                      <Sk w={60} h={22} r={999} />
-                      <Sk w={120} h={36} r={9} />
-                    </div>
-                  </div>
-                </div>
-                {/* Grid skeletons */}
+                {/* Grid skeleton */}
                 <div className="mods-grid">
                   {[1, 2, 3].map(i => (
                     <div key={i} className="mod-card" style={{ gap: 12 }}>
@@ -1459,59 +1161,9 @@ export default function DashboardPage() {
                   </m.button>
                 )}
 
-                {/* ── Featured: next module ── */}
-                {nextModule && (
-                  <m.div
-                    className="mod-next"
-                    initial={pref ? false : { opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 24 }}
-                    onClick={() => router.push(`/dashboard/modules/${nextModule.id}`)}
-                  >
-                    <div className="mod-next__icon" aria-hidden="true">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M5 3l14 9-14 9V3Z" fill="var(--accent,#C0392B)"/>
-                      </svg>
-                    </div>
-                    <div className="mod-next__body">
-                      <div className="mod-next__eyebrow">
-                        <span>{t('modulesAvailable.nextModuleLabel')}</span>
-                        <span style={{ opacity: .45 }}>·</span>
-                        <span style={{ color: 'var(--mute)', fontWeight: 500 }}>
-                          {String(nextModule.order_index).padStart(2, '0')}
-                        </span>
-                        {leaderProfile && (() => {
-                          const pillar = MODULE_PILLAR[nextModule.order_index]
-                          if (!pillar) return null
-                          if (leaderProfile.fortalezas.includes(pillar))
-                            return <span className="mod-profile-badge strength">{tModules('strengthBadge')}</span>
-                          if (leaderProfile.areas_crecimiento.includes(pillar))
-                            return <span className="mod-profile-badge growth">{tModules('growthBadge')}</span>
-                          return null
-                        })()}
-                      </div>
-                      <div className="mod-next__title">{nextModule.title}</div>
-                      <div className="mod-next__desc">{nextModule.description}</div>
-                      <div className="mod-next__footer">
-                        <span className="mod-next__xp">
-                          <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
-                            <path d="M5 0L6.2 3.8H10L6.9 6.1L8.1 10L5 7.6L1.9 10L3.1 6.1L0 3.8H3.8L5 0Z"/>
-                          </svg>
-                          {nextModule.xp_reward ?? 100} XP
-                        </span>
-                        <m.button
-                          className="mod-next__cta"
-                          onClick={e => { e.stopPropagation(); router.push(`/dashboard/modules/${nextModule.id}`) }}
-                          whileHover={pref ? undefined : { scale: 1.02 }}
-                          whileTap={pref ? undefined : { scale: 0.97 }}
-                          transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                        >
-                          {t('modulesAvailable.startNow')}
-                        </m.button>
-                      </div>
-                    </div>
-                  </m.div>
-                )}
+                {/* La tarjeta destacada de "próximo módulo" ahora vive en la
+                    Zona 2 (arriba) — aquí solo queda el grid estándar, que
+                    ya excluye nextModule del listado para no duplicarlo. */}
 
                 {/* ── Standard grid: all other modules ── */}
                 {sortedModules.filter(m => m.id !== nextModule?.id).length > 0 && (
@@ -1607,6 +1259,228 @@ export default function DashboardPage() {
                 )}
               </>
             )}
+          </div>
+
+          {/* ══════════════════════════════════════════════════════════════
+              ZONA 3C — Mi progreso completo (colapsable)
+          ══════════════════════════════════════════════════════════════ */}
+          <div>
+            <m.button
+              className="zone3c-toggle"
+              onClick={toggleProgress}
+              whileHover={pref ? undefined : { scale: 1.02 }}
+              whileTap={pref ? undefined : { scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+            >
+              {t('zone3.toggleLabel')}
+              <svg
+                width="11" height="11" viewBox="0 0 18 18" fill="none"
+                style={{ transform: progressOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s cubic-bezier(0.22,1,0.36,1)' }}
+              >
+                <path d="M4 6.5L9 11.5L14 6.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </m.button>
+
+            <AnimatePresence>
+              {progressOpen && (
+                <m.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 20 }}>
+
+                    {/* KPI Bento */}
+                    <m.div
+                      className="kpi-bento"
+                      initial={pref ? false : 'hidden'}
+                      animate="visible"
+                      variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
+                    >
+                      {([
+                        { label: t('stats.xpTotal'),        val: loading ? null : (user?.total_xp ?? 0), color: 'var(--accent-amber,#D4821A)', border: 'var(--accent-amber,#D4821A)', isRank: false },
+                        { label: t('kpiLabels.modules'),    val: loading ? null : completedCount,         color: 'var(--accent-teal,#0F7B6C)',  border: 'var(--accent-teal,#0F7B6C)',  isRank: false },
+                        { label: t('kpiLabels.streakDays'), val: loading ? null : streak,                 color: 'var(--ink)',                  border: 'var(--line-strong)',            isRank: false },
+                        { label: t('kpiLabels.schoolRanking'), val: loading ? null : (rankPos ?? 0),      color: 'var(--accent,#C0392B)',       border: 'var(--accent,#C0392B)',        isRank: true  },
+                      ]).map(({ label, val, color, border, isRank }) => (
+                        <m.div
+                          key={label}
+                          className="kpi-card"
+                          style={{ borderLeft: `3px solid ${border}` }}
+                          variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 200, damping: 22 } } }}
+                        >
+                          {val === null
+                            ? <><Sk w="50%" h={32} r={6} /><div style={{ marginTop: 9 }}><Sk w="70%" h={10} r={4} /></div></>
+                            : <>
+                                <div className="kpi-num" style={{ color }}>
+                                  {isRank
+                                    ? (val === 0 ? '—' : `#${val}`)
+                                    : <AnimatedKPI value={val} />}
+                                </div>
+                                <div className="kpi-label">{label}</div>
+                              </>
+                          }
+                        </m.div>
+                      ))}
+                    </m.div>
+
+                    {/* Pillar pills */}
+                    <div className="pillar-pills">
+                      {PILLAR_ORDER.map(pillar => {
+                        const modsInPillar = PILLAR_MODS[pillar]
+                        const completedInPillar = loading ? 0 : modules.filter(m => modsInPillar.includes(m.order_index) && completedIds.has(m.id)).length
+                        const pct = modsInPillar.length > 0 ? Math.round(completedInPillar / modsInPillar.length * 100) : 0
+                        const isStrength = leaderProfile?.fortalezas.includes(pillar)
+                        const isGrowth   = leaderProfile?.areas_crecimiento.includes(pillar)
+                        const color = isStrength
+                          ? 'var(--accent-teal,#0F7B6C)'
+                          : isGrowth
+                            ? '#C0392B'
+                            : 'var(--mute)'
+                        return (
+                          <div key={pillar} className="pillar-pill">
+                            {loading ? (
+                              <><Sk w="60%" h={10} r={4} /><Sk w="100%" h={3} r={999} /></>
+                            ) : (
+                              <>
+                                <div className="pillar-pill__header">
+                                  <span className="pillar-pill__name" style={{ color }}>{pillar}</span>
+                                  <span className="pillar-pill__pct" style={{ color }}>{pct}%</span>
+                                </div>
+                                <div className="pillar-pill__track">
+                                  <div className="pillar-pill__bar" style={{ width: `${pct}%`, background: color }} />
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {/* Charts bento */}
+                    <div className="charts-row">
+                      {/* XP Line Chart */}
+                      <div className="card" style={{ padding: '22px 20px 16px' }}>
+                        <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 16 }}>
+                          {t('charts.xpProgress')}
+                        </div>
+                        {loading || weeklyXP.length === 0 ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {[80, 60, 100, 70].map((w, i) => <Sk key={i} w={`${w}%`} h={10} r={4} />)}
+                          </div>
+                        ) : (
+                          <m.div
+                            initial={pref ? false : { opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ type: 'spring', stiffness: 180, damping: 26 }}
+                          >
+                            <ResponsiveContainer width="100%" height={140}>
+                              <LineChart data={weeklyXP} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" strokeOpacity={0.5} vertical={false} />
+                                <XAxis dataKey="week" tick={{ fontSize: 11, fill: 'var(--mute)', fontFamily: 'Satoshi,sans-serif' }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fontSize: 10, fill: 'var(--mute)' }} axisLine={false} tickLine={false} />
+                                <Tooltip
+                                  content={({ active, payload }) => {
+                                    if (!active || !payload?.[0]) return null
+                                    return (
+                                      <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 10, padding: '8px 12px', fontSize: 12, boxShadow: 'var(--shadow-raised)', fontFamily: '"Satoshi",sans-serif' }}>
+                                        <span style={{ fontWeight: 700, color: 'var(--accent-amber,#D4821A)' }}>{payload[0].value?.toLocaleString('es-CO')} XP</span>
+                                      </div>
+                                    )
+                                  }}
+                                />
+                                <Line type="monotone" dataKey="xp" stroke="var(--accent-amber,#D4821A)" strokeWidth={2} dot={{ r: 3, fill: 'var(--accent-amber,#D4821A)', strokeWidth: 0 }} activeDot={{ r: 5, fill: 'var(--accent-amber,#D4821A)' }} />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </m.div>
+                        )}
+                      </div>
+
+                      {/* Leadership RadialBarChart */}
+                      <div className="card" style={{ padding: '22px 20px 16px' }}>
+                        <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 16 }}>
+                          {t('charts.leadershipPath')}
+                        </div>
+                        {loading ? (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 140 }}><Sk w={120} h={120} r={999} /></div>
+                        ) : (() => {
+                          const pillars = [
+                            { name: t('charts.pillarVision'),    fill: '#C0392B', value: visionPct },
+                            { name: t('charts.pillarModules'),   fill: '#D4821A', value: totalModules > 0 ? Math.round(completedCount / totalModules * 100) : 0 },
+                            { name: t('charts.pillarImpact'),    fill: '#0F7B6C', value: diploma ? 100 : 0 },
+                            { name: t('charts.pillarCommunity'), fill: '#8C7B6E', value: 0 },
+                            { name: t('charts.pillarProjects'),  fill: '#6B6B6B', value: 0 },
+                          ]
+                          const hasProgress = pillars.some(p => p.value > 0)
+
+                          if (!hasProgress) {
+                            return (
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 140, gap: 10, padding: '0 12px' }}>
+                                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style={{ opacity: 0.3 }}>
+                                  <circle cx="16" cy="16" r="13" stroke="var(--mute)" strokeWidth="2"/>
+                                  <circle cx="16" cy="16" r="8" stroke="var(--mute)" strokeWidth="1.5" strokeDasharray="4 3"/>
+                                  <circle cx="16" cy="16" r="2.5" fill="var(--mute)"/>
+                                </svg>
+                                <div style={{ fontSize: 12.5, color: 'var(--mute)', textAlign: 'center', lineHeight: 1.5, fontFamily: '"Satoshi",sans-serif' }}>
+                                  {t('charts.emptyState')}
+                                </div>
+                              </div>
+                            )
+                          }
+
+                          return (
+                            <m.div
+                              initial={pref ? false : { opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ type: 'spring', stiffness: 180, damping: 26, delay: 0.1 }}
+                            >
+                              <ResponsiveContainer width="100%" height={140}>
+                                <RadialBarChart cx="50%" cy="50%" innerRadius={20} outerRadius={68} data={pillars} startAngle={90} endAngle={-270}>
+                                  <RadialBar dataKey="value" cornerRadius={4} background={{ fill: 'var(--line)' }} />
+                                  <Tooltip
+                                    content={({ active, payload }) => {
+                                      if (!active || !payload?.[0]) return null
+                                      const d = payload[0].payload
+                                      return (
+                                        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 10, padding: '8px 12px', fontSize: 12, boxShadow: 'var(--shadow-raised)', fontFamily: '"Satoshi",sans-serif' }}>
+                                          <span style={{ fontWeight: 700, color: 'var(--ink)' }}>{d.name}: </span>
+                                          <span style={{ color: d.fill }}>{d.value}%</span>
+                                        </div>
+                                      )
+                                    }}
+                                  />
+                                </RadialBarChart>
+                              </ResponsiveContainer>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px', marginTop: 4 }}>
+                                {pillars.map(p => (
+                                  <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                    <div style={{ width: 7, height: 7, borderRadius: 2, background: p.fill, flexShrink: 0 }} />
+                                    <span style={{ fontSize: 11, color: 'var(--mute)', fontFamily: '"Satoshi",sans-serif' }}>{p.name} {p.value}%</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </m.div>
+                          )
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Link al programa completo — único resto útil de la antigua Leadership Progress Card */}
+                    <m.button
+                      className="btn-ghost"
+                      style={{ alignSelf: 'flex-start' }}
+                      onClick={() => router.push('/dashboard/leadership-path')}
+                      whileHover={pref ? undefined : { scale: 1.02 }}
+                      whileTap={pref ? undefined : { scale: 0.97 }}
+                      transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+                    >{t('leadershipProgress.viewFullProgram')}</m.button>
+
+                  </div>
+                </m.div>
+              )}
+            </AnimatePresence>
           </div>
 
         </m.main>

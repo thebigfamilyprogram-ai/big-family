@@ -814,12 +814,31 @@
       },
       "capstoneCard": {
         "eyebrow": "The Big Leader",
-        "title": "Capstone",
+        "title": "مشروع Capstone",
         "lockedHint": "أكمل الوحدات الـ {total} لفتح Capstone",
         "uploadProject": "رفع المشروع",
+        "continueProject": "الاستمرار في المشروع",
+        "inReview": "مشروعك قيد المراجعة",
+        "viewProject": "عرض مشروعي",
         "approvedProjects": "المشاريع المعتمدة",
         "approvedCount": "{approved} من {total} مشاريع معتمدة للحصول على الشهادة.",
-        "viewDiploma": "🎓 عرض شهادتي ←"
+        "viewDiploma": "🎓 عرض شهادتي ←",
+        "states": {
+          "bloqueado": "مقفل",
+          "en_progreso": "قيد التنفيذ",
+          "enviado": "مُرسَل",
+          "evaluado": "مُقيَّم"
+        }
+      },
+      "zone1": {
+        "greeting": "أهلاً، {name}",
+        "statsXp": "XP",
+        "statsModules": "وحدات",
+        "statsStreak": "أيام"
+      },
+      "zone3": {
+        "modulesTitle": "وحداتي",
+        "toggleLabel": "عرض تقدمي الكامل"
       },
       "nextStep": {
         "eyebrow": "الخطوة التالية",
