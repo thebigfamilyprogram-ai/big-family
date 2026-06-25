@@ -1086,14 +1086,14 @@ export default function DashboardPage() {
                   return parts.length >= 2 ? parts[0][0] + parts[parts.length - 1][0] : parts[0].slice(0, 2)
                 })()
                 return (
-                  <div style={{ background: 'rgba(192,57,43,0.04)', border: '1px solid rgba(192,57,43,0.12)', borderRadius: 16, padding: 20, position: 'relative', overflow: 'hidden' }}>
-                    <span style={{ position: 'absolute', top: 4, left: 12, fontFamily: "'Instrument Serif',serif", fontSize: 28, color: 'rgba(192,57,43,0.2)', lineHeight: 1, userSelect: 'none', pointerEvents: 'none' }}>&ldquo;</span>
+                  <div style={{ background: 'rgba(192,57,43,0.04)', border: '1px solid rgba(192,57,43,0.12)', borderRadius: 16, padding: '28px 32px', minHeight: 160, position: 'relative', overflow: 'hidden' }}>
+                    <span style={{ position: 'absolute', top: 4, left: 12, fontFamily: "'Instrument Serif',serif", fontSize: 48, color: 'rgba(192,57,43,0.15)', lineHeight: 1, marginBottom: -8, userSelect: 'none', pointerEvents: 'none' }}>&ldquo;</span>
                     <div style={{ paddingLeft: 4 }}>
                       <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: accent, marginBottom: 8 }}>{q.category} · {t('quoteOfDay')}</div>
-                      <p style={{ fontFamily: "'Instrument Serif', serif", fontStyle: 'italic', fontSize: 13.5, color: 'var(--ink-2)', lineHeight: 1.65, margin: '0 0 14px 0', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{q.quote}</p>
+                      <p style={{ fontFamily: "'Instrument Serif', serif", fontStyle: 'italic', fontSize: 20, color: 'var(--ink)', lineHeight: 1.5, margin: '0 0 14px 0', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{q.quote}</p>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{ width: 22, height: 22, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #0D0D0D)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: '#fff', fontFamily: '"Satoshi", sans-serif', flexShrink: 0 }}>{qInitials}</div>
-                        <span style={{ fontSize: 12, fontFamily: '"Satoshi", sans-serif', fontWeight: 600, color: '#C0392B' }}>— {q.author}</span>
+                        <span style={{ fontSize: 14, fontFamily: '"Satoshi", sans-serif', fontWeight: 500, color: 'var(--ink-2)' }}>— {q.author}</span>
                       </div>
                     </div>
                   </div>
