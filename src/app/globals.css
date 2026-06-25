@@ -197,6 +197,40 @@ code, pre, .font-mono {
 }
 
 
+/* ── LandingTimeline (zigzag, /historia) ─────────────────────────────────── */
+.landing-timeline-card {
+  border-color: var(--card-border);
+}
+.landing-timeline-card:hover {
+  border-color: rgba(192, 57, 43, 0.3);
+  box-shadow: var(--shadow-raised);
+}
+.landing-timeline-card.landing-timeline-card--active,
+.landing-timeline-card.landing-timeline-card--active:hover {
+  border-color: #C0392B;
+}
+
+@media (max-width: 640px) {
+  .landing-timeline-row {
+    grid-template-columns: 32px 1fr !important;
+  }
+  .landing-timeline-line {
+    left: 15px !important;
+  }
+  .landing-timeline-year {
+    display: none !important;
+  }
+  .landing-timeline-year-mobile {
+    display: block !important;
+  }
+  .landing-timeline-dot {
+    grid-column: 1 !important;
+  }
+  .landing-timeline-card {
+    grid-column: 2 !important;
+  }
+}
+
 /* ── Arabic (RTL) typography ─────────────────────────────────────────────── */
 :lang(ar) {
   font-family: 'Noto Sans Arabic', sans-serif;
