@@ -242,8 +242,8 @@ export default function MetodologiaPage() {
             viewport={{ once: true, margin: '-80px' }}
             transition={{ type: 'spring', stiffness: 120, damping: 20 }}
           >
-            <p className="sec-valores__eyebrow">{t('landing.valores.title')}</p>
-            <h2 className="sec-valores__title">{t('landing.valores.eyebrow')}</h2>
+            <p className="sec-valores__eyebrow">{t('landing.valores.eyebrow')}</p>
+            <h2 className="sec-valores__title">{t('landing.valores.title')}</h2>
           </m.div>
 
           <div className="sec-valores__grid">

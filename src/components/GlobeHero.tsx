@@ -919,7 +919,7 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
             <p className="bf-footer__col-title">{t('landing.footer.programTitle')}</p>
             <div className="bf-footer__links">
               <Link href="/historia" className="bf-footer__link">{t('nav.historia')}</Link>
-              <a href="#impacto" className="bf-footer__link">{t('nav.impacto')}</a>
+              <Link href="/#impacto" className="bf-footer__link">{t('nav.impacto')}</Link>
               <Link href="/red" className="bf-footer__link">{t('nav.nuestraRed')}</Link>
               <Link href="/metodologia" className="bf-footer__link">{t('nav.metodologia')}</Link>
               <Link href="/equipo" className="bf-footer__link">{t('nav.equipo')}</Link>
