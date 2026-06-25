@@ -80,11 +80,12 @@ function CountryScramble() {
 // Hrefs are real routes now — Impacto is the only exception (scrolls to an
 // anchor in this shell instead of navigating, see handleNavLinkClick below).
 const NAV_LINKS = [
-  { href: '/historia', label: 'Historia'    },
-  { href: '/#impacto', label: 'Impacto'     },
-  { href: '/red',      label: 'Nuestra Red' },
-  { href: '/equipo',   label: 'Equipo'      },
-  { href: '/news',     label: 'Noticias'    },
+  { href: '/historia',    label: 'Historia'     },
+  { href: '/#impacto',    label: 'Impacto'      },
+  { href: '/metodologia', label: 'Metodología'  },
+  { href: '/red',         label: 'Nuestra Red'  },
+  { href: '/equipo',      label: 'Equipo'       },
+  { href: '/news',        label: 'Noticias'     },
 ]
 
 const LOCALES = [
@@ -194,11 +195,12 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
 
   // Nav label lookup — avoids calling t() inside module-level const
   const navLabels: Record<string, string> = {
-    '/historia': t('nav.historia'),
-    '/#impacto': t('nav.impacto'),
-    '/red':      t('nav.nuestraRed'),
-    '/equipo':   t('nav.equipo'),
-    '/news':     t('nav.noticias'),
+    '/historia':    t('nav.historia'),
+    '/#impacto':    t('nav.impacto'),
+    '/metodologia': t('nav.metodologia'),
+    '/red':         t('nav.nuestraRed'),
+    '/equipo':      t('nav.equipo'),
+    '/news':        t('nav.noticias'),
   }
 
   const prefersReduced      = useReducedMotion()
