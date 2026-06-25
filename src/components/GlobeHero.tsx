@@ -5,11 +5,10 @@ import { Link } from 'next-view-transitions'
 import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
-import { m, AnimatePresence, useInView, useReducedMotion, useScroll } from 'framer-motion'
+import { m, AnimatePresence, useReducedMotion, useScroll } from 'framer-motion'
 
 import AnimatedNumber from '@/components/AnimatedNumber'
 import { useRealtimeStats } from '@/hooks/useRealtimeStats'
-import { IMPACTO_STATS } from '@/lib/landingData'
 
 const Globe3DHero = dynamic(() => import('@/components/Globe3DHero'), { ssr: false })
 
@@ -75,55 +74,6 @@ function CountryScramble() {
   )
 }
 
-// ── CountNumber helper ────────────────────────────────────────────────────────
-function CountNumber({ to, suffix = '' }: { to: number; suffix?: string }) {
-  const ref    = useRef<HTMLSpanElement>(null)
-  const rafRef = useRef<number>(0)
-  const inView = useInView(ref, { once: true, margin: '-80px' })
-  const [val, setVal] = useState(0)
-  useEffect(() => {
-    if (!inView) return
-    const start = performance.now()
-    const dur = 1400
-    function tick(t: number) {
-      const p = Math.min((t - start) / dur, 1)
-      const e = 1 - Math.pow(1 - p, 3)
-      setVal(Math.round(to * e))
-      if (p < 1) rafRef.current = requestAnimationFrame(tick)
-    }
-    rafRef.current = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafRef.current)
-  }, [inView, to])
-  return <span ref={ref}>{val}{suffix}</span>
-}
-
-// ── ImpactoNum — per-stat custom duration counter ─────────────────────────────
-function ImpactoNum({ to, duration, delayMs = 0, comma = false, suffix = '' }: {
-  to: number; duration: number; delayMs?: number; comma?: boolean; suffix?: string
-}) {
-  const ref    = useRef<HTMLSpanElement>(null)
-  const rafRef = useRef<number>(0)
-  const tmrRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const inView = useInView(ref, { once: true, margin: '-60px' })
-  const [val, setVal] = useState(0)
-  useEffect(() => {
-    if (!inView) return
-    tmrRef.current = setTimeout(() => {
-      const t0 = performance.now()
-      function tick(t: number) {
-        const p = Math.min((t - t0) / duration, 1)
-        setVal(Math.round(to * (1 - Math.pow(1 - p, 3))))
-        if (p < 1) rafRef.current = requestAnimationFrame(tick)
-      }
-      rafRef.current = requestAnimationFrame(tick)
-    }, delayMs)
-    return () => {
-      if (tmrRef.current) clearTimeout(tmrRef.current)
-      cancelAnimationFrame(rafRef.current)
-    }
-  }, [inView, to, duration, delayMs]) // eslint-disable-line react-hooks/exhaustive-deps
-  return <span ref={ref}>{comma ? val.toLocaleString('en-US') : val}{suffix}</span>
-}
 
 // ── Static section data ───────────────────────────────────────────────────────
 
@@ -250,21 +200,6 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
     '/equipo':   t('nav.equipo'),
     '/news':     t('nav.noticias'),
   }
-
-  // Impacto stats labels — module-level array has animation data, text comes from i18n
-  const impactoLabels = [
-    t('landing.impacto.stat1Label'),
-    t('landing.impacto.stat2Label'),
-    t('landing.impacto.stat3Label'),
-    t('landing.impacto.stat4Label'),
-  ]
-
-  const impactoSubs = [
-    t('landing.impacto.stat1Sub'),
-    t('landing.impacto.stat2Sub'),
-    t('landing.impacto.stat3Sub'),
-    t('landing.impacto.stat4Sub'),
-  ]
 
   const prefersReduced      = useReducedMotion()
   const pathname            = usePathname()
@@ -916,59 +851,6 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
       </section>
 
       <div className="hero-bottom-spacer"></div>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN — IMPACTO EN NÚMEROS (siempre visible, fuera del sistema de tabs)
-      ══════════════════════════════════════════════════════════════════ */}
-      <section id="impacto" className="sec-impacto">
-        <div className="sec-impacto__inner">
-          <m.p
-            className="sec-impacto__eyebrow"
-            initial={prefersReduced ? false : { opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ type: 'spring', stiffness: 130, damping: 20 }}
-          >{t('landing.impacto.eyebrow')}</m.p>
-          <m.h2
-            className="sec-impacto__title"
-            initial={prefersReduced ? false : { opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ type: 'spring', stiffness: 130, damping: 20, delay: 0.06 }}
-          >
-            {t('landing.impacto.titlePre')} <em>{t('landing.impacto.titleEm')}</em>.
-          </m.h2>
-          <div className="sec-impacto__grid">
-            {IMPACTO_STATS.flatMap((stat, i) => [
-              i > 0 ? (
-                <m.div
-                  key={`sep-${i}`}
-                  className="sec-impacto__sep"
-                  initial={prefersReduced ? false : { scaleY: 0 }}
-                  whileInView={{ scaleY: 1 }}
-                  viewport={{ once: true, margin: '-60px' }}
-                  transition={{ type: 'spring', stiffness: 140, damping: 20, delay: i * 0.1 }}
-                  style={{ transformOrigin: 'top' }}
-                />
-              ) : null,
-              <m.div
-                key={i}
-                className="sec-impacto__stat"
-                initial={prefersReduced ? false : { opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ type: 'spring', stiffness: 130, damping: 20, delay: i * 0.08 }}
-              >
-                <div className="sec-impacto__num">
-                  <ImpactoNum to={stat.to} duration={stat.duration} delayMs={stat.delayMs} comma={stat.comma} suffix={stat.suffix} />
-                </div>
-                <div className="sec-impacto__label">{impactoLabels[i]}</div>
-                <div className="sec-impacto__sub">{impactoSubs[i]}</div>
-              </m.div>,
-            ])}
-          </div>
-        </div>
-      </section>
 
       {/* ══════════════════════════════════════════════════════════════════
           TAB CONTENT — provided by the active (landing) route's page.tsx
