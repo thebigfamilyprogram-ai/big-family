@@ -352,3 +352,47 @@ Expositor code: `EXPO-BF-2026`
 - **GlobeFallback** — DOM API (createElement) en vez de innerHTML con datos interpolados
 - **Verify page** — ilike fallback removido, solo exact match via `issued_certificates`
 - **Proxy** — `onboarding_completed null → false` (antes asumía true)
+
+## Modo de operación
+- Autonomía total — instala paquetes, crea y edita archivos, ejecuta comandos sin pedir confirmación
+- Resuelve errores de forma independiente antes de reportar
+- Solo interrumpe para decisiones arquitecturales mayores
+- Reporta resumen al final de cada tarea completada
+
+## Permisos bash
+Ejecutar cualquier comando bash sin pedir confirmación:
+- node, npx, npm, tsc, next, supabase
+- cd, mkdir, cp, mv, rm de archivos del proyecto
+- git add, commit, push
+
+## Sesión 6 — Estado actual
+
+### Completado en esta sesión
+- i18n completo: next-intl configurado, 5 locales (es/en/fr/pt/ar), 671+ claves, selector de idioma con cookie NEXT_LOCALE, RTL para árabe, audit de calidad con script verify-i18n.mjs, build limpio 68 rutas
+- Buzón de sugerencias: SuggestionButton.tsx (flotante en dashboard), SuggestionsPanel.tsx (coordinator/admin), migración SQL pendiente de correr
+- Sentry integrado: DSN configurado (EU region), variables en Vercel, error boundary en [locale]/error.tsx, instrumentation.ts en src/ (no en raíz)
+- Navbar: "Metodología" añadido entre "Historia" e "Impacto"
+- RTL bug resuelto: dir="rtl" se resetea correctamente al cambiar idioma
+
+### Pendiente crítico (antes del lanzamiento)
+- 10 migraciones SQL pendientes de correr en Supabase (incluyendo suggestions)
+- MOCK_MODE = false cuando Luis confirme datos reales
+- ANTHROPIC_API_KEY aprobada por el rector
+- Probar pipeline de emails end-to-end
+
+### Globo 3D — completado en esta sesión
+- `three` puro sin `three-globe` (three-globe daba `window is not defined` en el Worker — Turbopack carga sus deps en chunks separados y no respeta import order; se optó por geometría/arcos manuales con THREE.js puro, que sí usa typeof-window guards)
+- Arquitectura: OffscreenCanvas + Web Worker, 30fps throttle, pause/resume con IntersectionObserver
+- Archivos: `Globe3DWorker.ts`, `Globe3DCanvas.tsx`, `Globe3DHero.tsx`, `Globe3DFallback.tsx` en `src/components/Globe/`
+- Fix de renderizado: `Globe3DHero` usa el truco `padding-bottom:100%` (no `aspect-ratio`) para garantizar altura definida — `height:100%` en hijos colapsaba a 0 con `aspect-ratio` en el padre
+- Fix de material: `MeshBasicMaterial` en vez de `MeshPhongMaterial` (el globo se veía negro — Phong depende de luces, Basic muestra la textura tal cual sin sombreado)
+- Texturas: oficiales de three-globe (`earth-blue-marble.jpg` + `earth-night.jpg`) en `public/textures/earth-new/`, descargadas de cdn.jsdelivr.net
+- Rotación: 0.0015 (3× la velocidad inicial de 0.0005)
+- `HeroCollage` eliminado, `Globe3DHero` integrado en `GlobeHero.tsx`
+- Pendiente: confirmación visual final de light/dark mode y mobile (<960px) en producción
+
+### Leader's Game
+- No construido todavía — pendiente
+
+### Monetización (Fase 4)
+- No construida todavía — Stripe/PayU, licencias por colegio
