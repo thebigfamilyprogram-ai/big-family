@@ -191,22 +191,15 @@ const FOUNDERS_STATIC = [
 
 type TabId = 'programa' | 'historia' | 'metodologia' | 'red' | 'equipo' | 'noticias'
 
-const NAV_LINKS = [
-  { href: '#historia',    label: 'Historia'    },
-  { href: '#impacto',     label: 'Impacto'     },
-  { href: '#nuestra-red', label: 'Nuestra Red' },
-  { href: '#equipo',      label: 'Equipo'      },
-  { href: '/news',        label: 'Noticias'    },
+// `tab` switches the tab system; links without it (Impacto) scroll directly to
+// their anchor instead — that section stays always-rendered outside the tabs.
+const NAV_LINKS: { href: string; label: string; tab?: TabId }[] = [
+  { href: '#historia',    label: 'Historia',    tab: 'historia' },
+  { href: '#impacto',     label: 'Impacto'                      },
+  { href: '#nuestra-red', label: 'Nuestra Red', tab: 'red'      },
+  { href: '#equipo',      label: 'Equipo',      tab: 'equipo'   },
+  { href: '/news',        label: 'Noticias',    tab: 'noticias' },
 ]
-
-// Nav links that switch tabs instead of scrolling to an anchor — #impacto is the
-// exception: that section stays always-rendered outside the tab system.
-const NAV_TAB_MAP: Partial<Record<string, TabId>> = {
-  '#historia':    'historia',
-  '#nuestra-red': 'red',
-  '#equipo':      'equipo',
-  '/news':        'noticias',
-}
 
 const LOCALES = [
   { code: 'es', label: 'Español',   short: 'ES', dir: 'ltr'  as const },
@@ -380,45 +373,6 @@ const FAQSection = memo(function FAQSection({ reduced }: { reduced: boolean }) {
         </div>
       </div>
     </section>
-  )
-})
-
-const TabNav = memo(function TabNav({
-  active, onChange,
-}: { active: TabId; onChange: (id: TabId) => void }) {
-  const t = useTranslations()
-  const tabs: { id: TabId; label: string }[] = [
-    { id: 'programa',    label: t('tabs.programa')    },
-    { id: 'historia',    label: t('tabs.historia')    },
-    { id: 'metodologia', label: t('tabs.metodologia') },
-    { id: 'red',         label: t('tabs.red')         },
-    { id: 'equipo',      label: t('tabs.equipo')      },
-    { id: 'noticias',    label: t('tabs.noticias')    },
-  ]
-  return (
-    <div style={{
-      position: 'sticky', top: '72px', zIndex: 40,
-      background: 'var(--bg)', borderBottom: '1px solid var(--line)',
-      display: 'flex', justifyContent: 'center', padding: '0 24px',
-    }}>
-      <div style={{
-        display: 'flex', maxWidth: '900px', width: '100%',
-        overflowX: 'auto', scrollbarWidth: 'none',
-      }}>
-        {tabs.map(tab => (
-          <button key={tab.id} onClick={() => onChange(tab.id)} style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            padding: '16px 20px', fontSize: '14px', fontFamily: 'inherit',
-            color: active === tab.id ? 'var(--ink)' : 'var(--mute)',
-            fontWeight: active === tab.id ? 600 : 400,
-            borderBottom: active === tab.id ? '2px solid #C0392B' : '2px solid transparent',
-            transition: 'color 0.2s, border-color 0.2s', whiteSpace: 'nowrap',
-          }}>
-            {tab.label}
-          </button>
-        ))}
-      </div>
-    </div>
   )
 })
 
@@ -624,20 +578,11 @@ export default function GlobeHero() {
     return () => window.removeEventListener('scroll', onScrollHint)
   }, [])
 
-  const navigateToTab = (tabId: TabId) => {
-    setActiveTab(tabId)
-    setMobileNavOpen(false)
-    setTimeout(() => {
-      document.getElementById('tab-nav-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 50)
-  }
+  const navigateToTab = (tabId: TabId) => setActiveTab(tabId)
 
-  function handleNavLink(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
-    const tabId = NAV_TAB_MAP[href]
-    if (tabId) { e.preventDefault(); navigateToTab(tabId); return }
-    if (!href.startsWith('#')) return
-    e.preventDefault()
-    document.getElementById(href.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  function handleNavLink(link: { href: string; tab?: TabId }) {
+    if (link.tab) { navigateToTab(link.tab); setMobileNavOpen(false); return }
+    document.getElementById(link.href.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     setMobileNavOpen(false)
   }
 
@@ -649,7 +594,7 @@ export default function GlobeHero() {
   }, [scrollY])
 
   // Only 'impacto' is always in the DOM — historia/nuestra-red/equipo now live
-  // inside tab panes and are highlighted via activeTab instead (see NAV_TAB_MAP).
+  // inside tab panes and are highlighted via activeTab instead (see link.tab in NAV_LINKS).
   useEffect(() => {
     const el = document.getElementById('impacto')
     if (!el) return
@@ -675,7 +620,7 @@ export default function GlobeHero() {
         .pill-nav--scrolled{background:var(--bg-2,rgba(239,236,230,0.96));box-shadow:0 8px 32px rgba(13,13,13,.12),0 2px 8px rgba(13,13,13,.06);}
         .pill-nav__brand{display:flex;align-items:center;gap:8px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:14px;color:var(--ink);text-decoration:none;margin-right:20px;flex-shrink:0;}
         .pill-nav__links{display:flex;gap:2px;align-items:center;}
-        .pill-nav__link{font-family:"Satoshi",sans-serif;font-size:13.5px;color:var(--ink-2);text-decoration:none;padding:7px 12px;border-radius:999px;transition:color 0.2s cubic-bezier(0.22,1,0.36,1),background 0.2s cubic-bezier(0.22,1,0.36,1);}
+        .pill-nav__link{font-family:"Satoshi",sans-serif;font-size:13.5px;color:var(--ink-2);text-decoration:none;padding:7px 12px;border-radius:999px;background:none;border:none;cursor:pointer;transition:color 0.2s cubic-bezier(0.22,1,0.36,1),background 0.2s cubic-bezier(0.22,1,0.36,1);}
         .pill-nav__link:hover{color:var(--ink);background:rgba(13,13,13,0.06);}
         .pill-nav__link--active{color:var(--ink);background:rgba(13,13,13,0.07);}
         .pill-nav__cta{margin-left:8px;padding:8px 16px;background:var(--ink);color:var(--bg,#F5F3EF);font-family:"Satoshi",sans-serif;font-size:13px;font-weight:600;border-radius:999px;text-decoration:none;border:none;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;transition:background 0.2s cubic-bezier(0.22,1,0.36,1);}
@@ -688,7 +633,8 @@ export default function GlobeHero() {
         @media(max-width:760px){.pill-nav__links{display:none;}.pill-nav__hamburger{display:flex;align-items:center;justify-content:center;}}
         .pill-nav-overlay{position:fixed;inset:0;background:rgba(13,13,13,0.5);z-index:99;}
         .pill-nav-drawer{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--bg,#F5F3EF);border-bottom:1px solid var(--line);padding:72px 24px 28px;display:flex;flex-direction:column;gap:4px;}
-        .pill-nav-drawer__link{font-family:"Satoshi",sans-serif;font-size:18px;font-weight:500;color:var(--ink);text-decoration:none;padding:12px 0;border-bottom:1px solid rgba(13,13,13,0.06);}
+        .pill-nav-drawer__link{display:block;width:100%;font-family:"Satoshi",sans-serif;font-size:18px;font-weight:500;color:var(--ink);text-decoration:none;text-align:left;background:none;border:none;cursor:pointer;padding:12px 0;border-bottom:1px solid rgba(13,13,13,0.06);}
+        .pill-nav-drawer__link--active{color:#C0392B;}
         .pill-nav-drawer__cta{margin-top:16px;padding:14px 24px;background:var(--ink);color:var(--bg,#F5F3EF);font-family:"Satoshi",sans-serif;font-size:15px;font-weight:600;border-radius:999px;text-decoration:none;text-align:center;}
         .lang-sel{position:relative;margin:0 4px;}
         .lang-sel__btn{font-family:"Satoshi",sans-serif;font-size:12px;font-weight:600;letter-spacing:0.06em;color:var(--ink-2);background:none;border:1px solid var(--line);border-radius:999px;padding:5px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:color 0.2s cubic-bezier(0.22,1,0.36,1),background 0.2s cubic-bezier(0.22,1,0.36,1);}
@@ -1054,14 +1000,13 @@ export default function GlobeHero() {
               </Link>
               <div className="pill-nav__links">
                 {NAV_LINKS.map(link => (
-                  <a
+                  <button
                     key={link.href}
-                    href={link.href}
-                    className={`pill-nav__link${(NAV_TAB_MAP[link.href] ? activeTab === NAV_TAB_MAP[link.href] : link.href === `#${activeSection}`) ? ' pill-nav__link--active' : ''}`}
-                    onClick={e => handleNavLink(e, link.href)}
+                    className={`pill-nav__link${(link.tab ? activeTab === link.tab : link.href === `#${activeSection}`) ? ' pill-nav__link--active' : ''}`}
+                    onClick={() => handleNavLink(link)}
                   >
                     {navLabels[link.href] ?? link.label}
-                  </a>
+                  </button>
                 ))}
               </div>
               <LanguageSelector />
@@ -1118,14 +1063,13 @@ export default function GlobeHero() {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             >
               {NAV_LINKS.map(link => (
-                <a
+                <button
                   key={link.href}
-                  href={link.href}
-                  className="pill-nav-drawer__link"
-                  onClick={e => handleNavLink(e, link.href)}
+                  className={`pill-nav-drawer__link${(link.tab ? activeTab === link.tab : link.href === `#${activeSection}`) ? ' pill-nav-drawer__link--active' : ''}`}
+                  onClick={() => handleNavLink(link)}
                 >
                   {navLabels[link.href] ?? link.label}
-                </a>
+                </button>
               ))}
               <Link href="/login" className="pill-nav-drawer__cta">{t('nav.ingresar')} →</Link>
             </m.div>
@@ -1297,12 +1241,8 @@ export default function GlobeHero() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════
-          TAB NAV
+          TAB CONTENT — controlled by the navbar pill (NAV_LINKS)
       ══════════════════════════════════════════════════════════════════ */}
-      <div id="tab-nav-anchor">
-        <TabNav active={activeTab} onChange={navigateToTab} />
-      </div>
-
       <AnimatePresence mode="wait">
         <m.div
           key={activeTab}
