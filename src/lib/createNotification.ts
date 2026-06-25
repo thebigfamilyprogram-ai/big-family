@@ -8,6 +8,7 @@ export type NotificationType =
   | 'kashi_session'
   | 'great_venture_reminder'
   | 'suggestion'
+  | 'event_created'
 
 interface CreateNotificationParams {
   userId: string

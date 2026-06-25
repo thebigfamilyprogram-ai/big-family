@@ -82,6 +82,7 @@ function getNav(
   portfolioUsername?: string | null,
   portfolioPublic?: boolean | null,
   pendingSuggestions?: number,
+  upcomingEventsCount?: number,
 ): Section[] {
   const n = t.raw('nav') as Record<string, string>
   const s = t.raw('sections') as Record<string, string>
@@ -180,6 +181,7 @@ function getNav(
     {
       key: 'analitica', label: s.analitica, items: [
         { label: n.datos,       href: '/admin/datos',        icon: I.barChart                                         },
+        { label: n.events,      href: '/admin/events',       icon: I.calendar,  badge: upcomingEventsCount || undefined },
         { label: n.suggestions, href: '/admin/suggestions',  icon: I.lightbulb, badge: pendingSuggestions || undefined },
       ],
     },
@@ -210,6 +212,7 @@ export default function AppSidebar({
   const [ventureCompleted,  setVentureCompleted]  = useState<boolean | null>(null)
   const [portfolioUsername, setPortfolioUsername] = useState<string | null>(null)
   const [portfolioPublic,   setPortfolioPublic]   = useState<boolean | null>(null)
+  const [upcomingEventsCount, setUpcomingEventsCount] = useState(0)
 
   // Load venture + portfolio status for students (single effect, parallel queries)
   useEffect(() => {
@@ -245,7 +248,26 @@ export default function AppSidebar({
     checkStudentData()
   }, [role])
 
-  const sections    = getNav(role, unreadAnnouncements, tSb, ventureCompleted, portfolioUsername, portfolioPublic, pendingSuggestions)
+  // Badge count for the admin "Eventos" link — self-contained, avoids wiring
+  // this prop through every admin page individually.
+  useEffect(() => {
+    if (role !== 'admin') return
+    async function loadUpcomingEvents() {
+      if (MOCK_MODE) { setUpcomingEventsCount(3); return }
+      if (!supabaseRef.current) supabaseRef.current = createClient()
+      const sb = supabaseRef.current
+      if (!sb) return
+      const today = new Date().toISOString().slice(0, 10)
+      const { count } = await sb
+        .from('calendar_events')
+        .select('*', { count: 'exact', head: true })
+        .gte('event_date', today)
+      setUpcomingEventsCount(count ?? 0)
+    }
+    loadUpcomingEvents()
+  }, [role])
+
+  const sections    = getNav(role, unreadAnnouncements, tSb, ventureCompleted, portfolioUsername, portfolioPublic, pendingSuggestions, upcomingEventsCount)
   const defaultOpen = Object.fromEntries(sections.map(s => [s.key, true]))
 
   // useEffect reads localStorage to avoid SSR/client hydration mismatch

@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase'
 import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import { m, useReducedMotion } from 'framer-motion'
 import NotificationDrawer from '@/components/NotificationDrawer'
+import EventCard, { type EventCardEvent, type RsvpStatus } from '@/components/EventCard'
 
 interface CoordProfile {
   display_name:   string
@@ -61,6 +62,7 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
   const router      = useRouter()
   const t           = useTranslations('coordinator.dashboard')
   const tCommon     = useTranslations('common')
+  const tEvents     = useTranslations('events')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
   const [loading,      setLoading]      = useState(true)
@@ -79,6 +81,9 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [page,    setPage]    = useState(1)
   const pref = useReducedMotion()
+
+  const [upcomingEvents, setUpcomingEvents] = useState<EventCardEvent[]>([])
+  const [eventRsvps,     setEventRsvps]     = useState<Record<string, RsvpStatus>>({})
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -199,6 +204,47 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
     }
     load()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Próximos eventos para este colegio — fetch independiente del effect principal.
+  useEffect(() => {
+    if (!coordUserId) return
+    async function loadUpcomingEvents() {
+      if (MOCK_MODE) {
+        const d1 = new Date(); d1.setDate(d1.getDate() + 3)
+        const d2 = new Date(); d2.setDate(d2.getDate() + 9)
+        setUpcomingEvents([
+          { id: 'mock-ev-1', title: 'Taller de Liderazgo Regional', description: 'Encuentro de líderes de los 8 colegios.', location: 'Colegio Albania — Sala de reuniones', meeting_link: null, event_date: d1.toISOString().slice(0, 10), event_time: '15:00' },
+          { id: 'mock-ev-2', title: 'Reunión de Coordinadores',     description: 'Seguimiento mensual de avance por colegio.', location: null, meeting_link: 'https://meet.google.com/abc-defg-hij', event_date: d2.toISOString().slice(0, 10), event_time: '10:00' },
+        ])
+        setEventRsvps({ 'mock-ev-1': 'pending', 'mock-ev-2': 'confirmed' })
+        return
+      }
+      if (!supabaseRef.current || !initialSchoolId) return
+      const sb = supabaseRef.current
+      const today = new Date().toISOString().slice(0, 10)
+      const { data: evs } = await sb
+        .from('calendar_events')
+        .select('id, title, description, location, meeting_link, event_date, event_time')
+        .gte('event_date', today)
+        .contains('audience_schools', [initialSchoolId])
+        .contains('audience_roles', ['coordinator'])
+        .order('event_date')
+        .limit(2)
+
+      if (!evs?.length) return
+      setUpcomingEvents(evs)
+
+      const { data: rsvps } = await sb
+        .from('event_rsvps').select('event_id, status')
+        .in('event_id', evs.map((e: { id: string }) => e.id))
+        .eq('user_id', coordUserId)
+
+      const map: Record<string, RsvpStatus> = {}
+      rsvps?.forEach((r: { event_id: string; status: string }) => { map[r.event_id] = r.status as RsvpStatus })
+      setEventRsvps(map)
+    }
+    loadUpcomingEvents()
+  }, [coordUserId, initialSchoolId])
 
   const metrics = useMemo(() => {
     if (!students.length) return { total: 0, avgXp: 0, totalMods: 0, activeCount: 0 }
@@ -409,6 +455,22 @@ export default function CoordinatorClient({ initialFullName, initialSchoolId }: 
               )
             })}
           </m.div>
+
+          {upcomingEvents.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+              <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)' }}>
+                {tEvents('upcomingSection')}
+              </div>
+              {upcomingEvents.map(ev => (
+                <EventCard
+                  key={ev.id}
+                  event={ev}
+                  userRsvp={eventRsvps[ev.id] ?? 'pending'}
+                  onRsvp={(id, status) => setEventRsvps(prev => ({ ...prev, [id]: status }))}
+                />
+              ))}
+            </div>
+          )}
 
           {/* ── Charts Bento ── */}
           <div className="charts-bento">

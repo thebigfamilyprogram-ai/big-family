@@ -67,6 +67,39 @@
     "comoFunciona": "كيف يعمل",
     "paises": "الدول"
   },
+  "events": {
+    "confirm": "تأكيد الحضور",
+    "decline": "لا يمكنني الحضور",
+    "adminTitle": "الفعاليات",
+    "createTitle": "إنشاء فعالية",
+    "fieldTitle": "العنوان",
+    "fieldDescription": "الوصف",
+    "fieldDate": "التاريخ",
+    "fieldTime": "الوقت",
+    "fieldLocation": "المكان الفعلي",
+    "fieldMeetLink": "رابط Meet / Zoom / Teams",
+    "recurringToggle": "فعالية متكررة؟",
+    "repeatEvery": "التكرار كل",
+    "daysSuffix": "أيام",
+    "createSessions": "إنشاء الجلسات القادمة",
+    "schoolsLabel": "المدارس المدعوة",
+    "selectAll": "تحديد الكل",
+    "onlyAlbania": "ألبانيا فقط",
+    "audienceLabel": "من سيحضر",
+    "audienceAll": "الجميع",
+    "audienceStudents": "الطلاب فقط",
+    "audienceCoordinators": "المنسقون فقط",
+    "submitButton": "إنشاء الفعالية وإرسال الإشعارات →",
+    "successToast": "تم إنشاء الفعالية · تم إشعار {count} مستخدم",
+    "recurrentBadge": "متكرر",
+    "viewAttendance": "عرض الحضور",
+    "delete": "حذف",
+    "confirmedCount": "{count} مؤكد",
+    "declinedCount": "{count} مرفوض",
+    "pendingCount": "{count} معلق",
+    "upcomingSection": "الفعاليات القادمة",
+    "noUpcoming": "لا توجد فعاليات قادمة"
+  },
   "landing": {
     "hero": {
       "eyebrow": "برنامج القيادة الشبابية · لا غواخيرا، كولومبيا",
@@ -2382,7 +2415,8 @@
       "evaluations": "التقييمات",
       "codes": "الرموز",
       "schools": "المدارس",
-      "suggestions": "الاقتراحات"
+      "suggestions": "الاقتراحات",
+      "events": "الفعاليات"
     },
     "badge": {
       "pending": "معلق",

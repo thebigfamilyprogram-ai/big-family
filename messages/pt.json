@@ -67,6 +67,39 @@
     "comoFunciona": "Como funciona",
     "paises": "Países"
   },
+  "events": {
+    "confirm": "Confirmar presença",
+    "decline": "Não posso ir",
+    "adminTitle": "Eventos",
+    "createTitle": "Criar evento",
+    "fieldTitle": "Título",
+    "fieldDescription": "Descrição",
+    "fieldDate": "Data",
+    "fieldTime": "Hora",
+    "fieldLocation": "Local físico",
+    "fieldMeetLink": "Link Meet / Zoom / Teams",
+    "recurringToggle": "Evento recorrente?",
+    "repeatEvery": "Repetir cada",
+    "daysSuffix": "dias",
+    "createSessions": "Criar próximas sessões",
+    "schoolsLabel": "Escolas convidadas",
+    "selectAll": "Selecionar todas",
+    "onlyAlbania": "Apenas Albania",
+    "audienceLabel": "Quem participa",
+    "audienceAll": "Todos",
+    "audienceStudents": "Apenas estudantes",
+    "audienceCoordinators": "Apenas coordenadores",
+    "submitButton": "Criar evento e notificar →",
+    "successToast": "Evento criado · {count} usuários notificados",
+    "recurrentBadge": "Recorrente",
+    "viewAttendance": "Ver presença",
+    "delete": "Excluir",
+    "confirmedCount": "{count} confirmados",
+    "declinedCount": "{count} recusados",
+    "pendingCount": "{count} pendentes",
+    "upcomingSection": "Próximos eventos",
+    "noUpcoming": "Nenhum evento futuro"
+  },
   "landing": {
     "hero": {
       "eyebrow": "Programa de Liderança Jovem · La Guajira, Colômbia",
@@ -2382,7 +2415,8 @@
       "evaluations": "Avaliações",
       "codes": "Códigos",
       "schools": "Escolas",
-      "suggestions": "Sugestões"
+      "suggestions": "Sugestões",
+      "events": "Eventos"
     },
     "badge": {
       "pending": "Pendente",

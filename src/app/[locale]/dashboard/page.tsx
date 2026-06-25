@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import NotificationDrawer from '@/components/NotificationDrawer'
+import EventCard, { type EventCardEvent, type RsvpStatus } from '@/components/EventCard'
 import { m, useReducedMotion } from 'framer-motion'
 import { fadeUp } from '@/lib/animations'
 import { useTranslations } from 'next-intl'
@@ -248,6 +249,52 @@ export default function DashboardPage() {
   const [streak,       setStreak]       = useState(0)
   const [rankPos,      setRankPos]      = useState<number | null>(null)
   const [leaderProfile, setLeaderProfile] = useState<LeaderProfile | null>(null)
+  const [nextEvent,     setNextEvent]     = useState<EventCardEvent | null>(null)
+  const [nextEventRsvp, setNextEventRsvp] = useState<RsvpStatus>(null)
+
+  // Next upcoming event relevant to this user — self-contained fetch (own
+  // school_id/role lookup), kept independent from the larger effect below.
+  useEffect(() => {
+    if (!userId) return
+    async function loadNextEvent() {
+      if (MOCK_MODE) {
+        const d = new Date(); d.setDate(d.getDate() + 3)
+        setNextEvent({
+          id: 'mock-event-1', title: 'Taller de Liderazgo Regional',
+          description: 'Encuentro de líderes de los 8 colegios.',
+          location: 'Colegio Albania — Sala de reuniones', meeting_link: null,
+          event_date: d.toISOString().slice(0, 10), event_time: '15:00',
+        })
+        setNextEventRsvp('pending')
+        return
+      }
+      if (!supabaseRef.current) supabaseRef.current = createClient()
+      const sb = supabaseRef.current
+      if (!sb) return
+
+      const { data: profile } = await sb.from('profiles').select('school_id, role').eq('id', userId).maybeSingle()
+      if (!profile?.school_id || !profile.role) return
+
+      const today = new Date().toISOString().slice(0, 10)
+      const { data: ev } = await sb
+        .from('calendar_events')
+        .select('id, title, description, location, meeting_link, event_date, event_time')
+        .gte('event_date', today)
+        .contains('audience_schools', [profile.school_id])
+        .contains('audience_roles', [profile.role])
+        .order('event_date')
+        .limit(1)
+        .maybeSingle()
+
+      if (!ev) return
+      setNextEvent(ev)
+
+      const { data: rsvp } = await sb
+        .from('event_rsvps').select('status').eq('event_id', ev.id).eq('user_id', userId).maybeSingle()
+      setNextEventRsvp((rsvp?.status as RsvpStatus) ?? 'pending')
+    }
+    loadNextEvent()
+  }, [userId])
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -903,6 +950,14 @@ export default function DashboardPage() {
                 </span>
               )}
             </m.div>
+          )}
+
+          {nextEvent && (
+            <EventCard
+              event={nextEvent}
+              userRsvp={nextEventRsvp}
+              onRsvp={(_, status) => setNextEventRsvp(status)}
+            />
           )}
 
           {/* ── KPI Bento ── */}

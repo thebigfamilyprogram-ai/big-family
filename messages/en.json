@@ -67,6 +67,39 @@
     "comoFunciona": "How it works",
     "paises": "Countries"
   },
+  "events": {
+    "confirm": "Confirm attendance",
+    "decline": "Can't make it",
+    "adminTitle": "Events",
+    "createTitle": "Create event",
+    "fieldTitle": "Title",
+    "fieldDescription": "Description",
+    "fieldDate": "Date",
+    "fieldTime": "Time",
+    "fieldLocation": "Physical location",
+    "fieldMeetLink": "Meet / Zoom / Teams link",
+    "recurringToggle": "Recurring event?",
+    "repeatEvery": "Repeat every",
+    "daysSuffix": "days",
+    "createSessions": "Create upcoming sessions",
+    "schoolsLabel": "Invited schools",
+    "selectAll": "Select all",
+    "onlyAlbania": "Only Albania",
+    "audienceLabel": "Who attends",
+    "audienceAll": "Everyone",
+    "audienceStudents": "Students only",
+    "audienceCoordinators": "Coordinators only",
+    "submitButton": "Create event and notify →",
+    "successToast": "Event created · {count} users notified",
+    "recurrentBadge": "Recurring",
+    "viewAttendance": "View attendance",
+    "delete": "Delete",
+    "confirmedCount": "{count} confirmed",
+    "declinedCount": "{count} declined",
+    "pendingCount": "{count} pending",
+    "upcomingSection": "Upcoming events",
+    "noUpcoming": "No upcoming events"
+  },
   "landing": {
     "hero": {
       "eyebrow": "Youth Leadership Program · La Guajira, Colombia",
@@ -2382,7 +2415,8 @@
       "evaluations": "Evaluations",
       "codes": "Codes",
       "schools": "Schools",
-      "suggestions": "Suggestions"
+      "suggestions": "Suggestions",
+      "events": "Events"
     },
     "badge": {
       "pending": "Pending",

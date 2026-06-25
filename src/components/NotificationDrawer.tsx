@@ -94,6 +94,10 @@ const TYPE_CFG: Record<string, { color: string; icon: React.ReactNode }> = {
     color: 'var(--accent-amber,#D4821A)',
     icon: <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.4"/><path d="M8 5v4M8 11v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
   },
+  event_created: {
+    color: 'var(--accent-amber,#D4821A)',
+    icon: <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.4"/><path d="M2 7h12M5.5 1v3M10.5 1v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  },
 }
 
 const fallbackCfg = {

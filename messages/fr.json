@@ -67,6 +67,39 @@
     "comoFunciona": "Comment ça marche",
     "paises": "Pays"
   },
+  "events": {
+    "confirm": "Confirmer ma présence",
+    "decline": "Je ne peux pas venir",
+    "adminTitle": "Événements",
+    "createTitle": "Créer un événement",
+    "fieldTitle": "Titre",
+    "fieldDescription": "Description",
+    "fieldDate": "Date",
+    "fieldTime": "Heure",
+    "fieldLocation": "Lieu physique",
+    "fieldMeetLink": "Lien Meet / Zoom / Teams",
+    "recurringToggle": "Événement récurrent ?",
+    "repeatEvery": "Répéter tous les",
+    "daysSuffix": "jours",
+    "createSessions": "Créer les prochaines sessions",
+    "schoolsLabel": "Écoles invitées",
+    "selectAll": "Tout sélectionner",
+    "onlyAlbania": "Albania uniquement",
+    "audienceLabel": "Qui participe",
+    "audienceAll": "Tous",
+    "audienceStudents": "Élèves uniquement",
+    "audienceCoordinators": "Coordinateurs uniquement",
+    "submitButton": "Créer et notifier →",
+    "successToast": "Événement créé · {count} utilisateurs notifiés",
+    "recurrentBadge": "Récurrent",
+    "viewAttendance": "Voir la participation",
+    "delete": "Supprimer",
+    "confirmedCount": "{count} confirmés",
+    "declinedCount": "{count} refusés",
+    "pendingCount": "{count} en attente",
+    "upcomingSection": "Événements à venir",
+    "noUpcoming": "Aucun événement à venir"
+  },
   "landing": {
     "hero": {
       "eyebrow": "Programme de Leadership Jeunesse · La Guajira, Colombie",
@@ -2382,7 +2415,8 @@
       "evaluations": "Évaluations",
       "codes": "Codes",
       "schools": "Établissements",
-      "suggestions": "Suggestions"
+      "suggestions": "Suggestions",
+      "events": "Événements"
     },
     "badge": {
       "pending": "En attente",
