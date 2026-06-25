@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { m, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 
-import TimelineSection from '@/components/TimelineSection'
+import LandingTimeline from '@/components/LandingTimeline'
 
 export default function HistoriaPage() {
   const t              = useTranslations()
@@ -71,7 +71,7 @@ export default function HistoriaPage() {
       </div>
     </section>
 
-    <TimelineSection />
+    <LandingTimeline />
     </>
   )
 }
