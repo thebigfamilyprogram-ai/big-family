@@ -7,6 +7,6 @@ const GlobeHero = dynamic(() => import('@/components/GlobeHero'), {
   loading: () => <div className="globe-skeleton" />,
 })
 
-export default function Home() {
-  return <GlobeHero />
+export default function LandingLayout({ children }: { children: React.ReactNode }) {
+  return <GlobeHero>{children}</GlobeHero>
 }

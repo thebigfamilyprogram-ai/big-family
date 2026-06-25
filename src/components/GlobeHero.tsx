@@ -5,17 +5,11 @@ import { Link } from 'next-view-transitions'
 import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
-import { m, AnimatePresence, useInView, useTransform, useReducedMotion, useScroll } from 'framer-motion'
+import { m, AnimatePresence, useInView, useReducedMotion, useScroll } from 'framer-motion'
 
-import AprendizajeSection from '@/components/AprendizajeSection'
-import AlumniSection from '@/components/AlumniSection'
-import FounderSection from '@/components/FounderSection'
-import SchoolTicker from '@/components/SchoolTicker'
-import WorldMapPublic from '@/components/WorldMapPublic'
-import { createClient } from '@/lib/supabase'
-import { MOCK_MODE } from '@/lib/mockData'
 import AnimatedNumber from '@/components/AnimatedNumber'
 import { useRealtimeStats } from '@/hooks/useRealtimeStats'
+import { IMPACTO_STATS } from '@/lib/landingData'
 
 const Globe3DHero = dynamic(() => import('@/components/Globe3DHero'), { ssr: false })
 
@@ -133,72 +127,14 @@ function ImpactoNum({ to, duration, delayMs = 0, comma = false, suffix = '' }: {
 
 // ── Static section data ───────────────────────────────────────────────────────
 
-const IMPACTO_STATS = [
-  { to: 876,  duration: 1800, delayMs: 0,   comma: false, suffix: '',  label: 'Estudiantes impactados', sub: 'desde 2015'                    },
-  { to: 22,   duration: 1200, delayMs: 200, comma: false, suffix: '',  label: 'Colegios en Colombia',   sub: 'aliados del programa'           },
-  { to: 10,   duration: 1000, delayMs: 400, comma: false, suffix: '',  label: 'Países conectados',      sub: 'red internacional'              },
-  { to: 3300, duration: 2400, delayMs: 100, comma: true,  suffix: '+', label: 'Meta 2030',              sub: '20% líderes transformacionales' },
-] as const
-
-const VALORES = [
-  { name: 'Ética',             slug: 'etica',            desc: 'Actuamos con integridad en cada decisión.'          },
-  { name: 'Compromiso',        slug: 'compromiso',        desc: 'Nos entregamos completamente a nuestro propósito.'  },
-  { name: 'Trascendencia',     slug: 'trascendencia',     desc: 'Dejamos una huella positiva que perdura.'           },
-  { name: 'Conciencia Social', slug: 'conciencia-social', desc: 'Entendemos nuestro impacto en la comunidad.'        },
-  { name: 'Innovación',        slug: 'innovacion',        desc: 'Buscamos nuevas formas de resolver problemas.'      },
-  { name: 'Creatividad',       slug: 'creatividad',       desc: 'Encontramos soluciones originales y únicas.'        },
-] as const
-
-const VALIDACIONES = [
-  {
-    logo: '/cognia.png',
-    alt:  'Cognia',
-    name: 'Cognia (formerly AdvancED)',
-    desc: 'Reconoció el programa durante su visita institucional como innovador y socialmente relevante.',
-    tag:  'Acreditación Institucional',
-  },
-  {
-    logo: '/ibimage-transparent_orig.png',
-    alt:  'International Baccalaureate',
-    name: 'International Baccalaureate',
-    desc: 'El programa fue presentado en la IB Americas Conference en Orlando como iniciativa destacada de liderazgo escolar.',
-    tag:  'IB Americas Conference',
-  },
-  {
-    logo: '/tri.png',
-    alt:  'Tri-Association',
-    name: 'Tri-Association',
-    desc: 'Destacó la importancia del programa en 2024 y lo seleccionó para participar en el evento TRIHEROES en mayo 2025.',
-    tag:  'TRIHEROES 2025',
-  },
-] as const
-
-const misionStats = [
-  { to: 5000, suffix: '+', label: 'Líderes a formar'      },
-  { to: 50,   suffix: '+', label: 'Países para 2036'      },
-  { to: 90,   suffix: '',  label: 'Instituciones aliadas' },
-  { to: 2036, suffix: '',  label: 'Meta global'           },
-]
-
-
-/* EDITAR AQUÍ — fundadores */
-const FOUNDERS_STATIC = [
-  { initials: 'SG', name: 'Samuel Gomez',       roleKey: 'landing.equipo.founder1Role' as const, bioKey: 'landing.equipo.founder1Bio' as const, tagKeys: ['landing.equipo.tagTecnologia', 'landing.equipo.tagPlataforma', 'landing.equipo.tagDesarrollo'] as const },
-  { initials: 'JV', name: 'Juan Felipe Visbal', roleKey: 'landing.equipo.founder2Role' as const, bioKey: 'landing.equipo.founder2Bio' as const, tagKeys: ['landing.equipo.tagContenido',   'landing.equipo.tagComunicacion', 'landing.equipo.tagLiderazgo']  as const },
-  { initials: 'AG', name: 'Alejandro Garcia',   roleKey: 'landing.equipo.founder3Role' as const, bioKey: 'landing.equipo.founder3Bio' as const, tagKeys: ['landing.equipo.tagOperaciones', 'landing.equipo.tagEstrategia',  'landing.equipo.tagEstructura']  as const },
-]
-
-
-type TabId = 'programa' | 'historia' | 'metodologia' | 'red' | 'equipo' | 'noticias'
-
-// `tab` switches the tab system; links without it (Impacto) scroll directly to
-// their anchor instead — that section stays always-rendered outside the tabs.
-const NAV_LINKS: { href: string; label: string; tab?: TabId }[] = [
-  { href: '#historia',    label: 'Historia',    tab: 'historia' },
-  { href: '#impacto',     label: 'Impacto'                      },
-  { href: '#nuestra-red', label: 'Nuestra Red', tab: 'red'      },
-  { href: '#equipo',      label: 'Equipo',      tab: 'equipo'   },
-  { href: '/news',        label: 'Noticias',    tab: 'noticias' },
+// Hrefs are real routes now — Impacto is the only exception (scrolls to an
+// anchor in this shell instead of navigating, see handleNavLinkClick below).
+const NAV_LINKS = [
+  { href: '/historia', label: 'Historia'    },
+  { href: '/#impacto', label: 'Impacto'     },
+  { href: '/red',      label: 'Nuestra Red' },
+  { href: '/equipo',   label: 'Equipo'      },
+  { href: '/news',     label: 'Noticias'    },
 ]
 
 const LOCALES = [
@@ -289,17 +225,6 @@ const LanguageSelector = memo(function LanguageSelector() {
   )
 })
 
-// ── Visión section ───────────────────────────────────────────────────────────
-type VisionWord = { word: string; italic: boolean }
-const visionWordV = {
-  hidden:  { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 120, damping: 20 } },
-}
-const visionStaggerV = {
-  hidden:  {},
-  visible: { transition: { staggerChildren: 0.04 } },
-}
-
 const FAQ_ITEMS = [
   { q: '¿El programa es gratuito?', a: 'Sí, Big Family es completamente gratuito para los estudiantes. El programa es financiado por alianzas institucionales y el compromiso de sus fundadores con la educación equitativa en La Guajira.' },
   { q: '¿Solo puedo participar si soy de La Guajira, Colombia?', a: 'Actualmente el programa opera en 8 colegios de La Guajira. Si tu institución está interesada en sumarse a la red, puedes contactarnos a través del formulario de coordinadores en /register.' },
@@ -308,127 +233,22 @@ const FAQ_ITEMS = [
   { q: '¿Cómo se registra un coordinador de colegio?', a: 'Los coordinadores reciben un código de acceso institucional de parte del equipo de Big Family. Con ese código pueden registrarse en /register y acceder al panel de gestión de su colegio.' },
 ]
 
-const FAQSection = memo(function FAQSection({ reduced }: { reduced: boolean }) {
-  const t = useTranslations()
-  const [open, setOpen] = useState<number | null>(null)
-  const faqItems = [
-    { q: t('landing.faq.q1'), a: t('landing.faq.a1') },
-    { q: t('landing.faq.q2'), a: t('landing.faq.a2') },
-    { q: t('landing.faq.q3'), a: t('landing.faq.a3') },
-    { q: t('landing.faq.q4'), a: t('landing.faq.a4') },
-    { q: t('landing.faq.q5'), a: t('landing.faq.a5') },
-  ]
-  return (
-    <section className="sec-faq">
-      <div className="sec-faq__inner">
-        <m.div
-          className="sec-faq__header"
-          initial={reduced ? false : { opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-        >
-          <p className="sec-faq__eyebrow">{t('landing.faq.eyebrow')}</p>
-          <h2 className="sec-faq__title">{t('landing.faq.title')}</h2>
-        </m.div>
-        <div>
-          {faqItems.map((faq, i) => (
-            <m.div
-              key={i}
-              className="sec-faq__item"
-              initial={reduced ? false : { opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-20px' }}
-              transition={{ type: 'spring', stiffness: 140, damping: 20, delay: i * 0.06 }}
-            >
-              <button
-                className="sec-faq__q"
-                onClick={() => setOpen(open === i ? null : i)}
-                aria-expanded={open === i}
-              >
-                {faq.q}
-                <svg
-                  className={`sec-faq__chevron${open === i ? ' sec-faq__chevron--open' : ''}`}
-                  width="18" height="18" viewBox="0 0 18 18" fill="none"
-                  aria-hidden="true"
-                >
-                  <path d="M4 6.5L9 11.5L14 6.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-              <AnimatePresence initial={false}>
-                {open === i && (
-                  <m.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 32 }}
-                    style={{ overflow: 'hidden' }}
-                  >
-                    <p className="sec-faq__a">{faq.a}</p>
-                  </m.div>
-                )}
-              </AnimatePresence>
-            </m.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-})
-
 const TESTIMONIOS = [
   { quote: 'Big Family cambió mi manera de ver el mundo. Aprendí a liderar con propósito y a trabajar por mi comunidad con impacto real.', name: 'María González', role: 'Estudiante · Cohorte 2026', school: 'IE Técnica María Inmaculada', init: 'MG' },
   { quote: 'La certificación The Big Leader me abrió puertas que nunca imaginé. Pude presentar mi proyecto ante líderes internacionales.', name: 'Carlos Pérez', role: 'Estudiante · Cohorte 2026', school: 'IE Comfamiliar', init: 'CP' },
   { quote: 'Lo más valioso no fue el certificado, sino la familia que construí. Hoy somos una red de líderes que se apoyan mutuamente.', name: 'Valeria Rodríguez', role: 'Estudiante · Cohorte 2026', school: 'IE Paulo VI', init: 'VR' },
 ]
 
-const PROGRAM_COMPONENTS = [
-  {
-    num: '01',
-    tag: 'Coaching Individual',
-    name: 'The Big Leader',
-    desc: 'Entrenamiento personalizado enfocado en habilidades intrapersonales e interpersonales. Incluye sesiones de coaching y planes de acción anuales. Forman Mini y Junior CEOs.',
-  },
-  {
-    num: '02',
-    tag: 'Metodología Lúdica',
-    name: "The Leader's Game",
-    desc: 'Juego de retos por estaciones donde los equipos acumulan puntos. Identifica fortalezas y áreas de crecimiento de cada participante, especialmente para estudiantes neurodiversos.',
-  },
-  {
-    num: '03',
-    tag: 'Emprendimiento Global',
-    name: 'The Great Venture',
-    desc: 'Aplicación con algoritmo que ayuda a los estudiantes a definir su dirección como emprendedores globales. Usa la matriz Hoshin Kanri para garantizar el éxito.',
-  },
-  {
-    num: '04',
-    tag: 'Red Social Educativa',
-    name: 'Kashi',
-    desc: 'Red social educativa. Kashi es palabra wayuu que significa "luna". Los estudiantes comparten sus fortalezas con pares de otras instituciones a nivel mundial.',
-  },
-] as const
-
-export default function GlobeHero() {
+export default function GlobeHero({ children }: { children: React.ReactNode }) {
   const t = useTranslations()
 
   // Nav label lookup — avoids calling t() inside module-level const
   const navLabels: Record<string, string> = {
-    '#historia':    t('nav.historia'),
-    '#impacto':     t('nav.impacto'),
-    '#nuestra-red': t('nav.nuestraRed'),
-    '#equipo':      t('nav.equipo'),
-    '/news':        t('nav.noticias'),
-  }
-
-  // Slug → translation key for VALORES (slug uses kebab-case, keys use camelCase)
-  const valorKeyMap: Record<string, string> = {
-    'etica':             'etica',
-    'compromiso':        'compromiso',
-    'trascendencia':     'trascendencia',
-    'conciencia-social': 'concienciaSocial',
-    'innovacion':        'innovacion',
-    'creatividad':       'creatividad',
+    '/historia': t('nav.historia'),
+    '/#impacto': t('nav.impacto'),
+    '/red':      t('nav.nuestraRed'),
+    '/equipo':   t('nav.equipo'),
+    '/news':     t('nav.noticias'),
   }
 
   // Impacto stats labels — module-level array has animation data, text comes from i18n
@@ -446,60 +266,15 @@ export default function GlobeHero() {
     t('landing.impacto.stat4Sub'),
   ]
 
-  const visionWords: VisionWord[] = t('landing.vision.animatedWords')
-    .split(' ')
-    .map(w => ({ word: w.replace(/\*/g, ''), italic: w.startsWith('*') && w.endsWith('*') }))
-
-  const founders = FOUNDERS_STATIC.map(f => ({
-    initials: f.initials,
-    name:     f.name,
-    role:     t(f.roleKey),
-    bio:      t(f.bioKey),
-    tags:     f.tagKeys.map(k => t(k)),
-  }))
-
-  const misionStatLabels = [
-    t('landing.mision.stat1Label'),
-    t('landing.mision.stat2Label'),
-    t('landing.mision.stat3Label'),
-    t('landing.mision.stat4Label'),
-  ]
-
-  // Program components text — names stay untranslated (program names)
-  const programTexts = [
-    { tag: t('landing.metodologia.bigLeader.subtitle'),    desc: t('landing.metodologia.bigLeader.body')    },
-    { tag: t('landing.metodologia.leadersGame.subtitle'),  desc: t('landing.metodologia.leadersGame.body')  },
-    { tag: t('landing.metodologia.greatVenture.subtitle'), desc: t('landing.metodologia.greatVenture.body') },
-    { tag: t('landing.metodologia.kashi.subtitle'),        desc: t('landing.metodologia.kashi.body')        },
-  ]
-
-  // Validaciones descriptions — 3 items matching cognia, ib, triAssociation order
-  const validacionesDescs = [
-    t('landing.acreditaciones.cognia.description'),
-    t('landing.acreditaciones.ib.description'),
-    t('landing.acreditaciones.triAssociation.description'),
-  ]
-
-  // Validaciones tags — first is a translatable Spanish phrase, others are proper nouns/event names
-  const validacionesTags = [
-    t('landing.acreditaciones.institutionalTag'),
-    VALIDACIONES[1].tag,
-    VALIDACIONES[2].tag,
-  ]
-
   const prefersReduced      = useReducedMotion()
-  const locale              = useLocale()
+  const pathname            = usePathname()
+  const cleanPath           = pathname.replace(/^\/(es|en|fr|pt|ar)/, '') || '/'
   const [scrollHintVisible, setScrollHintVisible] = useState(true)
   const [navScrolled,       setNavScrolled]       = useState(false)
   const [navMounted,        setNavMounted]        = useState(false)
   const [activeSection,     setActiveSection]     = useState('')
   const [mobileNavOpen,     setMobileNavOpen]     = useState(false)
   const [showDiplomaModal,  setShowDiplomaModal]  = useState(false)
-  const [activeTab,         setActiveTab]         = useState<TabId>('programa')
-  const [latestNews,        setLatestNews]        = useState<{
-    id: string; title: string; excerpt: string; cover_url: string | null
-    published_at: string; slug: string
-  }[]>([])
 
   // Close diploma modal on ESC
   useEffect(() => {
@@ -509,68 +284,16 @@ export default function GlobeHero() {
     return () => window.removeEventListener('keydown', onKey)
   }, [showDiplomaModal])
 
-  const { stats: liveStats, loading: statsLoading } = useRealtimeStats()
-
-  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
-  const [featuredStories, setFeaturedStories] = useState<{ id: string; title: string; story: string; cover_url: string | null; student_name: string | null; school_name: string | null }[]>([])
-
+  // metodologia/page.tsx dispatches this to open the modal that lives in this shell
   useEffect(() => {
-    if (!supabaseRef.current) supabaseRef.current = createClient()
-    const sb = supabaseRef.current
-    if (!sb) return
-    async function loadStories() {
-      const { data: rows } = await sb!.from('success_stories').select('id, title, story, cover_url, published_at, student_id, school_id').eq('published', true).order('published_at', { ascending: false }).limit(3)
-      if (!rows || rows.length === 0) return
-      const userIds   = rows.map((r: { student_id: string }) => r.student_id)
-      const schoolIds = rows.map((r: { school_id: string | null }) => r.school_id).filter(Boolean) as string[]
-      const [{ data: profiles }, { data: schools }] = await Promise.all([
-        sb!.from('profiles').select('id, display_name').in('id', userIds),
-        schoolIds.length ? sb!.from('schools').select('id, name').in('id', schoolIds) : Promise.resolve({ data: [] }),
-      ])
-      const pMap: Record<string, string> = {}
-      profiles?.forEach((p: { id: string; display_name: string | null }) => { pMap[p.id] = p.display_name ?? '' })
-      const sMap: Record<string, string> = {}
-      schools?.forEach((s: { id: string; name: string }) => { sMap[s.id] = s.name })
-      setFeaturedStories(rows.map((r: { id: string; title: string; story: string; cover_url: string | null; student_id: string; school_id: string | null }) => ({ id: r.id, title: r.title, story: r.story, cover_url: r.cover_url, student_name: pMap[r.student_id] ?? null, school_name: r.school_id ? (sMap[r.school_id] ?? null) : null })))
-    }
-    loadStories()
+    const handler = () => setShowDiplomaModal(true)
+    window.addEventListener('open-diploma-modal', handler)
+    return () => window.removeEventListener('open-diploma-modal', handler)
   }, [])
 
-  // Latest news — MOCK_MODE guard first, per project convention
-  useEffect(() => {
-    if (MOCK_MODE) {
-      setLatestNews([
-        { id: '1', slug: 'ib-americas-2026', title: 'Big Family en el IB Americas Conference 2026',
-          excerpt: 'Presentado ante más de 400 instituciones educativas internacionales.',
-          cover_url: null, published_at: '2026-05-15T00:00:00Z' },
-        { id: '2', slug: 'dia-liderazgo-2026', title: 'Día de Liderazgo: estudiantes como maestros',
-          excerpt: 'Los líderes tomaron el rol de docentes durante una jornada completa.',
-          cover_url: null, published_at: '2026-04-20T00:00:00Z' },
-        { id: '3', slug: 'triheroes-2025', title: 'Seleccionados para TRIHEROES 2025',
-          excerpt: 'La Tri-Association reconoció Big Family como iniciativa destacada.',
-          cover_url: null, published_at: '2026-03-10T00:00:00Z' },
-      ])
-      return
-    }
-    if (!supabaseRef.current) supabaseRef.current = createClient()
-    const sb = supabaseRef.current
-    if (!sb) return
-    sb.from('news')
-      .select('id, title, content, cover_url, published_at, slug')
-      .eq('published', true)
-      .order('published_at', { ascending: false })
-      .limit(3)
-      .then(({ data }: { data: { id: string; title: string; content: string; cover_url: string | null; published_at: string; slug: string }[] | null }) => {
-        if (!data) return
-        setLatestNews(data.map(r => ({
-          id: r.id, title: r.title, cover_url: r.cover_url, published_at: r.published_at, slug: r.slug,
-          excerpt: r.content.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, 140),
-        })))
-      })
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  const { stats: liveStats, loading: statsLoading } = useRealtimeStats()
 
   const { scrollY } = useScroll()
-  const historiaTextY = useTransform(scrollY, [600, 2000], [-20, 20])
 
   useEffect(() => {
     const onScrollHint = () => setScrollHintVisible(window.scrollY < 100)
@@ -578,11 +301,11 @@ export default function GlobeHero() {
     return () => window.removeEventListener('scroll', onScrollHint)
   }, [])
 
-  const navigateToTab = (tabId: TabId) => setActiveTab(tabId)
-
-  function handleNavLink(link: { href: string; tab?: TabId }) {
-    if (link.tab) { navigateToTab(link.tab); setMobileNavOpen(false); return }
-    document.getElementById(link.href.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  function handleNavLinkClick(e: React.MouseEvent, href: string) {
+    if (href === '/#impacto') {
+      const el = document.getElementById('impacto')
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth', block: 'start' }) }
+    }
     setMobileNavOpen(false)
   }
 
@@ -593,8 +316,8 @@ export default function GlobeHero() {
     return unsub
   }, [scrollY])
 
-  // Only 'impacto' is always in the DOM — historia/nuestra-red/equipo now live
-  // inside tab panes and are highlighted via activeTab instead (see link.tab in NAV_LINKS).
+  // Only 'impacto' is always in the DOM — historia/red/equipo are now real
+  // routes, highlighted via cleanPath instead (see NAV_LINKS rendering below).
   useEffect(() => {
     const el = document.getElementById('impacto')
     if (!el) return
@@ -971,7 +694,6 @@ export default function GlobeHero() {
         .bf-footer__links{display:flex;flex-direction:column;gap:12px;}
         .bf-footer__link{font-family:"Satoshi",sans-serif;font-size:13.5px;color:rgba(255,255,255,.5);text-decoration:none;transition:color .15s;}
         .bf-footer__link:hover{color:#fff;}
-        .bf-footer__link--btn{background:none;border:none;padding:0;font:inherit;cursor:pointer;text-align:left;}
         .bf-footer__bottom{max-width:1200px;margin:0 auto;border-top:1px solid rgba(255,255,255,.05);padding-top:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
         .bf-footer__copy{font-family:"Satoshi",sans-serif;font-size:12px;color:rgba(255,255,255,.2);}
         .bf-footer__legal{display:flex;gap:20px;}
@@ -1000,13 +722,17 @@ export default function GlobeHero() {
               </Link>
               <div className="pill-nav__links">
                 {NAV_LINKS.map(link => (
-                  <button
+                  <Link
                     key={link.href}
-                    className={`pill-nav__link${(link.tab ? activeTab === link.tab : link.href === `#${activeSection}`) ? ' pill-nav__link--active' : ''}`}
-                    onClick={() => handleNavLink(link)}
+                    href={link.href}
+                    className={`pill-nav__link${
+                      (link.href === '/#impacto' ? activeSection === 'impacto' : cleanPath === link.href)
+                        ? ' pill-nav__link--active' : ''
+                    }`}
+                    onClick={e => handleNavLinkClick(e, link.href)}
                   >
                     {navLabels[link.href] ?? link.label}
-                  </button>
+                  </Link>
                 ))}
               </div>
               <LanguageSelector />
@@ -1063,13 +789,17 @@ export default function GlobeHero() {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             >
               {NAV_LINKS.map(link => (
-                <button
+                <Link
                   key={link.href}
-                  className={`pill-nav-drawer__link${(link.tab ? activeTab === link.tab : link.href === `#${activeSection}`) ? ' pill-nav-drawer__link--active' : ''}`}
-                  onClick={() => handleNavLink(link)}
+                  href={link.href}
+                  className={`pill-nav-drawer__link${
+                    (link.href === '/#impacto' ? activeSection === 'impacto' : cleanPath === link.href)
+                      ? ' pill-nav-drawer__link--active' : ''
+                  }`}
+                  onClick={e => handleNavLinkClick(e, link.href)}
                 >
                   {navLabels[link.href] ?? link.label}
-                </button>
+                </Link>
               ))}
               <Link href="/login" className="pill-nav-drawer__cta">{t('nav.ingresar')} →</Link>
             </m.div>
@@ -1241,750 +971,9 @@ export default function GlobeHero() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════
-          TAB CONTENT — controlled by the navbar pill (NAV_LINKS)
+          TAB CONTENT — provided by the active (landing) route's page.tsx
       ══════════════════════════════════════════════════════════════════ */}
-      <AnimatePresence mode="wait">
-        <m.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-        >
-
-        {activeTab === 'programa' && (<>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN 1 — MISIÓN
-      ══════════════════════════════════════════════════════════════════ */}
-      <section id="como-funciona" className="mision">
-        <div className="mision__inner">
-
-          {/* Eyebrow pill */}
-          <m.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ type: 'spring', stiffness: 120, damping: 18 }}
-          >
-            <span className="mision__eyebrow-pill">{t('landing.mision.eyebrow')}</span>
-          </m.div>
-
-          {/* Título en 3 líneas — stagger con blur */}
-          <m.h2
-            className="mision__title"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-80px' }}
-            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.15 } } }}
-          >
-            {[
-              { text: t('landing.mision.titleLine1'), accent: false },
-              { text: t('landing.mision.titleLine2'), accent: true  },
-            ].map((line, i) => (
-              <m.span
-                key={i}
-                className={`mision__title-line${line.accent ? ' mision__title-line--accent' : ''}`}
-                variants={{
-                  hidden:   { opacity: 0, y: 50, filter: 'blur(8px)' },
-                  visible:  { opacity: 1, y: 0,  filter: 'blur(0px)', transition: { type: 'spring', stiffness: 100, damping: 20 } },
-                }}
-              >{line.text}</m.span>
-            ))}
-          </m.h2>
-
-          {/* Subtítulo */}
-          <m.p
-            className="mision__sub"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.5 }}
-          >
-            {t('landing.mision.body')}
-          </m.p>
-
-        </div>
-
-        {/* Stats — 4 columnas */}
-        <m.div
-          className="mision__stats"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-80px' }}
-          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
-        >
-          {misionStats.map((s, i) => (
-            <m.div
-              key={i}
-              className="mision__stat"
-              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 140, damping: 20 } } }}
-            >
-              <div className="mision__stat-num">
-                <CountNumber to={s.to} />{s.suffix && <em>{s.suffix}</em>}
-              </div>
-              <div className="mision__stat-label">{misionStatLabels[i]}</div>
-            </m.div>
-          ))}
-        </m.div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN 2 — VISIÓN
-      ══════════════════════════════════════════════════════════════════ */}
-      <section className="vision">
-
-        {/* "2036" watermark — fades in very last */}
-        <m.div
-          className="vision__watermark"
-          aria-hidden="true"
-          initial={prefersReduced ? false : { opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 3, ease: 'easeOut', delay: 1 }}
-        >
-          {t('landing.vision.meta')}
-        </m.div>
-
-        <div className="vision__inner">
-
-          {/* Row 1 — Eyebrow + animated red line */}
-          <div className="vision__row1">
-            <m.p
-              className="vision__eyebrow"
-              initial={prefersReduced ? false : { opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
-            >
-              {t('landing.vision.eyebrow')} {t('landing.vision.meta')}
-            </m.p>
-            <m.div
-              className="vision__eyebrow-line"
-              initial={prefersReduced ? false : { scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
-              viewport={{ once: true, margin: '-100px' }}
-              transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.15 }}
-            />
-          </div>
-
-          {/* Row 2 — Title with word-level stagger */}
-          <h2 className="vision__title">
-            <m.span
-              style={{ display: 'block' }}
-              initial={prefersReduced ? false : 'hidden'}
-              whileInView="visible"
-              viewport={{ once: true, margin: '-100px' }}
-              variants={visionStaggerV}
-            >
-              {visionWords.map((word, i) => (
-                <m.span
-                  key={i}
-                  variants={visionWordV}
-                  style={{ display: 'inline-block', marginRight: '0.28em' }}
-                >
-                  {word.italic ? <em>{word.word}</em> : word.word}
-                </m.span>
-              ))}
-            </m.span>
-          </h2>
-
-          {/* Row 3 — Two text columns, appear after title stagger completes */}
-          <m.div
-            className="vision__cols"
-            initial={prefersReduced ? false : { opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ type: 'spring', stiffness: 120, damping: 20, delay: 0.6 }}
-          >
-            <p className="vision__para">{t('landing.vision.para1')}</p>
-            <p className="vision__para">{t('landing.vision.para2')}</p>
-          </m.div>
-
-          {/* Row 4 — CTA */}
-          <m.div
-            style={{ display: 'flex', justifyContent: 'center' }}
-            initial={prefersReduced ? false : { opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ type: 'spring', stiffness: 120, damping: 20, delay: 0.9 }}
-          >
-            <m.div
-              style={{ display: 'inline-block' }}
-              whileHover={prefersReduced ? {} : { scale: 1.02, transition: { type: 'spring', stiffness: 300, damping: 25 } }}
-            >
-              <Link
-                href="/register"
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8,
-                  padding: '14px 32px',
-                  background: 'var(--accent,#C0392B)', color: '#fff',
-                  borderRadius: 999,
-                  fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15,
-                  textDecoration: 'none',
-                }}
-              >
-                {t('landing.vision.cta')} <span aria-hidden="true">→</span>
-              </Link>
-            </m.div>
-          </m.div>
-
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN — VALIDACIONES INTERNACIONALES (oscuro)
-      ══════════════════════════════════════════════════════════════════ */}
-      <section className="sec-valid">
-        <div className="sec-valid__inner">
-
-          {/* Header */}
-          <m.div
-            className="sec-valid__head"
-            initial={prefersReduced ? false : { opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-          >
-            <p className="sec-valid__eyebrow">{t('landing.acreditaciones.eyebrow')}</p>
-            <h2 className="sec-valid__title">{t('landing.acreditaciones.title')}</h2>
-            <p className="sec-valid__sub">{t('landing.acreditaciones.sub')}</p>
-          </m.div>
-
-          {/* Cards */}
-          <div className="sec-valid__grid">
-            {VALIDACIONES.map((v, i) => (
-              <m.div
-                key={v.name}
-                className="sec-valid__card"
-                initial={prefersReduced ? false : { opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ type: 'spring', stiffness: 120, damping: 20, delay: i * 0.15 }}
-              >
-                <div style={{ width:'100%', display:'flex', justifyContent:'center', marginBottom:16 }}>
-                  <div style={{
-                    display:'inline-flex', alignItems:'center', background:'#fff', borderRadius:12,
-                    padding: v.alt === 'Cognia' ? '16px 20px' : '10px 16px',
-                  }}>
-                    <img
-                      src={v.logo}
-                      alt={v.alt}
-                      className="sec-valid__logo"
-                      style={{ height: v.alt === 'Cognia' ? 64 : 56 }}
-                    />
-                  </div>
-                </div>
-                <span className="sec-valid__tag">{validacionesTags[i]}</span>
-                <p className="sec-valid__name">{v.name}</p>
-                <p className="sec-valid__desc">{validacionesDescs[i]}</p>
-              </m.div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN — FAQ
-      ══════════════════════════════════════════════════════════════════ */}
-      <FAQSection reduced={!!prefersReduced} />
-
-      </>)}
-
-      {activeTab === 'historia' && (<>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN — HISTORIA (Origen — luz)
-      ══════════════════════════════════════════════════════════════════ */}
-      <section id="historia" className="sec-historia">
-        <div className="sec-historia__inner">
-          {/* Columna izquierda — imagen */}
-          <m.div
-            className="sec-historia__img-wrap"
-            initial={prefersReduced ? false : { opacity: 0, x: -32 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ type: 'spring', stiffness: 120, damping: 22 }}
-          >
-            <div className="sec-historia__watermark-yr" aria-hidden="true">{t('landing.historia.watermark')}</div>
-            <div className="sec-historia__img">
-              <div style={{ height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:14, opacity:.3 }}>
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-                  <rect x="4" y="8" width="32" height="24" rx="3" stroke="var(--ink)" strokeWidth="1.5"/>
-                  <circle cx="14" cy="18" r="4" stroke="var(--ink)" strokeWidth="1.5"/>
-                  <path d="M4 28L13 20l6 5 5-4 12 7" stroke="var(--ink)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <span style={{ fontFamily:'"Satoshi",sans-serif', fontSize:10, letterSpacing:'.14em', textTransform:'uppercase', color:'var(--mute)' }}>{t('common.photoComingSoon')}</span>
-              </div>
-            </div>
-            <div className="sec-historia__badge">
-              <div className="sec-historia__badge-est">{t('landing.historia.since')}</div>
-              <div className="sec-historia__badge-label">{t('landing.historia.stat1Value')}</div>
-            </div>
-          </m.div>
-
-          {/* Columna derecha — texto con parallax */}
-          <m.div
-            className="sec-historia__text"
-            style={navMounted && !prefersReduced ? { y: historiaTextY } : {}}
-            initial={prefersReduced ? false : { opacity: 0, x: 32 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ type: 'spring', stiffness: 120, damping: 22, delay: 0.1 }}
-          >
-            <p className="sec-historia__eyebrow">{t('landing.historia.eyebrow')}</p>
-            <h2 className="sec-historia__title">{t('landing.historia.secTitle')}</h2>
-            <p className="sec-historia__subtitle">{t('landing.historia.secSubtitle')}</p>
-            <p className="sec-historia__para">{t('landing.historia.secBody')}</p>
-            <div className="sec-historia__recono">
-              <span className="sec-historia__recono-label">{t('landing.historia.reconoLabel')}</span>
-              <div className="sec-historia__pills">
-                <span className="sec-historia__pill">MIT Leadership</span>
-                <span className="sec-historia__pill">Universidad Javeriana</span>
-                <span className="sec-historia__pill">Uninorte</span>
-              </div>
-            </div>
-          </m.div>
-        </div>
-      </section>
-
-      </>)}
-
-      {activeTab === 'metodologia' && (<>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN — COMPONENTES DEL PROGRAMA (bg-2)
-      ══════════════════════════════════════════════════════════════════ */}
-      <section id="metodologia" className="sec-prog">
-        <div className="sec-prog__inner">
-
-          {/* Header */}
-          <m.div
-            className="sec-prog__head"
-            initial={prefersReduced ? false : { opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-          >
-            <p className="sec-prog__eyebrow">{t('landing.metodologia.eyebrow')}</p>
-            <h2 className="sec-prog__title">{t('landing.metodologia.programTitle')}</h2>
-          </m.div>
-
-          {/* Rows */}
-          <div className="sec-prog__list">
-            {PROGRAM_COMPONENTS.map((c, i) => (
-              <m.div
-                key={c.num}
-                className="sec-prog__item"
-                initial={prefersReduced ? false : { opacity: 0, y: 28 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ type: 'spring', stiffness: 100, damping: 22, delay: i * 0.07 }}
-              >
-                {/* Número ancla */}
-                <div className="sec-prog__num" aria-hidden="true">{c.num}</div>
-
-                {/* Contenido */}
-                <div className="sec-prog__body">
-                  <span className="sec-prog__tag">{programTexts[i].tag}</span>
-                  <h3 className="sec-prog__name">{c.name}</h3>
-                  <p className="sec-prog__desc">{programTexts[i].desc}</p>
-                  {c.name === 'Kashi' && (
-                    <a
-                      href="https://luishernandobarrios.com/kashi/splash"
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        padding: '9px 20px',
-                        borderRadius: 999,
-                        border: '1.5px solid #C0392B',
-                        fontFamily: '"Satoshi",sans-serif',
-                        fontWeight: 700,
-                        fontSize: 13,
-                        color: '#C0392B',
-                        textDecoration: 'none',
-                        width: 'fit-content',
-                        transition: 'background .2s, color .2s',
-                      }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = '#C0392B'; (e.currentTarget as HTMLAnchorElement).style.color = '#fff' }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'transparent'; (e.currentTarget as HTMLAnchorElement).style.color = '#C0392B' }}
-                    >
-                      {t('landing.metodologia.kashi.exploreBtn')}
-                    </a>
-                  )}
-                </div>
-
-                {/* Placeholder de imagen */}
-                <div className="sec-prog__img" aria-hidden="true">
-                  <div className="sec-prog__img-ph">
-                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                      <rect x="3" y="5" width="26" height="22" rx="3" stroke="currentColor" strokeWidth="1.6"/>
-                      <circle cx="11" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.6"/>
-                      <path d="M3 22l7-6 6 5 5-4 8 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    <span className="sec-prog__img-ph-label">{t('common.photoComingSoon')}</span>
-                  </div>
-                </div>
-              </m.div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN — APRENDIZAJE PERSONALIZADO
-      ══════════════════════════════════════════════════════════════════ */}
-      <AprendizajeSection />
-
-      {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN — CERTIFICACIÓN MARKETING (light)
-      ══════════════════════════════════════════════════════════════════ */}
-      <section className="sec-cert">
-        <div className="sec-cert__inner">
-
-          {/* Izquierda — Copy */}
-          <m.div
-            initial={prefersReduced ? false : { opacity: 0, x: -32 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ type: 'spring', stiffness: 100, damping: 22 }}
-          >
-            <span className="sec-cert__eyebrow">{t('landing.cert.eyebrow')}</span>
-            <h2 className="sec-cert__title">{t('landing.cert.title')}</h2>
-            <p className="sec-cert__para">{t('landing.cert.para')}</p>
-            <button className="sec-cert__cta" onClick={() => setShowDiplomaModal(true)}>
-              {t('landing.cert.cta')} <span aria-hidden="true">→</span>
-            </button>
-            <div className="sec-cert__bullets">
-              {([t('landing.cert.bullet1'), t('landing.cert.bullet2'), t('landing.cert.bullet3')]).map(text => (
-                <div key={text} className="sec-cert__bullet">
-                  <div className="sec-cert__check">
-                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden="true">
-                      <path d="M1 4L3.5 6.5L9 1" stroke="#C0392B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                  {text}
-                </div>
-              ))}
-            </div>
-          </m.div>
-
-          {/* Derecha — Mockup del diploma (estático, rotate 2deg) */}
-          <m.div
-            className="sec-cert__mockup-wrap"
-            initial={prefersReduced ? false : { opacity: 0, x: 32 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ type: 'spring', stiffness: 100, damping: 22, delay: 0.1 }}
-          >
-            <m.div
-              className="sc-dp"
-              initial={{ rotate: 2 }}
-              animate={{ rotate: 2 }}
-              whileHover={prefersReduced ? {} : { y: -4, rotate: 2, transition: { type: 'spring', stiffness: 300, damping: 25 } }}
-            >
-              {/* Membrete */}
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginBottom:12 }}>
-                <img src="/Logo_ColegioAlbania.png" alt="" aria-hidden="true" style={{ height:20, objectFit:'contain' }} />
-                <div style={{ width:1, height:14, background:'rgba(13,13,13,.15)', flexShrink:0 }} />
-                <span style={{ fontFamily:'"Satoshi",sans-serif', fontWeight:700, fontSize:7.5, letterSpacing:'0.3em', textTransform:'uppercase', color:'#0D0D0D' }}>The Big Family Program</span>
-              </div>
-
-              <div className="sc-sep" />
-
-              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontSize:7.5, color:'#6B6B6B', fontStyle:'italic', marginBottom:6 }}>
-                Este certificado se otorga a
-              </p>
-              <p style={{ textAlign:'center', fontFamily:'"Instrument Serif",serif', fontStyle:'italic', fontWeight:400, fontSize:22, color:'#0D0D0D', letterSpacing:'-0.01em', lineHeight:1.1, marginBottom:8 }}>
-                Valentina Torres Ospino
-              </p>
-              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontSize:7.5, color:'#6B6B6B', marginBottom:4 }}>
-                por haber completado exitosamente el programa de liderazgo
-              </p>
-              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontWeight:700, fontSize:9, letterSpacing:'0.2em', textTransform:'uppercase', color:'#C0392B', marginBottom:8 }}>
-                The Big Leader
-              </p>
-              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontSize:7.5, color:'#6B6B6B', marginBottom:2 }}>IE Técnica María Inmaculada</p>
-              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontSize:7.5, color:'#6B6B6B', marginBottom:12 }}>15 de mayo de 2026</p>
-
-              <div className="sc-sep" />
-
-              {/* Stats + Logos */}
-              <div style={{ display:'flex', justifyContent:'center', alignItems:'center', margin:'10px 0' }}>
-                <div style={{ textAlign:'center', padding:'0 10px' }}>
-                  <div style={{ fontFamily:'"Satoshi",sans-serif', fontWeight:900, fontSize:14, color:'#C0392B' }}>1.840</div>
-                  <div style={{ fontFamily:'"Satoshi",sans-serif', fontSize:6, letterSpacing:'0.14em', textTransform:'uppercase', color:'#6B6B6B', marginTop:2 }}>Puntos de Impacto</div>
-                </div>
-                <div style={{ width:1, height:22, background:'rgba(13,13,13,.12)', flexShrink:0 }} />
-                <div style={{ textAlign:'center', padding:'0 10px' }}>
-                  <div style={{ fontFamily:'"Satoshi",sans-serif', fontWeight:900, fontSize:14, color:'#C0392B' }}>6</div>
-                  <div style={{ fontFamily:'"Satoshi",sans-serif', fontSize:6, letterSpacing:'0.14em', textTransform:'uppercase', color:'#6B6B6B', marginTop:2 }}>Módulos</div>
-                </div>
-                <div style={{ width:1, height:22, background:'rgba(13,13,13,.12)', flexShrink:0 }} />
-                <div style={{ textAlign:'center', padding:'0 10px' }}>
-                  <p style={{ fontFamily:'"Satoshi",sans-serif', fontSize:6, letterSpacing:'0.18em', textTransform:'uppercase', color:'#6B6B6B', marginBottom:5 }}>RECONOCIDO POR</p>
-                  <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:5 }}>
-                    <img src="/cognia.png"                               alt="Cognia" style={{ height:14, objectFit:'contain' }} />
-                    <img src="/International_Baccalaureate_Logo.svg.png" alt="IB"     style={{ height:14, objectFit:'contain' }} />
-                    <img src="/tri.png"                                  alt="Tri"    style={{ height:14, objectFit:'contain' }} />
-                  </div>
-                </div>
-              </div>
-
-              <div className="sc-sep" />
-
-              {/* Firma + cert + sello */}
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginTop:10 }}>
-                <div>
-                  <div style={{ height:1, background:'rgba(13,13,13,.14)', marginBottom:4, width:80 }} />
-                  <p style={{ fontFamily:'"Satoshi",sans-serif', fontWeight:700, fontSize:7.5, color:'#0D0D0D' }}>Luis Hernando Barrios</p>
-                  <p style={{ fontFamily:'"Satoshi",sans-serif', fontSize:6.5, color:'#6B6B6B', marginTop:1 }}>Fundador, The Big Family Program</p>
-                </div>
-                <p style={{ fontFamily:'"Satoshi",sans-serif', fontSize:6.5, letterSpacing:'0.18em', color:'#6B6B6B', alignSelf:'flex-end', paddingBottom:1 }}>CERT-2026-1001</p>
-                {/* Sello mini */}
-                <svg viewBox="0 0 100 100" width="38" height="38" aria-hidden="true">
-                  <defs><path id="mc-arc" d="M 8 50 A 42 42 0 0 0 92 50"/></defs>
-                  <circle cx="50" cy="50" r="47" fill="none" stroke="#C0392B" strokeWidth="1.5"/>
-                  <circle cx="50" cy="50" r="40" fill="none" stroke="#C0392B" strokeWidth="0.6"/>
-                  <text fill="#C0392B" fontSize="6.8" fontFamily="Satoshi,sans-serif" fontWeight="700" letterSpacing="1.5">
-                    <textPath href="#mc-arc" startOffset="50%" textAnchor="middle">BIG FAMILY · CERTIFIED</textPath>
-                  </text>
-                  <path d="M50 36 L53.5 45.1 L63.3 45.7 L55.7 51.8 L58.2 61.3 L50 56 L41.8 61.3 L44.3 51.8 L36.7 45.7 L46.5 45.1Z" fill="#C0392B"/>
-                </svg>
-              </div>
-            </m.div>
-          </m.div>
-
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN — VALORES
-      ══════════════════════════════════════════════════════════════════ */}
-      <section id="valores" className="sec-valores">
-        <div className="sec-valores__inner">
-          <m.div
-            className="sec-valores__header"
-            initial={prefersReduced ? false : { opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-          >
-            <p className="sec-valores__eyebrow">{t('landing.valores.title')}</p>
-            <h2 className="sec-valores__title">{t('landing.valores.eyebrow')}</h2>
-          </m.div>
-
-          <div className="sec-valores__grid">
-            {VALORES.map((v, i) => (
-              <m.div
-                key={v.name}
-                className={`sec-valores__tile${i === 0 ? ' sec-valores__tile--featured' : ''}`}
-                initial={prefersReduced ? false : { opacity: 0, filter: 'blur(8px)' }}
-                whileInView={{ opacity: 1, filter: 'blur(0px)' }}
-                viewport={{ once: true, margin: '-40px' }}
-                transition={{ type: 'spring', stiffness: 120, damping: 20, delay: i * 0.07 }}
-                whileHover={{ y: -4, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
-              >
-                <div className="sec-valores__num" aria-hidden="true">
-                  {String(i + 1).padStart(2, '0')}
-                </div>
-                <div
-                  className="sec-valores__img-ph"
-                  data-value={v.slug}
-                  aria-hidden="true"
-                />
-                <div className="sec-valores__name">{t('landing.valores.' + valorKeyMap[v.slug] + '.title')}</div>
-                <div className="sec-valores__desc">{t('landing.valores.' + valorKeyMap[v.slug] + '.body')}</div>
-              </m.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      </>)}
-
-      {activeTab === 'red' && (<>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN — NUESTRA RED
-      ══════════════════════════════════════════════════════════════════ */}
-      <SchoolTicker />
-
-      {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN — ALIANZAS GLOBALES
-      ══════════════════════════════════════════════════════════════════ */}
-      <WorldMapPublic />
-
-      {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN — ALUMNI
-      ══════════════════════════════════════════════════════════════════ */}
-      <AlumniSection />
-
-      {/* ══════════════════════════════════════════════════════════════════
-          HISTORIAS DE ÉXITO
-      ══════════════════════════════════════════════════════════════════ */}
-      {featuredStories.length > 0 && (
-        <section style={{ padding: '100px 40px', background: 'var(--bg,#F5F3EF)' }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-            <m.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ type: 'spring', stiffness: 140, damping: 20 }}
-              style={{ textAlign: 'center', marginBottom: 48 }}
-            >
-              <div style={{ fontFamily: '"Satoshi",sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: '.2em', textTransform: 'uppercase', color: '#C0392B', marginBottom: 14 }}>{t('landing.successStoriesSection.eyebrow')}</div>
-              <h2 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 900, fontSize: 'clamp(28px,4vw,44px)', letterSpacing: '-.025em', color: 'var(--ink,#0D0D0D)', marginBottom: 12 }}>{t('successStories.title')}</h2>
-              <p style={{ fontSize: 15, color: 'var(--mute,#6B6B6B)', maxWidth: 480, margin: '0 auto', lineHeight: 1.6 }}>{t('landing.successStoriesSection.subtitle')}</p>
-            </m.div>
-
-            <m.div
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 20 }}
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ type: 'spring', stiffness: 140, damping: 20 }}
-            >
-              {featuredStories.map((s, i) => (
-                <m.a
-                  key={s.id}
-                  href={`/success-stories/${s.id}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ type: 'spring', stiffness: 140, damping: 20, delay: i * 0.08 }}
-                  whileHover={{ y: -4 }}
-                  style={{ display: 'block', textDecoration: 'none', background: '#fff', border: '1px solid rgba(13,13,13,.07)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px -4px rgba(13,13,13,.08)' }}
-                >
-                  {s.cover_url
-                    ? <img src={s.cover_url} alt={s.title} style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
-                    : <div style={{ width: '100%', height: 110, background: 'linear-gradient(135deg,#C0392B,#8B1A1A)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 2l1.8 4.9H18l-4.1 3 1.5 4.9L12 12.2l-3.4 2.6L10 9.9 5.9 6.9H11L12 2Z" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinejoin="round"/></svg>
-                      </div>
-                  }
-                  <div style={{ padding: '16px 18px 18px' }}>
-                    <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15.5, color: '#0D0D0D', marginBottom: 6, lineHeight: 1.3 }}>{s.title}</div>
-                    <div style={{ fontSize: 13, color: '#4a4a4a', lineHeight: 1.55, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: 10 } as React.CSSProperties}>{s.story}</div>
-                    <div style={{ fontSize: 12, color: '#9a9690' }}>
-                      {s.student_name && <span style={{ fontWeight: 600 }}>{s.student_name}</span>}
-                      {s.school_name && <span style={{ marginLeft: 6 }}>· {s.school_name}</span>}
-                    </div>
-                  </div>
-                </m.a>
-              ))}
-            </m.div>
-
-            <div style={{ textAlign: 'center', marginTop: 32 }}>
-              <a href="/success-stories" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '11px 24px', border: '1.5px solid rgba(13,13,13,.14)', borderRadius: 999, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, color: 'var(--ink,#0D0D0D)', textDecoration: 'none', transition: 'all .2s' }}>
-                {t('landing.successStoriesSection.viewAllBtn')}
-              </a>
-            </div>
-          </div>
-        </section>
-      )}
-
-      </>)}
-
-      {activeTab === 'equipo' && (<>
-
-      {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN — EL FUNDADOR
-      ══════════════════════════════════════════════════════════════════ */}
-      <FounderSection />
-
-      {/* ══════════════════════════════════════════════════════════════════
-          SECCIÓN — EQUIPO
-      ══════════════════════════════════════════════════════════════════ */}
-      <section id="equipo" className="equipo">
-        <div className="equipo__inner">
-
-          {/* Header */}
-          <m.div
-            className="equipo__header"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ type: 'spring', stiffness: 120, damping: 22 }}
-          >
-            <div>
-              <p className="equipo__eyebrow">{t('landing.equipo.eyebrow')}</p>
-              <h2 className="equipo__title">{t('landing.equipo.title')}</h2>
-            </div>
-            <p className="equipo__desc">{t('landing.equipo.body')}</p>
-          </m.div>
-
-          {/* Grid de cards — 3 columnas iguales */}
-          <div className="equipo__grid">
-            {founders.map((f, i) => (
-              <m.div
-                key={f.name}
-                className="equipo__card"
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-80px' }}
-                transition={{ type: 'spring', stiffness: 180, damping: 22, delay: i * 0.12 }}
-                whileHover={{ y: -4, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
-              >
-                <div className="equipo__avatar" style={{ background: 'linear-gradient(135deg,#C0392B,#922b21)' }}>{f.initials}</div>
-                <div className="equipo__card-name">{f.name}</div>
-                <div className="equipo__card-role">{f.role}</div>
-                <div className="equipo__card-divider" />
-                <div className="equipo__card-bio">{f.bio}</div>
-                <div className="equipo__tags">
-                  {f.tags.map(tag => <span key={tag} className="equipo__tag">{tag}</span>)}
-                </div>
-              </m.div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      </>)}
-
-      {activeTab === 'noticias' && (
-        <section style={{ padding: '80px 24px', maxWidth: '900px', margin: '0 auto' }}>
-          <div style={{ marginBottom: '48px', textAlign: 'center' }}>
-            <h2 style={{ fontSize: '36px', fontWeight: 700, color: 'var(--ink)', lineHeight: 1.15, marginBottom: '12px' }}>
-              {t('tabs.noticias')}
-            </h2>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', marginBottom: '48px' }}>
-            {latestNews.map((article, i) => (
-              <m.a
-                key={article.id}
-                href={`/news/${article.slug}`}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 22, delay: i * 0.08 }}
-                whileHover={{ y: -3 }}
-                style={{ display: 'block', textDecoration: 'none', background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', overflow: 'hidden' }}
-              >
-                <div style={{ height: '160px', background: article.cover_url ? `url(${article.cover_url}) center/cover` : 'var(--bg-2)' }} />
-                <div style={{ padding: '20px' }}>
-                  <p style={{ fontSize: '11px', color: 'var(--mute)', marginBottom: '8px' }}>
-                    {new Date(article.published_at).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}
-                  </p>
-                  <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', lineHeight: 1.35, marginBottom: '10px' }}>{article.title}</h3>
-                  <p style={{ fontSize: '13px', color: 'var(--mute)', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{article.excerpt}</p>
-                </div>
-              </m.a>
-            ))}
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <Link href="/news" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '14px 32px', background: '#C0392B', color: '#fff', borderRadius: '100px', textDecoration: 'none', fontSize: '14px', fontWeight: 600 }}>
-              {t('landing.successStoriesSection.viewAllBtn')} →
-            </Link>
-          </div>
-        </section>
-      )}
-
-        </m.div>
-      </AnimatePresence>
+      {children}
 
       {/* ══════════════════════════════════════════════════════════════════
           SECCIÓN — CTA FINAL (siempre visible, fuera del sistema de tabs)
@@ -2047,11 +1036,11 @@ export default function GlobeHero() {
           <div>
             <p className="bf-footer__col-title">{t('landing.footer.programTitle')}</p>
             <div className="bf-footer__links">
-              <button onClick={() => navigateToTab('historia')} className="bf-footer__link bf-footer__link--btn">{t('nav.historia')}</button>
+              <Link href="/historia" className="bf-footer__link">{t('nav.historia')}</Link>
               <a href="#impacto" className="bf-footer__link">{t('nav.impacto')}</a>
-              <button onClick={() => navigateToTab('red')} className="bf-footer__link bf-footer__link--btn">{t('nav.nuestraRed')}</button>
-              <button onClick={() => navigateToTab('metodologia')} className="bf-footer__link bf-footer__link--btn">{t('nav.metodologia')}</button>
-              <button onClick={() => navigateToTab('equipo')} className="bf-footer__link bf-footer__link--btn">{t('nav.equipo')}</button>
+              <Link href="/red" className="bf-footer__link">{t('nav.nuestraRed')}</Link>
+              <Link href="/metodologia" className="bf-footer__link">{t('nav.metodologia')}</Link>
+              <Link href="/equipo" className="bf-footer__link">{t('nav.equipo')}</Link>
             </div>
           </div>
           <div>

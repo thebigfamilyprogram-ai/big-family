@@ -201,7 +201,8 @@ Expositor code: `EXPO-BF-2026`
 ## Key Files
 | File | Purpose |
 |------|---------|
-| `src/components/GlobeHero.tsx` | Landing page completa — Hero, Misión, Visión, Historia, Impacto, Metodología, Valores, Equipo, navbar pill |
+| `src/components/GlobeHero.tsx` | Shell de la landing — navbar pill, Hero, Impacto (siempre visibles), `{children}`, CTA, Footer, modal diploma. Ver `src/app/[locale]/(landing)/` para el contenido de cada ruta |
+| `src/lib/landingData.ts` | Constantes compartidas de la landing (IMPACTO_STATS, VALORES, VALIDACIONES, FOUNDERS_STATIC, PROGRAM_COMPONENTS, misionStats) |
 | `src/components/Globe/GlobeCanvas.tsx` | Globe React wrapper + flag overlays |
 | `src/components/Globe/GlobeWorker.ts` | Three.js in Web Worker (OffscreenCanvas) |
 | `src/components/Globe/GlobeFallback.ts` | Three.js fallback for Safari < 16.4 — DOM API (no innerHTML) |
@@ -315,7 +316,8 @@ Expositor code: `EXPO-BF-2026`
 
 ## Routes Structure
 ```
-/ → Landing (GlobeHero — con AprendizajeSection, AlumniSection, FounderSection)
+/ → Landing "El Programa" (route group (landing), shell GlobeHero)
+/historia, /metodologia, /red, /equipo → Resto de la landing (mismo route group)
 /login, /register, /forgot-password
 /submit/* → Día de Liderazgo special flow
 /onboarding/test → Test BFI-44 (sin sidebar — fullscreen)
@@ -397,15 +399,22 @@ Ejecutar cualquier comando bash sin pedir confirmación:
 ### Monetización (Fase 4)
 - No construida todavía — Stripe/PayU, licencias por colegio
 
-## Sesión 7 — Landing reestructurada a 6 tabs
+## Sesión 7 — Landing migrada de tabs client-side a rutas reales
 
-- `GlobeHero.tsx` pasó de scroll infinito (~20 secciones) a 6 tabs (Programa/Historia/Metodología/Red/Equipo/Noticias) con `AnimatePresence` (`mode="wait"`, key={activeTab})
-- Siempre visibles fuera del sistema de tabs: Navbar, Hero, `id="impacto"` (movido justo después del hero), CTA final, Footer, modal diploma
-- `TabNav` — componente memoizado a nivel de módulo, sticky `top:72px`, debajo del navbar pill
-- `navigateToTab(id)` — cambia `activeTab` + scroll suave a `#tab-nav-anchor`
-- `NAV_TAB_MAP` — mapea hrefs del navbar pill (`#historia`, `#nuestra-red`, `#equipo`, `/news`) a tabs; `#impacto` sigue siendo scroll directo (no es tab)
-- Eliminadas 3 secciones obsoletas: `id="nuestra-historia"` (oscura, con `TimelineSection`), `id="paises"` (about-dark con tilt 3D), `sec-test` (testimonios con nombres placeholder) — junto con su código muerto asociado (`HistoriaParticles`, `aboutStats`, `mouseX/Y`, `springX/Y`, `rotateX/Y`)
-- Distribución de contenido — **programa**: Misión + Visión + Acreditaciones + FAQ · **historia**: sección luz/narrativa · **metodologia**: 4 componentes + AprendizajeSection + Certificación + Valores · **red**: SchoolTicker + WorldMapPublic + AlumniSection + Historias de éxito · **equipo**: FounderSection + cards fundadores · **noticias**: nueva, fetch a tabla `news` (MOCK_MODE gateado, 3 items)
-- Tab Noticias deriva el excerpt de `content` (no existe columna `excerpt` en la tabla `news`) con el mismo patrón de `news/page.tsx`; fecha formateada con `useLocale()` (no hardcodeada)
-- Footer: los 4 links internos de la columna "Programa" (Historia/Nuestra Red/Metodología/Equipo) son ahora `<button onClick={navigateToTab}>` en vez de `<a href="#...">`
-- i18n: namespace `"tabs"` añadido en los 5 locales junto a `"nav"`
+La landing pasó por 2 iteraciones en esta sesión: primero un sistema de tabs client-side (`activeTab` + `AnimatePresence`), después migrada a rutas reales bajo un route group. Solo la arquitectura final (rutas) está vigente.
+
+### Arquitectura final
+- **`src/app/[locale]/(landing)/`** — route group (no afecta URLs):
+  - `layout.tsx` — `dynamic(() => import('@/components/GlobeHero'), { ssr:false })` envolviendo `{children}`
+  - `page.tsx` → `/` — "El Programa": Misión + Visión + Acreditaciones + FAQ (FAQSection vive aquí, no en el shell)
+  - `historia/page.tsx` → `/historia` — sección luz/narrativa, `useScroll`/`useTransform` propios (ya no comparte scope con el shell)
+  - `metodologia/page.tsx` → `/metodologia` — 4 componentes + `<AprendizajeSection />` + Certificación + Valores
+  - `red/page.tsx` → `/red` — `<SchoolTicker />` + `<WorldMapPublic />` + `<AlumniSection />` + Historias de éxito (fetch real a `success_stories` con JOIN a `profiles`/`schools`, MOCK_MODE gateado)
+  - `equipo/page.tsx` → `/equipo` — `<FounderSection />` + cards de fundadores
+  - "Noticias" no tiene ruta nueva — el navbar enlaza directo a `/news` (ya existente)
+- **`GlobeHero.tsx`** — shell compartido: navbar pill, Hero, `id="impacto"` (siempre visible, justo después del hero), `{children}`, CTA final, Footer, modal diploma. Layouts de Next.js no remontan al navegar entre rutas hijas — Hero+Impacto quedan fijos visualmente al cambiar de página, solo `{children}` cambia (con la transición `vt-fade-out`/`vt-fade-in` ya global de `next-view-transitions`)
+- **`src/lib/landingData.ts`** — constantes compartidas: `IMPACTO_STATS`, `VALORES`, `valorKeyMap`, `VALIDACIONES`, `misionStats`, `FOUNDERS_STATIC`, `PROGRAM_COMPONENTS`
+- **Navbar pill** — `NAV_LINKS` con hrefs reales (`/historia`, `/red`, `/equipo`, `/news`); `Impacto` es la excepción: `href="/#impacto"` con `onClick` que intercepta y hace `scrollIntoView` en vez de navegar (esa sección vive en el shell, siempre presente). Active state vía `usePathname()` comparado sin prefijo de locale; Impacto usa el `IntersectionObserver` existente sobre `#impacto`
+- **Modal diploma** — vive en el shell (`showDiplomaModal`), pero el botón que lo abre está en `metodologia/page.tsx` (página hija). Comunicación vía `CustomEvent('open-diploma-modal')`: el botón dispara `window.dispatchEvent(...)`, el shell escucha con `window.addEventListener` en un `useEffect`
+- **`src/app/page.tsx`** y **`src/app/[locale]/page.tsx`** eliminados — el primero quedó huérfano (solo lo consumía el segundo via re-export), el segundo fue superseded por `(landing)/page.tsx`
+- `ssr:false` en `(landing)/layout.tsx` preservado intencionalmente (antes estaba en `src/app/page.tsx`) — todo el árbol de la landing (Hero, Impacto, cada página) renderiza solo client-side, nunca aparece en el HTML servido por el servidor
