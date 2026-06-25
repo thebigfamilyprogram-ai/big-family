@@ -396,3 +396,16 @@ Ejecutar cualquier comando bash sin pedir confirmación:
 
 ### Monetización (Fase 4)
 - No construida todavía — Stripe/PayU, licencias por colegio
+
+## Sesión 7 — Landing reestructurada a 6 tabs
+
+- `GlobeHero.tsx` pasó de scroll infinito (~20 secciones) a 6 tabs (Programa/Historia/Metodología/Red/Equipo/Noticias) con `AnimatePresence` (`mode="wait"`, key={activeTab})
+- Siempre visibles fuera del sistema de tabs: Navbar, Hero, `id="impacto"` (movido justo después del hero), CTA final, Footer, modal diploma
+- `TabNav` — componente memoizado a nivel de módulo, sticky `top:72px`, debajo del navbar pill
+- `navigateToTab(id)` — cambia `activeTab` + scroll suave a `#tab-nav-anchor`
+- `NAV_TAB_MAP` — mapea hrefs del navbar pill (`#historia`, `#nuestra-red`, `#equipo`, `/news`) a tabs; `#impacto` sigue siendo scroll directo (no es tab)
+- Eliminadas 3 secciones obsoletas: `id="nuestra-historia"` (oscura, con `TimelineSection`), `id="paises"` (about-dark con tilt 3D), `sec-test` (testimonios con nombres placeholder) — junto con su código muerto asociado (`HistoriaParticles`, `aboutStats`, `mouseX/Y`, `springX/Y`, `rotateX/Y`)
+- Distribución de contenido — **programa**: Misión + Visión + Acreditaciones + FAQ · **historia**: sección luz/narrativa · **metodologia**: 4 componentes + AprendizajeSection + Certificación + Valores · **red**: SchoolTicker + WorldMapPublic + AlumniSection + Historias de éxito · **equipo**: FounderSection + cards fundadores · **noticias**: nueva, fetch a tabla `news` (MOCK_MODE gateado, 3 items)
+- Tab Noticias deriva el excerpt de `content` (no existe columna `excerpt` en la tabla `news`) con el mismo patrón de `news/page.tsx`; fecha formateada con `useLocale()` (no hardcodeada)
+- Footer: los 4 links internos de la columna "Programa" (Historia/Nuestra Red/Metodología/Equipo) son ahora `<button onClick={navigateToTab}>` en vez de `<a href="#...">`
+- i18n: namespace `"tabs"` añadido en los 5 locales junto a `"nav"`

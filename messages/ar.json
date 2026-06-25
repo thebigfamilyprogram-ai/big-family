@@ -67,6 +67,14 @@
     "comoFunciona": "كيف يعمل",
     "paises": "الدول"
   },
+  "tabs": {
+    "programa": "البرنامج",
+    "historia": "التاريخ",
+    "metodologia": "المنهجية",
+    "red": "الشبكة العالمية",
+    "equipo": "الفريق",
+    "noticias": "الأخبار"
+  },
   "landing": {
     "hero": {
       "eyebrow": "برنامج القيادة الشبابية · لا غواخيرا، كولومبيا",
