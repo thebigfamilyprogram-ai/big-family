@@ -1,12 +1,14 @@
-﻿'use client'
+'use client'
 
 export const dynamic = 'force-dynamic'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
+import { MOCK_MODE, MOCK } from '@/lib/mockData'
+import { PILLARS, type Pillar, getPillarScores } from '@/lib/bigFiveQuestions'
 
 interface Module {
   id: string
@@ -30,186 +32,161 @@ interface AttemptData {
   passed: boolean
 }
 
-const PHASES = [
-  { label: 'phase1', name: 'Core Foundations',  range: [1, 3]   },
-  { label: 'phase2', name: 'Network Expansion',  range: [4, 6]   },
-  { label: 'phase3', name: 'Community Impact',   range: [7, 9]   },
-  { label: 'phase4', name: 'SUMMIT',             range: [10, 99] },
-]
-
-const CONFETTI_COLORS = ['#C0392B','#F39C12','#27AE60','#2980B9','#8E44AD','#E74C3C','#F1C40F','#1ABC9C']
-
-/* ─── Layout constants ─── */
-const SVG_W         = 360
-const ZIGZAG_XS     = [SVG_W * 0.50, SVG_W * 0.65, SVG_W * 0.35]
-const NODE_SPACING  = 135   // px between consecutive node centers
-const NODE_R        = 36    // node radius (72px diameter)
-const PHASE_CARD_H  = 68    // vertical space consumed by a phase card
-const PHASE_CARD_GAP = 22   // gap below phase card before next node
-const SVG_MARGIN_T  = 52
-const SVG_MARGIN_B  = 70
-
-/* ─── Icons ─── */
-const NODE_ICONS: Record<number, React.ReactNode> = {
-  1: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3L14.5 8.5H20L15.5 12L17.5 18L12 14.5L6.5 18L8.5 12L4 8.5H9.5L12 3Z" fill="currentColor"/></svg>,
-  2: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 8 7 8 13a4 4 0 0 0 8 0c0-6-4-11-4-11Z" fill="currentColor"/><path d="M12 17v3M10 20h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
-  3: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8"/><path d="M2 12h20M12 2c-3 2.5-5 6-5 10s2 7.5 5 10M12 2c3 2.5 5 6 5 10s-2 7.5-5 10" stroke="currentColor" strokeWidth="1.8"/></svg>,
-  4: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.8"/><path d="M4 20c0-4.418 3.582-8 8-8s8 3.582 8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
-  5: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
-  6: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="1.8"/><path d="M3 9h18M9 4v5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
-  7: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L15 9H22L16.5 13.5L18.5 21L12 16.5L5.5 21L7.5 13.5L2 9H9L12 2Z" fill="currentColor"/></svg>,
-  8: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3L3 8v5c0 5 3.5 9.74 9 11 5.5-1.26 9-6 9-11V8L12 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>,
-  9: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2Z" stroke="currentColor" strokeWidth="1.8"/><path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+interface LeaderProfile {
+  arquetipo: string
+  fortalezas: string[]
+  areas_crecimiento: string[]
+  big_five: { O: number; C: number; E: number; A: number; N: number; ES: number }
 }
 
-const LOCK_ICON = (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-    <rect x="4" y="10" width="14" height="10" rx="2.5" stroke="currentColor" strokeWidth="1.8"/>
-    <path d="M7 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-  </svg>
-)
-
-const CHECK_ICON = (
-  <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-    <path d="M5 13l5.5 5.5L21 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-)
-
-/* ─── Helpers ─── */
-
-function buildBezierPath(pts: { x: number; y: number }[]): string {
-  if (pts.length < 2) return ''
-  let d = `M ${pts[0].x} ${pts[0].y}`
-  for (let i = 0; i < pts.length - 1; i++) {
-    const h = pts[i + 1].y - pts[i].y
-    d += ` C ${pts[i].x},${pts[i].y + h * 0.42} ${pts[i + 1].x},${pts[i + 1].y - h * 0.42} ${pts[i + 1].x},${pts[i + 1].y}`
-  }
-  return d
+const MOCK_LEADER_PROFILE: LeaderProfile = {
+  arquetipo: 'Líder Visionaria',
+  fortalezas: ['Norte', 'Acción'],
+  areas_crecimiento: ['Yo', 'Vínculo'],
+  big_five: { O: 85, C: 42, E: 78, A: 38, N: 35, ES: 65 },
 }
 
-function calcStreak(dates: string[]): number {
-  if (!dates.length) return 0
-  const DAY = 86_400_000
-  const now = new Date(); now.setHours(0, 0, 0, 0)
-  const todayTs = now.getTime()
-  const unique = [...new Set(
-    dates.filter(Boolean).map(d => { const dt = new Date(d); dt.setHours(0,0,0,0); return dt.getTime() })
-  )].sort((a, b) => b - a)
-  if (!unique.length || unique[0] < todayTs - DAY) return 0
-  let streak = 0, expected = todayTs
-  for (const ts of unique) {
-    if (ts >= expected - 1000 && ts <= expected + 1000) { streak++; expected -= DAY }
-    else if (ts < expected - DAY) break
-  }
-  return streak
+// Module → pilar, por order_index (mismo mapeo que dashboard/page.tsx, duplicado a propósito)
+const MODULE_PILLAR: Record<number, Pillar> = {
+  1: 'Yo', 2: 'Norte', 3: 'Vínculo', 4: 'Vínculo', 5: 'Acción', 6: 'Acción', 7: 'Legado',
 }
 
-function getPhaseFor(nodes: PathNode[], idx: number) {
-  const oi = nodes[idx]?.module.order_index ?? idx + 1
-  return PHASES.find(p => oi >= p.range[0] && oi <= p.range[1])
+const PILLAR_POSITIONS: Record<Pillar, { top: number; left: number }> = {
+  Yo:      { top: 15, left: 20 },
+  Norte:   { top: 10, left: 55 },
+  Vínculo: { top: 45, left: 10 },
+  Acción:  { top: 40, left: 70 },
+  Legado:  { top: 70, left: 40 },
 }
 
-function isPhaseStart(nodes: PathNode[], idx: number): boolean {
-  if (idx === 0) return true
-  return getPhaseFor(nodes, idx)?.label !== getPhaseFor(nodes, idx - 1)?.label
+const PILLAR_COLORS: Record<Pillar, { solid: string; soft: string }> = {
+  Yo:      { solid: '#C0392B',                     soft: 'rgba(192,57,43,.12)' },
+  Norte:   { solid: 'var(--accent-teal,#0F7B6C)',   soft: 'rgba(15,110,86,.12)' },
+  Vínculo: { solid: 'var(--accent-amber,#D4821A)',  soft: 'rgba(212,130,26,.12)' },
+  Acción:  { solid: 'var(--accent-purple,#534AB7)', soft: 'rgba(83,74,183,.12)' },
+  Legado:  { solid: 'var(--accent-green,#639922)',  soft: 'rgba(99,153,34,.12)' },
 }
 
-interface PhaseSlot { type: 'phase'; y: number; phase: typeof PHASES[0] }
-interface NodeSlot  { type: 'node';  nodeY: number; nodeIdx: number; zigIdx: number }
-type Slot = PhaseSlot | NodeSlot
-
-function buildSlots(nodes: PathNode[]) {
-  const slots: Slot[] = []
-  let y = SVG_MARGIN_T
-  let zigIdx = 0
-  nodes.forEach((_, i) => {
-    if (isPhaseStart(nodes, i)) {
-      slots.push({ type: 'phase', y, phase: getPhaseFor(nodes, i)! })
-      y += PHASE_CARD_H + PHASE_CARD_GAP
-    }
-    slots.push({ type: 'node', nodeY: y + NODE_R, nodeIdx: i, zigIdx: zigIdx++ })
-    y += NODE_SPACING
-  })
-  return { slots, totalH: y + SVG_MARGIN_B }
+const PILLAR_ICONS: Record<Pillar, string> = {
+  Yo: '🧠', Norte: '🧭', Vínculo: '🤝', Acción: '⚡', Legado: '🌱',
 }
 
-/* ─── Confetti seed (stable per phase label) ─── */
-function phaseConfettiParticles(label: string) {
-  // Deterministic-ish using label char codes so it doesn't re-randomise on re-render
-  return CONFETTI_COLORS.map((color, i) => {
-    const seed = label.charCodeAt(i % label.length) + i * 37
-    const tx = ((seed % 180) - 90) + 'px'
-    const rot = (seed * 7 % 360) + 'deg'
-    return { color, tx, rot, delay: i * 0.07 }
-  })
+// Pillar → sufijo de key i18n (ascii, las keys del JSON no llevan tilde/mayúscula)
+const PILLAR_I18N_KEY: Record<Pillar, string> = {
+  Yo: 'yo', Norte: 'norte', Vínculo: 'vinculo', Acción: 'accion', Legado: 'legado',
 }
 
-/* ═══════════════════════════════════════════════════════════ */
+const CAPSTONE_POS = { top: 42, left: 42 }
+const GREAT_VENTURE_POS = { top: 65, left: 62 }
+const TOTAL_NODES = 9 // 7 módulos + Capstone + Great Venture
+
+// Animación perpetua — vive en su propio componente memoizado, ver CLAUDE.md
+const PulseRing = memo(function PulseRing({ color }: { color: string }) {
+  return (
+    <m.div
+      style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: `2px solid ${color}`, pointerEvents: 'none' }}
+      animate={{ scale: [1, 1.4], opacity: [0.6, 0] }}
+      transition={{ duration: 2, repeat: Infinity, ease: 'easeOut' }}
+    />
+  )
+})
+
+// Curva de conexión isla→hito — coordenadas porcentuales (viewBox 0 0 100 100),
+// adaptado de WorldMapPublic.tsx's arcPath() a un espacio de coordenadas %.
+function islandArcPath(a: { x: number; y: number }, b: { x: number; y: number }): string {
+  const mx = (a.x + b.x) / 2
+  const my = Math.min(a.y, b.y) - 8
+  return `M ${a.x},${a.y} Q ${mx},${my} ${b.x},${b.y}`
+}
+
 export default function LeadershipPathPage() {
   const router      = useRouter()
   const t           = useTranslations('dashboard.leadershipPathPage')
-  const tCommon     = useTranslations('common')
+  const tModules    = useTranslations('dashboard.modules')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
-  const srm         = useReducedMotion()
+  const pref        = useReducedMotion()
 
-  const [loading,         setLoading]         = useState(true)
-  const [nodes,           setNodes]           = useState<PathNode[]>([])
-  const [userName,        setUserName]        = useState(t('defaultLeaderName'))
-  const [totalXP,         setTotalXP]         = useState(0)
-  const [streak,          setStreak]          = useState(0)
-  const [attMap,          setAttMap]          = useState<Record<string, AttemptData>>({})
-  const [qCountMap,       setQCountMap]       = useState<Record<string, number>>({})
-  const [selected,        setSelected]        = useState<PathNode | null>(null)
-  const [hoveredLocked,   setHoveredLocked]   = useState<string | null>(null)
-  const [celebPhases,     setCelebPhases]     = useState<Set<string>>(new Set())
+  const [view,         setView]         = useState<'map' | 'island'>('map')
+  const [activeIsland, setActiveIsland] = useState<Pillar | null>(null)
+  const [loading,       setLoading]       = useState(true)
+  const [nodes,         setNodes]         = useState<PathNode[]>([])
+  const [leaderProfile, setLeaderProfile] = useState<LeaderProfile | null>(null)
+  const [totalXP,       setTotalXP]       = useState(0)
+  const [attMap,        setAttMap]        = useState<Record<string, AttemptData>>({})
+  const [qCountMap,     setQCountMap]     = useState<Record<string, number>>({})
+  const [selected,      setSelected]      = useState<PathNode | null>(null)
+  const [userProjects,  setUserProjects]  = useState<{ id: string; status: string }[]>([])
+  const [diploma,       setDiploma]       = useState<{ projectId: string; resultado: string } | null>(null)
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
+    if (!supabase) return
     async function load() {
+      if (MOCK_MODE) {
+        const mockModules: Module[] = MOCK.modules
+          .map(m => ({ id: m.id, title: m.title, description: '', xp_reward: m.xpReward, order_index: m.order, duration_minutes: null }))
+          .sort((a, b) => a.order_index - b.order_index)
+        const completedIds = new Set(['m1', 'm2', 'm3', 'm4', 'm5'])
+        let foundActive = false
+        const built: PathNode[] = mockModules.map(mod => {
+          if (completedIds.has(mod.id)) return { module: mod, state: 'completed' as NodeState }
+          if (!foundActive) { foundActive = true; return { module: mod, state: 'active' as NodeState } }
+          return { module: mod, state: 'locked' as NodeState }
+        })
+        setNodes(built)
+        setLeaderProfile(MOCK_LEADER_PROFILE)
+        setTotalXP(MOCK.students[0]?.xp ?? 1840)
+        setUserProjects([{ id: 'mock-project-1', status: 'approved' }])
+        const activeMock = built.find(n => n.state === 'active')
+        if (activeMock) {
+          setAttMap({ [activeMock.module.id]: { count: 1, bestScore: 65, passed: false } })
+          setQCountMap({ [activeMock.module.id]: 8 })
+        }
+        setLoading(false)
+        return
+      }
+
       const { data: { user: au } } = await supabase.auth.getUser()
       if (!au) { router.replace('/login'); return }
 
-      const { data: profile } = await supabase
-        .from('profiles').select('display_name, school_level').eq('id', au.id).maybeSingle()
-      const level = profile?.school_level ?? 'senior'
-
-      const { data: mods } = await supabase
-        .from('modules').select('*').eq('level', level).order('order_index')
-
-      const moduleIds = (mods ?? []).map((m: { id: string }) => m.id)
-
-      const base = [
-        supabase.from('xp_log').select('amount').eq('user_id', au.id),
+      const [profileRes, modsRes, progRes, xpRes, projRes] = await Promise.all([
+        supabase.from('profiles').select('display_name, leadership_profile').eq('id', au.id).maybeSingle(),
+        supabase.from('modules').select('*').eq('status', 'published').order('order_index'),
         supabase.from('progress').select('module_id, completed').eq('user_id', au.id),
-        supabase.from('progress').select('completed_at').eq('user_id', au.id).eq('completed', true),
-      ] as const
+        supabase.from('xp_log').select('amount').eq('user_id', au.id),
+        supabase.from('projects').select('id, status').eq('user_id', au.id),
+      ])
 
-      const extra = moduleIds.length
-        ? [
+      const mods = (modsRes.data ?? []) as Module[]
+      const moduleIds = mods.map(m => m.id)
+
+      const [attRes, qRes] = moduleIds.length
+        ? await Promise.all([
             supabase.from('quiz_attempts').select('module_id, score, passed').eq('user_id', au.id).in('module_id', moduleIds),
             supabase.from('questions').select('module_id').in('module_id', moduleIds),
-          ] as const
-        : [
-            Promise.resolve({ data: [] as { module_id: string; score: number; passed: boolean }[], error: null }),
-            Promise.resolve({ data: [] as { module_id: string }[], error: null }),
-          ] as const
+          ])
+        : [{ data: [] as { module_id: string; score: number | null; passed: boolean }[] }, { data: [] as { module_id: string }[] }]
 
-      const [
-        { data: xpRows },
-        { data: prog },
-        { data: progDates },
-        { data: attRows },
-        { data: qRows },
-      ] = await Promise.all([...base, ...extra])
+      const userProjectsData = projRes.data ?? []
+      let diplomaInfo: { projectId: string; resultado: string } | null = null
+      if (userProjectsData.length > 0) {
+        const { data: evals } = await supabase
+          .from('capstone_evaluations')
+          .select('project_id, resultado')
+          .in('project_id', userProjectsData.map((p: { id: string }) => p.id))
+          .in('resultado', ['certificado', 'mencion_honor'])
+          .limit(1).maybeSingle()
+        if (evals) diplomaInfo = { projectId: evals.project_id, resultado: evals.resultado }
+      }
 
-      const completedIds = new Set((prog ?? []).filter((p: { completed: boolean | null; module_id: string }) => p.completed).map((p: { completed: boolean | null; module_id: string }) => p.module_id))
-      const total_xp     = (xpRows ?? []).reduce((s: number, r: { amount: number | null }) => s + (r.amount ?? 0), 0)
-      const streakDays   = calcStreak((progDates ?? []).map((r: { completed_at: string | null }) => r.completed_at).filter(Boolean) as string[])
+      const completedIds = new Set(
+        (progRes.data ?? []).filter((p: { completed: boolean | null }) => p.completed).map((p: { module_id: string }) => p.module_id)
+      )
+      const total_xp = (xpRes.data ?? []).reduce((s: number, r: { amount: number | null }) => s + (r.amount ?? 0), 0)
 
-      // Aggregate attempts
       const aMap: Record<string, AttemptData> = {}
-      for (const r of attRows ?? []) {
+      for (const r of attRes.data ?? []) {
         const e = aMap[r.module_id]
         if (!e) { aMap[r.module_id] = { count: 1, bestScore: r.score ?? null, passed: !!r.passed } }
         else {
@@ -218,443 +195,333 @@ export default function LeadershipPathPage() {
           if (r.passed) e.passed = true
         }
       }
-
-      // Aggregate question counts
       const qMap: Record<string, number> = {}
-      for (const r of qRows ?? []) qMap[r.module_id] = (qMap[r.module_id] ?? 0) + 1
+      for (const r of qRes.data ?? []) qMap[r.module_id] = (qMap[r.module_id] ?? 0) + 1
 
-      // Build nodes
+      const sorted = [...mods].sort((a, b) => a.order_index - b.order_index)
       let foundActive = false
-      const built: PathNode[] = (mods ?? []).map((mod: Module) => {
-        if (completedIds.has(mod.id)) return { module: mod as Module, state: 'completed' }
-        if (!foundActive) { foundActive = true; return { module: mod as Module, state: 'active' } }
-        return { module: mod as Module, state: 'locked' }
+      const built: PathNode[] = sorted.map(mod => {
+        if (completedIds.has(mod.id)) return { module: mod, state: 'completed' as NodeState }
+        if (!foundActive) { foundActive = true; return { module: mod, state: 'active' as NodeState } }
+        return { module: mod, state: 'locked' as NodeState }
       })
 
-      // Detect newly-completed phases for confetti
-      const newCeleb = new Set<string>()
-      PHASES.forEach(ph => {
-        const phNodes = built.filter(n => n.module.order_index >= ph.range[0] && n.module.order_index <= ph.range[1])
-        if (phNodes.length > 0 && phNodes.every(n => n.state === 'completed')) {
-          const key = `phase_celebrated_${ph.label}`
-          if (typeof localStorage !== 'undefined' && !localStorage.getItem(key)) {
-            localStorage.setItem(key, '1')
-            newCeleb.add(ph.label)
-          }
-        }
-      })
-
-      setUserName(profile?.display_name ?? t('defaultLeaderName'))
+      setNodes(built)
       setTotalXP(total_xp)
-      setStreak(streakDays)
       setAttMap(aMap)
       setQCountMap(qMap)
-      setNodes(built)
-      setCelebPhases(newCeleb)
+      setUserProjects(userProjectsData)
+      setDiploma(diplomaInfo)
+      if (profileRes.data?.leadership_profile) setLeaderProfile(profileRes.data.leadership_profile as LeaderProfile)
       setLoading(false)
     }
     load()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-scroll to active node
-  useEffect(() => {
-    if (loading || !nodes.length) return
-    setTimeout(() => {
-      document.getElementById('active-node')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    }, 800)
-  }, [loading, nodes])
-
-  const { slots, totalH } = useMemo(
-    () => loading ? { slots: [] as Slot[], totalH: 400 } : buildSlots(nodes),
-    [nodes, loading]
-  )
-
-  const nodePositions = useMemo(
-    () => (slots.filter((s): s is NodeSlot => s.type === 'node')
-      .map(s => ({ x: ZIGZAG_XS[s.zigIdx % 3], y: s.nodeY }))),
-    [slots]
-  )
-
+  const totalModules   = nodes.length
   const completedCount = nodes.filter(n => n.state === 'completed').length
-  const fullPath       = useMemo(() => buildBezierPath(nodePositions), [nodePositions])
-  const completedPath  = useMemo(
-    () => buildBezierPath(nodePositions.slice(0, Math.max(completedCount + 1, 1))),
-    [nodePositions, completedCount]
-  )
+  const allModulesDone = totalModules > 0 && completedCount >= totalModules
+  const capstoneLocked = !allModulesDone
+  const capstoneState: 'bloqueado' | 'enviado' | 'evaluado' | 'en_progreso' =
+    capstoneLocked                                              ? 'bloqueado'  :
+    userProjects.some(p => p.status === 'pending')              ? 'enviado'    :
+    diploma || userProjects.some(p => p.status === 'approved')  ? 'evaluado'   :
+                                                                    'en_progreso'
 
-  const remainingHours = useMemo(() => {
-    const mins = nodes.filter(n => n.state !== 'completed')
-      .reduce((s, n) => s + (n.module.duration_minutes ?? 30), 0)
-    return Math.round(mins / 6) / 10
-  }, [nodes])
+  const pillarScores: Record<Pillar, number> = leaderProfile
+    ? getPillarScores(leaderProfile.big_five)
+    : { Yo: 0, Norte: 0, Vínculo: 0, Acción: 0, Legado: 0 }
 
-  function isPhaseComplete(label: string) {
-    const ph = PHASES.find(p => p.label === label)
-    if (!ph) return false
-    const pn = nodes.filter(n => n.module.order_index >= ph.range[0] && n.module.order_index <= ph.range[1])
-    return pn.length > 0 && pn.every(n => n.state === 'completed')
+  const island = activeIsland ?? 'Yo'
+
+  const activeModuleIdx = nodes.findIndex(n => n.state === 'active')
+  const fillIndex = activeModuleIdx !== -1 ? activeModuleIdx : (capstoneState === 'evaluado' ? 8 : 7)
+  const fillPct   = (fillIndex / TOTAL_NODES) * 100
+  const fillColor = activeModuleIdx !== -1
+    ? PILLAR_COLORS[MODULE_PILLAR[nodes[activeModuleIdx].module.order_index]].solid
+    : PILLAR_COLORS[island].solid
+
+  function handleCapstoneClick() {
+    if (capstoneState === 'bloqueado' || capstoneState === 'enviado') return
+    if (capstoneState === 'en_progreso') router.push('/dashboard/projects/new')
+    else router.push(diploma ? `/certificacion/${diploma.projectId}` : '/dashboard/projects')
   }
 
-  function phaseModuleCount(label: string) {
-    const ph = PHASES.find(p => p.label === label)
-    if (!ph) return 0
-    return nodes.filter(n => n.module.order_index >= ph.range[0] && n.module.order_index <= ph.range[1]).length
-  }
-
-  const selAtt   = selected ? (attMap[selected.module.id]   ?? { count: 0, bestScore: null, passed: false }) : null
+  const selAtt    = selected ? (attMap[selected.module.id] ?? { count: 0, bestScore: null, passed: false }) : null
   const selQCount = selected ? (qCountMap[selected.module.id] ?? 0) : 0
-  const selPhase  = selected
-    ? PHASES.find(p => selected.module.order_index >= p.range[0] && selected.module.order_index <= p.range[1])
-    : null
+  const selPillar = selected ? MODULE_PILLAR[selected.module.order_index] : null
 
-  const userInitial = userName[0]?.toUpperCase() ?? 'L'
+  const STATUS_LABEL: Record<NodeState, string> = {
+    completed: t('statusCompleted'), active: t('statusActive'), locked: t('statusLocked'),
+  }
 
   return (
-    <>
+    <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', padding: '32px 28px', display: 'flex', flexDirection: 'column', gap: 20 }}>
       <style>{`
-                        
-        @keyframes pulseGlow{0%,100%{filter:drop-shadow(0 0 2px rgba(192,57,43,.4))}50%{filter:drop-shadow(0 0 8px rgba(192,57,43,.8))}}
-        @keyframes confettiPhase{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(var(--tx),80px) rotate(var(--rot));opacity:0}}
-        *{box-sizing:border-box;margin:0;padding:0;}
-        html,body{background:var(--bg);font-family:"Satoshi",sans-serif;color:var(--ink);}
-        .lp-main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
-        .lp-header{position:sticky;top:0;z-index:10;background:var(--bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:20px 40px;display:flex;align-items:center;justify-content:space-between;}
-        .lp-header h1{font-family:"Satoshi",sans-serif;font-weight:900;font-size:22px;letter-spacing:-.02em;color:var(--ink);}
-        .lp-header p{font-size:13px;color:var(--mute);margin-top:3px;}
-        .lp-scroll{overflow-y:auto;flex:1;display:flex;flex-direction:column;align-items:center;padding:32px 20px 80px;}
-        .lp-path-wrap{position:relative;}
-        .node-wrap{position:absolute;transform:translate(-50%,-50%);}
-        .node{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;will-change:transform;}
-        .node-completed{background:#C0392B;color:#fff;box-shadow:0 0 0 8px rgba(192,57,43,.15);}
-        .node-active{background:var(--card-bg);border:3px solid #C0392B;color:#C0392B;box-shadow:0 4px 24px -6px rgba(192,57,43,.3);}
-        .node-locked{background:var(--bg-2);border:2px solid var(--line);color:var(--mute);opacity:.6;cursor:default;overflow:visible;}
-        .continue-badge{position:absolute;top:-44px;left:50%;transform:translateX(-50%);white-space:nowrap;background:#C0392B;color:#fff;font-family:"Satoshi",sans-serif;font-weight:700;font-size:11px;padding:5px 12px;border-radius:999px;pointer-events:none;}
-        .continue-badge::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#C0392B;}
-        .sk{border-radius:8px;background:linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;}
-        .phase-confetti-dot{position:absolute;width:7px;height:7px;border-radius:2px;top:50%;left:50%;animation:confettiPhase .8s ease-out forwards;pointer-events:none;}
-        @media(max-width:860px){
-          .lp-header{padding:16px 20px;}
+        .lp-eyebrow{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#C0392B;margin-bottom:8px;}
+        .lp-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:28px;color:var(--ink);letter-spacing:-0.01em;}
+        .lp-subtitle{font-size:13px;color:var(--mute);margin-top:6px;}
+        .zone1-stats{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:14px;}
+        .zone1-stat-num{font-family:"Satoshi",sans-serif;font-weight:600;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums;}
+        .zone1-stat-label{font-size:11px;color:var(--mute);}
+        .zone1-sep{color:var(--mute);}
+
+        .lp-map-container{position:relative;width:100%;min-height:600px;overflow:hidden;background:var(--bg);}
+        .lp-connectors{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+        .lp-island-btn{position:absolute;transform:translate(-50%,-50%);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;border:2px solid;background:none;font-family:"Satoshi",sans-serif;padding:8px;}
+        .lp-island-name{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+        .lp-island-score{font-size:18px;font-weight:700;}
+        .lp-badge{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;margin-top:2px;}
+        .lp-badge.strength{background:rgba(15,123,108,.12);color:var(--accent-teal,#0F7B6C);}
+        .lp-badge.growth{background:rgba(192,57,43,.1);color:#C0392B;}
+
+        .lp-hub{position:absolute;transform:translate(-50%,-50%);border-radius:12px;background:var(--card-bg);border:2px solid var(--card-border);box-shadow:var(--shadow-raised);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-family:"Satoshi",sans-serif;}
+        .lp-hub-capstone{width:96px;height:96px;font-size:10px;font-weight:700;text-transform:uppercase;}
+        .lp-hub-gv{width:80px;height:80px;font-size:9px;font-weight:700;text-transform:uppercase;}
+        .lp-hub-icon{font-size:22px;}
+
+        .lp-skeleton-island{position:absolute;transform:translate(-50%,-50%);width:140px;height:140px;border-radius:50%;background:linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;}
+
+        .lp-back-btn{display:inline-flex;align-items:center;padding:8px 16px;border:1px solid var(--line);border-radius:999px;background:none;color:var(--mute);font-size:13px;cursor:pointer;font-family:"Satoshi",sans-serif;margin-bottom:20px;transition:border-color .2s,color .2s;}
+        .lp-back-btn:hover{border-color:var(--ink);color:var(--ink);}
+
+        .lp-zigzag{position:relative;max-width:560px;margin:0 auto;padding:40px 24px;width:100%;}
+        .lp-zigzag-line-bg{position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--line);}
+        .lp-zigzag-line-fill{position:absolute;left:50%;top:0;width:2px;transition:height 0.6s cubic-bezier(0.22,1,0.36,1);}
+        .lp-node-row{position:relative;display:flex;align-items:center;margin-bottom:32px;}
+        .lp-node-row:last-child{margin-bottom:0;}
+        .lp-node-circle{width:56px;height:56px;border-radius:50%;flex-shrink:0;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;}
+        .lp-node-circle--milestone{border-radius:12px;width:64px;height:64px;font-size:24px;}
+        .lp-node-info{margin:0 20px;flex:1;min-width:0;}
+        .lp-node-title{font-family:"Satoshi",sans-serif;font-weight:600;font-size:16px;color:var(--ink);}
+        .lp-node-xp{font-size:12px;font-weight:700;margin-top:4px;}
+        .lp-node-status{font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-top:4px;font-weight:600;}
+        .lp-node-cta{margin-top:8px;padding:8px 16px;border-radius:100px;border:none;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:"Satoshi",sans-serif;}
+        .lp-node-done{margin-top:8px;display:inline-flex;font-size:11px;font-weight:700;color:#16a34a;}
+
+        @media(max-width:768px){
+          .lp-map-container{min-height:auto;overflow:visible;}
+          .lp-connectors{display:none;}
+          .lp-islands-wrap{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;justify-items:center;}
+          .lp-island-btn{position:static!important;transform:none!important;width:100px!important;height:100px!important;top:auto!important;left:auto!important;}
+          .lp-hubs-wrap{display:flex;gap:16px;justify-content:center;margin-top:24px;flex-wrap:wrap;}
+          .lp-hub{position:static!important;transform:none!important;top:auto!important;left:auto!important;}
+          .lp-node-row{flex-direction:row!important;}
+          .lp-zigzag-line-bg,.lp-zigzag-line-fill{left:27px!important;}
         }
       `}</style>
 
-      <div className="lp-main">
-          {/* Header */}
-          <div className="lp-header">
-            <div>
-              <h1>Leadership Path</h1>
-              <p>{t('subtitle')}</p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              {streak >= 3 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', background: 'rgba(192,57,43,0.1)', borderRadius: 999, fontSize: 12, fontFamily: '"Satoshi",sans-serif', fontWeight: 600, color: '#C0392B' }}>
-                  {t('streakDays', { count: streak })}
-                </div>
-              )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 12 }}>
-                <span style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 900, fontSize: 18, color: '#C0392B' }}>{totalXP.toLocaleString()}</span>
-                <span style={{ fontSize: 11, color: 'var(--mute)', textTransform: 'uppercase', letterSpacing: '.12em', fontWeight: 600 }}>IC</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 12, fontSize: 12.5, fontWeight: 600, color: 'var(--ink)' }}>
-                <span style={{ color: '#C0392B' }}>{completedCount}</span> {t('modulesOf', { total: nodes.length })}
+      <AnimatePresence mode="wait">
+        {view === 'map' ? (
+          <m.div
+            key="map"
+            initial={pref ? false : { opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+          >
+            <div style={{ marginBottom: 24 }}>
+              <div className="lp-eyebrow">{t('mapEyebrow', { archetype: leaderProfile?.arquetipo ?? '—' })}</div>
+              <h1 className="lp-title">{t('pageTitle')}</h1>
+              <p className="lp-subtitle">{t('mapSubtitle')}</p>
+              <div className="zone1-stats">
+                <span><span className="zone1-stat-num">{completedCount}</span> <span className="zone1-stat-label">/ {totalModules} {t('zone1StatsModules')}</span></span>
+                <span className="zone1-sep">·</span>
+                <span><span className="zone1-stat-num">{totalXP.toLocaleString('es-CO')}</span> <span className="zone1-stat-label">XP</span></span>
               </div>
             </div>
-          </div>
 
-          {/* Scroll area */}
-          <div className="lp-scroll">
-
-            {/* ── Progress summary card ── */}
-            {!loading && nodes.length > 0 && (
-              <m.div
-                initial={{ opacity: 0, y: -12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                style={{
-                  width: '100%', maxWidth: SVG_W + 60,
-                  background: 'var(--card-bg)',
-                  border: '1px solid rgba(13,13,13,0.08)',
-                  borderRadius: 16, padding: '20px 28px',
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  marginBottom: 32,
-                  boxShadow: '0 2px 12px rgba(13,13,13,0.06)',
-                  flexWrap: 'wrap', gap: 16,
-                }}
-              >
-                <div>
-                  <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15, color: 'var(--ink)', marginBottom: 8 }}>
-                    {t('modulesCompleted', { completed: completedCount, total: nodes.length })}
-                  </div>
-                  <div style={{ width: 200, height: 6, borderRadius: 999, background: '#f0ede8', overflow: 'hidden' }}>
-                    <m.div
-                      initial={{ width: 0 }}
-                      animate={{ width: nodes.length ? `${(completedCount / nodes.length) * 100}%` : '0%' }}
-                      transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
-                      style={{ height: '100%', background: '#C0392B', borderRadius: 999 }}
-                    />
-                  </div>
-                </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 900, fontSize: 22, color: '#C0392B' }}>
-                    ⭐ {totalXP.toLocaleString()}
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--mute)', marginTop: 2, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{t('xpEarned')}</div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--mute)', fontSize: 13 }}>
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.4"/>
-                    <path d="M7 4v3l2 2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-                  </svg>
-                  {t('hoursRemaining', { hours: remainingHours })}
-                </div>
-              </m.div>
-            )}
-
-            {/* ── Path ── */}
             {loading ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 40, paddingTop: 40 }}>
-                {[1,2,3,4].map(i => <div key={i} className="sk" style={{ width: 72, height: 72, borderRadius: '50%' }} />)}
-              </div>
-            ) : nodes.length === 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '60px 20px' }}>
-                <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(192,57,43,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#C0392B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-                <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--ink)', marginBottom: 10 }}>{tCommon('comingSoon')}</div>
-                <div style={{ fontSize: 14, color: 'var(--mute)', lineHeight: 1.6, maxWidth: 300 }}>
-                  {t('preparingContent')}
-                </div>
+              <div className="lp-map-container">
+                {PILLARS.map(p => (
+                  <div key={p} className="lp-skeleton-island" style={{ top: `${PILLAR_POSITIONS[p].top}%`, left: `${PILLAR_POSITIONS[p].left}%` }} />
+                ))}
               </div>
             ) : (
-              <div className="lp-path-wrap" style={{ width: SVG_W, height: totalH }}>
-
-                {/* SVG path */}
-                <svg width={SVG_W} height={totalH} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
-                  {fullPath && (
-                    <path d={fullPath} fill="none" stroke="#e0ddd8" strokeWidth="3" strokeDasharray="8 6" />
-                  )}
-                  {completedPath && completedCount > 0 && (
-                    <m.path
-                      d={completedPath}
-                      fill="none"
-                      stroke="#C0392B"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                      style={streak >= 3 ? { animation: 'pulseGlow 2s ease-in-out infinite' } : {}}
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={srm ? { duration: 0 } : { duration: 1.5, ease: 'easeInOut', delay: 0.3 }}
-                    />
-                  )}
+              <div className="lp-map-container">
+                <svg className="lp-connectors" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  {PILLARS.map(p => {
+                    const pos = PILLAR_POSITIONS[p]
+                    return (
+                      <path
+                        key={p}
+                        d={islandArcPath({ x: pos.left, y: pos.top }, { x: CAPSTONE_POS.left, y: CAPSTONE_POS.top })}
+                        stroke="var(--line)" strokeWidth={1.5} strokeDasharray="6 4" opacity={0.5} fill="none"
+                      />
+                    )
+                  })}
                 </svg>
 
-                {/* Slots */}
-                {slots.map((slot, si) => {
-
-                  /* ── Phase card ── */
-                  if (slot.type === 'phase') {
-                    const complete    = isPhaseComplete(slot.phase.label)
-                    const modCount    = phaseModuleCount(slot.phase.label)
-                    const celebrating = celebPhases.has(slot.phase.label)
-                    const particles   = celebrating ? phaseConfettiParticles(slot.phase.label) : []
-
+                <div className="lp-islands-wrap">
+                  {PILLARS.map((pillar, i) => {
+                    const pos = PILLAR_POSITIONS[pillar]
+                    const score = pillarScores[pillar]
+                    const size = 120 + (score / 100) * 60
+                    const isStrength = leaderProfile?.fortalezas.includes(pillar)
+                    const isGrowth   = leaderProfile?.areas_crecimiento.includes(pillar)
                     return (
-                      <m.div
-                        key={`phase-${slot.phase.label}`}
+                      <m.button
+                        key={pillar}
+                        className="lp-island-btn"
                         style={{
-                          position: 'absolute',
-                          top: slot.y,
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          width: 280,
-                          background: complete
-                            ? 'linear-gradient(135deg,rgba(192,57,43,0.08),rgba(192,57,43,0.02))'
-                            : 'var(--card-bg)',
-                          border: `1px solid ${complete ? 'rgba(192,57,43,0.3)' : 'rgba(13,13,13,0.08)'}`,
-                          borderRadius: 14,
-                          padding: '14px 20px',
-                          display: 'flex', alignItems: 'center', gap: 12,
-                          boxShadow: '0 2px 12px rgba(13,13,13,0.06)',
-                          overflow: 'visible',
-                          zIndex: 2,
+                          top: `${pos.top}%`, left: `${pos.left}%`,
+                          width: size, height: size,
+                          background: PILLAR_COLORS[pillar].soft,
+                          borderColor: PILLAR_COLORS[pillar].solid,
                         }}
-                        initial={{ opacity: 0, y: 16 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: '-60px' }}
-                        transition={srm ? { duration: 0.15 } : { duration: 0.45 }}
+                        initial={pref ? false : { scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: 'spring', stiffness: 200, damping: 20, delay: i * 0.1 }}
+                        whileHover={{ scale: 1.06 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => { setActiveIsland(pillar); setView('island') }}
                       >
-                        {/* Phase confetti */}
-                        {particles.map((p, pi) => (
-                          <div
-                            key={pi}
-                            className="phase-confetti-dot"
-                            style={{ background: p.color, '--tx': p.tx, '--rot': p.rot, animationDelay: `${p.delay}s` } as React.CSSProperties}
-                          />
-                        ))}
-
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C0392B', marginBottom: 2 }}>
-                            {t(`phases.${slot.phase.label}` as 'phases.phase1')}
-                          </div>
-                          <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>
-                            {slot.phase.name}
-                          </div>
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
-                          <span style={{ fontSize: 12, color: 'var(--mute)' }}>{t('moduleCount', { count: modCount })}</span>
-                          {complete && (
-                            <span style={{ fontSize: 11, padding: '2px 8px', background: 'rgba(192,57,43,0.1)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.2)', borderRadius: 999, whiteSpace: 'nowrap' }}>
-                              {t('phaseCompleted')}
-                            </span>
-                          )}
-                        </div>
-                      </m.div>
+                        <span style={{ fontSize: 24, lineHeight: 1 }}>{PILLAR_ICONS[pillar]}</span>
+                        <span className="lp-island-name" style={{ color: PILLAR_COLORS[pillar].solid }}>{pillar}</span>
+                        <span className="lp-island-score" style={{ color: PILLAR_COLORS[pillar].solid }}>{score}%</span>
+                        {isStrength && <span className="lp-badge strength">{tModules('strengthBadge')}</span>}
+                        {isGrowth && <span className="lp-badge growth">{tModules('growthBadge')}</span>}
+                      </m.button>
                     )
-                  }
+                  })}
+                </div>
 
-                  /* ── Node ── */
-                  const node     = nodes[slot.nodeIdx]
-                  const prevNode = slot.nodeIdx > 0 ? nodes[slot.nodeIdx - 1] : null
-                  const posX     = ZIGZAG_XS[slot.zigIdx % 3]
-                  const posY     = slot.nodeY
-                  const isActive    = node.state === 'active'
-                  const isCompleted = node.state === 'completed'
-                  const isLocked    = node.state === 'locked'
-
-                  const springEntry = srm
-                    ? { duration: 0.15 }
-                    : { type: 'spring' as const, stiffness: 200, damping: 20, delay: slot.nodeIdx * 0.07 }
-
-                  return (
-                    <m.div
-                      key={node.module.id}
-                      id={isActive ? 'active-node' : undefined}
-                      className="node-wrap"
-                      style={{ left: posX, top: posY }}
-                      initial={{ opacity: 0, y: 40, scale: 0.8 }}
-                      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                      viewport={{ once: true, margin: '-80px' }}
-                      transition={springEntry}
-                    >
-                      {/* "Continúa aquí" badge */}
-                      {isActive && (
-                        <m.div
-                          className="continue-badge"
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.8 + slot.nodeIdx * 0.07 }}
-                        >
-                          {t('continueHere')}
-                        </m.div>
-                      )}
-
-                      {/* Streak badge — right of active node */}
-                      {isActive && streak >= 3 && (
-                        <div style={{
-                          position: 'absolute',
-                          left: NODE_R * 2 + 8,
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          background: 'rgba(192,57,43,0.1)',
-                          borderRadius: 999, padding: '3px 8px',
-                          fontSize: 11, fontFamily: '"Satoshi",sans-serif',
-                          fontWeight: 600, color: '#C0392B',
-                          whiteSpace: 'nowrap',
-                        }}>
-                          {t('streakDays', { count: streak })}
-                        </div>
-                      )}
-
-                      {/* ── Completed node ── */}
-                      {isCompleted && (
-                        <m.div
-                          className="node node-completed"
-                          whileHover={srm ? {} : { scale: 1.05 }}
-                          transition={{ type: 'spring', stiffness: 300 }}
-                          onClick={() => setSelected(node)}
-                        >
-                          {CHECK_ICON}
-                        </m.div>
-                      )}
-
-                      {/* ── Active node ── */}
-                      {isActive && (
-                        <m.div
-                          className="node node-active"
-                          animate={srm ? {} : { scale: [1, 1.06, 1] }}
-                          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                          whileHover={srm ? {} : { scale: 1.1 }}
-                          onClick={() => setSelected(node)}
-                        >
-                          {NODE_ICONS[node.module.order_index] ?? NODE_ICONS[1]}
-                        </m.div>
-                      )}
-
-                      {/* ── Locked node ── */}
-                      {isLocked && (
-                        <div
-                          className="node node-locked"
-                          onMouseEnter={() => setHoveredLocked(node.module.id)}
-                          onMouseLeave={() => setHoveredLocked(null)}
-                        >
-                          {LOCK_ICON}
-                          <AnimatePresence>
-                            {hoveredLocked === node.module.id && (
-                              <m.div
-                                initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 4, scale: 0.97 }}
-                                transition={{ duration: 0.15 }}
-                                style={{
-                                  position: 'absolute',
-                                  bottom: '110%', left: '50%', transform: 'translateX(-50%)',
-                                  background: '#0D0D0D', color: '#fff',
-                                  fontSize: 12, borderRadius: 8,
-                                  padding: '8px 12px',
-                                  maxWidth: 200, textAlign: 'center',
-                                  whiteSpace: 'normal', lineHeight: 1.4,
-                                  pointerEvents: 'none', zIndex: 30,
-                                }}
-                              >
-                                {t('unlockHint', { title: prevNode?.module.title ?? t('previousModule') })}
-                              </m.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      )}
-
-                      {/* Module name */}
-                      <div style={{
-                        position: 'absolute',
-                        top: NODE_R * 2 + 8,
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        fontSize: 13,
-                        fontWeight: 500,
-                        fontFamily: 'Satoshi,sans-serif',
-                        color: isLocked ? 'var(--mute)' : '#0D0D0D',
-                        textAlign: 'center',
-                        maxWidth: 120,
-                        whiteSpace: 'normal',
-                        lineHeight: 1.35,
-                      }}>
-                        {String(node.module.order_index).padStart(2, '0')} · {node.module.title}
-                      </div>
-                    </m.div>
-                  )
-                })}
+                <div className="lp-hubs-wrap">
+                  <button
+                    className="lp-hub lp-hub-capstone"
+                    style={{
+                      borderColor: capstoneState === 'evaluado' ? '#C0392B' : 'var(--card-border)',
+                      background: capstoneState === 'evaluado' ? 'rgba(192,57,43,0.06)' : 'var(--card-bg)',
+                      opacity: capstoneState === 'bloqueado' ? 0.5 : 1,
+                      top: `${CAPSTONE_POS.top}%`, left: `${CAPSTONE_POS.left}%`,
+                    }}
+                    onClick={handleCapstoneClick}
+                  >
+                    <span className="lp-hub-icon">🏆</span>
+                    <span>CAPSTONE</span>
+                  </button>
+                  <button
+                    className="lp-hub lp-hub-gv"
+                    style={{ top: `${GREAT_VENTURE_POS.top}%`, left: `${GREAT_VENTURE_POS.left}%` }}
+                    onClick={() => router.push('/dashboard/great-venture')}
+                  >
+                    <span className="lp-hub-icon">🗺️</span>
+                    <span>GREAT VENTURE</span>
+                  </button>
+                </div>
               </div>
             )}
-          </div>
-        </div>
+          </m.div>
+        ) : (
+          <m.div
+            key="island"
+            initial={pref ? false : { opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+          >
+            <button className="lp-back-btn" onClick={() => { setView('map'); setActiveIsland(null) }}>
+              ← {t('backToMap')}
+            </button>
 
-      {/* ── Side panel ── */}
+            <div style={{ marginBottom: 28 }}>
+              <h2 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 32, color: PILLAR_COLORS[island].solid }}>{island}</h2>
+              <div style={{ fontSize: 18, color: 'var(--mute)', marginTop: 4 }}>{pillarScores[island]}%</div>
+              <p style={{ fontSize: 13, color: 'var(--mute)', marginTop: 8 }}>{t(`pillarDescriptions.${PILLAR_I18N_KEY[island]}`)}</p>
+            </div>
+
+            <div className="lp-zigzag">
+              <div className="lp-zigzag-line-bg" />
+              <div className="lp-zigzag-line-fill" style={{ height: `${fillPct}%`, background: fillColor }} />
+
+              {nodes.map((node, idx) => {
+                const pillarColor = PILLAR_COLORS[MODULE_PILLAR[node.module.order_index]].solid
+                const circleBg = node.state === 'completed' ? pillarColor : node.state === 'locked' ? 'var(--bg-2)' : 'var(--card-bg)'
+                const circleBorder = node.state === 'completed' ? `2px solid ${pillarColor}` : node.state === 'locked' ? '2px solid var(--line)' : `3px solid ${pillarColor}`
+                const statusColor = node.state === 'completed' ? '#16a34a' : node.state === 'active' ? pillarColor : 'var(--mute)'
+                return (
+                  <m.div
+                    key={node.module.id}
+                    className="lp-node-row"
+                    style={{ flexDirection: idx % 2 === 0 ? 'row' : 'row-reverse', cursor: node.state !== 'locked' ? 'pointer' : 'default' }}
+                    initial={pref ? false : { opacity: 0, x: idx % 2 === 0 ? -16 : 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.07, type: 'spring', stiffness: 200, damping: 22 }}
+                    onClick={node.state !== 'locked' ? () => setSelected(node) : undefined}
+                  >
+                    <div className="lp-node-circle" style={{ background: circleBg, border: circleBorder, color: node.state === 'active' ? pillarColor : '#fff' }}>
+                      {node.state === 'completed' && <span style={{ fontSize: 20, color: '#fff' }}>✓</span>}
+                      {node.state === 'active' && <>{String(node.module.order_index).padStart(2, '0')}<PulseRing color={pillarColor} /></>}
+                      {node.state === 'locked' && <span style={{ fontSize: 16, color: 'var(--mute)' }}>🔒</span>}
+                    </div>
+                    <div className="lp-node-info">
+                      <div className="lp-node-title">{String(node.module.order_index).padStart(2, '0')} — {node.module.title}</div>
+                      <div className="lp-node-xp" style={{ color: pillarColor }}>★ {node.module.xp_reward} XP</div>
+                      <div className="lp-node-status" style={{ color: statusColor }}>{STATUS_LABEL[node.state]}</div>
+                      {node.state === 'active' && (
+                        <button
+                          className="lp-node-cta"
+                          style={{ background: pillarColor }}
+                          onClick={e => { e.stopPropagation(); router.push(`/dashboard/modules/${node.module.id}`) }}
+                        >
+                          {t('inlineStartBtn')}
+                        </button>
+                      )}
+                      {node.state === 'completed' && <div className="lp-node-done">{t('completedBadge')}</div>}
+                    </div>
+                  </m.div>
+                )
+              })}
+
+              {/* Hito — Capstone */}
+              <m.div
+                className="lp-node-row"
+                style={{ flexDirection: nodes.length % 2 === 0 ? 'row' : 'row-reverse', cursor: 'pointer' }}
+                initial={pref ? false : { opacity: 0, x: nodes.length % 2 === 0 ? -16 : 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: nodes.length * 0.07, type: 'spring', stiffness: 200, damping: 22 }}
+                onClick={handleCapstoneClick}
+              >
+                <div
+                  className="lp-node-circle lp-node-circle--milestone"
+                  style={{
+                    background: capstoneState === 'evaluado' ? 'rgba(192,57,43,0.06)' : 'var(--card-bg)',
+                    border: capstoneState === 'evaluado' ? '2px solid #C0392B' : '2px solid var(--card-border)',
+                    opacity: capstoneState === 'bloqueado' ? 0.5 : 1,
+                  }}
+                >
+                  🏆
+                </div>
+                <div className="lp-node-info">
+                  <div className="lp-node-title">Capstone</div>
+                </div>
+              </m.div>
+
+              {/* Hito — Great Venture */}
+              <m.div
+                className="lp-node-row"
+                style={{ flexDirection: (nodes.length + 1) % 2 === 0 ? 'row' : 'row-reverse', cursor: 'pointer' }}
+                initial={pref ? false : { opacity: 0, x: (nodes.length + 1) % 2 === 0 ? -16 : 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: (nodes.length + 1) * 0.07, type: 'spring', stiffness: 200, damping: 22 }}
+                onClick={() => router.push('/dashboard/great-venture')}
+              >
+                <div className="lp-node-circle lp-node-circle--milestone" style={{ background: 'var(--card-bg)', border: '2px solid var(--card-border)' }}>
+                  🗺️
+                </div>
+                <div className="lp-node-info">
+                  <div className="lp-node-title">Great Venture</div>
+                </div>
+              </m.div>
+            </div>
+          </m.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Panel lateral de detalle — preservado del diseño anterior ── */}
       <AnimatePresence>
         {selected && (
           <>
-            {/* Overlay */}
             <m.div
               key="overlay"
               initial={{ opacity: 0 }}
@@ -663,8 +530,6 @@ export default function LeadershipPathPage() {
               style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 49 }}
               onClick={() => setSelected(null)}
             />
-
-            {/* Panel */}
             <m.div
               key="panel"
               initial={{ opacity: 0, x: 320 }}
@@ -684,7 +549,6 @@ export default function LeadershipPathPage() {
                 flexDirection: 'column',
               }}
             >
-              {/* Close */}
               <button
                 onClick={() => setSelected(null)}
                 style={{ position: 'absolute', top: 16, right: 16, background: 'var(--bg-2)', border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
@@ -694,24 +558,20 @@ export default function LeadershipPathPage() {
                 </svg>
               </button>
 
-              {/* Phase badge */}
-              {selPhase && (
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C0392B', marginBottom: 8 }}>
-                  {t(`phases.${selPhase.label}` as 'phases.phase1')} · {selPhase.name}
+              {selPillar && (
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: PILLAR_COLORS[selPillar].solid, marginBottom: 8 }}>
+                  {selPillar}
                 </div>
               )}
 
-              {/* Title */}
               <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 900, fontSize: 26, color: 'var(--ink)', lineHeight: 1.2, marginBottom: 10 }}>
                 {selected.module.title}
               </div>
 
-              {/* Description */}
               <div style={{ fontSize: 14, color: 'var(--mute)', lineHeight: 1.65, marginBottom: 20 }}>
                 {selected.module.description}
               </div>
 
-              {/* Stats */}
               <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600, color: '#C0392B', background: 'rgba(192,57,43,0.08)', padding: '5px 10px', borderRadius: 999 }}>
                   ⭐ {selected.module.xp_reward} XP
@@ -728,10 +588,8 @@ export default function LeadershipPathPage() {
                 )}
               </div>
 
-              {/* Divider */}
               <div style={{ height: 1, background: 'rgba(13,13,13,0.08)', marginBottom: 18 }} />
 
-              {/* Learn bullets */}
               <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 600, fontSize: 14, color: 'var(--ink)', marginBottom: 10 }}>{t('whatYouWillLearn')}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
                 {(t.raw('learnBullets') as string[]).map((b, i) => (
@@ -741,10 +599,8 @@ export default function LeadershipPathPage() {
                 ))}
               </div>
 
-              {/* Divider */}
               <div style={{ height: 1, background: 'rgba(13,13,13,0.08)', marginBottom: 18 }} />
 
-              {/* Attempts info */}
               {selAtt && (
                 <div style={{ marginBottom: 20 }}>
                   {selAtt.count === 0 ? (
@@ -757,7 +613,6 @@ export default function LeadershipPathPage() {
                 </div>
               )}
 
-              {/* CTA */}
               <div style={{ marginTop: 'auto' }}>
                 {selected.state === 'completed' ? (
                   <>
@@ -789,6 +644,6 @@ export default function LeadershipPathPage() {
           </>
         )}
       </AnimatePresence>
-    </>
+    </div>
   )
 }

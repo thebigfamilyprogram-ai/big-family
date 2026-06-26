@@ -74,6 +74,8 @@
   --accent-amber: #D4821A;
   --accent-teal: #0F7B6C;
   --accent-muted: #8C7B6E;
+  --accent-purple: #534AB7;
+  --accent-green: #639922;
 
   /* Typography */
   --font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
