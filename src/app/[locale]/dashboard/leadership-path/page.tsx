@@ -71,6 +71,12 @@ const PILLAR_ICONS: Record<Pillar, string> = {
   Yo: '🧠', Norte: '🧭', Vínculo: '🤝', Acción: '⚡', Legado: '🌱',
 }
 
+// Triplete "R,G,B" por pilar — para componer rgba() dinámico en las 3 capas de
+// profundidad de cada isla (sombra/gradiente/borde) vía la custom property --island-rgb.
+const PILLAR_RGB: Record<Pillar, string> = {
+  Yo: '192,57,43', Norte: '15,123,108', Vínculo: '212,130,26', Acción: '83,74,183', Legado: '99,153,34',
+}
+
 // Pillar → sufijo de key i18n (ascii, las keys del JSON no llevan tilde/mayúscula)
 const PILLAR_I18N_KEY: Record<Pillar, string> = {
   Yo: 'yo', Norte: 'norte', Vínculo: 'vinculo', Acción: 'accion', Legado: 'legado',
@@ -258,9 +264,9 @@ export default function LeadershipPathPage() {
   return (
     <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', padding: '32px 28px', display: 'flex', flexDirection: 'column', gap: 20 }}>
       <style>{`
-        .lp-eyebrow{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#C0392B;margin-bottom:8px;}
-        .lp-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:28px;color:var(--ink);letter-spacing:-0.01em;}
-        .lp-subtitle{font-size:13px;color:var(--mute);margin-top:6px;}
+        .lp-eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#C0392B;margin-bottom:8px;}
+        .lp-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:36px;color:var(--ink);letter-spacing:-0.01em;}
+        .lp-subtitle{font-family:"Instrument Serif",serif;font-style:italic;font-size:14px;color:var(--mute);margin-top:6px;}
         .zone1-stats{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:14px;}
         .zone1-stat-num{font-family:"Satoshi",sans-serif;font-weight:600;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums;}
         .zone1-stat-label{font-size:11px;color:var(--mute);}
@@ -268,19 +274,52 @@ export default function LeadershipPathPage() {
 
         .lp-map-container{position:relative;width:100%;min-height:600px;overflow:hidden;background:var(--bg);}
         .lp-connectors{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
-        .lp-island-btn{position:absolute;transform:translate(-50%,-50%);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;border:2px solid;background:none;font-family:"Satoshi",sans-serif;padding:8px;}
-        .lp-island-name{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
-        .lp-island-score{font-size:18px;font-weight:700;}
-        .lp-badge{font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;margin-top:2px;}
-        .lp-badge.strength{background:rgba(15,123,108,.12);color:var(--accent-teal,#0F7B6C);}
-        .lp-badge.growth{background:rgba(192,57,43,.1);color:#C0392B;}
+        .lp-connector-halo{stroke:var(--line);stroke-width:8px;opacity:.06;fill:none;}
+        .lp-connector-path{stroke:var(--line-strong);stroke-width:1.5px;opacity:.4;fill:none;}
+        [data-theme="dark"] .lp-connector-path{opacity:.25;}
 
-        .lp-hub{position:absolute;transform:translate(-50%,-50%);border-radius:12px;background:var(--card-bg);border:2px solid var(--card-border);box-shadow:var(--shadow-raised);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-family:"Satoshi",sans-serif;}
-        .lp-hub-capstone{width:96px;height:96px;font-size:10px;font-weight:700;text-transform:uppercase;}
-        .lp-hub-gv{width:80px;height:80px;font-size:9px;font-weight:700;text-transform:uppercase;}
-        .lp-hub-icon{font-size:22px;}
+        /* Isla — 3 capas: sombra exterior (box-shadow), gradiente interno (background),
+           borde con brillo (border). El color de pilar llega vía --island-rgb (inline,
+           "R,G,B") para poder componer rgba() dinámico sin JS de tema — el contraste de
+           modo oscuro se resuelve solo con [data-theme="dark"], igual que el resto del CSS. */
+        .lp-island-btn{
+          position:absolute;transform:translate(-50%,-50%);border-radius:50%;
+          display:flex;flex-direction:column;align-items:center;justify-content:center;
+          cursor:pointer;background:none;font-family:"Satoshi",sans-serif;padding:8px;
+          --op-grad-1:0.18;--op-grad-2:0.08;--op-grad-3:0.04;--op-border:0.35;
+          --op-shadow-1:0.25;--op-shadow-2:0.15;--op-shadow-3:0.20;--shadow-blur-1:8px;
+          background:radial-gradient(circle at 35% 35%, rgba(var(--island-rgb),var(--op-grad-1)) 0%, rgba(var(--island-rgb),var(--op-grad-2)) 60%, rgba(var(--island-rgb),var(--op-grad-3)) 100%);
+          border:1.5px solid rgba(var(--island-rgb),var(--op-border));
+          box-shadow:0 var(--shadow-blur-1) 32px rgba(var(--island-rgb),var(--op-shadow-1)), 0 2px 8px rgba(var(--island-rgb),var(--op-shadow-2)), 0 0 0 1px rgba(var(--island-rgb),var(--op-shadow-3));
+          transition:border-color .2s;
+        }
+        .lp-island-btn:hover{--shadow-blur-1:16px;}
+        .lp-island-btn--active{--op-border:0.8;}
+        [data-theme="dark"] .lp-island-btn{--op-grad-1:0.23;--op-grad-2:0.13;--op-grad-3:0.09;--op-border:0.55;}
 
-        .lp-skeleton-island{position:absolute;transform:translate(-50%,-50%);width:140px;height:140px;border-radius:50%;background:linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;}
+        .lp-island-icon{font-size:28px;line-height:1;margin-bottom:8px;filter:drop-shadow(0 2px 4px rgba(var(--island-rgb),0.3));}
+        .lp-island-name{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;font-size:15px;margin-bottom:4px;}
+        .lp-island-score{font-family:"Satoshi",sans-serif;font-size:32px;font-weight:700;color:var(--ink);line-height:1;margin-bottom:6px;}
+        .lp-badge{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:100px;}
+        .lp-badge.strength{background:rgba(15,123,108,.15);color:#0F7B6C;}
+        .lp-badge.growth{background:rgba(192,57,43,.12);color:#C0392B;}
+        [data-theme="dark"] .lp-badge.strength{background:rgba(15,123,108,.25);}
+        [data-theme="dark"] .lp-badge.growth{background:rgba(192,57,43,.22);}
+
+        .lp-hub{
+          position:absolute;transform:translate(-50%,-50%);background:var(--card-bg);border:none;
+          display:flex;flex-direction:column;align-items:center;justify-content:center;
+          cursor:pointer;font-family:"Satoshi",sans-serif;
+          box-shadow:0 8px 24px rgba(13,13,13,.12), 0 2px 6px rgba(13,13,13,.08), 0 0 0 1px rgba(13,13,13,.06);
+        }
+        [data-theme="dark"] .lp-hub{box-shadow:0 8px 24px rgba(0,0,0,.4), 0 2px 6px rgba(0,0,0,.3), 0 0 0 1px rgba(255,255,255,.08);}
+        .lp-hub-icon{font-size:28px;}
+        .lp-hub-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-top:6px;}
+        .lp-hub-capstone{width:100px;height:100px;border-radius:16px;}
+        .lp-hub-gv{width:88px;height:88px;border-radius:14px;}
+        .lp-hub-gv .lp-hub-label{font-size:9px;}
+
+        .lp-skeleton-island{position:absolute;transform:translate(-50%,-50%);width:190px;height:190px;border-radius:50%;background:linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;}
 
         .lp-back-btn{display:inline-flex;align-items:center;padding:8px 16px;border:1px solid var(--line);border-radius:999px;background:none;color:var(--mute);font-size:13px;cursor:pointer;font-family:"Satoshi",sans-serif;margin-bottom:20px;transition:border-color .2s,color .2s;}
         .lp-back-btn:hover{border-color:var(--ink);color:var(--ink);}
@@ -342,12 +381,12 @@ export default function LeadershipPathPage() {
                 <svg className="lp-connectors" viewBox="0 0 100 100" preserveAspectRatio="none">
                   {PILLARS.map(p => {
                     const pos = PILLAR_POSITIONS[p]
+                    const d = islandArcPath({ x: pos.left, y: pos.top }, { x: CAPSTONE_POS.left, y: CAPSTONE_POS.top })
                     return (
-                      <path
-                        key={p}
-                        d={islandArcPath({ x: pos.left, y: pos.top }, { x: CAPSTONE_POS.left, y: CAPSTONE_POS.top })}
-                        stroke="var(--line)" strokeWidth={1.5} strokeDasharray="6 4" opacity={0.5} fill="none"
-                      />
+                      <g key={p}>
+                        <path className="lp-connector-halo" d={d} />
+                        <path className="lp-connector-path" d={d} strokeDasharray="8 6" />
+                      </g>
                     )
                   })}
                 </svg>
@@ -356,29 +395,29 @@ export default function LeadershipPathPage() {
                   {PILLARS.map((pillar, i) => {
                     const pos = PILLAR_POSITIONS[pillar]
                     const score = pillarScores[pillar]
-                    const size = 120 + (score / 100) * 60
+                    const size = 160 + (score / 100) * 60
                     const isStrength = leaderProfile?.fortalezas.includes(pillar)
                     const isGrowth   = leaderProfile?.areas_crecimiento.includes(pillar)
+                    const isActive   = activeIsland === pillar
                     return (
                       <m.button
                         key={pillar}
-                        className="lp-island-btn"
+                        className={`lp-island-btn${isActive ? ' lp-island-btn--active' : ''}`}
                         style={{
                           top: `${pos.top}%`, left: `${pos.left}%`,
                           width: size, height: size,
-                          background: PILLAR_COLORS[pillar].soft,
-                          borderColor: PILLAR_COLORS[pillar].solid,
-                        }}
+                          '--island-rgb': PILLAR_RGB[pillar],
+                        } as React.CSSProperties}
                         initial={pref ? false : { scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
+                        animate={{ scale: isActive ? 1.03 : 1, opacity: 1 }}
                         transition={{ type: 'spring', stiffness: 200, damping: 20, delay: i * 0.1 }}
-                        whileHover={{ scale: 1.06 }}
+                        whileHover={{ scale: 1.06, y: -4 }}
                         whileTap={{ scale: 0.97 }}
                         onClick={() => { setActiveIsland(pillar); setView('island') }}
                       >
-                        <span style={{ fontSize: 24, lineHeight: 1 }}>{PILLAR_ICONS[pillar]}</span>
+                        <span className="lp-island-icon">{PILLAR_ICONS[pillar]}</span>
                         <span className="lp-island-name" style={{ color: PILLAR_COLORS[pillar].solid }}>{pillar}</span>
-                        <span className="lp-island-score" style={{ color: PILLAR_COLORS[pillar].solid }}>{score}%</span>
+                        <span className="lp-island-score">{score}%</span>
                         {isStrength && <span className="lp-badge strength">{tModules('strengthBadge')}</span>}
                         {isGrowth && <span className="lp-badge growth">{tModules('growthBadge')}</span>}
                       </m.button>
@@ -390,7 +429,6 @@ export default function LeadershipPathPage() {
                   <button
                     className="lp-hub lp-hub-capstone"
                     style={{
-                      borderColor: capstoneState === 'evaluado' ? '#C0392B' : 'var(--card-border)',
                       background: capstoneState === 'evaluado' ? 'rgba(192,57,43,0.06)' : 'var(--card-bg)',
                       opacity: capstoneState === 'bloqueado' ? 0.5 : 1,
                       top: `${CAPSTONE_POS.top}%`, left: `${CAPSTONE_POS.left}%`,
@@ -398,7 +436,7 @@ export default function LeadershipPathPage() {
                     onClick={handleCapstoneClick}
                   >
                     <span className="lp-hub-icon">🏆</span>
-                    <span>CAPSTONE</span>
+                    <span className="lp-hub-label">CAPSTONE</span>
                   </button>
                   <button
                     className="lp-hub lp-hub-gv"
@@ -406,7 +444,7 @@ export default function LeadershipPathPage() {
                     onClick={() => router.push('/dashboard/great-venture')}
                   >
                     <span className="lp-hub-icon">🗺️</span>
-                    <span>GREAT VENTURE</span>
+                    <span className="lp-hub-label">GREAT VENTURE</span>
                   </button>
                 </div>
               </div>
