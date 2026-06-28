@@ -1289,6 +1289,10 @@
       "statusCompleted": "مكتمل",
       "statusActive": "قيد التنفيذ",
       "statusLocked": "مقفل",
+      "moduleLabel": "وحدة",
+      "checkpointLabel": "نقطة تفقد",
+      "finalDestinationLabel": "الوجهة النهائية",
+      "specialMissionLabel": "مهمة خاصة",
       "pillarDescriptions": {
         "yo": "علاقتك بنفسك، الانضباط الذاتي والهدف",
         "norte": "رؤيتك، إبداعك وابتكارك",

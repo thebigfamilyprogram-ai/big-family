@@ -1289,6 +1289,10 @@
       "statusCompleted": "Completed",
       "statusActive": "In progress",
       "statusLocked": "Locked",
+      "moduleLabel": "MODULE",
+      "checkpointLabel": "CHECKPOINT",
+      "finalDestinationLabel": "FINAL DESTINATION",
+      "specialMissionLabel": "SPECIAL MISSION",
       "pillarDescriptions": {
         "yo": "Your relationship with yourself, self-discipline and purpose",
         "norte": "Your vision, creativity and innovation",

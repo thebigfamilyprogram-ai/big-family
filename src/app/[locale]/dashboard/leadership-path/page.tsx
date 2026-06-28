@@ -77,6 +77,15 @@ const PILLAR_RGB: Record<Pillar, string> = {
   Yo: '192,57,43', Norte: '15,123,108', Vínculo: '212,130,26', Acción: '83,74,183', Legado: '99,153,34',
 }
 
+// Border-radius irregular por isla — forma orgánica, no círculo perfecto.
+const PILLAR_SHAPE: Record<Pillar, string> = {
+  Yo:      '60% 40% 55% 45% / 45% 55% 40% 60%',
+  Norte:   '45% 55% 40% 60% / 60% 40% 55% 45%',
+  Vínculo: '55% 45% 60% 40% / 40% 60% 45% 55%',
+  Acción:  '40% 60% 45% 55% / 55% 45% 60% 40%',
+  Legado:  '50% 50% 60% 40% / 40% 60% 50% 50%',
+}
+
 // Pillar → sufijo de key i18n (ascii, las keys del JSON no llevan tilde/mayúscula)
 const PILLAR_I18N_KEY: Record<Pillar, string> = {
   Yo: 'yo', Norte: 'norte', Vínculo: 'vinculo', Acción: 'accion', Legado: 'legado',
@@ -104,6 +113,26 @@ function islandArcPath(a: { x: number; y: number }, b: { x: number; y: number })
   const my = Math.min(a.y, b.y) - 8
   return `M ${a.x},${a.y} Q ${mx},${my} ${b.x},${b.y}`
 }
+
+// Línea serpenteante del zigzag interior — coordenadas porcentuales (viewBox 0 0 100 100,
+// preserveAspectRatio="none" para que se estire a la altura real del contenedor). Oscila
+// izquierda/derecha por tramo y conecta cada tramo con una curva suave (control points
+// horizontales en el punto medio de cada Y), evocando un camino orgánico — no intenta
+// alinear exactamente con cada nodo (los nodos alternan por flexDirection row/row-reverse,
+// un sistema de posicionamiento distinto), es un fondo decorativo.
+function buildZigzagPath(totalSlots: number): string {
+  const pts = Array.from({ length: totalSlots + 1 }, (_, i) => ({
+    x: i % 2 === 0 ? 30 : 70,
+    y: (i / totalSlots) * 100,
+  }))
+  let d = `M ${pts[0].x} ${pts[0].y}`
+  for (let i = 0; i < pts.length - 1; i++) {
+    const cy = (pts[i].y + pts[i + 1].y) / 2
+    d += ` C ${pts[i].x} ${cy}, ${pts[i + 1].x} ${cy}, ${pts[i + 1].x} ${pts[i + 1].y}`
+  }
+  return d
+}
+const ZIGZAG_PATH_D = buildZigzagPath(TOTAL_NODES)
 
 export default function LeadershipPathPage() {
   const router      = useRouter()
@@ -247,6 +276,12 @@ export default function LeadershipPathPage() {
     ? PILLAR_COLORS[MODULE_PILLAR[nodes[activeModuleIdx].module.order_index]].solid
     : PILLAR_COLORS[island].solid
 
+  // Pilar del módulo que el estudiante debe completar ahora — la ruta marítima
+  // hacia ESE pilar lleva el punto animado, el resto quedan estáticas.
+  const activeRoutePillar: Pillar | null = activeModuleIdx !== -1
+    ? MODULE_PILLAR[nodes[activeModuleIdx].module.order_index]
+    : null
+
   function handleCapstoneClick() {
     if (capstoneState === 'bloqueado' || capstoneState === 'enviado') return
     if (capstoneState === 'en_progreso') router.push('/dashboard/projects/new')
@@ -272,28 +307,32 @@ export default function LeadershipPathPage() {
         .zone1-stat-label{font-size:11px;color:var(--mute);}
         .zone1-sep{color:var(--mute);}
 
-        .lp-map-container{position:relative;width:100%;min-height:600px;overflow:hidden;background:var(--bg);}
+        .lp-map-container{position:relative;width:100%;min-height:720px;overflow:visible;background:var(--bg);padding-bottom:80px;}
+        .lp-sea{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+        .lp-sea-ring{stroke:var(--line);stroke-width:.5px;fill:none;opacity:.3;}
         .lp-connectors{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
         .lp-connector-halo{stroke:var(--line);stroke-width:8px;opacity:.06;fill:none;}
-        .lp-connector-path{stroke:var(--line-strong);stroke-width:1.5px;opacity:.4;fill:none;}
-        [data-theme="dark"] .lp-connector-path{opacity:.25;}
+        .lp-connector-path{stroke-width:2px;opacity:.3;fill:none;}
+        .lp-connector-dot{filter:drop-shadow(0 0 3px rgba(0,0,0,.25));}
 
-        /* Isla — 3 capas: sombra exterior (box-shadow), gradiente interno (background),
-           borde con brillo (border). El color de pilar llega vía --island-rgb (inline,
-           "R,G,B") para poder componer rgba() dinámico sin JS de tema — el contraste de
-           modo oscuro se resuelve solo con [data-theme="dark"], igual que el resto del CSS. */
+        /* Isla — forma orgánica (border-radius irregular vía --island-shape) con 4 capas:
+           sombra de elevación, gradiente interno, borde con brillo, highlight inset. El
+           color de pilar llega vía --island-rgb (inline, "R,G,B") para poder componer
+           rgba() dinámico sin JS de tema — el contraste de modo oscuro se resuelve solo
+           con [data-theme="dark"], igual que el resto del CSS. */
         .lp-island-btn{
-          position:absolute;transform:translate(-50%,-50%);border-radius:50%;
+          position:absolute;transform:translate(-50%,-50%);
           display:flex;flex-direction:column;align-items:center;justify-content:center;
           cursor:pointer;background:none;font-family:"Satoshi",sans-serif;padding:8px;
+          border-radius:var(--island-shape,50%);
           --op-grad-1:0.18;--op-grad-2:0.08;--op-grad-3:0.04;--op-border:0.35;
-          --op-shadow-1:0.25;--op-shadow-2:0.15;--op-shadow-3:0.20;--shadow-blur-1:8px;
+          --op-shadow-1:0.20;--op-shadow-2:0.15;--op-shadow-3:0.25;--shadow-blur-1:12px;
           background:radial-gradient(circle at 35% 35%, rgba(var(--island-rgb),var(--op-grad-1)) 0%, rgba(var(--island-rgb),var(--op-grad-2)) 60%, rgba(var(--island-rgb),var(--op-grad-3)) 100%);
           border:1.5px solid rgba(var(--island-rgb),var(--op-border));
-          box-shadow:0 var(--shadow-blur-1) 32px rgba(var(--island-rgb),var(--op-shadow-1)), 0 2px 8px rgba(var(--island-rgb),var(--op-shadow-2)), 0 0 0 1px rgba(var(--island-rgb),var(--op-shadow-3));
+          box-shadow:0 var(--shadow-blur-1) 40px rgba(var(--island-rgb),var(--op-shadow-1)), 0 4px 12px rgba(var(--island-rgb),var(--op-shadow-2)), 0 0 0 1px rgba(var(--island-rgb),var(--op-shadow-3)), inset 0 1px 0 rgba(255,255,255,0.4);
           transition:border-color .2s;
         }
-        .lp-island-btn:hover{--shadow-blur-1:16px;}
+        .lp-island-btn:hover{--shadow-blur-1:20px;}
         .lp-island-btn--active{--op-border:0.8;}
         [data-theme="dark"] .lp-island-btn{--op-grad-1:0.23;--op-grad-2:0.13;--op-grad-3:0.09;--op-border:0.55;}
 
@@ -315,7 +354,19 @@ export default function LeadershipPathPage() {
         [data-theme="dark"] .lp-hub{box-shadow:0 8px 24px rgba(0,0,0,.4), 0 2px 6px rgba(0,0,0,.3), 0 0 0 1px rgba(255,255,255,.08);}
         .lp-hub-icon{font-size:28px;}
         .lp-hub-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-top:6px;}
-        .lp-hub-capstone{width:100px;height:100px;border-radius:16px;}
+        /* Capstone — pico de montaña (clip-path triángulo), no card rectangular.
+           El contenido se empaqueta hacia la base ancha (flex-end) — centrado
+           normal pondría el ícono cerca del vértice angosto y lo recortaría. */
+        .lp-hub-capstone{
+          width:80px;height:80px;
+          clip-path:polygon(50% 0%, 100% 100%, 0% 100%);
+          border:2px solid rgba(192,57,43,0.4);
+          box-shadow:0 8px 24px rgba(192,57,43,0.15);
+          justify-content:flex-end;
+          padding-bottom:10px;
+        }
+        [data-theme="dark"] .lp-hub-capstone{box-shadow:0 8px 24px rgba(192,57,43,0.25);}
+        .lp-hub-capstone .lp-hub-label{margin-top:2px;font-size:9px;}
         .lp-hub-gv{width:88px;height:88px;border-radius:14px;}
         .lp-hub-gv .lp-hub-label{font-size:9px;}
 
@@ -325,28 +376,40 @@ export default function LeadershipPathPage() {
         .lp-back-btn:hover{border-color:var(--ink);color:var(--ink);}
 
         .lp-zigzag{position:relative;max-width:560px;margin:0 auto;padding:40px 24px;width:100%;}
-        .lp-zigzag-line-bg{position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--line);}
-        .lp-zigzag-line-fill{position:absolute;left:50%;top:0;width:2px;transition:height 0.6s cubic-bezier(0.22,1,0.36,1);}
-        .lp-node-row{position:relative;display:flex;align-items:center;margin-bottom:32px;}
+        /* Línea serpenteante — SVG con preserveAspectRatio="none" para estirarse a la
+           altura real del contenedor (variable según contenido); el "relleno" usa el
+           truco pathLength/dashoffset en vez de height%, porque ahora es una curva. */
+        .lp-zigzag-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+        .lp-zigzag-line-path{stroke:var(--line);stroke-width:2px;fill:none;}
+        .lp-zigzag-line-fill-path{stroke-width:2px;fill:none;transition:stroke-dashoffset 0.6s cubic-bezier(0.22,1,0.36,1);}
+        /* Fallback recto para mobile — la curva orgánica oscila izq/centro/der, lo cual
+           no tiene sentido cuando los nodos colapsan a una sola columna alineada. */
+        .lp-zigzag-mobile-line-bg{display:none;position:absolute;left:27px;top:0;bottom:0;width:2px;background:var(--line);}
+        .lp-zigzag-mobile-line-fill{display:none;position:absolute;left:27px;top:0;width:2px;transition:height 0.6s cubic-bezier(0.22,1,0.36,1);}
+        .lp-node-row{position:relative;display:flex;align-items:center;gap:10px;margin-bottom:32px;}
         .lp-node-row:last-child{margin-bottom:0;}
+        .lp-connector-arm{width:24px;height:0;border-top:1.5px solid var(--line);flex-shrink:0;align-self:center;}
         .lp-node-circle{width:56px;height:56px;border-radius:50%;flex-shrink:0;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;}
         .lp-node-circle--milestone{border-radius:12px;width:64px;height:64px;font-size:24px;}
-        .lp-node-info{margin:0 20px;flex:1;min-width:0;}
-        .lp-node-title{font-family:"Satoshi",sans-serif;font-weight:600;font-size:16px;color:var(--ink);}
+        .lp-node-banner{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#fff;padding:2px 6px;border-radius:2px;white-space:nowrap;z-index:2;}
+        .lp-node-info{flex:1;min-width:0;}
+        .lp-node-module-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+        .lp-node-title{font-family:"Satoshi",sans-serif;font-weight:600;font-size:17px;color:var(--ink);margin-top:2px;}
         .lp-node-xp{font-size:12px;font-weight:700;margin-top:4px;}
         .lp-node-status{font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-top:4px;font-weight:600;}
         .lp-node-cta{margin-top:8px;padding:8px 16px;border-radius:100px;border:none;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:"Satoshi",sans-serif;}
         .lp-node-done{margin-top:8px;display:inline-flex;font-size:11px;font-weight:700;color:#16a34a;}
 
         @media(max-width:768px){
-          .lp-map-container{min-height:auto;overflow:visible;}
+          .lp-map-container{min-height:900px;overflow:visible;}
           .lp-connectors{display:none;}
           .lp-islands-wrap{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;justify-items:center;}
           .lp-island-btn{position:static!important;transform:none!important;width:100px!important;height:100px!important;top:auto!important;left:auto!important;}
           .lp-hubs-wrap{display:flex;gap:16px;justify-content:center;margin-top:24px;flex-wrap:wrap;}
           .lp-hub{position:static!important;transform:none!important;top:auto!important;left:auto!important;}
           .lp-node-row{flex-direction:row!important;}
-          .lp-zigzag-line-bg,.lp-zigzag-line-fill{left:27px!important;}
+          .lp-zigzag-svg{display:none;}
+          .lp-zigzag-mobile-line-bg,.lp-zigzag-mobile-line-fill{display:block;}
         }
       `}</style>
 
@@ -378,14 +441,27 @@ export default function LeadershipPathPage() {
               </div>
             ) : (
               <div className="lp-map-container">
+                {/* "Mar" — curvas de nivel topográficas sutiles centradas en el Capstone */}
+                <svg className="lp-sea" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  {[10, 20, 30, 40].map(r => (
+                    <ellipse key={r} className="lp-sea-ring" cx={CAPSTONE_POS.left} cy={CAPSTONE_POS.top} rx={r} ry={r} />
+                  ))}
+                </svg>
+
                 <svg className="lp-connectors" viewBox="0 0 100 100" preserveAspectRatio="none">
                   {PILLARS.map(p => {
                     const pos = PILLAR_POSITIONS[p]
                     const d = islandArcPath({ x: pos.left, y: pos.top }, { x: CAPSTONE_POS.left, y: CAPSTONE_POS.top })
+                    const isActiveRoute = activeRoutePillar === p
                     return (
                       <g key={p}>
                         <path className="lp-connector-halo" d={d} />
-                        <path className="lp-connector-path" d={d} strokeDasharray="8 6" />
+                        <path className="lp-connector-path" d={d} stroke={`rgba(${PILLAR_RGB[p]},0.3)`} strokeDasharray="3 8" />
+                        {isActiveRoute && (
+                          <circle r="3" fill={PILLAR_COLORS[p].solid} className="lp-connector-dot">
+                            <animateMotion dur="4s" repeatCount="indefinite" path={d} />
+                          </circle>
+                        )}
                       </g>
                     )
                   })}
@@ -407,6 +483,7 @@ export default function LeadershipPathPage() {
                           top: `${pos.top}%`, left: `${pos.left}%`,
                           width: size, height: size,
                           '--island-rgb': PILLAR_RGB[pillar],
+                          '--island-shape': PILLAR_SHAPE[pillar],
                         } as React.CSSProperties}
                         initial={pref ? false : { scale: 0, opacity: 0 }}
                         animate={{ scale: isActive ? 1.03 : 1, opacity: 1 }}
@@ -435,8 +512,8 @@ export default function LeadershipPathPage() {
                     }}
                     onClick={handleCapstoneClick}
                   >
-                    <span className="lp-hub-icon">🏆</span>
-                    <span className="lp-hub-label">CAPSTONE</span>
+                    <span className="lp-hub-icon">🏔️</span>
+                    <span className="lp-hub-label">CIMA · CAPSTONE</span>
                   </button>
                   <button
                     className="lp-hub lp-hub-gv"
@@ -469,13 +546,24 @@ export default function LeadershipPathPage() {
             </div>
 
             <div className="lp-zigzag">
-              <div className="lp-zigzag-line-bg" />
-              <div className="lp-zigzag-line-fill" style={{ height: `${fillPct}%`, background: fillColor }} />
+              <svg className="lp-zigzag-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path className="lp-zigzag-line-path" d={ZIGZAG_PATH_D} />
+                <path
+                  className="lp-zigzag-line-fill-path"
+                  d={ZIGZAG_PATH_D}
+                  stroke={fillColor}
+                  pathLength={100}
+                  strokeDasharray={100}
+                  strokeDashoffset={100 - fillPct}
+                />
+              </svg>
+              <div className="lp-zigzag-mobile-line-bg" />
+              <div className="lp-zigzag-mobile-line-fill" style={{ height: `${fillPct}%`, background: fillColor }} />
 
               {nodes.map((node, idx) => {
                 const pillarColor = PILLAR_COLORS[MODULE_PILLAR[node.module.order_index]].solid
                 const circleBg = node.state === 'completed' ? pillarColor : node.state === 'locked' ? 'var(--bg-2)' : 'var(--card-bg)'
-                const circleBorder = node.state === 'completed' ? `2px solid ${pillarColor}` : node.state === 'locked' ? '2px solid var(--line)' : `3px solid ${pillarColor}`
+                const circleBorder = node.state === 'completed' ? 'none' : node.state === 'locked' ? '1.5px solid var(--line)' : `3px solid ${pillarColor}`
                 const statusColor = node.state === 'completed' ? '#16a34a' : node.state === 'active' ? pillarColor : 'var(--mute)'
                 return (
                   <m.div
@@ -487,13 +575,38 @@ export default function LeadershipPathPage() {
                     transition={{ delay: idx * 0.07, type: 'spring', stiffness: 200, damping: 22 }}
                     onClick={node.state !== 'locked' ? () => setSelected(node) : undefined}
                   >
-                    <div className="lp-node-circle" style={{ background: circleBg, border: circleBorder, color: node.state === 'active' ? pillarColor : '#fff' }}>
-                      {node.state === 'completed' && <span style={{ fontSize: 20, color: '#fff' }}>✓</span>}
-                      {node.state === 'active' && <>{String(node.module.order_index).padStart(2, '0')}<PulseRing color={pillarColor} /></>}
-                      {node.state === 'locked' && <span style={{ fontSize: 16, color: 'var(--mute)' }}>🔒</span>}
+                    <div
+                      className="lp-node-circle"
+                      style={{
+                        background: circleBg, border: circleBorder,
+                        color: node.state === 'active' ? pillarColor : '#fff',
+                        opacity: node.state === 'locked' ? 0.45 : 1,
+                        filter: node.state === 'locked' ? 'blur(0.5px)' : 'none',
+                      }}
+                    >
+                      {node.state === 'completed' && (
+                        <>
+                          <span className="lp-node-banner" style={{ background: pillarColor }}>{t('checkpointLabel')}</span>
+                          <span style={{ fontSize: 20, color: '#fff' }}>✓</span>
+                        </>
+                      )}
+                      {node.state === 'active' && (
+                        <>
+                          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill={pillarColor}/>
+                            <circle cx="12" cy="9" r="2.5" fill="white"/>
+                          </svg>
+                          <PulseRing color={pillarColor} />
+                        </>
+                      )}
+                      {node.state === 'locked' && <span style={{ fontSize: 14, color: 'var(--mute)' }}>🔒</span>}
                     </div>
+                    <div className="lp-connector-arm" />
                     <div className="lp-node-info">
-                      <div className="lp-node-title">{String(node.module.order_index).padStart(2, '0')} — {node.module.title}</div>
+                      <div className="lp-node-module-label" style={{ color: pillarColor }}>
+                        {String(node.module.order_index).padStart(2, '0')} · {t('moduleLabel')}
+                      </div>
+                      <div className="lp-node-title">{node.module.title}</div>
                       <div className="lp-node-xp" style={{ color: pillarColor }}>★ {node.module.xp_reward} XP</div>
                       <div className="lp-node-status" style={{ color: statusColor }}>{STATUS_LABEL[node.state]}</div>
                       {node.state === 'active' && (
@@ -524,12 +637,14 @@ export default function LeadershipPathPage() {
                   className="lp-node-circle lp-node-circle--milestone"
                   style={{
                     background: capstoneState === 'evaluado' ? 'rgba(192,57,43,0.06)' : 'var(--card-bg)',
-                    border: capstoneState === 'evaluado' ? '2px solid #C0392B' : '2px solid var(--card-border)',
+                    border: `2px dashed ${capstoneState === 'evaluado' ? '#C0392B' : 'var(--card-border)'}`,
                     opacity: capstoneState === 'bloqueado' ? 0.5 : 1,
                   }}
                 >
+                  <span className="lp-node-banner" style={{ background: 'var(--ink)' }}>{t('finalDestinationLabel')}</span>
                   🏆
                 </div>
+                <div className="lp-connector-arm" />
                 <div className="lp-node-info">
                   <div className="lp-node-title">Capstone</div>
                 </div>
@@ -544,9 +659,11 @@ export default function LeadershipPathPage() {
                 transition={{ delay: (nodes.length + 1) * 0.07, type: 'spring', stiffness: 200, damping: 22 }}
                 onClick={() => router.push('/dashboard/great-venture')}
               >
-                <div className="lp-node-circle lp-node-circle--milestone" style={{ background: 'var(--card-bg)', border: '2px solid var(--card-border)' }}>
+                <div className="lp-node-circle lp-node-circle--milestone" style={{ background: 'var(--card-bg)', border: '2px dashed var(--card-border)' }}>
+                  <span className="lp-node-banner" style={{ background: 'var(--ink)' }}>{t('specialMissionLabel')}</span>
                   🗺️
                 </div>
+                <div className="lp-connector-arm" />
                 <div className="lp-node-info">
                   <div className="lp-node-title">Great Venture</div>
                 </div>
