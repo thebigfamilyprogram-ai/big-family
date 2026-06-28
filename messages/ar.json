@@ -1293,6 +1293,8 @@
       "checkpointLabel": "نقطة تفقد",
       "finalDestinationLabel": "الوجهة النهائية",
       "specialMissionLabel": "مهمة خاصة",
+      "nextLabel": "التالي",
+      "greatVentureTagline": "مهمتك العظيمة",
       "pillarDescriptions": {
         "yo": "علاقتك بنفسك، الانضباط الذاتي والهدف",
         "norte": "رؤيتك، إبداعك وابتكارك",

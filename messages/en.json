@@ -1293,6 +1293,8 @@
       "checkpointLabel": "CHECKPOINT",
       "finalDestinationLabel": "FINAL DESTINATION",
       "specialMissionLabel": "SPECIAL MISSION",
+      "nextLabel": "NEXT",
+      "greatVentureTagline": "YOUR GREAT VENTURE",
       "pillarDescriptions": {
         "yo": "Your relationship with yourself, self-discipline and purpose",
         "norte": "Your vision, creativity and innovation",

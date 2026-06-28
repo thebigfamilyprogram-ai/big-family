@@ -9,6 +9,7 @@ import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { MOCK_MODE, MOCK } from '@/lib/mockData'
 import { PILLARS, type Pillar, getPillarScores } from '@/lib/bigFiveQuestions'
+import AnimatedNumber from '@/components/AnimatedNumber'
 
 interface Module {
   id: string
@@ -95,13 +96,66 @@ const CAPSTONE_POS = { top: 42, left: 42 }
 const GREAT_VENTURE_POS = { top: 65, left: 62 }
 const TOTAL_NODES = 9 // 7 módulos + Capstone + Great Venture
 
-// Animación perpetua — vive en su propio componente memoizado, ver CLAUDE.md
-const PulseRing = memo(function PulseRing({ color }: { color: string }) {
+// Animaciones perpetuas — cada una vive en su propio componente memoizado, ver CLAUDE.md.
+// Nodo activo: dos pulse rings concéntricos con delay escalonado.
+const PulseRing1 = memo(function PulseRing1({ color }: { color: string }) {
   return (
     <m.div
       style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: `2px solid ${color}`, pointerEvents: 'none' }}
-      animate={{ scale: [1, 1.4], opacity: [0.6, 0] }}
+      animate={{ scale: [1, 1.5], opacity: [0.6, 0] }}
       transition={{ duration: 2, repeat: Infinity, ease: 'easeOut' }}
+    />
+  )
+})
+const PulseRing2 = memo(function PulseRing2({ color }: { color: string }) {
+  return (
+    <m.div
+      style={{ position: 'absolute', inset: -10, borderRadius: '50%', border: `2px solid ${color}`, pointerEvents: 'none' }}
+      animate={{ scale: [1, 1.8], opacity: [0.4, 0] }}
+      transition={{ duration: 2, repeat: Infinity, ease: 'easeOut', delay: 0.6 }}
+    />
+  )
+})
+// Brillo blanco que recorre el path del zigzag en loop continuo.
+const PathShimmer = memo(function PathShimmer({ d, length }: { d: string; length: number }) {
+  return (
+    <m.path
+      d={d}
+      stroke="#fff"
+      strokeWidth={1}
+      fill="none"
+      strokeDasharray={length}
+      initial={{ strokeDashoffset: length, opacity: 0 }}
+      animate={{ strokeDashoffset: [length, 0], opacity: [0, 0.5, 0] }}
+      transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+    />
+  )
+})
+// Niebla pulsante sobre nodos bloqueados — "fog of war".
+const FogPulse = memo(function FogPulse() {
+  return (
+    <m.div
+      style={{
+        position: 'absolute', top: '50%', left: '50%', width: 80, height: 80,
+        marginTop: -40, marginLeft: -40, borderRadius: '50%', pointerEvents: 'none',
+        background: 'radial-gradient(circle, var(--bg) 0%, transparent 70%)',
+      }}
+      animate={{ opacity: [0.35, 0.55, 0.35] }}
+      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+    />
+  )
+})
+// Destello dorado en loop detrás del hito Capstone.
+const CapstonePulse = memo(function CapstonePulse() {
+  return (
+    <m.div
+      style={{
+        position: 'absolute', top: '50%', left: '50%', width: 100, height: 100,
+        marginTop: -50, marginLeft: -50, borderRadius: '50%', pointerEvents: 'none', zIndex: 0,
+        background: 'radial-gradient(circle, rgba(255,215,0,0.3) 0%, transparent 70%)',
+      }}
+      animate={{ opacity: [0, 0.6, 0], scale: [0.8, 1.2, 0.8] }}
+      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
     />
   )
 })
@@ -134,6 +188,17 @@ function buildZigzagPath(totalSlots: number): string {
 }
 const ZIGZAG_PATH_D = buildZigzagPath(TOTAL_NODES)
 
+// Confeti al completar todos los módulos — mismo truco (dot absoluto + keyframe CSS)
+// que ya usa modules/[id]/quiz/page.tsx para celebrar fases, con los 5 colores de pilar.
+function leadershipConfettiParticles(colors: string[]) {
+  return Array.from({ length: 28 }, (_, i) => ({
+    color: colors[i % colors.length],
+    tx: `${Math.round(Math.random() * 220 - 110)}px`,
+    rot: `${Math.round(Math.random() * 360)}deg`,
+    delay: Math.random() * 0.4,
+  }))
+}
+
 export default function LeadershipPathPage() {
   const router      = useRouter()
   const t           = useTranslations('dashboard.leadershipPathPage')
@@ -152,6 +217,26 @@ export default function LeadershipPathPage() {
   const [selected,      setSelected]      = useState<PathNode | null>(null)
   const [userProjects,  setUserProjects]  = useState<{ id: string; status: string }[]>([])
   const [diploma,       setDiploma]       = useState<{ projectId: string; resultado: string } | null>(null)
+
+  // Longitud real del path SVG del zigzag (en unidades del propio viewBox) — medida
+  // una vez montado, usada para el dasharray/dashoffset del progreso y el shimmer.
+  const [pathLen, setPathLen] = useState(0)
+  const zigzagBgPathRef = useRef<SVGPathElement>(null)
+  useEffect(() => {
+    if (view === 'island' && zigzagBgPathRef.current) setPathLen(zigzagBgPathRef.current.getTotalLength())
+  }, [view])
+
+  // Gate de entrada para el count-up del score y la barra de progreso del header de isla.
+  const [scoreReveal, setScoreReveal] = useState(false)
+  useEffect(() => {
+    setScoreReveal(false)
+    if (view !== 'island') return
+    const tm = setTimeout(() => setScoreReveal(true), 450)
+    return () => clearTimeout(tm)
+  }, [view, activeIsland])
+
+  const [showConfetti,       setShowConfetti]       = useState(false)
+  const [confettiParticles,  setConfettiParticles]  = useState<{ color: string; tx: string; rot: string; delay: number }[]>([])
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -263,11 +348,25 @@ export default function LeadershipPathPage() {
     diploma || userProjects.some(p => p.status === 'approved')  ? 'evaluado'   :
                                                                     'en_progreso'
 
+  // Confeti al entrar a la isla con los 7 módulos completos.
+  useEffect(() => {
+    if (view !== 'island' || !allModulesDone || pref) { setShowConfetti(false); return }
+    setShowConfetti(false)
+    const tm = setTimeout(() => {
+      setConfettiParticles(leadershipConfettiParticles(PILLARS.map(p => PILLAR_COLORS[p].solid)))
+      setShowConfetti(true)
+    }, 1500)
+    return () => clearTimeout(tm)
+  }, [view, activeIsland, allModulesDone, pref])
+
   const pillarScores: Record<Pillar, number> = leaderProfile
     ? getPillarScores(leaderProfile.big_five)
     : { Yo: 0, Norte: 0, Vínculo: 0, Acción: 0, Legado: 0 }
 
   const island = activeIsland ?? 'Yo'
+  const strengthList: Pillar[] = (leaderProfile?.fortalezas.length ? leaderProfile.fortalezas : [island]) as Pillar[]
+  const gvPillar1 = strengthList[0]
+  const gvPillar2 = strengthList[1] ?? strengthList[0]
 
   const activeModuleIdx = nodes.findIndex(n => n.state === 'active')
   const fillIndex = activeModuleIdx !== -1 ? activeModuleIdx : (capstoneState === 'evaluado' ? 8 : 7)
@@ -380,8 +479,8 @@ export default function LeadershipPathPage() {
            altura real del contenedor (variable según contenido); el "relleno" usa el
            truco pathLength/dashoffset en vez de height%, porque ahora es una curva. */
         .lp-zigzag-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
-        .lp-zigzag-line-path{stroke:var(--line);stroke-width:2px;fill:none;}
-        .lp-zigzag-line-fill-path{stroke-width:2px;fill:none;transition:stroke-dashoffset 0.6s cubic-bezier(0.22,1,0.36,1);}
+        .lp-zigzag-line-path{fill:none;}
+        .lp-zigzag-line-fill-path{fill:none;}
         /* Fallback recto para mobile — la curva orgánica oscila izq/centro/der, lo cual
            no tiene sentido cuando los nodos colapsan a una sola columna alineada. */
         .lp-zigzag-mobile-line-bg{display:none;position:absolute;left:27px;top:0;bottom:0;width:2px;background:var(--line);}
@@ -389,9 +488,11 @@ export default function LeadershipPathPage() {
         .lp-node-row{position:relative;display:flex;align-items:center;gap:10px;margin-bottom:32px;}
         .lp-node-row:last-child{margin-bottom:0;}
         .lp-connector-arm{width:24px;height:0;border-top:1.5px solid var(--line);flex-shrink:0;align-self:center;}
-        .lp-node-circle{width:56px;height:56px;border-radius:50%;flex-shrink:0;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;}
-        .lp-node-circle--milestone{border-radius:12px;width:64px;height:64px;font-size:24px;}
-        .lp-node-banner{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#fff;padding:2px 6px;border-radius:2px;white-space:nowrap;z-index:2;}
+        .lp-node-circle{border-radius:50%;flex-shrink:0;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;}
+        /* Nodo completado — anillo exterior delgado en vez de banner flotante */
+        .lp-node-circle--done{box-shadow:0 4px var(--node-shadow-blur,12px) rgba(var(--node-rgb),0.35);transition:box-shadow .2s;}
+        .lp-node-circle--done:hover{--node-shadow-blur:18px;}
+        .lp-node-ring{position:absolute;inset:-6px;border-radius:50%;border:1.5px solid;pointer-events:none;}
         .lp-node-info{flex:1;min-width:0;}
         .lp-node-module-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
         .lp-node-title{font-family:"Satoshi",sans-serif;font-weight:600;font-size:17px;color:var(--ink);margin-top:2px;}
@@ -399,6 +500,45 @@ export default function LeadershipPathPage() {
         .lp-node-status{font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-top:4px;font-weight:600;}
         .lp-node-cta{margin-top:8px;padding:8px 16px;border-radius:100px;border:none;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:"Satoshi",sans-serif;}
         .lp-node-done{margin-top:8px;display:inline-flex;font-size:11px;font-weight:700;color:#16a34a;}
+
+        /* Tooltip "SIGUIENTE" del nodo activo — siempre visible, al lado del nodo. */
+        .lp-node-tooltip{position:absolute;top:50%;transform:translateY(-50%);background:var(--card-bg);border:1px solid;border-radius:10px;padding:10px 14px;box-shadow:0 4px 16px rgba(13,13,13,0.08);white-space:nowrap;z-index:4;}
+        .lp-node-tooltip--right{left:calc(100% + 14px);}
+        .lp-node-tooltip--left{right:calc(100% + 14px);}
+        .lp-tooltip-eyebrow{display:block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+        .lp-tooltip-title{display:block;font-size:14px;font-weight:600;color:var(--ink);margin-top:2px;}
+        .lp-tooltip-arrow{position:absolute;top:50%;width:8px;height:8px;transform:translateY(-50%) rotate(45deg);background:var(--card-bg);}
+        .lp-tooltip-arrow--right{left:-4px;}
+        .lp-tooltip-arrow--left{right:-4px;}
+
+        /* Hito Capstone — montaña via clip-path, label fuera de la forma para no recortarse. */
+        .lp-zznode-capstone{
+          width:80px;height:80px;
+          clip-path:polygon(50% 0%, 95% 100%, 5% 100%);
+          background:linear-gradient(180deg, rgba(255,215,0,0.15) 0%, rgba(192,57,43,0.08) 100%);
+          display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:16px;
+          filter:drop-shadow(0 4px 12px rgba(192,57,43,0.2));
+          position:relative;z-index:1;
+        }
+        .lp-zznode-capstone-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#C0392B;margin-top:8px;text-align:center;}
+        /* Hito Great Venture — hexágono via clip-path. */
+        .lp-zznode-gv{
+          width:88px;height:88px;flex-shrink:0;cursor:pointer;
+          clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+          display:flex;flex-direction:column;align-items:center;justify-content:center;
+          position:relative;z-index:1;
+        }
+        .lp-zznode-gv-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:4px;text-align:center;padding:0 8px;}
+
+        /* Header de vista isla — tipografía editorial + score animado */
+        .lp-island-headline{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;font-size:36px;}
+        .lp-island-score-row{display:block;font-size:18px;font-weight:400;color:var(--mute);margin-top:4px;font-variant-numeric:tabular-nums;}
+        .lp-score-bar-track{width:200px;height:2px;background:var(--line);border-radius:100px;margin-top:10px;overflow:hidden;}
+        .lp-score-bar-fill{height:100%;border-radius:100px;transition:width 1.2s cubic-bezier(0.22,1,0.36,1);}
+
+        /* Confeti al completar todos los módulos de la isla */
+        @keyframes lpConfettiBurst{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(var(--tx),90px) rotate(var(--rot));opacity:0}}
+        .lp-confetti-dot{position:absolute;top:0;left:50%;width:7px;height:7px;border-radius:2px;animation:lpConfettiBurst .9s ease-out forwards;pointer-events:none;}
 
         @media(max-width:768px){
           .lp-map-container{min-height:900px;overflow:visible;}
@@ -410,6 +550,7 @@ export default function LeadershipPathPage() {
           .lp-node-row{flex-direction:row!important;}
           .lp-zigzag-svg{display:none;}
           .lp-zigzag-mobile-line-bg,.lp-zigzag-mobile-line-fill{display:block;}
+          .lp-node-tooltip{display:none;}
         }
       `}</style>
 
@@ -539,68 +680,122 @@ export default function LeadershipPathPage() {
               ← {t('backToMap')}
             </button>
 
-            <div style={{ marginBottom: 28 }}>
-              <h2 style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 32, color: PILLAR_COLORS[island].solid }}>{island}</h2>
-              <div style={{ fontSize: 18, color: 'var(--mute)', marginTop: 4 }}>{pillarScores[island]}%</div>
-              <p style={{ fontSize: 13, color: 'var(--mute)', marginTop: 8 }}>{t(`pillarDescriptions.${PILLAR_I18N_KEY[island]}`)}</p>
-            </div>
+            <m.div
+              style={{ position: 'relative', marginBottom: 28 }}
+              initial={pref ? false : { opacity: 0, y: -16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+            >
+              <h2 className="lp-island-headline" style={{ color: PILLAR_COLORS[island].solid }}>{island}</h2>
+              <div className="lp-island-score-row">
+                {scoreReveal ? <AnimatedNumber value={pillarScores[island]} suffix="%" /> : '0%'}
+              </div>
+              <div className="lp-score-bar-track">
+                <div className="lp-score-bar-fill" style={{ width: scoreReveal ? `${pillarScores[island]}%` : '0%', background: PILLAR_COLORS[island].solid }} />
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--mute)', marginTop: 10 }}>{t(`pillarDescriptions.${PILLAR_I18N_KEY[island]}`)}</p>
+
+              {showConfetti && confettiParticles.map((p, pi) => (
+                <div
+                  key={pi}
+                  className="lp-confetti-dot"
+                  style={{ background: p.color, '--tx': p.tx, '--rot': p.rot, animationDelay: `${p.delay}s` } as React.CSSProperties}
+                />
+              ))}
+            </m.div>
 
             <div className="lp-zigzag">
               <svg className="lp-zigzag-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <path className="lp-zigzag-line-path" d={ZIGZAG_PATH_D} />
                 <path
-                  className="lp-zigzag-line-fill-path"
+                  ref={zigzagBgPathRef}
+                  className="lp-zigzag-line-path"
                   d={ZIGZAG_PATH_D}
                   stroke={fillColor}
-                  pathLength={100}
-                  strokeDasharray={100}
-                  strokeDashoffset={100 - fillPct}
+                  strokeOpacity={0.15}
+                  strokeWidth={2.5}
+                  strokeDasharray="6 6"
                 />
+                {pathLen > 0 && (
+                  <>
+                    <m.path
+                      className="lp-zigzag-line-fill-path"
+                      d={ZIGZAG_PATH_D}
+                      stroke={fillColor}
+                      strokeOpacity={0.9}
+                      strokeWidth={2.5}
+                      fill="none"
+                      strokeDasharray={pathLen}
+                      initial={pref ? false : { strokeDashoffset: pathLen }}
+                      animate={{ strokeDashoffset: pathLen * (1 - fillPct / 100) }}
+                      transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+                    />
+                    {!pref && <PathShimmer d={ZIGZAG_PATH_D} length={pathLen} />}
+                  </>
+                )}
               </svg>
               <div className="lp-zigzag-mobile-line-bg" />
               <div className="lp-zigzag-mobile-line-fill" style={{ height: `${fillPct}%`, background: fillColor }} />
 
               {nodes.map((node, idx) => {
-                const pillarColor = PILLAR_COLORS[MODULE_PILLAR[node.module.order_index]].solid
-                const circleBg = node.state === 'completed' ? pillarColor : node.state === 'locked' ? 'var(--bg-2)' : 'var(--card-bg)'
+                const modulePillar = MODULE_PILLAR[node.module.order_index]
+                const pillarColor  = PILLAR_COLORS[modulePillar].solid
+                const pillarRgb    = PILLAR_RGB[modulePillar]
+                const circleBg     = node.state === 'completed' ? pillarColor : node.state === 'locked' ? 'var(--bg-2)' : 'var(--card-bg)'
                 const circleBorder = node.state === 'completed' ? 'none' : node.state === 'locked' ? '1.5px solid var(--line)' : `3px solid ${pillarColor}`
-                const statusColor = node.state === 'completed' ? '#16a34a' : node.state === 'active' ? pillarColor : 'var(--mute)'
+                const statusColor  = node.state === 'completed' ? '#16a34a' : node.state === 'active' ? pillarColor : 'var(--mute)'
+                const circleSize   = node.state === 'completed' ? 52 : node.state === 'active' ? 68 : 48
+                const tooltipSide: 'left' | 'right' = idx % 2 === 0 ? 'right' : 'left'
                 return (
                   <m.div
                     key={node.module.id}
                     className="lp-node-row"
                     style={{ flexDirection: idx % 2 === 0 ? 'row' : 'row-reverse', cursor: node.state !== 'locked' ? 'pointer' : 'default' }}
-                    initial={pref ? false : { opacity: 0, x: idx % 2 === 0 ? -16 : 16 }}
+                    initial={pref ? false : { opacity: 0, x: idx % 2 === 0 ? -20 : 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.07, type: 'spring', stiffness: 200, damping: 22 }}
+                    transition={{ delay: 0.1 + idx * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
                     onClick={node.state !== 'locked' ? () => setSelected(node) : undefined}
                   >
-                    <div
-                      className="lp-node-circle"
+                    <m.div
+                      className={`lp-node-circle${node.state === 'completed' ? ' lp-node-circle--done' : ''}`}
                       style={{
+                        width: circleSize, height: circleSize,
                         background: circleBg, border: circleBorder,
                         color: node.state === 'active' ? pillarColor : '#fff',
-                        opacity: node.state === 'locked' ? 0.45 : 1,
+                        opacity: node.state === 'locked' ? 0.4 : 1,
                         filter: node.state === 'locked' ? 'blur(0.5px)' : 'none',
-                      }}
+                        boxShadow: node.state === 'active' ? `0 0 0 6px rgba(${pillarRgb},0.12), 0 8px 24px rgba(${pillarRgb},0.25)` : undefined,
+                        '--node-rgb': pillarRgb,
+                      } as React.CSSProperties}
+                      whileHover={node.state === 'completed' ? { scale: 1.08, y: -2 } : undefined}
                     >
                       {node.state === 'completed' && (
                         <>
-                          <span className="lp-node-banner" style={{ background: pillarColor }}>{t('checkpointLabel')}</span>
+                          <span className="lp-node-ring" style={{ borderColor: `rgba(${pillarRgb},0.3)` }} />
                           <span style={{ fontSize: 20, color: '#fff' }}>✓</span>
                         </>
                       )}
                       {node.state === 'active' && (
                         <>
-                          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
                             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill={pillarColor}/>
                             <circle cx="12" cy="9" r="2.5" fill="white"/>
                           </svg>
-                          <PulseRing color={pillarColor} />
+                          <PulseRing1 color={pillarColor} />
+                          <PulseRing2 color={pillarColor} />
+                          <div className={`lp-node-tooltip lp-node-tooltip--${tooltipSide}`} style={{ borderColor: `rgba(${pillarRgb},0.3)` }}>
+                            <span className="lp-tooltip-eyebrow" style={{ color: pillarColor }}>{t('nextLabel')}</span>
+                            <span className="lp-tooltip-title">{node.module.title}</span>
+                            <span className={`lp-tooltip-arrow lp-tooltip-arrow--${tooltipSide}`} />
+                          </div>
                         </>
                       )}
-                      {node.state === 'locked' && <span style={{ fontSize: 14, color: 'var(--mute)' }}>🔒</span>}
-                    </div>
+                      {node.state === 'locked' && (
+                        <>
+                          <span style={{ fontSize: 14, color: 'var(--mute)' }}>🔒</span>
+                          <FogPulse />
+                        </>
+                      )}
+                    </m.div>
                     <div className="lp-connector-arm" />
                     <div className="lp-node-info">
                       <div className="lp-node-module-label" style={{ color: pillarColor }}>
@@ -624,25 +819,21 @@ export default function LeadershipPathPage() {
                 )
               })}
 
-              {/* Hito — Capstone */}
+              {/* Hito — Capstone, monte/pico via clip-path */}
               <m.div
                 className="lp-node-row"
-                style={{ flexDirection: nodes.length % 2 === 0 ? 'row' : 'row-reverse', cursor: 'pointer' }}
-                initial={pref ? false : { opacity: 0, x: nodes.length % 2 === 0 ? -16 : 16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: nodes.length * 0.07, type: 'spring', stiffness: 200, damping: 22 }}
+                style={{ flexDirection: nodes.length % 2 === 0 ? 'row' : 'row-reverse', cursor: 'pointer', opacity: capstoneState === 'bloqueado' ? 0.5 : 1 }}
+                initial={pref ? false : { opacity: 0, x: nodes.length % 2 === 0 ? -20 : 20 }}
+                animate={{ opacity: capstoneState === 'bloqueado' ? 0.5 : 1, x: 0 }}
+                transition={{ delay: 0.1 + nodes.length * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
                 onClick={handleCapstoneClick}
               >
-                <div
-                  className="lp-node-circle lp-node-circle--milestone"
-                  style={{
-                    background: capstoneState === 'evaluado' ? 'rgba(192,57,43,0.06)' : 'var(--card-bg)',
-                    border: `2px dashed ${capstoneState === 'evaluado' ? '#C0392B' : 'var(--card-border)'}`,
-                    opacity: capstoneState === 'bloqueado' ? 0.5 : 1,
-                  }}
-                >
-                  <span className="lp-node-banner" style={{ background: 'var(--ink)' }}>{t('finalDestinationLabel')}</span>
-                  🏆
+                <div style={{ position: 'relative', width: 80, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <CapstonePulse />
+                  <div className="lp-zznode-capstone">
+                    <span style={{ fontSize: 20 }}>🏔️</span>
+                  </div>
+                  <span className="lp-zznode-capstone-label">CIMA · CAPSTONE</span>
                 </div>
                 <div className="lp-connector-arm" />
                 <div className="lp-node-info">
@@ -650,19 +841,27 @@ export default function LeadershipPathPage() {
                 </div>
               </m.div>
 
-              {/* Hito — Great Venture */}
+              {/* Hito — Great Venture, hexágono via clip-path */}
               <m.div
                 className="lp-node-row"
                 style={{ flexDirection: (nodes.length + 1) % 2 === 0 ? 'row' : 'row-reverse', cursor: 'pointer' }}
-                initial={pref ? false : { opacity: 0, x: (nodes.length + 1) % 2 === 0 ? -16 : 16 }}
+                initial={pref ? false : { opacity: 0, x: (nodes.length + 1) % 2 === 0 ? -20 : 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: (nodes.length + 1) * 0.07, type: 'spring', stiffness: 200, damping: 22 }}
+                transition={{ delay: 0.1 + (nodes.length + 1) * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
                 onClick={() => router.push('/dashboard/great-venture')}
               >
-                <div className="lp-node-circle lp-node-circle--milestone" style={{ background: 'var(--card-bg)', border: '2px dashed var(--card-border)' }}>
-                  <span className="lp-node-banner" style={{ background: 'var(--ink)' }}>{t('specialMissionLabel')}</span>
-                  🗺️
-                </div>
+                <m.div
+                  className="lp-zznode-gv"
+                  style={{
+                    background: `linear-gradient(135deg, rgba(${PILLAR_RGB[gvPillar1]},0.2) 0%, rgba(${PILLAR_RGB[gvPillar2]},0.1) 100%)`,
+                    border: `2px solid rgba(${PILLAR_RGB[gvPillar1]},0.4)`,
+                  }}
+                  whileHover={{ rotate: [0, 12, 0], scale: 1.06 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 10 }}
+                >
+                  <span style={{ fontSize: 28 }}>🗺️</span>
+                  <span className="lp-zznode-gv-label" style={{ color: PILLAR_COLORS[gvPillar1].solid }}>{t('greatVentureTagline')}</span>
+                </m.div>
                 <div className="lp-connector-arm" />
                 <div className="lp-node-info">
                   <div className="lp-node-title">Great Venture</div>
