@@ -38,6 +38,10 @@ interface LeaderProfile {
   fortalezas: string[]
   areas_crecimiento: string[]
   big_five: { O: number; C: number; E: number; A: number; N: number; ES: number }
+  // Campo opcional — puede no existir todavía en leadership_profile (JSONB). No se agrega
+  // ninguna query nueva para traerlo: si ya viene dentro del JSON ya fetcheado, se usa;
+  // si no, simplemente no se muestra (ver GREAT_VENTURE_POS render).
+  meta_nucleo?: string
 }
 
 const MOCK_LEADER_PROFILE: LeaderProfile = {
@@ -81,8 +85,12 @@ const PILLAR_RGB: Record<Pillar, string> = {
   Yo: '217,64,64', Norte: '26,158,138', Vínculo: '232,149,42', Acción: '123,111,212', Legado: '79,173,91',
 }
 
-// Rombo wayuu — forma base de islas, nodos e hitos (rotada 45° en los hitos = cuadrado).
+// Rombo wayuu — forma base de islas y nodos (rotada 45° en los hitos del mapa = cuadrado).
 const WAYUU_DIAMOND_CLIP = 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)'
+// Octágono — forma exclusiva del Capstone, el momento más importante del recorrido.
+const CAPSTONE_OCTAGON_CLIP = 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)'
+// Hexágono vertical — forma exclusiva del Great Venture, distinta de islas y Capstone.
+const GV_HEXAGON_CLIP = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
 
 // Pillar → sufijo de key i18n (ascii, las keys del JSON no llevan tilde/mayúscula)
 const PILLAR_I18N_KEY: Record<Pillar, string> = {
@@ -92,10 +100,11 @@ const PILLAR_I18N_KEY: Record<Pillar, string> = {
 const CAPSTONE_POS = { top: 42, left: 42 }
 const GREAT_VENTURE_POS = { top: 65, left: 62 }
 
-// Alto vertical por nodo del zigzag orgánico — mayor en mobile porque el texto pasa
-// de ir al lado del círculo a ir debajo (columna), necesita más espacio.
-const NODE_HEIGHT_DESKTOP = 110
-const NODE_HEIGHT_MOBILE = 150
+// Alto vertical aproximado de cada fila del path — los nodos ya no se posicionan con esto
+// (ahora es flexbox normal, ver Sesión 15), solo lo usa la curva SVG decorativa de fondo
+// y el offset Y de Capstone/Great Venture; ≈ misma altura real de una fila flex (min-height
+// 80px + padding 16px×2), así que la curva no se desalinea de forma perceptible.
+const NODE_HEIGHT = 112
 const NARROW_BREAKPOINT = 480
 
 // Animaciones perpetuas — cada una vive en su propio componente memoizado, ver CLAUDE.md.
@@ -148,57 +157,46 @@ const PathShimmer = memo(function PathShimmer({ d, reduceMotion }: { d: string; 
     />
   )
 })
-// Rombo SVG exterior pulsante detrás de la card premium del Capstone.
-const CapstonePulse = memo(function CapstonePulse({ reduceMotion }: { reduceMotion: boolean }) {
+// Borde conic-gradient de 5 colores wayuu rotando — el octágono del Capstone.
+const CapstoneOctagonBorder = memo(function CapstoneOctagonBorder({ size, reduceMotion }: { size: number; reduceMotion: boolean }) {
   return (
     <m.div
       style={{
-        position: 'absolute', top: '50%', left: '50%', width: 180, height: 180,
-        marginTop: -90, marginLeft: -90, clipPath: WAYUU_DIAMOND_CLIP,
-        border: '1px solid rgba(192,57,43,0.3)', pointerEvents: 'none', zIndex: -1,
-      }}
-      animate={reduceMotion ? undefined : { scale: [1, 1.15], opacity: [0.3, 0] }}
-      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-    />
-  )
-})
-// Borde rotando en conic-gradient wayuu detrás de la card premium del Capstone (mapa + isla).
-const CapstoneCardBorder = memo(function CapstoneCardBorder({ cardSize, radius, reduceMotion }: { cardSize: number; radius: number; reduceMotion: boolean }) {
-  return (
-    <m.div
-      style={{
-        position: 'absolute', top: -2, left: -2, width: cardSize + 4, height: cardSize + 4,
-        borderRadius: radius + 2, zIndex: 0, pointerEvents: 'none',
-        background: 'conic-gradient(from 0deg, var(--wp-yo) 0%, var(--wp-norte) 20%, var(--wp-vinculo) 40%, var(--wp-accion) 60%, var(--wp-legado) 80%, var(--wp-yo) 100%)',
+        position: 'absolute', inset: 0, width: size, height: size, clipPath: CAPSTONE_OCTAGON_CLIP, pointerEvents: 'none',
+        background: 'conic-gradient(from 0deg, #D94040 0deg 72deg, #1A9E8A 72deg 144deg, #E8952A 144deg 216deg, #7B6FD4 216deg 288deg, #4FAD5B 288deg 360deg)',
       }}
       animate={reduceMotion ? undefined : { rotate: 360 }}
-      transition={reduceMotion ? undefined : { duration: 6, repeat: Infinity, ease: 'linear' }}
+      transition={reduceMotion ? undefined : { duration: 8, repeat: Infinity, ease: 'linear' }}
     />
   )
 })
-// Partículas convergentes hacia la card del Capstone — 2 por pilar (10 máx), coloreadas
-// solo si ese pilar ya está completo; el resto en var(--wp-mute). Solo en la vista isla.
-const CapstoneParticles = memo(function CapstoneParticles({ userId, pillarDone, pillarColors, reduceMotion }: { userId: string; pillarDone: boolean[]; pillarColors: string[]; reduceMotion: boolean }) {
-  if (reduceMotion) return null
-  const particles = pillarDone.flatMap((done, pIdx) =>
-    [0, 1].map(sub => ({ idx: pIdx * 2 + sub, color: done ? pillarColors[pIdx] : 'var(--wp-mute)' }))
-  )
+// Símbolo geométrico wayuu del Capstone — rombo central + 4 rombos diagonales + 8 puntos
+// trazando el octágono. SVG estático (sin animación), igual viewBox para ambos tamaños.
+const WayuuCapstoneSymbol = memo(function WayuuCapstoneSymbol({ primaryColor, secondaryColor }: { primaryColor: string; secondaryColor: string }) {
+  const vertices: [number, number][] = [[18, 0], [42, 0], [60, 18], [60, 42], [42, 60], [18, 60], [0, 42], [0, 18]]
+  const diagonals: [number, number][] = [[44, 16], [44, 44], [16, 44], [16, 16]]
   return (
-    <>
-      {particles.map(p => {
-        const angle = seededRandom(userId, 500 + p.idx) * Math.PI * 2
-        const startX = Math.cos(angle) * 200
-        const startY = Math.sin(angle) * 200
-        return (
-          <m.div
-            key={p.idx}
-            style={{ position: 'absolute', top: '50%', left: '50%', width: 5, height: 5, borderRadius: '50%', background: p.color, pointerEvents: 'none' }}
-            animate={{ x: [startX, startX * 0.6, startX * 0.3, 0], y: [startY, startY * 0.6, startY * 0.3, 0], opacity: [0.3, 0.6, 0.8, 0], scale: [1, 1.2, 0.8, 0] }}
-            transition={{ duration: 3 + p.idx * 0.4, repeat: Infinity, delay: p.idx * 0.3, ease: 'easeInOut' }}
-          />
-        )
-      })}
-    </>
+    <svg viewBox="0 0 60 60" width={40} height={40}>
+      {vertices.map(([x, y], i) => <circle key={i} cx={x} cy={y} r={2} fill="var(--wp-ink-2)" />)}
+      {diagonals.map(([x, y], i) => (
+        <polygon key={i} points={`${x},${y - 6} ${x + 6},${y} ${x},${y + 6} ${x - 6},${y}`} fill={secondaryColor} />
+      ))}
+      <polygon points="30,15 45,30 30,45 15,30" fill={primaryColor} />
+    </svg>
+  )
+})
+// Brújula wayuu del Great Venture — círculo + 4 triángulos direccionales + punto central.
+// SVG estático (sin animación).
+const WayuuCompass = memo(function WayuuCompass({ color, size }: { color: string; size: number }) {
+  return (
+    <svg viewBox="0 0 32 32" width={size} height={size}>
+      <circle cx={16} cy={16} r={12} stroke={color} strokeWidth={1.5} fill="none" />
+      <polygon points="13,4 19,4 16,10" fill={color} />
+      <polygon points="13,28 19,28 16,22" fill={color} />
+      <polygon points="28,13 28,19 22,16" fill={color} fillOpacity={0.4} />
+      <polygon points="4,13 4,19 10,16" fill={color} fillOpacity={0.4} />
+      <circle cx={16} cy={16} r={2} fill={color} />
+    </svg>
   )
 })
 // Patrón de rombos wayuu en cadena — fondo fijo de toda la página, estático (sin animación).
@@ -325,12 +323,8 @@ export default function LeadershipPathPage() {
   }, [view])
 
   const isNarrow = containerWidth < NARROW_BREAKPOINT
-  const nodeHeight = isNarrow ? NODE_HEIGHT_MOBILE : NODE_HEIGHT_DESKTOP
+  const nodeHeight = NODE_HEIGHT // alias breve — solo alimenta la curva decorativa y el offset Y de los hitos
 
-  const organicPoints = useMemo(
-    () => generateOrganicPoints(userId, nodes.length, containerWidth, nodeHeight),
-    [userId, nodes.length, containerWidth, nodeHeight]
-  )
   const organicSegments = useMemo(
     () => generateOrganicSegments(userId, nodes.length, containerWidth, nodeHeight),
     [userId, nodes.length, containerWidth, nodeHeight]
@@ -453,13 +447,6 @@ export default function LeadershipPathPage() {
   const completedCount = nodes.filter(n => n.state === 'completed').length
   const allModulesDone = totalModules > 0 && completedCount >= totalModules
   const capstoneLocked = !allModulesDone
-
-  // Por pilar: ¿están sus módulos completos? — para colorear las CapstoneParticles.
-  const pillarDoneList  = PILLARS.map(p => {
-    const mods = nodes.filter(n => MODULE_PILLAR[n.module.order_index] === p)
-    return mods.length > 0 && mods.every(n => n.state === 'completed')
-  })
-  const pillarColorList = PILLARS.map(p => PILLAR_COLORS[p].solid)
   const capstoneState: 'bloqueado' | 'enviado' | 'evaluado' | 'en_progreso' =
     capstoneLocked                                              ? 'bloqueado'  :
     userProjects.some(p => p.status === 'pending')              ? 'enviado'    :
@@ -484,7 +471,6 @@ export default function LeadershipPathPage() {
   const island = activeIsland ?? 'Yo'
   const strengthList: Pillar[] = (leaderProfile?.fortalezas.length ? leaderProfile.fortalezas : [island]) as Pillar[]
   const gvPillar1 = strengthList[0]
-  const gvPillar2 = strengthList[1] ?? strengthList[0]
 
   const activeModuleIdx = nodes.findIndex(n => n.state === 'active')
   const fillColor = activeModuleIdx !== -1
@@ -503,6 +489,67 @@ export default function LeadershipPathPage() {
 
   const STATUS_LABEL: Record<NodeState, string> = {
     completed: t('statusCompleted'), active: t('statusActive'), locked: t('statusLocked'),
+  }
+
+  // Color del Great Venture — pilar más fuerte del estudiante; #C0392B solo si todavía
+  // no hay leaderProfile en absoluto (no si simplemente no hay fortalezas, ese caso ya
+  // cae en 'Yo' vía strengthList más arriba).
+  const gvColor = leaderProfile ? PILLAR_COLORS[gvPillar1].solid : '#C0392B'
+  const gvRgb1  = leaderProfile ? PILLAR_RGB[gvPillar1] : '192,57,43'
+
+  // El Capstone — octágono de 3 capas concéntricas con borde conic-gradient de 5 colores
+  // wayuu. Mismo helper para mapa (120px) e isla (160px, +XP debajo).
+  function renderCapstoneOctagon(size: number, showXp: boolean) {
+    const mid = size - 12
+    const inner = size - 24
+    return (
+      <div
+        className="lp-capstone-hover"
+        style={{ position: 'relative', width: size, height: size }}
+        onClick={handleCapstoneClick}
+      >
+        <CapstoneOctagonBorder size={size} reduceMotion={!!pref} />
+        <div
+          className="lp-capstone-mid"
+          style={{ position: 'absolute', top: (size - mid) / 2, left: (size - mid) / 2, width: mid, height: mid, clipPath: CAPSTONE_OCTAGON_CLIP }}
+        />
+        <div
+          className="lp-capstone-inner"
+          style={{
+            position: 'absolute', top: (size - inner) / 2, left: (size - inner) / 2, width: inner, height: inner, clipPath: CAPSTONE_OCTAGON_CLIP,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            opacity: capstoneState === 'bloqueado' ? 0.5 : 1,
+          }}
+        >
+          <WayuuCapstoneSymbol primaryColor="#C0392B" secondaryColor={gvColor} />
+          <span className="lp-capstone-label">CAPSTONE</span>
+          {showXp && <span className="lp-capstone-xp">★ 500 XP</span>}
+        </div>
+      </div>
+    )
+  }
+
+  // El Great Venture — hexágono vertical con el color del pilar más fuerte del estudiante.
+  // Mismo helper para mapa (88×104) e isla (110×130, +meta_nucleo si existe).
+  function renderGreatVenture(width: number, height: number, showMeta: boolean) {
+    return (
+      <m.div
+        className="lp-gv-hex"
+        style={{ width, height }}
+        whileHover={{ rotate: 30, scale: 1.08 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+        onClick={() => router.push('/dashboard/great-venture')}
+      >
+        <div className="lp-gv-hex-border" style={{ background: `rgba(${gvRgb1},0.6)` }} />
+        <div className="lp-gv-hex-fill" style={{ background: `rgba(${gvRgb1},0.15)` }}>
+          <WayuuCompass color={gvColor} size={24} />
+          <span className="lp-gv-label" style={{ color: gvColor }}>{t('greatVentureTagline')}</span>
+          {showMeta && leaderProfile?.meta_nucleo && (
+            <span className="lp-gv-meta">{leaderProfile.meta_nucleo.slice(0, 20)}</span>
+          )}
+        </div>
+      </m.div>
+    )
   }
 
   return (
@@ -568,24 +615,23 @@ export default function LeadershipPathPage() {
         .lp-island-score{font-family:"Satoshi",sans-serif;font-size:28px;font-weight:700;color:var(--wp-ink);line-height:1;margin-bottom:6px;}
         .lp-badge{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:100px;}
 
-        /* Hitos del mapa — mismo truco de wrapper que las islas, pero el rombo va rotado 45°
-           adicional (visualmente: cuadrado en punta, distinto de las islas). */
-        .lp-hub-anchor{position:absolute;transform:translate(-50%,-50%);background:none;border:none;cursor:pointer;padding:0;}
-        .lp-hub-diamond{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(45deg);}
-        .lp-hub-diamond-border{position:absolute;inset:-2px;z-index:-1;clip-path:${WAYUU_DIAMOND_CLIP};}
-        .lp-hub-diamond-shape{position:absolute;inset:0;clip-path:${WAYUU_DIAMOND_CLIP};background:var(--wp-surface);display:flex;align-items:center;justify-content:center;}
-        .lp-hub-diamond-content{transform:rotate(-45deg);display:flex;flex-direction:column;align-items:center;}
-        .lp-hub-icon{font-size:28px;}
-        .lp-hub-label{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--wp-ink-2);margin-top:6px;}
+        /* Anchor invisible para Capstone/Great Venture en el mapa — solo posiciona, el
+           contenido visible (octágono/hexágono) lo dan los helpers renderCapstoneOctagon/
+           renderGreatVenture, reusados también en la vista isla. */
+        .lp-hub-anchor{position:absolute;transform:translate(-50%,-50%);}
 
         .lp-skeleton-island{position:absolute;transform:translate(-50%,-50%);width:190px;height:190px;clip-path:${WAYUU_DIAMOND_CLIP};background:linear-gradient(90deg,var(--wp-surface-2) 25%,var(--wp-surface) 50%,var(--wp-surface-2) 75%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;}
 
         .lp-back-btn{display:inline-flex;align-items:center;padding:8px 16px;border:1px solid var(--wp-border);border-radius:999px;background:none;color:var(--wp-ink-2);font-size:13px;cursor:pointer;font-family:"Satoshi",sans-serif;margin-bottom:20px;transition:border-color .2s,color .2s;}
         .lp-back-btn:hover{border-color:var(--wp-ink-2);color:var(--wp-ink);}
 
-        /* Contenedor del zigzag — nodos position:absolute, posicionados con las coordenadas
-           del path orgánico (generateOrganicPoints), no con flexbox. */
+        /* Contenedor del zigzag — la curva SVG de fondo es position:absolute, pointer-events:none,
+           detrás de todo (z-index:0); cada fila es flexbox normal (z-index:1, position:relative)
+           y NUNCA se superpone con la siguiente porque el alto real lo da el propio contenido,
+           no una coordenada absoluta — ver Sesión 15 (antes el texto del módulo N+1 podía quedar
+           encima del nodo del módulo N porque ambos usaban coordenadas independientes). */
         .lp-zigzag{position:relative;max-width:560px;margin:0 auto;padding:40px 24px;width:100%;}
+        .lp-node-row{position:relative;z-index:1;display:flex;align-items:center;gap:24px;padding:16px 0;min-height:80px;}
         /* box-shadow nunca va en .lp-node-circle — tiene clip-path, que recorta cualquier
            sombra puesta en el MISMO elemento. Vive en este wrapper plano (sin clip-path). */
         .lp-node-shadow{position:relative;}
@@ -612,34 +658,29 @@ export default function LeadershipPathPage() {
         .lp-tooltip-arrow{position:absolute;top:50%;width:8px;height:8px;transform:translateY(-50%) rotate(45deg);background:var(--wp-surface);}
         .lp-tooltip-arrow--right{left:-4px;}
         .lp-tooltip-arrow--left{right:-4px;}
-        .lp-connector-arm{width:20px;height:0;border-top:1px solid var(--wp-border-glow);flex-shrink:0;}
 
-        /* Card premium del Capstone — usada en mapa (.capstone-card--sm) y en isla (tamaño base).
-           Excepción deliberada: cuadrado con esquinas redondeadas, no rombo, y mantiene su
-           identidad roja de marca en vez de un color de pilar. overflow:hidden para que el
-           glow radial interno respete las esquinas; el borde conic-gradient (CapstoneCardBorder)
-           y las partículas viven en el wrapper padre, position:relative, overflow visible. */
-        .capstone-card{
-          position:relative;z-index:1;width:140px;height:140px;border-radius:20px;
-          background:var(--wp-surface);overflow:hidden;cursor:pointer;
-          display:flex;flex-direction:column;align-items:center;justify-content:center;
-          box-shadow:0 0 0 1px rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.6), 0 0 64px rgba(192,57,43,0.15);
-        }
-        .capstone-card-glow{position:absolute;inset:0;border-radius:20px;background:radial-gradient(circle at center, rgba(192,57,43,0.1) 0%, transparent 70%);pointer-events:none;}
-        .capstone-card-eyebrow{position:relative;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--wp-mute);margin-top:8px;}
-        .capstone-card-title{position:relative;font-size:16px;font-family:"Instrument Serif",serif;font-style:italic;color:#C0392B;margin-top:2px;}
-        .capstone-card-xp{position:relative;font-size:11px;color:var(--wp-mute);margin-top:6px;}
-        .capstone-card--sm{width:100px;height:100px;border-radius:16px;}
-        .capstone-card--sm .capstone-card-eyebrow{margin-top:4px;}
+        /* Capstone — octágono de 3 capas concéntricas (mismo clip-path, tamaños decrecientes).
+           Excepción deliberada de forma: no es rombo como el resto, y mantiene su identidad
+           roja de marca (#C0392B) en vez de un color de pilar — es el destino de TODO el
+           recorrido, no pertenece a un solo pilar. Capa exterior = CapstoneOctagonBorder
+           (conic-gradient rotando); capa media = "borde" de 6px en var(--wp-bg/--wp-surface)
+           — pura CSS por tema, sin condicional JS; capa interior = glow radial sutil + símbolo. */
+        .lp-capstone-hover{cursor:pointer;transition:filter .2s, transform .2s;}
+        .lp-capstone-hover:hover{filter:brightness(1.15);transform:scale(1.04);}
+        .lp-capstone-mid{background:var(--wp-bg);}
+        .leadership-path-page[data-theme="light"] .lp-capstone-mid{background:var(--wp-surface);}
+        .lp-capstone-inner{background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.06) 0%, transparent 60%);}
+        .leadership-path-page[data-theme="light"] .lp-capstone-inner{background:radial-gradient(circle at 35% 30%, rgba(0,0,0,0.02) 0%, transparent 60%);}
+        .lp-capstone-label{font-size:9px;font-weight:800;letter-spacing:0.15em;color:var(--wp-ink-2);text-transform:uppercase;margin-top:8px;}
+        .lp-capstone-xp{font-size:10px;color:#C0392B;margin-top:4px;}
 
-        /* Hito Great Venture en la isla — rombo wayuu (ya no hexágono), mismo truco de wrapper. */
-        .lp-zznode-gv{
-          position:relative;width:96px;height:96px;flex-shrink:0;cursor:pointer;
-          clip-path:${WAYUU_DIAMOND_CLIP};
-          display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1;
-        }
-        .lp-zznode-gv-border{position:absolute;inset:-2px;z-index:-1;clip-path:${WAYUU_DIAMOND_CLIP};}
-        .lp-zznode-gv-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:4px;text-align:center;padding:0 8px;}
+        /* Great Venture — hexágono vertical con el color del pilar más fuerte del estudiante;
+           mismo truco de wrapper-borde-4px-más-grande que el resto de formas con clip-path. */
+        .lp-gv-hex{position:relative;cursor:pointer;clip-path:${GV_HEXAGON_CLIP};}
+        .lp-gv-hex-border{position:absolute;inset:-4px;z-index:-1;clip-path:${GV_HEXAGON_CLIP};}
+        .lp-gv-hex-fill{position:absolute;inset:0;clip-path:${GV_HEXAGON_CLIP};display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;}
+        .lp-gv-label{font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-top:6px;text-align:center;}
+        .lp-gv-meta{font-size:9px;color:var(--wp-ink-2);margin-top:3px;text-align:center;max-width:90px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 
         /* Header de vista isla — tipografía editorial con luz propia (text-shadow) */
         .lp-island-headline{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;font-size:40px;}
@@ -755,44 +796,12 @@ export default function LeadershipPathPage() {
                 </div>
 
                 <div className="lp-hubs-wrap">
-                  <button
-                    className="lp-hub-anchor"
-                    style={{
-                      top: `${CAPSTONE_POS.top}%`, left: `${CAPSTONE_POS.left}%`,
-                      width: 104, height: 104,
-                    }}
-                    onClick={handleCapstoneClick}
-                  >
-                    <div style={{ position: 'relative', width: 100, height: 100 }}>
-                      <CapstoneCardBorder cardSize={100} radius={16} reduceMotion={!!pref} />
-                      <div
-                        className="capstone-card capstone-card--sm"
-                        style={{
-                          background: capstoneState === 'evaluado' ? 'rgba(192,57,43,0.06)' : 'var(--wp-surface)',
-                          opacity: capstoneState === 'bloqueado' ? 0.5 : 1,
-                        }}
-                      >
-                        <div className="capstone-card-glow" />
-                        <span style={{ position: 'relative', fontSize: 24, filter: 'drop-shadow(0 2px 6px rgba(192,57,43,0.4))' }}>🏆</span>
-                        <span className="capstone-card-eyebrow">CAPSTONE</span>
-                      </div>
-                    </div>
-                  </button>
-                  <button
-                    className="lp-hub-anchor"
-                    style={{ top: `${GREAT_VENTURE_POS.top}%`, left: `${GREAT_VENTURE_POS.left}%`, width: 100, height: 100 }}
-                    onClick={() => router.push('/dashboard/great-venture')}
-                  >
-                    <div className="lp-hub-diamond" style={{ width: 100, height: 100 }}>
-                      <div className="lp-hub-diamond-border" style={{ background: PILLAR_COLORS[gvPillar1].solid }} />
-                      <div className="lp-hub-diamond-shape">
-                        <div className="lp-hub-diamond-content">
-                          <span className="lp-hub-icon">🗺️</span>
-                          <span className="lp-hub-label">GREAT VENTURE</span>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
+                  <div className="lp-hub-anchor" style={{ top: `${CAPSTONE_POS.top}%`, left: `${CAPSTONE_POS.left}%`, width: 120, height: 120 }}>
+                    {renderCapstoneOctagon(120, false)}
+                  </div>
+                  <div className="lp-hub-anchor" style={{ top: `${GREAT_VENTURE_POS.top}%`, left: `${GREAT_VENTURE_POS.left}%`, width: 88, height: 104 }}>
+                    {renderGreatVenture(88, 104, false)}
+                  </div>
                 </div>
               </div>
             )}
@@ -838,13 +847,12 @@ export default function LeadershipPathPage() {
               ))}
             </m.div>
 
-            <div
-              className="lp-zigzag"
-              ref={zigzagContainerRef}
-              style={{ minHeight: (nodes.length + 2) * nodeHeight + 40 }}
-            >
+            <div className="lp-zigzag" ref={zigzagContainerRef}>
+              {/* Curva decorativa de fondo — únicamente estética, ya no determina la posición
+                  real de los nodos (esa la da el flex layout de abajo, ver Sesión 15: el texto
+                  se superponía con el nodo siguiente porque dependía de esta misma curva). */}
               {containerWidth > 0 && nodes.length > 0 && (
-                <svg width={containerWidth} height={nodes.length * nodeHeight} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
+                <svg width={containerWidth} height={nodes.length * nodeHeight} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', zIndex: 0 }}>
                   <defs>
                     <linearGradient id="wayuu-path-gradient" gradientUnits="userSpaceOnUse" x1={containerWidth / 2} y1={0} x2={containerWidth / 2} y2={nodes.length * nodeHeight}>
                       <stop offset="0%" stopColor={fillColor} stopOpacity={0.4} />
@@ -853,8 +861,6 @@ export default function LeadershipPathPage() {
                     </linearGradient>
                   </defs>
                   {organicSegments.map((seg, i) => {
-                    // El tramo i conecta el punto i-1 con el nodo i — su estado decide si
-                    // se dibuja como "recorrido" (gradiente+glow+shimmer) o "restante" (punteado).
                     const segmentDone = nodes[i]?.state === 'completed'
                     if (!segmentDone) {
                       return <path key={i} d={seg} stroke="var(--wp-border)" strokeWidth={2} strokeDasharray="4 8" strokeLinecap="round" fill="none" />
@@ -876,166 +882,123 @@ export default function LeadershipPathPage() {
                 const pillarRgb    = PILLAR_RGB[modulePillar]
                 const statusColor  = node.state === 'completed' ? 'var(--wp-norte)' : node.state === 'active' ? pillarColor : 'var(--wp-mute)'
                 const circleSize   = node.state === 'completed' ? 52 : node.state === 'active' ? 72 : 48
-                const pt = organicPoints[idx] ?? { x: containerWidth / 2, y: idx * nodeHeight + nodeHeight / 2 }
-                const onLeftSide = pt.x < containerWidth / 2
-                const tooltipSide: 'left' | 'right' = onLeftSide ? 'right' : 'left'
-                const infoOffset = circleSize / 2 + 14
+                const isEven       = idx % 2 === 0
+
+                const circleBlock = (
+                  <div
+                    key="circle"
+                    className={`lp-node-shadow${node.state === 'completed' ? ' lp-node-shadow--done' : node.state === 'active' ? ' lp-node-shadow--active' : ''}`}
+                    style={{ width: circleSize, height: circleSize, flexShrink: 0, '--node-rgb': pillarRgb } as React.CSSProperties}
+                  >
+                    {node.state !== 'completed' && (
+                      <div className="lp-node-border" style={{ background: node.state === 'active' ? pillarColor : 'var(--wp-border)' }} />
+                    )}
+                    <m.div
+                      className="lp-node-circle"
+                      style={{
+                        width: '100%', height: '100%',
+                        background: node.state === 'completed' ? pillarColor : 'var(--wp-surface)',
+                        color: node.state === 'completed' ? 'var(--wp-bg)' : pillarColor,
+                        opacity: node.state === 'locked' ? 0.35 : 1,
+                        filter: node.state === 'locked' ? 'blur(0.8px)' : 'none',
+                      }}
+                      initial={pref ? false : { opacity: 0, x: isEven ? -20 : 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.1 + idx * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
+                      whileHover={node.state === 'completed' ? { scale: 1.08, y: -2 } : undefined}
+                    >
+                      {node.state === 'completed' && (
+                        <>
+                          <span className="lp-node-ring" style={{ borderColor: `rgba(${pillarRgb},0.25)` }} />
+                          <span style={{ fontSize: 18, fontWeight: 700 }}>✓</span>
+                        </>
+                      )}
+                      {node.state === 'active' && (
+                        <>
+                          <div style={{ width: 20, height: 20, clipPath: WAYUU_DIAMOND_CLIP, background: pillarColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ width: 8, height: 8, clipPath: WAYUU_DIAMOND_CLIP, background: 'var(--wp-surface)' }} />
+                          </div>
+                          <PulseRing1 color={pillarColor} reduceMotion={!!pref} />
+                          <PulseRing2 color={pillarColor} reduceMotion={!!pref} />
+                          {!isNarrow && (
+                            <div className={`lp-node-tooltip lp-node-tooltip--${isEven ? 'right' : 'left'}`} style={{ borderLeftColor: pillarColor }}>
+                              <span className="lp-tooltip-eyebrow" style={{ color: pillarColor }}>{t('nextLabel')}</span>
+                              <span className="lp-tooltip-title">{node.module.title}</span>
+                              <span className={`lp-tooltip-arrow lp-tooltip-arrow--${isEven ? 'right' : 'left'}`} />
+                            </div>
+                          )}
+                        </>
+                      )}
+                      {node.state === 'locked' && (
+                        <>
+                          <span style={{ fontSize: 14, color: 'var(--wp-mute)' }}>🔒</span>
+                          <FogPulse reduceMotion={!!pref} />
+                        </>
+                      )}
+                    </m.div>
+                  </div>
+                )
+
+                const infoBlock = (
+                  <m.div
+                    key="info"
+                    className="lp-node-info"
+                    style={{ maxWidth: 180, textAlign: isEven ? 'left' : 'right' }}
+                    initial={pref ? false : { opacity: 0, x: isEven ? -20 : 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 + idx * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
+                  >
+                    <div className="lp-node-module-label" style={{ color: pillarColor }}>
+                      {String(node.module.order_index).padStart(2, '0')} · {t('moduleLabel')}
+                    </div>
+                    <div className="lp-node-title">{node.module.title}</div>
+                    <div className="lp-node-xp" style={{ color: pillarColor }}>★ {node.module.xp_reward} XP</div>
+                    <div className="lp-node-status" style={{ color: statusColor }}>{STATUS_LABEL[node.state]}</div>
+                    {node.state === 'active' && (
+                      <button
+                        className="lp-node-cta"
+                        style={{ background: pillarColor }}
+                        onClick={e => { e.stopPropagation(); router.push(`/dashboard/modules/${node.module.id}`) }}
+                      >
+                        {t('inlineStartBtn')}
+                      </button>
+                    )}
+                    {node.state === 'completed' && <div className="lp-node-done">{t('completedBadge')}</div>}
+                  </m.div>
+                )
+
                 return (
-                  // NOTA: el centrado (-50%,-50%) vive en wrappers planos (no motion), nunca
-                  // junto a un x/y/scale animado por Framer Motion en el MISMO elemento —
-                  // FM reescribe el `transform` completo a partir de sus propios valores
-                  // animados y descarta cualquier transform estático puesto en el mismo nodo.
                   <div
                     key={node.module.id}
-                    style={{ position: 'absolute', left: pt.x, top: pt.y, cursor: node.state !== 'locked' ? 'pointer' : 'default' }}
+                    className="lp-node-row"
+                    style={{ justifyContent: isEven ? 'flex-start' : 'flex-end', cursor: node.state !== 'locked' ? 'pointer' : 'default' }}
                     onClick={node.state !== 'locked' ? () => setSelected(node) : undefined}
                   >
-                    <div style={{ position: 'absolute', top: 0, left: 0, width: circleSize, height: circleSize, transform: 'translate(-50%,-50%)' }}>
-                      <div className={`lp-node-shadow${node.state === 'completed' ? ' lp-node-shadow--done' : node.state === 'active' ? ' lp-node-shadow--active' : ''}`} style={{ width: '100%', height: '100%', '--node-rgb': pillarRgb } as React.CSSProperties}>
-                        {node.state !== 'completed' && (
-                          <div className="lp-node-border" style={{ background: node.state === 'active' ? pillarColor : 'var(--wp-border)' }} />
-                        )}
-                        <m.div
-                          className="lp-node-circle"
-                          style={{
-                            width: '100%', height: '100%',
-                            background: node.state === 'completed' ? pillarColor : 'var(--wp-surface)',
-                            color: node.state === 'completed' ? 'var(--wp-bg)' : pillarColor,
-                            opacity: node.state === 'locked' ? 0.35 : 1,
-                            filter: node.state === 'locked' ? 'blur(0.8px)' : 'none',
-                          }}
-                          initial={pref ? false : { opacity: 0, x: onLeftSide ? -20 : 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.1 + idx * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
-                          whileHover={node.state === 'completed' ? { scale: 1.08, y: -2 } : undefined}
-                        >
-                          {node.state === 'completed' && (
-                            <>
-                              <span className="lp-node-ring" style={{ borderColor: `rgba(${pillarRgb},0.25)` }} />
-                              <span style={{ fontSize: 18, fontWeight: 700 }}>✓</span>
-                            </>
-                          )}
-                          {node.state === 'active' && (
-                            <>
-                              <div style={{ width: 20, height: 20, clipPath: WAYUU_DIAMOND_CLIP, background: pillarColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <div style={{ width: 8, height: 8, clipPath: WAYUU_DIAMOND_CLIP, background: 'var(--wp-surface)' }} />
-                              </div>
-                              <PulseRing1 color={pillarColor} reduceMotion={!!pref} />
-                              <PulseRing2 color={pillarColor} reduceMotion={!!pref} />
-                              {!isNarrow && (
-                                <div className={`lp-node-tooltip lp-node-tooltip--${tooltipSide}`} style={{ borderLeftColor: pillarColor }}>
-                                  <span className="lp-tooltip-eyebrow" style={{ color: pillarColor }}>{t('nextLabel')}</span>
-                                  <span className="lp-tooltip-title">{node.module.title}</span>
-                                  <span className={`lp-tooltip-arrow lp-tooltip-arrow--${tooltipSide}`} />
-                                </div>
-                              )}
-                            </>
-                          )}
-                          {node.state === 'locked' && (
-                            <>
-                              <span style={{ fontSize: 14, color: 'var(--wp-mute)' }}>🔒</span>
-                              <FogPulse reduceMotion={!!pref} />
-                            </>
-                          )}
-                        </m.div>
-                      </div>
-                    </div>
-                    <div
-                      style={
-                        isNarrow
-                          ? { position: 'absolute', top: circleSize / 2 + 14, left: 0, transform: 'translateX(-50%)', width: 220 }
-                          : onLeftSide
-                            ? { position: 'absolute', top: 0, left: infoOffset, transform: 'translateY(-50%)', width: 180 }
-                            : { position: 'absolute', top: 0, right: infoOffset, transform: 'translateY(-50%)', width: 180 }
-                      }
-                    >
-                      <m.div
-                        className="lp-node-info"
-                        style={{ textAlign: isNarrow ? 'center' : onLeftSide ? 'left' : 'right' }}
-                        initial={pref ? false : { opacity: 0, x: onLeftSide ? -20 : 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 + idx * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
-                      >
-                        <div className="lp-node-module-label" style={{ color: pillarColor }}>
-                          {String(node.module.order_index).padStart(2, '0')} · {t('moduleLabel')}
-                        </div>
-                        <div className="lp-node-title">{node.module.title}</div>
-                        <div className="lp-node-xp" style={{ color: pillarColor }}>★ {node.module.xp_reward} XP</div>
-                        <div className="lp-node-status" style={{ color: statusColor }}>{STATUS_LABEL[node.state]}</div>
-                        {node.state === 'active' && (
-                          <button
-                            className="lp-node-cta"
-                            style={{ background: pillarColor }}
-                            onClick={e => { e.stopPropagation(); router.push(`/dashboard/modules/${node.module.id}`) }}
-                          >
-                            {t('inlineStartBtn')}
-                          </button>
-                        )}
-                        {node.state === 'completed' && <div className="lp-node-done">{t('completedBadge')}</div>}
-                      </m.div>
-                    </div>
+                    {isEven ? <>{circleBlock}{infoBlock}</> : <>{infoBlock}{circleBlock}</>}
                   </div>
                 )
               })}
 
-              {/* Hito — Capstone, card premium con borde conic-gradient + partículas convergentes.
-                  Wrapper plano para el centrado estático; el x/y animado va en un hijo sin transform propio. */}
-              <div
-                style={{ position: 'absolute', left: containerWidth / 2, top: nodes.length * nodeHeight + nodeHeight / 2, cursor: 'pointer' }}
-                onClick={handleCapstoneClick}
-              >
-                <div style={{ transform: 'translate(-50%,-50%)' }}>
-                  <m.div
-                    initial={pref ? false : { opacity: 0, y: 20 }}
-                    animate={{ opacity: capstoneState === 'bloqueado' ? 0.5 : 1, y: 0 }}
-                    transition={{ delay: 0.1 + nodes.length * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
-                  >
-                    <div style={{ position: 'relative', width: 140, height: 140 }}>
-                      <CapstonePulse reduceMotion={!!pref} />
-                      <CapstoneCardBorder cardSize={140} radius={20} reduceMotion={!!pref} />
-                      <div className="capstone-card" style={{ background: capstoneState === 'evaluado' ? 'rgba(192,57,43,0.06)' : 'var(--wp-surface)' }}>
-                        <div className="capstone-card-glow" />
-                        <span style={{ position: 'relative', fontSize: 32, filter: 'drop-shadow(0 0 12px rgba(255,215,0,0.6))' }}>🏆</span>
-                        <span className="capstone-card-eyebrow">PROYECTO</span>
-                        <span className="capstone-card-title">Capstone</span>
-                        <span className="capstone-card-xp">★ 500 XP</span>
-                      </div>
-                      <CapstoneParticles userId={userId} pillarDone={pillarDoneList} pillarColors={pillarColorList} reduceMotion={!!pref} />
-                    </div>
-                  </m.div>
-                </div>
+              {/* Hito — Capstone, octágono de 3 capas con borde conic-gradient wayuu */}
+              <div className="lp-node-row" style={{ justifyContent: nodes.length % 2 === 0 ? 'flex-start' : 'flex-end' }}>
+                <m.div
+                  initial={pref ? false : { opacity: 0, x: nodes.length % 2 === 0 ? -20 : 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 + nodes.length * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
+                >
+                  {renderCapstoneOctagon(160, true)}
+                </m.div>
               </div>
 
-              {/* Hito — Great Venture, rombo wayuu de 96px (ya no hexágono) */}
-              <div
-                style={{ position: 'absolute', left: containerWidth / 2, top: (nodes.length + 1) * nodeHeight + nodeHeight / 2, cursor: 'pointer' }}
-                onClick={() => router.push('/dashboard/great-venture')}
-              >
-                <div style={{ transform: 'translate(-50%,-50%)' }}>
-                  <m.div
-                    initial={pref ? false : { opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 + (nodes.length + 1) * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
-                  >
-                    <m.div
-                      className="lp-zznode-gv"
-                      whileHover={{ rotate: [0, 45, 0] }}
-                      transition={{ type: 'spring', stiffness: 200, damping: 12 }}
-                    >
-                      <div className="lp-zznode-gv-border" style={{ background: `linear-gradient(135deg, rgba(${PILLAR_RGB[gvPillar1]},0.6) 0%, rgba(${PILLAR_RGB[gvPillar2]},0.6) 100%)` }} />
-                      <div
-                        style={{
-                          position: 'absolute', inset: 0, clipPath: WAYUU_DIAMOND_CLIP,
-                          background: `linear-gradient(135deg, rgba(${PILLAR_RGB[gvPillar1]},0.25) 0%, rgba(${PILLAR_RGB[gvPillar2]},0.10) 100%)`,
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                        }}
-                      >
-                        <span style={{ fontSize: 28, filter: `drop-shadow(0 0 8px ${PILLAR_COLORS[gvPillar1].solid})` }}>🗺️</span>
-                        <span className="lp-zznode-gv-label" style={{ color: PILLAR_COLORS[gvPillar1].solid }}>{t('greatVentureTagline')}</span>
-                      </div>
-                    </m.div>
-                  </m.div>
-                </div>
+              {/* Hito — Great Venture, hexágono vertical con el color del estudiante */}
+              <div className="lp-node-row" style={{ justifyContent: (nodes.length + 1) % 2 === 0 ? 'flex-start' : 'flex-end' }}>
+                <m.div
+                  initial={pref ? false : { opacity: 0, x: (nodes.length + 1) % 2 === 0 ? -20 : 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 + (nodes.length + 1) * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
+                >
+                  {renderGreatVenture(110, 130, true)}
+                </m.div>
               </div>
             </div>
           </m.div>
