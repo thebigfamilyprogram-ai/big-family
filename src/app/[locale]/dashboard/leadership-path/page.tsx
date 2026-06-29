@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { memo, useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
@@ -94,7 +94,12 @@ const PILLAR_I18N_KEY: Record<Pillar, string> = {
 
 const CAPSTONE_POS = { top: 42, left: 42 }
 const GREAT_VENTURE_POS = { top: 65, left: 62 }
-const TOTAL_NODES = 9 // 7 módulos + Capstone + Great Venture
+
+// Alto vertical por nodo del zigzag orgánico — mayor en mobile porque el texto pasa
+// de ir al lado del círculo a ir debajo (columna), necesita más espacio.
+const NODE_HEIGHT_DESKTOP = 110
+const NODE_HEIGHT_MOBILE = 150
+const NARROW_BREAKPOINT = 480
 
 // Animaciones perpetuas — cada una vive en su propio componente memoizado, ver CLAUDE.md.
 // Nodo activo: dos pulse rings concéntricos con delay escalonado.
@@ -116,21 +121,6 @@ const PulseRing2 = memo(function PulseRing2({ color }: { color: string }) {
     />
   )
 })
-// Brillo blanco que recorre el path del zigzag en loop continuo.
-const PathShimmer = memo(function PathShimmer({ d, length }: { d: string; length: number }) {
-  return (
-    <m.path
-      d={d}
-      stroke="#fff"
-      strokeWidth={1}
-      fill="none"
-      strokeDasharray={length}
-      initial={{ strokeDashoffset: length, opacity: 0 }}
-      animate={{ strokeDashoffset: [length, 0], opacity: [0, 0.5, 0] }}
-      transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-    />
-  )
-})
 // Niebla pulsante sobre nodos bloqueados — "fog of war".
 const FogPulse = memo(function FogPulse() {
   return (
@@ -145,18 +135,42 @@ const FogPulse = memo(function FogPulse() {
     />
   )
 })
-// Destello dorado en loop detrás del hito Capstone.
-const CapstonePulse = memo(function CapstonePulse() {
+// Borde rotando en conic-gradient detrás de la card premium del Capstone (mapa + isla).
+const CapstoneCardBorder = memo(function CapstoneCardBorder({ cardSize, radius, reduceMotion }: { cardSize: number; radius: number; reduceMotion: boolean }) {
   return (
     <m.div
       style={{
-        position: 'absolute', top: '50%', left: '50%', width: 100, height: 100,
-        marginTop: -50, marginLeft: -50, borderRadius: '50%', pointerEvents: 'none', zIndex: 0,
-        background: 'radial-gradient(circle, rgba(255,215,0,0.3) 0%, transparent 70%)',
+        position: 'absolute', top: -2, left: -2, width: cardSize + 4, height: cardSize + 4,
+        borderRadius: radius + 2, zIndex: 0, pointerEvents: 'none',
+        background: 'conic-gradient(from 0deg, rgba(192,57,43,0.8) 0%, rgba(212,130,26,0.6) 25%, rgba(15,123,108,0.6) 50%, rgba(83,74,183,0.6) 75%, rgba(192,57,43,0.8) 100%)',
       }}
-      animate={{ opacity: [0, 0.6, 0], scale: [0.8, 1.2, 0.8] }}
-      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+      animate={reduceMotion ? undefined : { rotate: 360 }}
+      transition={reduceMotion ? undefined : { duration: 4, repeat: Infinity, ease: 'linear' }}
     />
+  )
+})
+// Partículas convergentes hacia la card del Capstone — 2 por pilar (10 máx), coloreadas
+// solo si ese pilar ya está completo; el resto en gris. Solo en la vista isla.
+const CapstoneParticles = memo(function CapstoneParticles({ userId, pillarDone, pillarColors }: { userId: string; pillarDone: boolean[]; pillarColors: string[] }) {
+  const particles = pillarDone.flatMap((done, pIdx) =>
+    [0, 1].map(sub => ({ idx: pIdx * 2 + sub, color: done ? pillarColors[pIdx] : 'var(--line-strong)' }))
+  )
+  return (
+    <>
+      {particles.map(p => {
+        const angle = seededRandom(userId, 500 + p.idx) * Math.PI * 2
+        const startX = Math.cos(angle) * 180
+        const startY = Math.sin(angle) * 180
+        return (
+          <m.div
+            key={p.idx}
+            style={{ position: 'absolute', top: '50%', left: '50%', width: 5, height: 5, borderRadius: '50%', background: p.color, pointerEvents: 'none' }}
+            animate={{ x: [startX, startX * 0.6, startX * 0.3, 0], y: [startY, startY * 0.6, startY * 0.3, 0], opacity: [0.3, 0.6, 0.8, 0], scale: [1, 1.2, 0.8, 0] }}
+            transition={{ duration: 3 + p.idx * 0.4, repeat: Infinity, delay: p.idx * 0.3, ease: 'easeInOut' }}
+          />
+        )
+      })}
+    </>
   )
 })
 
@@ -168,25 +182,61 @@ function islandArcPath(a: { x: number; y: number }, b: { x: number; y: number })
   return `M ${a.x},${a.y} Q ${mx},${my} ${b.x},${b.y}`
 }
 
-// Línea serpenteante del zigzag interior — coordenadas porcentuales (viewBox 0 0 100 100,
-// preserveAspectRatio="none" para que se estire a la altura real del contenedor). Oscila
-// izquierda/derecha por tramo y conecta cada tramo con una curva suave (control points
-// horizontales en el punto medio de cada Y), evocando un camino orgánico — no intenta
-// alinear exactamente con cada nodo (los nodos alternan por flexDirection row/row-reverse,
-// un sistema de posicionamiento distinto), es un fondo decorativo.
-function buildZigzagPath(totalSlots: number): string {
-  const pts = Array.from({ length: totalSlots + 1 }, (_, i) => ({
-    x: i % 2 === 0 ? 30 : 70,
-    y: (i / totalSlots) * 100,
+// Path orgánico del zigzag interior — único por estudiante (seed = userId), en píxeles
+// reales (no %), cubre solo los módulos (los hitos finales se posicionan aparte como
+// cards "destino", no forman parte de esta curva). Reemplaza el S simétrico genérico.
+function seededRandom(seed: string, index: number): number {
+  let hash = 0
+  const str = seed + index.toString()
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i)
+    hash |= 0
+  }
+  return (Math.abs(hash) % 100) / 100
+}
+
+interface OrganicPoint { x: number; y: number }
+
+function generateOrganicPoints(userId: string, nodeCount: number, containerWidth: number, nodeHeight: number): OrganicPoint[] {
+  const centerX = containerWidth / 2
+  const variance = 80
+  return Array.from({ length: nodeCount }, (_, i) => ({
+    x: centerX + (seededRandom(userId, i * 3) - 0.5) * variance * 2,
+    y: i * nodeHeight + nodeHeight / 2,
   }))
-  let d = `M ${pts[0].x} ${pts[0].y}`
-  for (let i = 0; i < pts.length - 1; i++) {
-    const cy = (pts[i].y + pts[i + 1].y) / 2
-    d += ` C ${pts[i].x} ${cy}, ${pts[i + 1].x} ${cy}, ${pts[i + 1].x} ${pts[i + 1].y}`
+}
+
+// Control point único por estudiante para el tramo que termina en `segmentIdx` —
+// ambos lados de la curva de ese tramo comparten esta misma x (un solo "brazo").
+function organicControlX(userId: string, containerWidth: number, segmentIdx: number): number {
+  const centerX = containerWidth / 2
+  return centerX + (seededRandom(userId, segmentIdx * 3 + 1) - 0.5) * 120
+}
+
+// Path único (todos los puntos unidos) — usado como halo de fondo, muy tenue.
+function generateOrganicPath(userId: string, nodeCount: number, containerWidth: number, nodeHeight: number): string {
+  const points = generateOrganicPoints(userId, nodeCount, containerWidth, nodeHeight)
+  let d = `M ${points[0].x} ${points[0].y}`
+  for (let i = 1; i < points.length; i++) {
+    const cpx = organicControlX(userId, containerWidth, i)
+    d += ` C ${cpx} ${points[i - 1].y + nodeHeight * 0.4} ${cpx} ${points[i].y - nodeHeight * 0.6} ${points[i].x} ${points[i].y}`
   }
   return d
 }
-const ZIGZAG_PATH_D = buildZigzagPath(TOTAL_NODES)
+
+// Mismos tramos que generateOrganicPath pero como segmentos independientes — permite
+// variar stroke-width por tramo (más fino al inicio del recorrido, más grueso al presente).
+function generateOrganicSegments(userId: string, nodeCount: number, containerWidth: number, nodeHeight: number): string[] {
+  const points = generateOrganicPoints(userId, nodeCount, containerWidth, nodeHeight)
+  const segments: string[] = []
+  for (let i = 1; i < points.length; i++) {
+    const cpx = organicControlX(userId, containerWidth, i)
+    segments.push(
+      `M ${points[i - 1].x} ${points[i - 1].y} C ${cpx} ${points[i - 1].y + nodeHeight * 0.4} ${cpx} ${points[i].y - nodeHeight * 0.6} ${points[i].x} ${points[i].y}`
+    )
+  }
+  return segments
+}
 
 // Confeti al completar todos los módulos — mismo truco (dot absoluto + keyframe CSS)
 // que ya usa modules/[id]/quiz/page.tsx para celebrar fases, con los 5 colores de pilar.
@@ -218,13 +268,38 @@ export default function LeadershipPathPage() {
   const [userProjects,  setUserProjects]  = useState<{ id: string; status: string }[]>([])
   const [diploma,       setDiploma]       = useState<{ projectId: string; resultado: string } | null>(null)
 
-  // Longitud real del path SVG del zigzag (en unidades del propio viewBox) — medida
-  // una vez montado, usada para el dasharray/dashoffset del progreso y el shimmer.
-  const [pathLen, setPathLen] = useState(0)
-  const zigzagBgPathRef = useRef<SVGPathElement>(null)
+  // userId — seed del path orgánico (único por estudiante). 'mock-student' en MOCK_MODE.
+  const [userId, setUserId] = useState('mock-student')
+
+  // Ancho real del contenedor del zigzag, en px — el path orgánico necesita coordenadas
+  // reales (no %), así que se mide del DOM en vez de usar un viewBox porcentual.
+  const [containerWidth, setContainerWidth] = useState(560)
+  const zigzagContainerRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    if (view === 'island' && zigzagBgPathRef.current) setPathLen(zigzagBgPathRef.current.getTotalLength())
+    if (view !== 'island') return
+    function measure() {
+      if (zigzagContainerRef.current) setContainerWidth(zigzagContainerRef.current.clientWidth)
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
   }, [view])
+
+  const isNarrow = containerWidth < NARROW_BREAKPOINT
+  const nodeHeight = isNarrow ? NODE_HEIGHT_MOBILE : NODE_HEIGHT_DESKTOP
+
+  const organicPoints = useMemo(
+    () => generateOrganicPoints(userId, nodes.length, containerWidth, nodeHeight),
+    [userId, nodes.length, containerWidth, nodeHeight]
+  )
+  const organicSegments = useMemo(
+    () => generateOrganicSegments(userId, nodes.length, containerWidth, nodeHeight),
+    [userId, nodes.length, containerWidth, nodeHeight]
+  )
+  const organicHaloPath = useMemo(
+    () => nodes.length > 0 ? generateOrganicPath(userId, nodes.length, containerWidth, nodeHeight) : '',
+    [userId, nodes.length, containerWidth, nodeHeight]
+  )
 
   // Gate de entrada para el count-up del score y la barra de progreso del header de isla.
   const [scoreReveal, setScoreReveal] = useState(false)
@@ -269,6 +344,7 @@ export default function LeadershipPathPage() {
 
       const { data: { user: au } } = await supabase.auth.getUser()
       if (!au) { router.replace('/login'); return }
+      setUserId(au.id)
 
       const [profileRes, modsRes, progRes, xpRes, projRes] = await Promise.all([
         supabase.from('profiles').select('display_name, leadership_profile').eq('id', au.id).maybeSingle(),
@@ -342,6 +418,13 @@ export default function LeadershipPathPage() {
   const completedCount = nodes.filter(n => n.state === 'completed').length
   const allModulesDone = totalModules > 0 && completedCount >= totalModules
   const capstoneLocked = !allModulesDone
+
+  // Por pilar: ¿están sus módulos completos? — para colorear las CapstoneParticles.
+  const pillarDoneList  = PILLARS.map(p => {
+    const mods = nodes.filter(n => MODULE_PILLAR[n.module.order_index] === p)
+    return mods.length > 0 && mods.every(n => n.state === 'completed')
+  })
+  const pillarColorList = PILLARS.map(p => PILLAR_COLORS[p].solid)
   const capstoneState: 'bloqueado' | 'enviado' | 'evaluado' | 'en_progreso' =
     capstoneLocked                                              ? 'bloqueado'  :
     userProjects.some(p => p.status === 'pending')              ? 'enviado'    :
@@ -369,17 +452,9 @@ export default function LeadershipPathPage() {
   const gvPillar2 = strengthList[1] ?? strengthList[0]
 
   const activeModuleIdx = nodes.findIndex(n => n.state === 'active')
-  const fillIndex = activeModuleIdx !== -1 ? activeModuleIdx : (capstoneState === 'evaluado' ? 8 : 7)
-  const fillPct   = (fillIndex / TOTAL_NODES) * 100
   const fillColor = activeModuleIdx !== -1
     ? PILLAR_COLORS[MODULE_PILLAR[nodes[activeModuleIdx].module.order_index]].solid
     : PILLAR_COLORS[island].solid
-
-  // Pilar del módulo que el estudiante debe completar ahora — la ruta marítima
-  // hacia ESE pilar lleva el punto animado, el resto quedan estáticas.
-  const activeRoutePillar: Pillar | null = activeModuleIdx !== -1
-    ? MODULE_PILLAR[nodes[activeModuleIdx].module.order_index]
-    : null
 
   function handleCapstoneClick() {
     if (capstoneState === 'bloqueado' || capstoneState === 'enviado') return
@@ -412,7 +487,6 @@ export default function LeadershipPathPage() {
         .lp-connectors{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
         .lp-connector-halo{stroke:var(--line);stroke-width:8px;opacity:.06;fill:none;}
         .lp-connector-path{stroke-width:2px;opacity:.3;fill:none;}
-        .lp-connector-dot{filter:drop-shadow(0 0 3px rgba(0,0,0,.25));}
 
         /* Isla — forma orgánica (border-radius irregular vía --island-shape) con 4 capas:
            sombra de elevación, gradiente interno, borde con brillo, highlight inset. El
@@ -453,41 +527,20 @@ export default function LeadershipPathPage() {
         [data-theme="dark"] .lp-hub{box-shadow:0 8px 24px rgba(0,0,0,.4), 0 2px 6px rgba(0,0,0,.3), 0 0 0 1px rgba(255,255,255,.08);}
         .lp-hub-icon{font-size:28px;}
         .lp-hub-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin-top:6px;}
-        /* Capstone — pico de montaña (clip-path triángulo), no card rectangular.
-           El contenido se empaqueta hacia la base ancha (flex-end) — centrado
-           normal pondría el ícono cerca del vértice angosto y lo recortaría. */
-        .lp-hub-capstone{
-          width:80px;height:80px;
-          clip-path:polygon(50% 0%, 100% 100%, 0% 100%);
-          border:2px solid rgba(192,57,43,0.4);
-          box-shadow:0 8px 24px rgba(192,57,43,0.15);
-          justify-content:flex-end;
-          padding-bottom:10px;
-        }
-        [data-theme="dark"] .lp-hub-capstone{box-shadow:0 8px 24px rgba(192,57,43,0.25);}
-        .lp-hub-capstone .lp-hub-label{margin-top:2px;font-size:9px;}
         .lp-hub-gv{width:88px;height:88px;border-radius:14px;}
         .lp-hub-gv .lp-hub-label{font-size:9px;}
+        /* Anchor invisible para la card premium del Capstone en el mapa — solo posiciona/clickea,
+           el contenido visible es .capstone-card por dentro. */
+        .lp-hub-anchor{position:absolute;transform:translate(-50%,-50%);background:none;border:none;cursor:pointer;padding:0;}
 
         .lp-skeleton-island{position:absolute;transform:translate(-50%,-50%);width:190px;height:190px;border-radius:50%;background:linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;}
 
         .lp-back-btn{display:inline-flex;align-items:center;padding:8px 16px;border:1px solid var(--line);border-radius:999px;background:none;color:var(--mute);font-size:13px;cursor:pointer;font-family:"Satoshi",sans-serif;margin-bottom:20px;transition:border-color .2s,color .2s;}
         .lp-back-btn:hover{border-color:var(--ink);color:var(--ink);}
 
+        /* Contenedor del zigzag — los nodos ahora son hijos position:absolute, posicionados
+           con las coordenadas del path orgánico (generateOrganicPoints), no con flexbox. */
         .lp-zigzag{position:relative;max-width:560px;margin:0 auto;padding:40px 24px;width:100%;}
-        /* Línea serpenteante — SVG con preserveAspectRatio="none" para estirarse a la
-           altura real del contenedor (variable según contenido); el "relleno" usa el
-           truco pathLength/dashoffset en vez de height%, porque ahora es una curva. */
-        .lp-zigzag-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
-        .lp-zigzag-line-path{fill:none;}
-        .lp-zigzag-line-fill-path{fill:none;}
-        /* Fallback recto para mobile — la curva orgánica oscila izq/centro/der, lo cual
-           no tiene sentido cuando los nodos colapsan a una sola columna alineada. */
-        .lp-zigzag-mobile-line-bg{display:none;position:absolute;left:27px;top:0;bottom:0;width:2px;background:var(--line);}
-        .lp-zigzag-mobile-line-fill{display:none;position:absolute;left:27px;top:0;width:2px;transition:height 0.6s cubic-bezier(0.22,1,0.36,1);}
-        .lp-node-row{position:relative;display:flex;align-items:center;gap:10px;margin-bottom:32px;}
-        .lp-node-row:last-child{margin-bottom:0;}
-        .lp-connector-arm{width:24px;height:0;border-top:1.5px solid var(--line);flex-shrink:0;align-self:center;}
         .lp-node-circle{border-radius:50%;flex-shrink:0;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;}
         /* Nodo completado — anillo exterior delgado en vez de banner flotante */
         .lp-node-circle--done{box-shadow:0 4px var(--node-shadow-blur,12px) rgba(var(--node-rgb),0.35);transition:box-shadow .2s;}
@@ -511,16 +564,23 @@ export default function LeadershipPathPage() {
         .lp-tooltip-arrow--right{left:-4px;}
         .lp-tooltip-arrow--left{right:-4px;}
 
-        /* Hito Capstone — montaña via clip-path, label fuera de la forma para no recortarse. */
-        .lp-zznode-capstone{
-          width:80px;height:80px;
-          clip-path:polygon(50% 0%, 95% 100%, 5% 100%);
-          background:linear-gradient(180deg, rgba(255,215,0,0.15) 0%, rgba(192,57,43,0.08) 100%);
-          display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:16px;
-          filter:drop-shadow(0 4px 12px rgba(192,57,43,0.2));
-          position:relative;z-index:1;
+        /* Card premium del Capstone — usada en mapa (.capstone-card--sm) y en isla (tamaño base).
+           overflow:hidden para que el glow radial interno respete las esquinas redondeadas;
+           el borde conic-gradient (CapstoneCardBorder) y las partículas viven en el wrapper
+           padre, position:relative, que sí permite overflow visible. */
+        .capstone-card{
+          position:relative;z-index:1;width:140px;height:140px;border-radius:20px;
+          background:var(--card-bg);overflow:hidden;cursor:pointer;
+          display:flex;flex-direction:column;align-items:center;justify-content:center;
+          box-shadow:0 0 0 1px rgba(192,57,43,0.15), 0 8px 32px rgba(192,57,43,0.20), 0 24px 64px rgba(192,57,43,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
         }
-        .lp-zznode-capstone-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#C0392B;margin-top:8px;text-align:center;}
+        [data-theme="dark"] .capstone-card{box-shadow:0 0 0 1px rgba(192,57,43,0.3), 0 8px 32px rgba(192,57,43,0.25), 0 24px 64px rgba(192,57,43,0.15), inset 0 1px 0 rgba(255,255,255,0.1);}
+        .capstone-card-glow{position:absolute;inset:0;border-radius:20px;background:radial-gradient(circle at center, rgba(192,57,43,0.06) 0%, transparent 70%);pointer-events:none;}
+        .capstone-card-eyebrow{position:relative;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--mute);margin-top:8px;}
+        .capstone-card-title{position:relative;font-size:16px;font-family:"Instrument Serif",serif;font-style:italic;color:#C0392B;margin-top:2px;}
+        .capstone-card-xp{position:relative;font-size:11px;color:var(--mute);margin-top:6px;}
+        .capstone-card--sm{width:100px;height:100px;border-radius:16px;}
+        .capstone-card--sm .capstone-card-eyebrow{margin-top:4px;}
         /* Hito Great Venture — hexágono via clip-path. */
         .lp-zznode-gv{
           width:88px;height:88px;flex-shrink:0;cursor:pointer;
@@ -546,11 +606,7 @@ export default function LeadershipPathPage() {
           .lp-islands-wrap{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;justify-items:center;}
           .lp-island-btn{position:static!important;transform:none!important;width:100px!important;height:100px!important;top:auto!important;left:auto!important;}
           .lp-hubs-wrap{display:flex;gap:16px;justify-content:center;margin-top:24px;flex-wrap:wrap;}
-          .lp-hub{position:static!important;transform:none!important;top:auto!important;left:auto!important;}
-          .lp-node-row{flex-direction:row!important;}
-          .lp-zigzag-svg{display:none;}
-          .lp-zigzag-mobile-line-bg,.lp-zigzag-mobile-line-fill{display:block;}
-          .lp-node-tooltip{display:none;}
+          .lp-hub,.lp-hub-anchor{position:static!important;transform:none!important;top:auto!important;left:auto!important;}
         }
       `}</style>
 
@@ -593,16 +649,10 @@ export default function LeadershipPathPage() {
                   {PILLARS.map(p => {
                     const pos = PILLAR_POSITIONS[p]
                     const d = islandArcPath({ x: pos.left, y: pos.top }, { x: CAPSTONE_POS.left, y: CAPSTONE_POS.top })
-                    const isActiveRoute = activeRoutePillar === p
                     return (
                       <g key={p}>
                         <path className="lp-connector-halo" d={d} />
                         <path className="lp-connector-path" d={d} stroke={`rgba(${PILLAR_RGB[p]},0.3)`} strokeDasharray="3 8" />
-                        {isActiveRoute && (
-                          <circle r="3" fill={PILLAR_COLORS[p].solid} className="lp-connector-dot">
-                            <animateMotion dur="4s" repeatCount="indefinite" path={d} />
-                          </circle>
-                        )}
                       </g>
                     )
                   })}
@@ -645,16 +695,27 @@ export default function LeadershipPathPage() {
 
                 <div className="lp-hubs-wrap">
                   <button
-                    className="lp-hub lp-hub-capstone"
+                    className="lp-hub-anchor"
                     style={{
-                      background: capstoneState === 'evaluado' ? 'rgba(192,57,43,0.06)' : 'var(--card-bg)',
-                      opacity: capstoneState === 'bloqueado' ? 0.5 : 1,
                       top: `${CAPSTONE_POS.top}%`, left: `${CAPSTONE_POS.left}%`,
+                      width: 104, height: 104,
                     }}
                     onClick={handleCapstoneClick}
                   >
-                    <span className="lp-hub-icon">🏔️</span>
-                    <span className="lp-hub-label">CIMA · CAPSTONE</span>
+                    <div style={{ position: 'relative', width: 100, height: 100 }}>
+                      <CapstoneCardBorder cardSize={100} radius={16} reduceMotion={!!pref} />
+                      <div
+                        className="capstone-card capstone-card--sm"
+                        style={{
+                          background: capstoneState === 'evaluado' ? 'rgba(192,57,43,0.06)' : 'var(--card-bg)',
+                          opacity: capstoneState === 'bloqueado' ? 0.5 : 1,
+                        }}
+                      >
+                        <div className="capstone-card-glow" />
+                        <span style={{ position: 'relative', fontSize: 24, filter: 'drop-shadow(0 2px 6px rgba(192,57,43,0.4))' }}>🏆</span>
+                        <span className="capstone-card-eyebrow">CAPSTONE</span>
+                      </div>
+                    </div>
                   </button>
                   <button
                     className="lp-hub lp-hub-gv"
@@ -704,37 +765,26 @@ export default function LeadershipPathPage() {
               ))}
             </m.div>
 
-            <div className="lp-zigzag">
-              <svg className="lp-zigzag-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <path
-                  ref={zigzagBgPathRef}
-                  className="lp-zigzag-line-path"
-                  d={ZIGZAG_PATH_D}
-                  stroke={fillColor}
-                  strokeOpacity={0.15}
-                  strokeWidth={2.5}
-                  strokeDasharray="6 6"
-                />
-                {pathLen > 0 && (
-                  <>
-                    <m.path
-                      className="lp-zigzag-line-fill-path"
-                      d={ZIGZAG_PATH_D}
+            <div
+              className="lp-zigzag"
+              ref={zigzagContainerRef}
+              style={{ minHeight: (nodes.length + 2) * nodeHeight + 40 }}
+            >
+              {containerWidth > 0 && nodes.length > 0 && (
+                <svg width={containerWidth} height={nodes.length * nodeHeight} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}>
+                  <path d={organicHaloPath} stroke="var(--line)" strokeWidth={8} opacity={0.06} fill="none" />
+                  {organicSegments.map((seg, i) => (
+                    <path
+                      key={i}
+                      d={seg}
                       stroke={fillColor}
-                      strokeOpacity={0.9}
-                      strokeWidth={2.5}
+                      strokeWidth={1.5 + (i / Math.max(organicSegments.length - 1, 1)) * 1.5}
+                      strokeLinecap="round"
                       fill="none"
-                      strokeDasharray={pathLen}
-                      initial={pref ? false : { strokeDashoffset: pathLen }}
-                      animate={{ strokeDashoffset: pathLen * (1 - fillPct / 100) }}
-                      transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
                     />
-                    {!pref && <PathShimmer d={ZIGZAG_PATH_D} length={pathLen} />}
-                  </>
-                )}
-              </svg>
-              <div className="lp-zigzag-mobile-line-bg" />
-              <div className="lp-zigzag-mobile-line-fill" style={{ height: `${fillPct}%`, background: fillColor }} />
+                  ))}
+                </svg>
+              )}
 
               {nodes.map((node, idx) => {
                 const modulePillar = MODULE_PILLAR[node.module.order_index]
@@ -744,129 +794,159 @@ export default function LeadershipPathPage() {
                 const circleBorder = node.state === 'completed' ? 'none' : node.state === 'locked' ? '1.5px solid var(--line)' : `3px solid ${pillarColor}`
                 const statusColor  = node.state === 'completed' ? '#16a34a' : node.state === 'active' ? pillarColor : 'var(--mute)'
                 const circleSize   = node.state === 'completed' ? 52 : node.state === 'active' ? 68 : 48
-                const tooltipSide: 'left' | 'right' = idx % 2 === 0 ? 'right' : 'left'
+                const pt = organicPoints[idx] ?? { x: containerWidth / 2, y: idx * nodeHeight + nodeHeight / 2 }
+                const onLeftSide = pt.x < containerWidth / 2
+                const tooltipSide: 'left' | 'right' = onLeftSide ? 'right' : 'left'
+                const infoOffset = circleSize / 2 + 14
                 return (
-                  <m.div
+                  // NOTA: el centrado (-50%,-50%) vive en wrappers planos (no motion), nunca
+                  // junto a un x/y/scale animado por Framer Motion en el MISMO elemento —
+                  // FM reescribe el `transform` completo a partir de sus propios valores
+                  // animados y descarta cualquier transform estático puesto en el mismo nodo.
+                  <div
                     key={node.module.id}
-                    className="lp-node-row"
-                    style={{ flexDirection: idx % 2 === 0 ? 'row' : 'row-reverse', cursor: node.state !== 'locked' ? 'pointer' : 'default' }}
-                    initial={pref ? false : { opacity: 0, x: idx % 2 === 0 ? -20 : 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 + idx * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
+                    style={{ position: 'absolute', left: pt.x, top: pt.y, cursor: node.state !== 'locked' ? 'pointer' : 'default' }}
                     onClick={node.state !== 'locked' ? () => setSelected(node) : undefined}
                   >
-                    <m.div
-                      className={`lp-node-circle${node.state === 'completed' ? ' lp-node-circle--done' : ''}`}
-                      style={{
-                        width: circleSize, height: circleSize,
-                        background: circleBg, border: circleBorder,
-                        color: node.state === 'active' ? pillarColor : '#fff',
-                        opacity: node.state === 'locked' ? 0.4 : 1,
-                        filter: node.state === 'locked' ? 'blur(0.5px)' : 'none',
-                        boxShadow: node.state === 'active' ? `0 0 0 6px rgba(${pillarRgb},0.12), 0 8px 24px rgba(${pillarRgb},0.25)` : undefined,
-                        '--node-rgb': pillarRgb,
-                      } as React.CSSProperties}
-                      whileHover={node.state === 'completed' ? { scale: 1.08, y: -2 } : undefined}
-                    >
-                      {node.state === 'completed' && (
-                        <>
-                          <span className="lp-node-ring" style={{ borderColor: `rgba(${pillarRgb},0.3)` }} />
-                          <span style={{ fontSize: 20, color: '#fff' }}>✓</span>
-                        </>
-                      )}
-                      {node.state === 'active' && (
-                        <>
-                          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill={pillarColor}/>
-                            <circle cx="12" cy="9" r="2.5" fill="white"/>
-                          </svg>
-                          <PulseRing1 color={pillarColor} />
-                          <PulseRing2 color={pillarColor} />
-                          <div className={`lp-node-tooltip lp-node-tooltip--${tooltipSide}`} style={{ borderColor: `rgba(${pillarRgb},0.3)` }}>
-                            <span className="lp-tooltip-eyebrow" style={{ color: pillarColor }}>{t('nextLabel')}</span>
-                            <span className="lp-tooltip-title">{node.module.title}</span>
-                            <span className={`lp-tooltip-arrow lp-tooltip-arrow--${tooltipSide}`} />
-                          </div>
-                        </>
-                      )}
-                      {node.state === 'locked' && (
-                        <>
-                          <span style={{ fontSize: 14, color: 'var(--mute)' }}>🔒</span>
-                          <FogPulse />
-                        </>
-                      )}
-                    </m.div>
-                    <div className="lp-connector-arm" />
-                    <div className="lp-node-info">
-                      <div className="lp-node-module-label" style={{ color: pillarColor }}>
-                        {String(node.module.order_index).padStart(2, '0')} · {t('moduleLabel')}
-                      </div>
-                      <div className="lp-node-title">{node.module.title}</div>
-                      <div className="lp-node-xp" style={{ color: pillarColor }}>★ {node.module.xp_reward} XP</div>
-                      <div className="lp-node-status" style={{ color: statusColor }}>{STATUS_LABEL[node.state]}</div>
-                      {node.state === 'active' && (
-                        <button
-                          className="lp-node-cta"
-                          style={{ background: pillarColor }}
-                          onClick={e => { e.stopPropagation(); router.push(`/dashboard/modules/${node.module.id}`) }}
-                        >
-                          {t('inlineStartBtn')}
-                        </button>
-                      )}
-                      {node.state === 'completed' && <div className="lp-node-done">{t('completedBadge')}</div>}
+                    <div style={{ position: 'absolute', top: 0, left: 0, width: circleSize, height: circleSize, transform: 'translate(-50%,-50%)' }}>
+                      <m.div
+                        className={`lp-node-circle${node.state === 'completed' ? ' lp-node-circle--done' : ''}`}
+                        style={{
+                          width: '100%', height: '100%',
+                          background: circleBg, border: circleBorder,
+                          color: node.state === 'active' ? pillarColor : '#fff',
+                          opacity: node.state === 'locked' ? 0.4 : 1,
+                          filter: node.state === 'locked' ? 'blur(0.5px)' : 'none',
+                          boxShadow: node.state === 'active' ? `0 0 0 6px rgba(${pillarRgb},0.12), 0 8px 24px rgba(${pillarRgb},0.25)` : undefined,
+                          '--node-rgb': pillarRgb,
+                        } as React.CSSProperties}
+                        initial={pref ? false : { opacity: 0, x: onLeftSide ? -20 : 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 + idx * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
+                        whileHover={node.state === 'completed' ? { scale: 1.08, y: -2 } : undefined}
+                      >
+                        {node.state === 'completed' && (
+                          <>
+                            <span className="lp-node-ring" style={{ borderColor: `rgba(${pillarRgb},0.3)` }} />
+                            <span style={{ fontSize: 20, color: '#fff' }}>✓</span>
+                          </>
+                        )}
+                        {node.state === 'active' && (
+                          <>
+                            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+                              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill={pillarColor}/>
+                              <circle cx="12" cy="9" r="2.5" fill="white"/>
+                            </svg>
+                            <PulseRing1 color={pillarColor} />
+                            <PulseRing2 color={pillarColor} />
+                            {!isNarrow && (
+                              <div className={`lp-node-tooltip lp-node-tooltip--${tooltipSide}`} style={{ borderColor: `rgba(${pillarRgb},0.3)` }}>
+                                <span className="lp-tooltip-eyebrow" style={{ color: pillarColor }}>{t('nextLabel')}</span>
+                                <span className="lp-tooltip-title">{node.module.title}</span>
+                                <span className={`lp-tooltip-arrow lp-tooltip-arrow--${tooltipSide}`} />
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {node.state === 'locked' && (
+                          <>
+                            <span style={{ fontSize: 14, color: 'var(--mute)' }}>🔒</span>
+                            <FogPulse />
+                          </>
+                        )}
+                      </m.div>
                     </div>
-                  </m.div>
+                    <div
+                      style={
+                        isNarrow
+                          ? { position: 'absolute', top: circleSize / 2 + 14, left: 0, transform: 'translateX(-50%)', width: 220 }
+                          : onLeftSide
+                            ? { position: 'absolute', top: 0, left: infoOffset, transform: 'translateY(-50%)', width: 180 }
+                            : { position: 'absolute', top: 0, right: infoOffset, transform: 'translateY(-50%)', width: 180 }
+                      }
+                    >
+                      <m.div
+                        className="lp-node-info"
+                        style={{ textAlign: isNarrow ? 'center' : onLeftSide ? 'left' : 'right' }}
+                        initial={pref ? false : { opacity: 0, x: onLeftSide ? -20 : 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 + idx * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
+                      >
+                        <div className="lp-node-module-label" style={{ color: pillarColor }}>
+                          {String(node.module.order_index).padStart(2, '0')} · {t('moduleLabel')}
+                        </div>
+                        <div className="lp-node-title">{node.module.title}</div>
+                        <div className="lp-node-xp" style={{ color: pillarColor }}>★ {node.module.xp_reward} XP</div>
+                        <div className="lp-node-status" style={{ color: statusColor }}>{STATUS_LABEL[node.state]}</div>
+                        {node.state === 'active' && (
+                          <button
+                            className="lp-node-cta"
+                            style={{ background: pillarColor }}
+                            onClick={e => { e.stopPropagation(); router.push(`/dashboard/modules/${node.module.id}`) }}
+                          >
+                            {t('inlineStartBtn')}
+                          </button>
+                        )}
+                        {node.state === 'completed' && <div className="lp-node-done">{t('completedBadge')}</div>}
+                      </m.div>
+                    </div>
+                  </div>
                 )
               })}
 
-              {/* Hito — Capstone, monte/pico via clip-path */}
-              <m.div
-                className="lp-node-row"
-                style={{ flexDirection: nodes.length % 2 === 0 ? 'row' : 'row-reverse', cursor: 'pointer', opacity: capstoneState === 'bloqueado' ? 0.5 : 1 }}
-                initial={pref ? false : { opacity: 0, x: nodes.length % 2 === 0 ? -20 : 20 }}
-                animate={{ opacity: capstoneState === 'bloqueado' ? 0.5 : 1, x: 0 }}
-                transition={{ delay: 0.1 + nodes.length * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
+              {/* Hito — Capstone, card premium con borde conic-gradient + partículas convergentes.
+                  Wrapper plano para el centrado estático; el x/y animado va en un hijo sin transform propio. */}
+              <div
+                style={{ position: 'absolute', left: containerWidth / 2, top: nodes.length * nodeHeight + nodeHeight / 2, cursor: 'pointer' }}
                 onClick={handleCapstoneClick}
               >
-                <div style={{ position: 'relative', width: 80, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <CapstonePulse />
-                  <div className="lp-zznode-capstone">
-                    <span style={{ fontSize: 20 }}>🏔️</span>
-                  </div>
-                  <span className="lp-zznode-capstone-label">CIMA · CAPSTONE</span>
+                <div style={{ transform: 'translate(-50%,-50%)' }}>
+                  <m.div
+                    initial={pref ? false : { opacity: 0, y: 20 }}
+                    animate={{ opacity: capstoneState === 'bloqueado' ? 0.5 : 1, y: 0 }}
+                    transition={{ delay: 0.1 + nodes.length * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
+                  >
+                    <div style={{ position: 'relative', width: 140, height: 140 }}>
+                      <CapstoneCardBorder cardSize={140} radius={20} reduceMotion={!!pref} />
+                      <div className="capstone-card" style={{ background: capstoneState === 'evaluado' ? 'rgba(192,57,43,0.06)' : 'var(--card-bg)' }}>
+                        <div className="capstone-card-glow" />
+                        <span style={{ position: 'relative', fontSize: 32, filter: 'drop-shadow(0 2px 8px rgba(192,57,43,0.4))' }}>🏆</span>
+                        <span className="capstone-card-eyebrow">PROYECTO</span>
+                        <span className="capstone-card-title">Capstone</span>
+                        <span className="capstone-card-xp">★ 500 XP</span>
+                      </div>
+                      {!pref && <CapstoneParticles userId={userId} pillarDone={pillarDoneList} pillarColors={pillarColorList} />}
+                    </div>
+                  </m.div>
                 </div>
-                <div className="lp-connector-arm" />
-                <div className="lp-node-info">
-                  <div className="lp-node-title">Capstone</div>
-                </div>
-              </m.div>
+              </div>
 
-              {/* Hito — Great Venture, hexágono via clip-path */}
-              <m.div
-                className="lp-node-row"
-                style={{ flexDirection: (nodes.length + 1) % 2 === 0 ? 'row' : 'row-reverse', cursor: 'pointer' }}
-                initial={pref ? false : { opacity: 0, x: (nodes.length + 1) % 2 === 0 ? -20 : 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 + (nodes.length + 1) * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
+              {/* Hito — Great Venture, hexágono via clip-path (sin cambios de diseño) */}
+              <div
+                style={{ position: 'absolute', left: containerWidth / 2, top: (nodes.length + 1) * nodeHeight + nodeHeight / 2, cursor: 'pointer' }}
                 onClick={() => router.push('/dashboard/great-venture')}
               >
-                <m.div
-                  className="lp-zznode-gv"
-                  style={{
-                    background: `linear-gradient(135deg, rgba(${PILLAR_RGB[gvPillar1]},0.2) 0%, rgba(${PILLAR_RGB[gvPillar2]},0.1) 100%)`,
-                    border: `2px solid rgba(${PILLAR_RGB[gvPillar1]},0.4)`,
-                  }}
-                  whileHover={{ rotate: [0, 12, 0], scale: 1.06 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 10 }}
-                >
-                  <span style={{ fontSize: 28 }}>🗺️</span>
-                  <span className="lp-zznode-gv-label" style={{ color: PILLAR_COLORS[gvPillar1].solid }}>{t('greatVentureTagline')}</span>
-                </m.div>
-                <div className="lp-connector-arm" />
-                <div className="lp-node-info">
-                  <div className="lp-node-title">Great Venture</div>
+                <div style={{ transform: 'translate(-50%,-50%)' }}>
+                  <m.div
+                    initial={pref ? false : { opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 + (nodes.length + 1) * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
+                  >
+                    <m.div
+                      className="lp-zznode-gv"
+                      style={{
+                        background: `linear-gradient(135deg, rgba(${PILLAR_RGB[gvPillar1]},0.2) 0%, rgba(${PILLAR_RGB[gvPillar2]},0.1) 100%)`,
+                        border: `2px solid rgba(${PILLAR_RGB[gvPillar1]},0.4)`,
+                      }}
+                      whileHover={{ rotate: [0, 12, 0], scale: 1.06 }}
+                      transition={{ type: 'spring', stiffness: 200, damping: 10 }}
+                    >
+                      <span style={{ fontSize: 28 }}>🗺️</span>
+                      <span className="lp-zznode-gv-label" style={{ color: PILLAR_COLORS[gvPillar1].solid }}>{t('greatVentureTagline')}</span>
+                    </m.div>
+                  </m.div>
                 </div>
-              </m.div>
+              </div>
             </div>
           </m.div>
         )}
