@@ -100,6 +100,16 @@ const PILLAR_I18N_KEY: Record<Pillar, string> = {
 const CAPSTONE_POS = { top: 42, left: 42 }
 const GREAT_VENTURE_POS = { top: 65, left: 62 }
 
+const LP_THEME_STORAGE_KEY = 'bf-leadership-path-theme'
+
+// Tema global real de la app en este momento — el ThemeProvider del sitio
+// (src/contexts/ThemeContext.tsx) no usa un atributo data-theme, usa clases
+// CSS ("dark"/"light") en document.documentElement vía classList.
+function readGlobalTheme(): boolean {
+  if (typeof window === 'undefined') return false
+  return document.documentElement.classList.contains('dark')
+}
+
 // Alto vertical aproximado de cada fila del path — los nodos ya no se posicionan con esto
 // (ahora es flexbox normal, ver Sesión 15), solo lo usa la curva SVG decorativa de fondo
 // y el offset Y de Capstone/Great Venture; ≈ misma altura real de una fila flex (min-height
@@ -290,8 +300,21 @@ export default function LeadershipPathPage() {
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const pref        = useReducedMotion()
 
-  // Toggle dark/light propio de esta página — independiente del tema global del sitio.
-  const [isDark, setIsDark] = useState(true)
+  // Toggle dark/light propio de esta página — independiente del tema global del sitio,
+  // pero respeta su valor actual como default (en vez de forzar dark) y persiste el
+  // cambio del usuario en localStorage para la próxima visita a esta página.
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const saved = localStorage.getItem(LP_THEME_STORAGE_KEY)
+    if (saved) return saved === 'dark'
+    return readGlobalTheme()
+  })
+
+  function toggleTheme() {
+    const next = !isDark
+    setIsDark(next)
+    localStorage.setItem(LP_THEME_STORAGE_KEY, next ? 'dark' : 'light')
+  }
 
   const [view,         setView]         = useState<'map' | 'island'>('map')
   const [activeIsland, setActiveIsland] = useState<Pillar | null>(null)
@@ -491,6 +514,25 @@ export default function LeadershipPathPage() {
     completed: t('statusCompleted'), active: t('statusActive'), locked: t('statusLocked'),
   }
 
+  // Toggle de tema — mismo botón reusado en el header del mapa (dentro de la fila de
+  // stats) y en la vista isla (junto al botón volver), nunca duplicando el markup.
+  function renderThemeToggle(extraStyle?: React.CSSProperties) {
+    return (
+      <button
+        className="lp-theme-toggle"
+        style={{
+          ...(isDark
+            ? { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'var(--wp-ink-2)' }
+            : { background: 'var(--bg-2)', border: '1px solid var(--card-border)', color: 'var(--mute)' }),
+          ...extraStyle,
+        }}
+        onClick={toggleTheme}
+      >
+        {isDark ? '☀ Modo claro' : '◐ Modo oscuro'}
+      </button>
+    )
+  }
+
   // Color del Great Venture — pilar más fuerte del estudiante; #C0392B solo si todavía
   // no hay leaderProfile en absoluto (no si simplemente no hay fortalezas, ese caso ya
   // cae en 'Yo' vía strengthList más arriba).
@@ -559,9 +601,6 @@ export default function LeadershipPathPage() {
       style={{ flex: 1, minWidth: 0, overflowY: 'auto', padding: '32px 28px', display: 'flex', flexDirection: 'column', gap: 20, position: 'relative' }}
     >
       <WayuuBackground />
-      <button className="lp-theme-toggle" onClick={() => setIsDark(d => !d)}>
-        {isDark ? '☀ Modo claro' : '◐ Modo oscuro'}
-      </button>
       <style>{`
         :root, .leadership-path-page{
           --wp-bg:#0A0907; --wp-surface:#141210; --wp-surface-2:#1C1916;
@@ -575,7 +614,10 @@ export default function LeadershipPathPage() {
           --wp-ink:#0A0907; --wp-ink-2:#3D3830; --wp-mute:#8C8070;
         }
         .leadership-path-page{position:relative;background:var(--wp-bg);}
-        .lp-theme-toggle{position:absolute;top:32px;right:28px;z-index:5;font-size:11px;padding:6px 14px;background:var(--wp-surface-2);border:1px solid var(--wp-border);border-radius:100px;color:var(--wp-ink-2);cursor:pointer;font-family:"Satoshi",sans-serif;}
+        /* Toggle de tema — visible en ambas vistas: dentro de la fila de stats en el mapa,
+           junto al botón volver en la isla. Colores específicos por estado vía inline style
+           (ver renderThemeToggle), esta clase solo da forma/tamaño compartidos. */
+        .lp-theme-toggle{font-size:11px;padding:6px 14px;border-radius:100px;font-family:inherit;cursor:pointer;transition:background .2s, border-color .2s;flex-shrink:0;}
 
         .lp-eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--wp-yo);margin-bottom:8px;}
         .lp-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:36px;color:var(--wp-ink);letter-spacing:-0.01em;}
@@ -719,6 +761,7 @@ export default function LeadershipPathPage() {
                 <span><span className="zone1-stat-num">{completedCount}</span> <span className="zone1-stat-label">/ {totalModules} {t('zone1StatsModules')}</span></span>
                 <span className="zone1-sep">·</span>
                 <span><span className="zone1-stat-num">{totalXP.toLocaleString('es-CO')}</span> <span className="zone1-stat-label">XP</span></span>
+                {renderThemeToggle({ marginLeft: 'auto', alignSelf: 'center' })}
               </div>
             </div>
 
@@ -814,9 +857,12 @@ export default function LeadershipPathPage() {
             exit={{ opacity: 0, y: 20 }}
             transition={{ type: 'spring', stiffness: 200, damping: 22 }}
           >
-            <button className="lp-back-btn" onClick={() => { setView('map'); setActiveIsland(null) }}>
-              ← {t('backToMap')}
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <button className="lp-back-btn" onClick={() => { setView('map'); setActiveIsland(null) }}>
+                ← {t('backToMap')}
+              </button>
+              {renderThemeToggle({ marginBottom: 20 })}
+            </div>
 
             <m.div
               style={{ position: 'relative', marginBottom: 28 }}
