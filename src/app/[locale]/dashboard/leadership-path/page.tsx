@@ -56,12 +56,17 @@ const MODULE_PILLAR: Record<number, Pillar> = {
   1: 'Yo', 2: 'Norte', 3: 'Vínculo', 4: 'Vínculo', 5: 'Acción', 6: 'Acción', 7: 'Legado',
 }
 
+// Coordenadas % dentro de .wp-cluster (no de .lp-map-container completo — ver Sesión 16).
+// Centradas en (50,50): el centroide de las 5 islas antes de esta sesión era (39,36), no
+// (50,50) — esa, y no el contenedor, era la causa real de que el clúster se viera corrido
+// a la izquierda. Se tradujo el grupo completo (+11 left, +14 top) preservando la forma
+// relativa original, así que el "mapa" sigue siendo reconocible, solo recentrado.
 const PILLAR_POSITIONS: Record<Pillar, { top: number; left: number }> = {
-  Yo:      { top: 15, left: 20 },
-  Norte:   { top: 10, left: 55 },
-  Vínculo: { top: 45, left: 10 },
-  Acción:  { top: 40, left: 70 },
-  Legado:  { top: 70, left: 40 },
+  Yo:      { top: 29, left: 31 },
+  Norte:   { top: 24, left: 66 },
+  Vínculo: { top: 59, left: 21 },
+  Acción:  { top: 54, left: 81 },
+  Legado:  { top: 84, left: 51 },
 }
 
 // Paleta wayuu por pilar — vía custom properties --wp-* (definidas en .leadership-path-page,
@@ -78,11 +83,15 @@ const PILLAR_ICONS: Record<Pillar, string> = {
   Yo: '🧠', Norte: '🧭', Vínculo: '🤝', Acción: '⚡', Legado: '🌱',
 }
 
-// Triplete "R,G,B" por pilar (equivalentes a --wp-*) — para componer rgba() dinámico
-// en sombras/gradientes/bordes vía custom properties; CSS no permite desestructurar
-// un var() hex en sus componentes, así que este triplete vive en paralelo.
+// Triplete "R,G,B" por pilar — vía custom properties --wp-*-rgb (definidas en dark Y light
+// en <style>, igual que --wp-yo/etc.), no hex sueltos. Antes de esta sesión esto SÍ eran
+// strings literales fijos al hex de dark — un bug paralelo al de --wp-yo/etc.: aunque la
+// paleta light tenga sus propios --wp-yo/etc., cualquier sombra/borde/badge compuesto vía
+// rgba(${PILLAR_RGB[...]}, x) seguía usando el RGB de dark en light mode. var() admite
+// indirección (una custom property puede valer otra var()), así que esto resuelve solo
+// con la cascada, igual que PILLAR_COLORS.solid.
 const PILLAR_RGB: Record<Pillar, string> = {
-  Yo: '217,64,64', Norte: '26,158,138', Vínculo: '232,149,42', Acción: '123,111,212', Legado: '79,173,91',
+  Yo: 'var(--wp-yo-rgb)', Norte: 'var(--wp-norte-rgb)', Vínculo: 'var(--wp-vinculo-rgb)', Acción: 'var(--wp-accion-rgb)', Legado: 'var(--wp-legado-rgb)',
 }
 
 // Rombo wayuu — forma base de islas y nodos (rotada 45° en los hitos del mapa = cuadrado).
@@ -97,8 +106,10 @@ const PILLAR_I18N_KEY: Record<Pillar, string> = {
   Yo: 'yo', Norte: 'norte', Vínculo: 'vinculo', Acción: 'accion', Legado: 'legado',
 }
 
-const CAPSTONE_POS = { top: 42, left: 42 }
-const GREAT_VENTURE_POS = { top: 65, left: 62 }
+// Misma traslación (+11 left, +14 top) que PILLAR_POSITIONS, para que Capstone y Great
+// Venture se muevan junto con las islas y el clúster entero quede recentrado como grupo.
+const CAPSTONE_POS = { top: 56, left: 53 }
+const GREAT_VENTURE_POS = { top: 79, left: 73 }
 
 const LP_THEME_STORAGE_KEY = 'bf-leadership-path-theme'
 
@@ -212,7 +223,7 @@ const WayuuCompass = memo(function WayuuCompass({ color, size }: { color: string
 // Patrón de rombos wayuu en cadena — fondo fijo de toda la página, estático (sin animación).
 const WayuuBackground = memo(function WayuuBackground() {
   return (
-    <svg style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0, opacity: 0.035 }}>
+    <svg className="lp-wayuu-bg" style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}>
       <defs>
         <pattern id="wayuu-diamond" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
           <polygon points="24,4 44,24 24,44 4,24" fill="none" stroke="var(--wp-ink)" strokeWidth={1} />
@@ -303,12 +314,20 @@ export default function LeadershipPathPage() {
   // Toggle dark/light propio de esta página — independiente del tema global del sitio,
   // pero respeta su valor actual como default (en vez de forzar dark) y persiste el
   // cambio del usuario en localStorage para la próxima visita a esta página.
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window === 'undefined') return false
+  //
+  // Bug encontrado en verificación visual (Sesión 16, no estaba en ningún spec): leer
+  // localStorage/window directo en el inicializador de useState hace que el PRIMER render
+  // del cliente ya difiera del render del servidor (SSR siempre produce data-theme="light"
+  // porque window no existe ahí) — eso es un hydration mismatch real, confirmado con
+  // Playwright (React lo reportaba literalmente en consola). Fix estándar: el estado
+  // arranca igual que SSR siempre (false), y se sincroniza a su valor real en un
+  // useEffect — ese único re-render extra después de montar es el costo aceptado de
+  // depender de localStorage/window de forma segura para SSR.
+  const [isDark, setIsDark] = useState(false)
+  useEffect(() => {
     const saved = localStorage.getItem(LP_THEME_STORAGE_KEY)
-    if (saved) return saved === 'dark'
-    return readGlobalTheme()
-  })
+    setIsDark(saved ? saved === 'dark' : readGlobalTheme())
+  }, [])
 
   function toggleTheme() {
     const next = !isDark
@@ -607,13 +626,23 @@ export default function LeadershipPathPage() {
           --wp-border:rgba(255,255,255,0.06); --wp-border-glow:rgba(255,255,255,0.12);
           --wp-ink:#F5F0E8; --wp-ink-2:#B8B0A0; --wp-mute:#6B6355;
           --wp-yo:#D94040; --wp-norte:#1A9E8A; --wp-vinculo:#E8952A; --wp-accion:#7B6FD4; --wp-legado:#4FAD5B;
+          --wp-yo-rgb:217,64,64; --wp-norte-rgb:26,158,138; --wp-vinculo-rgb:232,149,42; --wp-accion-rgb:123,111,212; --wp-legado-rgb:79,173,91;
         }
         .leadership-path-page[data-theme="light"]{
           --wp-bg:#FDFAF5; --wp-surface:#FFFFFF; --wp-surface-2:#F5F0E8;
-          --wp-border:rgba(13,13,13,0.08); --wp-border-glow:rgba(13,13,13,0.15);
+          --wp-border:rgba(13,13,13,0.08); --wp-border-glow:rgba(13,13,13,0.14);
           --wp-ink:#0A0907; --wp-ink-2:#3D3830; --wp-mute:#8C8070;
+          /* Paleta de pilar propia para light — más profunda y menos saturada que dark
+             (diseñada para brillar sobre #0A0907); estos NUNCA se heredaban de dark antes
+             de esta sesión, por eso los rombos se veían planos sobre fondo crema. */
+          --wp-yo:#B8342E; --wp-norte:#146E5E; --wp-vinculo:#B5701A; --wp-accion:#5A4FB0; --wp-legado:#357A3E;
+          --wp-yo-rgb:184,52,46; --wp-norte-rgb:20,110,94; --wp-vinculo-rgb:181,112,26; --wp-accion-rgb:90,79,176; --wp-legado-rgb:53,122,62;
         }
         .leadership-path-page{position:relative;background:var(--wp-bg);}
+        /* Sobre crema, un patrón de líneas oscuras se percibe más que el mismo patrón claro
+           sobre negro a igual opacity — se baja un poco para no competir con el contenido. */
+        .lp-wayuu-bg{opacity:0.035;}
+        .leadership-path-page[data-theme="light"] .lp-wayuu-bg{opacity:0.025;}
         /* Toggle de tema — visible en ambas vistas: dentro de la fila de stats en el mapa,
            junto al botón volver en la isla. Colores específicos por estado vía inline style
            (ver renderThemeToggle), esta clase solo da forma/tamaño compartidos. */
@@ -627,7 +656,17 @@ export default function LeadershipPathPage() {
         .zone1-stat-label{font-size:11px;color:var(--wp-mute);}
         .zone1-sep{color:var(--wp-mute);}
 
-        .lp-map-container{position:relative;width:100%;min-height:720px;overflow:visible;background:transparent;padding-bottom:80px;}
+        /* El clúster (islas + Capstone + Misión) es la pieza central de la pantalla — el
+           contenedor centra ese grupo en el espacio disponible (ya descuenta el sidebar
+           solo por estar dentro de .leadership-path-page, que es el flex:1 del layout del
+           dashboard), no en 100vw. min-height:80vh en vez de un px fijo para que el clúster
+           ocupe el alto disponible real, no un tamaño arbitrario. */
+        .lp-map-container{position:relative;width:100%;max-width:none;display:flex;align-items:center;justify-content:center;min-height:80vh;overflow:visible;background:transparent;padding-bottom:80px;}
+        /* Wrapper de tamaño explícito — las coordenadas de PILLAR_POSITIONS/CAPSTONE_POS/
+           GREAT_VENTURE_POS son % de ESTE elemento, no de .lp-map-container. clamp() en vez
+           de un px fijo: nunca se reduce el tamaño de los rombos (eso lo decide "size" en
+           JS), lo que crece o se achica es el lienzo/espaciado entre ellos. */
+        .wp-cluster{position:relative;width:clamp(420px,60vw,700px);height:clamp(420px,60vw,700px);flex-shrink:0;}
         .lp-sea{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
         .lp-sea-ring{stroke:var(--wp-border);stroke-width:.5px;fill:none;opacity:.6;}
         .lp-connectors{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
@@ -644,9 +683,27 @@ export default function LeadershipPathPage() {
           align-items:center;justify-content:center;cursor:pointer;background:none;border:none;
           font-family:"Satoshi",sans-serif;padding:0;
           filter:drop-shadow(0 0 var(--island-glow,20px) rgba(var(--island-rgb),0.3));
+          transition:box-shadow .2s;
         }
         .lp-island-btn:hover{--island-glow:32px;}
+        /* Light mode no "brilla" sobre crema — en vez de glow, peso real con sombra
+           tintada del color de pilar (no gris genérico) + highlight inset que sugiere
+           una superficie tallada/tejida, no un sticker pegado a la pantalla. */
+        .leadership-path-page[data-theme="light"] .lp-island-btn{
+          filter:none;
+          box-shadow:
+            0 1px 2px rgba(var(--island-rgb),0.08),
+            0 8px 20px rgba(var(--island-rgb),0.16),
+            0 2px 6px rgba(var(--island-rgb),0.10),
+            inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+        .leadership-path-page[data-theme="light"] .lp-island-btn:hover{
+          box-shadow:
+            0 2px 4px rgba(var(--island-rgb),0.10),
+            0 12px 32px rgba(var(--island-rgb),0.24);
+        }
         .lp-island-border{position:absolute;inset:-2px;z-index:-1;clip-path:${WAYUU_DIAMOND_CLIP};background:linear-gradient(135deg, rgba(var(--island-rgb),0.6) 0%, rgba(var(--island-rgb),0.2) 50%, rgba(var(--island-rgb),0.6) 100%);}
+        .leadership-path-page[data-theme="light"] .lp-island-border{background:linear-gradient(135deg, rgba(var(--island-rgb),0.45) 0%, rgba(var(--island-rgb),0.15) 50%, rgba(var(--island-rgb),0.45) 100%);}
         .lp-island-shape{
           position:absolute;inset:0;clip-path:${WAYUU_DIAMOND_CLIP};
           display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;
@@ -709,6 +766,16 @@ export default function LeadershipPathPage() {
            — pura CSS por tema, sin condicional JS; capa interior = glow radial sutil + símbolo. */
         .lp-capstone-hover{cursor:pointer;transition:filter .2s, transform .2s;}
         .lp-capstone-hover:hover{filter:brightness(1.15);transform:scale(1.04);}
+        /* En dark el peso lo da el glow del borde conic-gradient + el fondo casi negro;
+           en light eso no se sostiene, así que se añade una sombra real (nunca gris
+           genérica) que mantiene el conic-gradient de marca intacto en ambos modos —
+           lo único cultural-fijo de toda la página es el borde de 5 colores wayuu. */
+        .leadership-path-page[data-theme="light"] .lp-capstone-hover{
+          box-shadow:
+            0 0 0 1px rgba(13,13,13,0.04),
+            0 8px 24px rgba(13,13,13,0.10),
+            0 0 32px rgba(192,57,43,0.10);
+        }
         .lp-capstone-mid{background:var(--wp-bg);}
         .leadership-path-page[data-theme="light"] .lp-capstone-mid{background:var(--wp-surface);}
         .lp-capstone-inner{background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.06) 0%, transparent 60%);}
@@ -724,8 +791,11 @@ export default function LeadershipPathPage() {
         .lp-gv-label{font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-top:6px;text-align:center;}
         .lp-gv-meta{font-size:9px;color:var(--wp-ink-2);margin-top:3px;text-align:center;max-width:90px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 
-        /* Header de vista isla — tipografía editorial con luz propia (text-shadow) */
-        .lp-island-headline{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;font-size:40px;}
+        /* Header de vista isla — tipografía editorial con luz propia (text-shadow) en dark;
+           en light el peso visual viene del color profundo + el tamaño, no de luz — un
+           glow claro sobre fondo claro no se ve, solo ensucia el texto. */
+        .lp-island-headline{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;font-size:40px;text-shadow:0 0 40px rgba(var(--headline-rgb),0.4);}
+        .leadership-path-page[data-theme="light"] .lp-island-headline{text-shadow:none;}
         .lp-island-score-row{display:block;font-size:20px;font-weight:400;color:var(--wp-ink-2);margin-top:4px;font-variant-numeric:tabular-nums;}
         .lp-score-bar-track{width:200px;height:2px;background:var(--wp-border);border-radius:100px;margin-top:10px;overflow:hidden;}
         .lp-score-bar-fill{height:100%;border-radius:100px;transition:width 1.2s cubic-bezier(0.22,1,0.36,1);}
@@ -735,7 +805,10 @@ export default function LeadershipPathPage() {
         .lp-confetti-dot{position:absolute;top:0;left:50%;width:7px;height:7px;border-radius:2px;animation:lpConfettiBurst .9s ease-out forwards;pointer-events:none;}
 
         @media(max-width:768px){
-          .lp-map-container{min-height:900px;overflow:visible;}
+          .lp-map-container{min-height:auto;overflow:visible;padding-top:24px;}
+          /* En mobile las islas pasan a grid estático — el wrapper de tamaño fijo (pensado
+             para el clúster con coordenadas %) ya no aplica, su altura la da el propio grid. */
+          .wp-cluster{width:100%;height:auto;}
           .lp-connectors{display:none;}
           .lp-islands-wrap{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;justify-items:center;}
           .lp-island-anchor{position:static!important;transform:none!important;width:100px!important;height:100px!important;top:auto!important;left:auto!important;}
@@ -767,83 +840,87 @@ export default function LeadershipPathPage() {
 
             {loading ? (
               <div className="lp-map-container">
-                {PILLARS.map(p => (
-                  <div key={p} className="lp-skeleton-island" style={{ top: `${PILLAR_POSITIONS[p].top}%`, left: `${PILLAR_POSITIONS[p].left}%` }} />
-                ))}
+                <div className="wp-cluster">
+                  {PILLARS.map(p => (
+                    <div key={p} className="lp-skeleton-island" style={{ top: `${PILLAR_POSITIONS[p].top}%`, left: `${PILLAR_POSITIONS[p].left}%` }} />
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="lp-map-container">
-                {/* "Mar" — curvas de nivel topográficas sutiles centradas en el Capstone */}
-                <svg className="lp-sea" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  {[10, 20, 30, 40].map(r => (
-                    <ellipse key={r} className="lp-sea-ring" cx={CAPSTONE_POS.left} cy={CAPSTONE_POS.top} rx={r} ry={r} />
-                  ))}
-                </svg>
+                <div className="wp-cluster">
+                  {/* "Mar" — curvas de nivel topográficas sutiles centradas en el Capstone */}
+                  <svg className="lp-sea" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    {[10, 20, 30, 40].map(r => (
+                      <ellipse key={r} className="lp-sea-ring" cx={CAPSTONE_POS.left} cy={CAPSTONE_POS.top} rx={r} ry={r} />
+                    ))}
+                  </svg>
 
-                <svg className="lp-connectors" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  {PILLARS.map(p => {
-                    const pos = PILLAR_POSITIONS[p]
-                    const d = islandArcPath({ x: pos.left, y: pos.top }, { x: CAPSTONE_POS.left, y: CAPSTONE_POS.top })
-                    return (
-                      <g key={p}>
-                        <path className="lp-connector-halo" d={d} />
-                        <path className="lp-connector-path" d={d} stroke="var(--wp-border-glow)" strokeDasharray="2 4 8 4 2 4" />
-                      </g>
-                    )
-                  })}
-                </svg>
+                  <svg className="lp-connectors" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    {PILLARS.map(p => {
+                      const pos = PILLAR_POSITIONS[p]
+                      const d = islandArcPath({ x: pos.left, y: pos.top }, { x: CAPSTONE_POS.left, y: CAPSTONE_POS.top })
+                      return (
+                        <g key={p}>
+                          <path className="lp-connector-halo" d={d} />
+                          <path className="lp-connector-path" d={d} stroke="var(--wp-border-glow)" strokeDasharray="2 4 8 4 2 4" />
+                        </g>
+                      )
+                    })}
+                  </svg>
 
-                <div className="lp-islands-wrap">
-                  {PILLARS.map((pillar, i) => {
-                    const pos = PILLAR_POSITIONS[pillar]
-                    const score = pillarScores[pillar]
-                    const size = 160 + (score / 100) * 60
-                    const isStrength = leaderProfile?.fortalezas.includes(pillar)
-                    const isGrowth   = leaderProfile?.areas_crecimiento.includes(pillar)
-                    const isActive   = activeIsland === pillar
-                    const rgb        = PILLAR_RGB[pillar]
-                    return (
-                      // El centrado (-50%,-50%) vive en este wrapper plano; el m.button hijo
-                      // anima scale/y sin transform propio — ver nota de Sesión 13 sobre FM.
-                      <div key={pillar} className="lp-island-anchor" style={{ top: `${pos.top}%`, left: `${pos.left}%`, width: size, height: size }}>
-                        <m.button
-                          className="lp-island-btn"
-                          style={{ '--island-rgb': rgb } as React.CSSProperties}
-                          initial={pref ? false : { scale: 0, opacity: 0 }}
-                          animate={{ scale: isActive ? 1.03 : 1, opacity: 1 }}
-                          transition={{ type: 'spring', stiffness: 200, damping: 20, delay: i * 0.1 }}
-                          whileHover={{ scale: 1.06, y: -4 }}
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => { setActiveIsland(pillar); setView('island') }}
-                        >
-                          <div className="lp-island-border" />
-                          <div className="lp-island-shape">
-                            <span className="lp-island-icon">{PILLAR_ICONS[pillar]}</span>
-                            <span className="lp-island-name" style={{ color: PILLAR_COLORS[pillar].solid }}>{pillar}</span>
-                            <span className="lp-island-score">{score}%</span>
-                            {isStrength && (
-                              <span className="lp-badge" style={{ background: `rgba(${rgb},0.15)`, border: `1px solid rgba(${rgb},0.3)`, color: PILLAR_COLORS[pillar].solid }}>
-                                {tModules('strengthBadge')}
-                              </span>
-                            )}
-                            {isGrowth && (
-                              <span className="lp-badge" style={{ background: `rgba(${rgb},0.15)`, border: `1px solid rgba(${rgb},0.3)`, color: PILLAR_COLORS[pillar].solid }}>
-                                {tModules('growthBadge')}
-                              </span>
-                            )}
-                          </div>
-                        </m.button>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                <div className="lp-hubs-wrap">
-                  <div className="lp-hub-anchor" style={{ top: `${CAPSTONE_POS.top}%`, left: `${CAPSTONE_POS.left}%`, width: 120, height: 120 }}>
-                    {renderCapstoneOctagon(120, false)}
+                  <div className="lp-islands-wrap">
+                    {PILLARS.map((pillar, i) => {
+                      const pos = PILLAR_POSITIONS[pillar]
+                      const score = pillarScores[pillar]
+                      const size = 160 + (score / 100) * 60
+                      const isStrength = leaderProfile?.fortalezas.includes(pillar)
+                      const isGrowth   = leaderProfile?.areas_crecimiento.includes(pillar)
+                      const isActive   = activeIsland === pillar
+                      const rgb        = PILLAR_RGB[pillar]
+                      return (
+                        // El centrado (-50%,-50%) vive en este wrapper plano; el m.button hijo
+                        // anima scale/y sin transform propio — ver nota de Sesión 13 sobre FM.
+                        <div key={pillar} className="lp-island-anchor" style={{ top: `${pos.top}%`, left: `${pos.left}%`, width: size, height: size }}>
+                          <m.button
+                            className="lp-island-btn"
+                            style={{ '--island-rgb': rgb } as React.CSSProperties}
+                            initial={pref ? false : { scale: 0, opacity: 0 }}
+                            animate={{ scale: isActive ? 1.03 : 1, opacity: 1 }}
+                            transition={{ type: 'spring', stiffness: 200, damping: 20, delay: i * 0.1 }}
+                            whileHover={{ scale: 1.06, y: -4 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => { setActiveIsland(pillar); setView('island') }}
+                          >
+                            <div className="lp-island-border" />
+                            <div className="lp-island-shape">
+                              <span className="lp-island-icon">{PILLAR_ICONS[pillar]}</span>
+                              <span className="lp-island-name" style={{ color: PILLAR_COLORS[pillar].solid }}>{pillar}</span>
+                              <span className="lp-island-score">{score}%</span>
+                              {isStrength && (
+                                <span className="lp-badge" style={{ background: `rgba(${rgb},0.15)`, border: `1px solid rgba(${rgb},0.3)`, color: PILLAR_COLORS[pillar].solid }}>
+                                  {tModules('strengthBadge')}
+                                </span>
+                              )}
+                              {isGrowth && (
+                                <span className="lp-badge" style={{ background: `rgba(${rgb},0.15)`, border: `1px solid rgba(${rgb},0.3)`, color: PILLAR_COLORS[pillar].solid }}>
+                                  {tModules('growthBadge')}
+                                </span>
+                              )}
+                            </div>
+                          </m.button>
+                        </div>
+                      )
+                    })}
                   </div>
-                  <div className="lp-hub-anchor" style={{ top: `${GREAT_VENTURE_POS.top}%`, left: `${GREAT_VENTURE_POS.left}%`, width: 88, height: 104 }}>
-                    {renderGreatVenture(88, 104, false)}
+
+                  <div className="lp-hubs-wrap">
+                    <div className="lp-hub-anchor" style={{ top: `${CAPSTONE_POS.top}%`, left: `${CAPSTONE_POS.left}%`, width: 120, height: 120 }}>
+                      {renderCapstoneOctagon(120, false)}
+                    </div>
+                    <div className="lp-hub-anchor" style={{ top: `${GREAT_VENTURE_POS.top}%`, left: `${GREAT_VENTURE_POS.left}%`, width: 88, height: 104 }}>
+                      {renderGreatVenture(88, 104, false)}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -872,7 +949,7 @@ export default function LeadershipPathPage() {
             >
               <h2
                 className="lp-island-headline"
-                style={{ color: PILLAR_COLORS[island].solid, textShadow: `0 0 40px rgba(${PILLAR_RGB[island]},0.4)` }}
+                style={{ color: PILLAR_COLORS[island].solid, '--headline-rgb': PILLAR_RGB[island] } as React.CSSProperties}
               >
                 {island}
               </h2>
