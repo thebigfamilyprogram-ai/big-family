@@ -1295,6 +1295,22 @@
       "specialMissionLabel": "SPECIAL MISSION",
       "nextLabel": "NEXT",
       "greatVentureTagline": "MISSION",
+      "atlasEyebrow": "YOUR PATH · {archetype}",
+      "atlasSubtitle": "Every chapter of this atlas is a territory you've already begun to explore.",
+      "capstoneStrip": {
+        "title": "Capstone Project",
+        "sealLabel": "YOUR CAPSTONE",
+        "states": {
+          "bloqueado": "Complete your modules to unlock",
+          "en_progreso": "Your project is underway",
+          "enviado": "Under review by your coordinator",
+          "evaluado": "Evaluated — certification available",
+          "evaluadoCertificado": "Certified!"
+        },
+        "ctaContinue": "Continue project →",
+        "ctaView": "View Capstone →",
+        "ctaViewDiploma": "View certificate →"
+      },
       "pillarDescriptions": {
         "yo": "Your relationship with yourself, self-discipline and purpose",
         "norte": "Your vision, creativity and innovation",

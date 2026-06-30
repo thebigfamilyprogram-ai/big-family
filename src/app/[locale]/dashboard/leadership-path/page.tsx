@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { memo, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
@@ -38,9 +38,6 @@ interface LeaderProfile {
   fortalezas: string[]
   areas_crecimiento: string[]
   big_five: { O: number; C: number; E: number; A: number; N: number; ES: number }
-  // Campo opcional — puede no existir todavía en leadership_profile (JSONB). No se agrega
-  // ninguna query nueva para traerlo: si ya viene dentro del JSON ya fetcheado, se usa;
-  // si no, simplemente no se muestra (ver GREAT_VENTURE_POS render).
   meta_nucleo?: string
 }
 
@@ -56,252 +53,31 @@ const MODULE_PILLAR: Record<number, Pillar> = {
   1: 'Yo', 2: 'Norte', 3: 'Vínculo', 4: 'Vínculo', 5: 'Acción', 6: 'Acción', 7: 'Legado',
 }
 
-// Coordenadas % dentro de .wp-cluster (no de .lp-map-container completo — ver Sesión 16).
-// Centradas en (50,50): el centroide de las 5 islas antes de esta sesión era (39,36), no
-// (50,50) — esa, y no el contenedor, era la causa real de que el clúster se viera corrido
-// a la izquierda. Se tradujo el grupo completo (+11 left, +14 top) preservando la forma
-// relativa original, así que el "mapa" sigue siendo reconocible, solo recentrado.
-const PILLAR_POSITIONS: Record<Pillar, { top: number; left: number }> = {
-  Yo:      { top: 29, left: 31 },
-  Norte:   { top: 24, left: 66 },
-  Vínculo: { top: 59, left: 21 },
-  Acción:  { top: 54, left: 81 },
-  Legado:  { top: 84, left: 51 },
-}
-
-// Paleta wayuu por pilar — vía custom properties --wp-* (definidas en .leadership-path-page,
-// ver <style>), no hex sueltos, para que un futuro retoque de paleta sea de un solo lugar.
-const PILLAR_COLORS: Record<Pillar, { solid: string; soft: string }> = {
-  Yo:      { solid: 'var(--wp-yo)',      soft: 'rgba(217,64,64,.12)' },
-  Norte:   { solid: 'var(--wp-norte)',   soft: 'rgba(26,158,138,.12)' },
-  Vínculo: { solid: 'var(--wp-vinculo)', soft: 'rgba(232,149,42,.12)' },
-  Acción:  { solid: 'var(--wp-accion)',  soft: 'rgba(123,111,212,.12)' },
-  Legado:  { solid: 'var(--wp-legado)',  soft: 'rgba(79,173,91,.12)' },
-}
-
-const PILLAR_ICONS: Record<Pillar, string> = {
-  Yo: '🧠', Norte: '🧭', Vínculo: '🤝', Acción: '⚡', Legado: '🌱',
-}
-
-// Triplete "R,G,B" por pilar — vía custom properties --wp-*-rgb (definidas en dark Y light
-// en <style>, igual que --wp-yo/etc.), no hex sueltos. Antes de esta sesión esto SÍ eran
-// strings literales fijos al hex de dark — un bug paralelo al de --wp-yo/etc.: aunque la
-// paleta light tenga sus propios --wp-yo/etc., cualquier sombra/borde/badge compuesto vía
-// rgba(${PILLAR_RGB[...]}, x) seguía usando el RGB de dark en light mode. var() admite
-// indirección (una custom property puede valer otra var()), así que esto resuelve solo
-// con la cascada, igual que PILLAR_COLORS.solid.
-const PILLAR_RGB: Record<Pillar, string> = {
-  Yo: 'var(--wp-yo-rgb)', Norte: 'var(--wp-norte-rgb)', Vínculo: 'var(--wp-vinculo-rgb)', Acción: 'var(--wp-accion-rgb)', Legado: 'var(--wp-legado-rgb)',
-}
-
-// Rombo wayuu — forma base de islas y nodos (rotada 45° en los hitos del mapa = cuadrado).
-const WAYUU_DIAMOND_CLIP = 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)'
-// Octágono — forma exclusiva del Capstone, el momento más importante del recorrido.
-const CAPSTONE_OCTAGON_CLIP = 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)'
-// Hexágono vertical — forma exclusiva del Great Venture, distinta de islas y Capstone.
-const GV_HEXAGON_CLIP = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
-
 // Pillar → sufijo de key i18n (ascii, las keys del JSON no llevan tilde/mayúscula)
 const PILLAR_I18N_KEY: Record<Pillar, string> = {
   Yo: 'yo', Norte: 'norte', Vínculo: 'vinculo', Acción: 'accion', Legado: 'legado',
 }
 
-// Misma traslación (+11 left, +14 top) que PILLAR_POSITIONS, para que Capstone y Great
-// Venture se muevan junto con las islas y el clúster entero quede recentrado como grupo.
-const CAPSTONE_POS = { top: 56, left: 53 }
-const GREAT_VENTURE_POS = { top: 79, left: 73 }
-
-const LP_THEME_STORAGE_KEY = 'bf-leadership-path-theme'
-
-// Tema global real de la app en este momento — el ThemeProvider del sitio
-// (src/contexts/ThemeContext.tsx) no usa un atributo data-theme, usa clases
-// CSS ("dark"/"light") en document.documentElement vía classList.
-function readGlobalTheme(): boolean {
-  if (typeof window === 'undefined') return false
-  return document.documentElement.classList.contains('dark')
-}
-
-// Alto vertical aproximado de cada fila del path — los nodos ya no se posicionan con esto
-// (ahora es flexbox normal, ver Sesión 15), solo lo usa la curva SVG decorativa de fondo
-// y el offset Y de Capstone/Great Venture; ≈ misma altura real de una fila flex (min-height
-// 80px + padding 16px×2), así que la curva no se desalinea de forma perceptible.
-const NODE_HEIGHT = 112
-const NARROW_BREAKPOINT = 480
-
-// Animaciones perpetuas — cada una vive en su propio componente memoizado, ver CLAUDE.md.
-// Nodo activo: dos pulse rings concéntricos con delay escalonado.
-const PulseRing1 = memo(function PulseRing1({ color, reduceMotion }: { color: string; reduceMotion: boolean }) {
+// Sello del Capstone — misma técnica que el diploma real (certificacion/[id]/page.tsx:
+// arco SVG vía textPath + doble anillo concéntrico), id de path propio para no colisionar
+// si ambas páginas llegaran a montarse juntas.
+function CapstoneSeal({ color, label, locked }: { color: string; label: string; locked: boolean }) {
   return (
-    <m.div
-      style={{ position: 'absolute', inset: -8, clipPath: WAYUU_DIAMOND_CLIP, border: `1px solid ${color}`, pointerEvents: 'none' }}
-      animate={reduceMotion ? undefined : { scale: [1, 1.6], opacity: [0.5, 0] }}
-      transition={{ duration: 2, repeat: Infinity, ease: 'easeOut' }}
-    />
-  )
-})
-const PulseRing2 = memo(function PulseRing2({ color, reduceMotion }: { color: string; reduceMotion: boolean }) {
-  return (
-    <m.div
-      style={{ position: 'absolute', inset: -16, clipPath: WAYUU_DIAMOND_CLIP, border: `1px solid ${color}`, pointerEvents: 'none' }}
-      animate={reduceMotion ? undefined : { scale: [1, 1.6], opacity: [0.5, 0] }}
-      transition={{ duration: 2, repeat: Infinity, ease: 'easeOut', delay: 0.5 }}
-    />
-  )
-})
-// Niebla pulsante sobre nodos bloqueados — "fog of war".
-const FogPulse = memo(function FogPulse({ reduceMotion }: { reduceMotion: boolean }) {
-  return (
-    <m.div
-      style={{
-        position: 'absolute', top: '50%', left: '50%', width: 80, height: 80,
-        marginTop: -40, marginLeft: -40, borderRadius: '50%', pointerEvents: 'none',
-        background: 'radial-gradient(circle, var(--wp-bg) 0%, transparent 70%)',
-        opacity: reduceMotion ? 0.4 : undefined,
-      }}
-      animate={reduceMotion ? undefined : { opacity: [0.35, 0.5, 0.35] }}
-      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-    />
-  )
-})
-// Brillo blanco pulsante sobre el tramo del path ya completado.
-const PathShimmer = memo(function PathShimmer({ d, reduceMotion }: { d: string; reduceMotion: boolean }) {
-  if (reduceMotion) return null
-  return (
-    <m.path
-      d={d}
-      stroke="#fff"
-      strokeWidth={1.5}
-      fill="none"
-      strokeLinecap="round"
-      animate={{ opacity: [0, 0.4, 0] }}
-      transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-    />
-  )
-})
-// Borde conic-gradient de 5 colores wayuu rotando — el octágono del Capstone.
-const CapstoneOctagonBorder = memo(function CapstoneOctagonBorder({ size, reduceMotion }: { size: number; reduceMotion: boolean }) {
-  return (
-    <m.div
-      style={{
-        position: 'absolute', inset: 0, width: size, height: size, clipPath: CAPSTONE_OCTAGON_CLIP, pointerEvents: 'none',
-        background: 'conic-gradient(from 0deg, #D94040 0deg 72deg, #1A9E8A 72deg 144deg, #E8952A 144deg 216deg, #7B6FD4 216deg 288deg, #4FAD5B 288deg 360deg)',
-      }}
-      animate={reduceMotion ? undefined : { rotate: 360 }}
-      transition={reduceMotion ? undefined : { duration: 8, repeat: Infinity, ease: 'linear' }}
-    />
-  )
-})
-// Símbolo geométrico wayuu del Capstone — rombo central + 4 rombos diagonales + 8 puntos
-// trazando el octágono. SVG estático (sin animación), igual viewBox para ambos tamaños.
-const WayuuCapstoneSymbol = memo(function WayuuCapstoneSymbol({ primaryColor, secondaryColor }: { primaryColor: string; secondaryColor: string }) {
-  const vertices: [number, number][] = [[18, 0], [42, 0], [60, 18], [60, 42], [42, 60], [18, 60], [0, 42], [0, 18]]
-  const diagonals: [number, number][] = [[44, 16], [44, 44], [16, 44], [16, 16]]
-  return (
-    <svg viewBox="0 0 60 60" width={40} height={40}>
-      {vertices.map(([x, y], i) => <circle key={i} cx={x} cy={y} r={2} fill="var(--wp-ink-2)" />)}
-      {diagonals.map(([x, y], i) => (
-        <polygon key={i} points={`${x},${y - 6} ${x + 6},${y} ${x},${y + 6} ${x - 6},${y}`} fill={secondaryColor} />
-      ))}
-      <polygon points="30,15 45,30 30,45 15,30" fill={primaryColor} />
-    </svg>
-  )
-})
-// Brújula wayuu del Great Venture — círculo + 4 triángulos direccionales + punto central.
-// SVG estático (sin animación).
-const WayuuCompass = memo(function WayuuCompass({ color, size }: { color: string; size: number }) {
-  return (
-    <svg viewBox="0 0 32 32" width={size} height={size}>
-      <circle cx={16} cy={16} r={12} stroke={color} strokeWidth={1.5} fill="none" />
-      <polygon points="13,4 19,4 16,10" fill={color} />
-      <polygon points="13,28 19,28 16,22" fill={color} />
-      <polygon points="28,13 28,19 22,16" fill={color} fillOpacity={0.4} />
-      <polygon points="4,13 4,19 10,16" fill={color} fillOpacity={0.4} />
-      <circle cx={16} cy={16} r={2} fill={color} />
-    </svg>
-  )
-})
-// Patrón de rombos wayuu en cadena — fondo fijo de toda la página, estático (sin animación).
-const WayuuBackground = memo(function WayuuBackground() {
-  return (
-    <svg className="lp-wayuu-bg" style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}>
+    <svg viewBox="0 0 100 100" width="76" height="76" aria-hidden="true" focusable="false" className="atlas-seal" style={{ opacity: locked ? 0.55 : 1 }}>
       <defs>
-        <pattern id="wayuu-diamond" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse">
-          <polygon points="24,4 44,24 24,44 4,24" fill="none" stroke="var(--wp-ink)" strokeWidth={1} />
-          <polygon points="24,12 36,24 24,36 12,24" fill="none" stroke="var(--wp-ink)" strokeWidth={0.5} />
-          <circle cx={24} cy={24} r={2} fill="var(--wp-ink)" />
-          <circle cx={24} cy={4} r={1} fill="var(--wp-ink)" />
-          <circle cx={44} cy={24} r={1} fill="var(--wp-ink)" />
-          <circle cx={24} cy={44} r={1} fill="var(--wp-ink)" />
-          <circle cx={4} cy={24} r={1} fill="var(--wp-ink)" />
-        </pattern>
+        <path id="lp-capstone-seal-arc" d="M 8 50 A 42 42 0 0 0 92 50" />
       </defs>
-      <rect width="100%" height="100%" fill="url(#wayuu-diamond)" />
+      <circle cx="50" cy="50" r="47" fill="none" stroke={color} strokeWidth="1.5" />
+      <circle cx="50" cy="50" r="40" fill="none" stroke={color} strokeWidth="0.6" />
+      <text fill={color} fontSize="6.8" fontFamily="Satoshi, sans-serif" fontWeight="700" letterSpacing="1.5">
+        <textPath href="#lp-capstone-seal-arc" startOffset="50%" textAnchor="middle">{label}</textPath>
+      </text>
+      <path
+        d="M50 36 L53.5 45.1 L63.3 45.7 L55.7 51.8 L58.2 61.3 L50 56 L41.8 61.3 L44.3 51.8 L36.7 45.7 L46.5 45.1Z"
+        fill={color}
+      />
     </svg>
   )
-})
-
-// Curva de conexión isla→hito — coordenadas porcentuales (viewBox 0 0 100 100),
-// adaptado de WorldMapPublic.tsx's arcPath() a un espacio de coordenadas %.
-function islandArcPath(a: { x: number; y: number }, b: { x: number; y: number }): string {
-  const mx = (a.x + b.x) / 2
-  const my = Math.min(a.y, b.y) - 8
-  return `M ${a.x},${a.y} Q ${mx},${my} ${b.x},${b.y}`
-}
-
-// Path orgánico del zigzag interior — único por estudiante (seed = userId), en píxeles
-// reales (no %), cubre solo los módulos (los hitos finales se posicionan aparte como
-// cards "destino", no forman parte de esta curva). Reemplaza el S simétrico genérico.
-function seededRandom(seed: string, index: number): number {
-  let hash = 0
-  const str = seed + index.toString()
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i)
-    hash |= 0
-  }
-  return (Math.abs(hash) % 100) / 100
-}
-
-interface OrganicPoint { x: number; y: number }
-
-function generateOrganicPoints(userId: string, nodeCount: number, containerWidth: number, nodeHeight: number): OrganicPoint[] {
-  const centerX = containerWidth / 2
-  const variance = 80
-  return Array.from({ length: nodeCount }, (_, i) => ({
-    x: centerX + (seededRandom(userId, i * 3) - 0.5) * variance * 2,
-    y: i * nodeHeight + nodeHeight / 2,
-  }))
-}
-
-// Control point único por estudiante para el tramo que termina en `segmentIdx` —
-// ambos lados de la curva de ese tramo comparten esta misma x (un solo "brazo").
-function organicControlX(userId: string, containerWidth: number, segmentIdx: number): number {
-  const centerX = containerWidth / 2
-  return centerX + (seededRandom(userId, segmentIdx * 3 + 1) - 0.5) * 120
-}
-
-// Mismos tramos que generateOrganicPoints pero como segmentos independientes — permite
-// variar stroke-width por tramo (más fino al inicio del recorrido, más grueso al presente).
-function generateOrganicSegments(userId: string, nodeCount: number, containerWidth: number, nodeHeight: number): string[] {
-  const points = generateOrganicPoints(userId, nodeCount, containerWidth, nodeHeight)
-  const segments: string[] = []
-  for (let i = 1; i < points.length; i++) {
-    const cpx = organicControlX(userId, containerWidth, i)
-    segments.push(
-      `M ${points[i - 1].x} ${points[i - 1].y} C ${cpx} ${points[i - 1].y + nodeHeight * 0.4} ${cpx} ${points[i].y - nodeHeight * 0.6} ${points[i].x} ${points[i].y}`
-    )
-  }
-  return segments
-}
-
-// Confeti al completar todos los módulos — mismo truco (dot absoluto + keyframe CSS)
-// que ya usa modules/[id]/quiz/page.tsx para celebrar fases, con los 5 colores de pilar.
-function leadershipConfettiParticles(colors: string[]) {
-  return Array.from({ length: 28 }, (_, i) => ({
-    color: colors[i % colors.length],
-    tx: `${Math.round(Math.random() * 220 - 110)}px`,
-    rot: `${Math.round(Math.random() * 360)}deg`,
-    delay: Math.random() * 0.4,
-  }))
 }
 
 export default function LeadershipPathPage() {
@@ -311,32 +87,6 @@ export default function LeadershipPathPage() {
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const pref        = useReducedMotion()
 
-  // Toggle dark/light propio de esta página — independiente del tema global del sitio,
-  // pero respeta su valor actual como default (en vez de forzar dark) y persiste el
-  // cambio del usuario en localStorage para la próxima visita a esta página.
-  //
-  // Bug encontrado en verificación visual (Sesión 16, no estaba en ningún spec): leer
-  // localStorage/window directo en el inicializador de useState hace que el PRIMER render
-  // del cliente ya difiera del render del servidor (SSR siempre produce data-theme="light"
-  // porque window no existe ahí) — eso es un hydration mismatch real, confirmado con
-  // Playwright (React lo reportaba literalmente en consola). Fix estándar: el estado
-  // arranca igual que SSR siempre (false), y se sincroniza a su valor real en un
-  // useEffect — ese único re-render extra después de montar es el costo aceptado de
-  // depender de localStorage/window de forma segura para SSR.
-  const [isDark, setIsDark] = useState(false)
-  useEffect(() => {
-    const saved = localStorage.getItem(LP_THEME_STORAGE_KEY)
-    setIsDark(saved ? saved === 'dark' : readGlobalTheme())
-  }, [])
-
-  function toggleTheme() {
-    const next = !isDark
-    setIsDark(next)
-    localStorage.setItem(LP_THEME_STORAGE_KEY, next ? 'dark' : 'light')
-  }
-
-  const [view,         setView]         = useState<'map' | 'island'>('map')
-  const [activeIsland, setActiveIsland] = useState<Pillar | null>(null)
   const [loading,       setLoading]       = useState(true)
   const [nodes,         setNodes]         = useState<PathNode[]>([])
   const [leaderProfile, setLeaderProfile] = useState<LeaderProfile | null>(null)
@@ -346,43 +96,11 @@ export default function LeadershipPathPage() {
   const [selected,      setSelected]      = useState<PathNode | null>(null)
   const [userProjects,  setUserProjects]  = useState<{ id: string; status: string }[]>([])
   const [diploma,       setDiploma]       = useState<{ projectId: string; resultado: string } | null>(null)
+  const [userId,        setUserId]        = useState('mock-student')
 
-  // userId — seed del path orgánico (único por estudiante). 'mock-student' en MOCK_MODE.
-  const [userId, setUserId] = useState('mock-student')
-
-  // Ancho real del contenedor del zigzag, en px — el path orgánico necesita coordenadas
-  // reales (no %), así que se mide del DOM en vez de usar un viewBox porcentual.
-  const [containerWidth, setContainerWidth] = useState(560)
-  const zigzagContainerRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (view !== 'island') return
-    function measure() {
-      if (zigzagContainerRef.current) setContainerWidth(zigzagContainerRef.current.clientWidth)
-    }
-    measure()
-    window.addEventListener('resize', measure)
-    return () => window.removeEventListener('resize', measure)
-  }, [view])
-
-  const isNarrow = containerWidth < NARROW_BREAKPOINT
-  const nodeHeight = NODE_HEIGHT // alias breve — solo alimenta la curva decorativa y el offset Y de los hitos
-
-  const organicSegments = useMemo(
-    () => generateOrganicSegments(userId, nodes.length, containerWidth, nodeHeight),
-    [userId, nodes.length, containerWidth, nodeHeight]
-  )
-
-  // Gate de entrada para el count-up del score y la barra de progreso del header de isla.
-  const [scoreReveal, setScoreReveal] = useState(false)
-  useEffect(() => {
-    setScoreReveal(false)
-    if (view !== 'island') return
-    const tm = setTimeout(() => setScoreReveal(true), 450)
-    return () => clearTimeout(tm)
-  }, [view, activeIsland])
-
-  const [showConfetti,       setShowConfetti]       = useState(false)
-  const [confettiParticles,  setConfettiParticles]  = useState<{ color: string; tx: string; rot: string; delay: number }[]>([])
+  // Pilar expandido en el grid — reemplaza la vista "isla" anterior: en vez de navegar a
+  // una pantalla aparte, la lista de módulos de ese pilar aparece inline debajo del grid.
+  const [expandedPillar, setExpandedPillar] = useState<Pillar | null>(null)
 
   useEffect(() => {
     if (!supabaseRef.current) supabaseRef.current = createClient()
@@ -495,29 +213,20 @@ export default function LeadershipPathPage() {
     diploma || userProjects.some(p => p.status === 'approved')  ? 'evaluado'   :
                                                                     'en_progreso'
 
-  // Confeti al entrar a la isla con los 7 módulos completos.
-  useEffect(() => {
-    if (view !== 'island' || !allModulesDone || pref) { setShowConfetti(false); return }
-    setShowConfetti(false)
-    const tm = setTimeout(() => {
-      setConfettiParticles(leadershipConfettiParticles(PILLARS.map(p => PILLAR_COLORS[p].solid)))
-      setShowConfetti(true)
-    }, 1500)
-    return () => clearTimeout(tm)
-  }, [view, activeIsland, allModulesDone, pref])
-
   const pillarScores: Record<Pillar, number> = leaderProfile
     ? getPillarScores(leaderProfile.big_five)
     : { Yo: 0, Norte: 0, Vínculo: 0, Acción: 0, Legado: 0 }
 
-  const island = activeIsland ?? 'Yo'
-  const strengthList: Pillar[] = (leaderProfile?.fortalezas.length ? leaderProfile.fortalezas : [island]) as Pillar[]
-  const gvPillar1 = strengthList[0]
-
-  const activeModuleIdx = nodes.findIndex(n => n.state === 'active')
-  const fillColor = activeModuleIdx !== -1
-    ? PILLAR_COLORS[MODULE_PILLAR[nodes[activeModuleIdx].module.order_index]].solid
-    : PILLAR_COLORS[island].solid
+  // Pilar dominante — sale del score real, nunca hardcodeado. La jerarquía visual (qué
+  // panel es grande) se recalcula por estudiante; el label "fortaleza"/"área clave" sigue
+  // viniendo de leaderProfile.fortalezas/areas_crecimiento, que es una fuente distinta y
+  // puede no coincidir 1:1 con "el pilar de mayor score" si el perfil está desactualizado.
+  const sortedPillars = useMemo(
+    () => [...PILLARS].sort((a, b) => pillarScores[b] - pillarScores[a]),
+    [pillarScores] // eslint-disable-line react-hooks/exhaustive-deps
+  )
+  const dominantPillar = sortedPillars[0] ?? 'Yo'
+  const secondaryPillars = sortedPillars.slice(1)
 
   function handleCapstoneClick() {
     if (capstoneState === 'bloqueado' || capstoneState === 'enviado') return
@@ -533,600 +242,211 @@ export default function LeadershipPathPage() {
     completed: t('statusCompleted'), active: t('statusActive'), locked: t('statusLocked'),
   }
 
-  // Toggle de tema — mismo botón reusado en el header del mapa (dentro de la fila de
-  // stats) y en la vista isla (junto al botón volver), nunca duplicando el markup.
-  function renderThemeToggle(extraStyle?: React.CSSProperties) {
-    return (
-      <button
-        className="lp-theme-toggle"
-        style={{
-          ...(isDark
-            ? { background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'var(--wp-ink-2)' }
-            : { background: 'var(--bg-2)', border: '1px solid var(--card-border)', color: 'var(--mute)' }),
-          ...extraStyle,
-        }}
-        onClick={toggleTheme}
-      >
-        {isDark ? '☀ Modo claro' : '◐ Modo oscuro'}
-      </button>
-    )
-  }
-
-  // Color del Great Venture — pilar más fuerte del estudiante; #C0392B solo si todavía
-  // no hay leaderProfile en absoluto (no si simplemente no hay fortalezas, ese caso ya
-  // cae en 'Yo' vía strengthList más arriba).
-  const gvColor = leaderProfile ? PILLAR_COLORS[gvPillar1].solid : '#C0392B'
-  const gvRgb1  = leaderProfile ? PILLAR_RGB[gvPillar1] : '192,57,43'
-
-  // El Capstone — octágono de 3 capas concéntricas con borde conic-gradient de 5 colores
-  // wayuu. Mismo helper para mapa (120px) e isla (160px, +XP debajo).
-  function renderCapstoneOctagon(size: number, showXp: boolean) {
-    const mid = size - 12
-    const inner = size - 24
-    return (
-      <div
-        className="lp-capstone-hover"
-        style={{ position: 'relative', width: size, height: size }}
-        onClick={handleCapstoneClick}
-      >
-        <CapstoneOctagonBorder size={size} reduceMotion={!!pref} />
-        <div
-          className="lp-capstone-mid"
-          style={{ position: 'absolute', top: (size - mid) / 2, left: (size - mid) / 2, width: mid, height: mid, clipPath: CAPSTONE_OCTAGON_CLIP }}
-        />
-        <div
-          className="lp-capstone-inner"
-          style={{
-            position: 'absolute', top: (size - inner) / 2, left: (size - inner) / 2, width: inner, height: inner, clipPath: CAPSTONE_OCTAGON_CLIP,
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            opacity: capstoneState === 'bloqueado' ? 0.5 : 1,
-          }}
-        >
-          <WayuuCapstoneSymbol primaryColor="#C0392B" secondaryColor={gvColor} />
-          <span className="lp-capstone-label">CAPSTONE</span>
-          {showXp && <span className="lp-capstone-xp">★ 500 XP</span>}
-        </div>
-      </div>
-    )
-  }
-
-  // El Great Venture — hexágono vertical con el color del pilar más fuerte del estudiante.
-  // Mismo helper para mapa (88×104) e isla (110×130, +meta_nucleo si existe).
-  function renderGreatVenture(width: number, height: number, showMeta: boolean) {
-    return (
-      <m.div
-        className="lp-gv-hex"
-        style={{ width, height }}
-        whileHover={{ rotate: 30, scale: 1.08 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-        onClick={() => router.push('/dashboard/great-venture')}
-      >
-        <div className="lp-gv-hex-border" style={{ background: `rgba(${gvRgb1},0.6)` }} />
-        <div className="lp-gv-hex-fill" style={{ background: `rgba(${gvRgb1},0.15)` }}>
-          <WayuuCompass color={gvColor} size={24} />
-          <span className="lp-gv-label" style={{ color: gvColor }}>{t('greatVentureTagline')}</span>
-          {showMeta && leaderProfile?.meta_nucleo && (
-            <span className="lp-gv-meta">{leaderProfile.meta_nucleo.slice(0, 20)}</span>
-          )}
-        </div>
-      </m.div>
-    )
-  }
+  const sealColor = capstoneState === 'bloqueado' ? 'var(--mute)' : 'var(--accent)'
 
   return (
     <div
-      className="leadership-path-page"
-      data-theme={isDark ? 'dark' : 'light'}
+      className="atlas-page"
       style={{ flex: 1, minWidth: 0, overflowY: 'auto', padding: '32px 28px', display: 'flex', flexDirection: 'column', gap: 20, position: 'relative' }}
     >
-      <WayuuBackground />
+      <div className="atlas-grain" />
       <style>{`
-        :root, .leadership-path-page{
-          --wp-bg:#0A0907; --wp-surface:#141210; --wp-surface-2:#1C1916;
-          --wp-border:rgba(255,255,255,0.06); --wp-border-glow:rgba(255,255,255,0.12);
-          --wp-ink:#F5F0E8; --wp-ink-2:#B8B0A0; --wp-mute:#6B6355;
-          --wp-yo:#D94040; --wp-norte:#1A9E8A; --wp-vinculo:#E8952A; --wp-accion:#7B6FD4; --wp-legado:#4FAD5B;
-          --wp-yo-rgb:217,64,64; --wp-norte-rgb:26,158,138; --wp-vinculo-rgb:232,149,42; --wp-accion-rgb:123,111,212; --wp-legado-rgb:79,173,91;
-        }
-        .leadership-path-page[data-theme="light"]{
-          --wp-bg:#FDFAF5; --wp-surface:#FFFFFF; --wp-surface-2:#F5F0E8;
-          --wp-border:rgba(13,13,13,0.08); --wp-border-glow:rgba(13,13,13,0.14);
-          --wp-ink:#0A0907; --wp-ink-2:#3D3830; --wp-mute:#8C8070;
-          /* Paleta de pilar propia para light — más profunda y menos saturada que dark
-             (diseñada para brillar sobre #0A0907); estos NUNCA se heredaban de dark antes
-             de esta sesión, por eso los rombos se veían planos sobre fondo crema. */
-          --wp-yo:#B8342E; --wp-norte:#146E5E; --wp-vinculo:#B5701A; --wp-accion:#5A4FB0; --wp-legado:#357A3E;
-          --wp-yo-rgb:184,52,46; --wp-norte-rgb:20,110,94; --wp-vinculo-rgb:181,112,26; --wp-accion-rgb:90,79,176; --wp-legado-rgb:53,122,62;
-        }
-        .leadership-path-page{position:relative;background:var(--wp-bg);}
-        /* Sobre crema, un patrón de líneas oscuras se percibe más que el mismo patrón claro
-           sobre negro a igual opacity — se baja un poco para no competir con el contenido. */
-        .lp-wayuu-bg{opacity:0.035;}
-        .leadership-path-page[data-theme="light"] .lp-wayuu-bg{opacity:0.025;}
-        /* Toggle de tema — visible en ambas vistas: dentro de la fila de stats en el mapa,
-           junto al botón volver en la isla. Colores específicos por estado vía inline style
-           (ver renderThemeToggle), esta clase solo da forma/tamaño compartidos. */
-        .lp-theme-toggle{font-size:11px;padding:6px 14px;border-radius:100px;font-family:inherit;cursor:pointer;transition:background .2s, border-color .2s;flex-shrink:0;}
+        .atlas-page{position:relative;}
+        .atlas-grain{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.03;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");}
 
-        .lp-eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--wp-yo);margin-bottom:8px;}
-        .lp-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:36px;color:var(--wp-ink);letter-spacing:-0.01em;}
-        .lp-subtitle{font-family:"Instrument Serif",serif;font-style:italic;font-size:14px;color:var(--wp-ink-2);margin-top:6px;}
-        .zone1-stats{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:14px;}
-        .zone1-stat-num{font-family:"Satoshi",sans-serif;font-weight:600;font-size:16px;color:var(--wp-ink);font-variant-numeric:tabular-nums;}
-        .zone1-stat-label{font-size:11px;color:var(--wp-mute);}
-        .zone1-sep{color:var(--wp-mute);}
+        .atlas-header{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+        .atlas-eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:10px;}
+        .atlas-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:clamp(34px,5vw,52px);color:var(--ink);letter-spacing:-0.02em;line-height:1.05;}
+        .atlas-subtitle{font-family:"Instrument Serif",serif;font-style:italic;font-size:clamp(18px,2vw,22px);color:var(--ink-2);margin-top:10px;max-width:560px;}
+        .atlas-stats{font-family:"Satoshi",sans-serif;font-size:14px;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap;}
+        .atlas-stats strong{color:var(--ink);font-weight:600;}
 
-        /* El clúster (islas + Capstone + Misión) es la pieza central de la pantalla — el
-           contenedor centra ese grupo en el espacio disponible (ya descuenta el sidebar
-           solo por estar dentro de .leadership-path-page, que es el flex:1 del layout del
-           dashboard), no en 100vw. min-height:80vh en vez de un px fijo para que el clúster
-           ocupe el alto disponible real, no un tamaño arbitrario. */
-        .lp-map-container{position:relative;width:100%;max-width:none;display:flex;align-items:center;justify-content:center;min-height:80vh;overflow:visible;background:transparent;padding-bottom:80px;}
-        /* Wrapper de tamaño explícito — las coordenadas de PILLAR_POSITIONS/CAPSTONE_POS/
-           GREAT_VENTURE_POS son % de ESTE elemento, no de .lp-map-container. clamp() en vez
-           de un px fijo: nunca se reduce el tamaño de los rombos (eso lo decide "size" en
-           JS), lo que crece o se achica es el lienzo/espaciado entre ellos. */
-        .wp-cluster{position:relative;width:clamp(420px,60vw,700px);height:clamp(420px,60vw,700px);flex-shrink:0;}
-        .lp-sea{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
-        .lp-sea-ring{stroke:var(--wp-border);stroke-width:.5px;fill:none;opacity:.6;}
-        .lp-connectors{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
-        .lp-connector-halo{stroke:var(--wp-border-glow);stroke-width:1px;fill:none;}
-        .lp-connector-path{stroke-width:1px;opacity:.5;fill:none;}
+        .atlas-grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(12,1fr);gap:20px;margin-top:32px;}
 
-        /* Isla — rombo wayuu. El relleno/glow van en .lp-island-shape (clip-path), el borde
-           luminoso en .lp-island-border (mismo clip-path, 2px más grande, zIndex detrás) —
-           clip-path recorta cualquier box-shadow/border puesto en el MISMO elemento, así que
-           ambas capas viven en wrappers planos separados, nunca en el m.button animado. */
-        .lp-island-anchor{position:absolute;transform:translate(-50%,-50%);}
-        .lp-island-btn{
-          position:relative;display:flex;width:100%;height:100%;
-          align-items:center;justify-content:center;cursor:pointer;background:none;border:none;
-          font-family:"Satoshi",sans-serif;padding:0;
-          filter:drop-shadow(0 0 var(--island-glow,20px) rgba(var(--island-rgb),0.3));
-          transition:box-shadow .2s;
-        }
-        .lp-island-btn:hover{--island-glow:32px;}
-        /* Light mode no "brilla" sobre crema — en vez de glow, peso real con sombra
-           tintada del color de pilar (no gris genérico) + highlight inset que sugiere
-           una superficie tallada/tejida, no un sticker pegado a la pantalla. */
-        .leadership-path-page[data-theme="light"] .lp-island-btn{
-          filter:none;
-          box-shadow:
-            0 1px 2px rgba(var(--island-rgb),0.08),
-            0 8px 20px rgba(var(--island-rgb),0.16),
-            0 2px 6px rgba(var(--island-rgb),0.10),
-            inset 0 1px 0 rgba(255,255,255,0.5);
-        }
-        .leadership-path-page[data-theme="light"] .lp-island-btn:hover{
-          box-shadow:
-            0 2px 4px rgba(var(--island-rgb),0.10),
-            0 12px 32px rgba(var(--island-rgb),0.24);
-        }
-        .lp-island-border{position:absolute;inset:-2px;z-index:-1;clip-path:${WAYUU_DIAMOND_CLIP};background:linear-gradient(135deg, rgba(var(--island-rgb),0.6) 0%, rgba(var(--island-rgb),0.2) 50%, rgba(var(--island-rgb),0.6) 100%);}
-        .leadership-path-page[data-theme="light"] .lp-island-border{background:linear-gradient(135deg, rgba(var(--island-rgb),0.45) 0%, rgba(var(--island-rgb),0.15) 50%, rgba(var(--island-rgb),0.45) 100%);}
-        .lp-island-shape{
-          position:absolute;inset:0;clip-path:${WAYUU_DIAMOND_CLIP};
-          display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;
-          background:radial-gradient(ellipse at center, rgba(var(--island-rgb),0.20) 0%, rgba(var(--island-rgb),0.08) 50%, transparent 100%);
-        }
-        .lp-island-icon{font-size:24px;line-height:1;margin-bottom:8px;filter:drop-shadow(0 0 6px rgba(var(--island-rgb),0.8));}
-        .lp-island-name{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;font-size:13px;letter-spacing:0.02em;margin-bottom:4px;}
-        .lp-island-score{font-family:"Satoshi",sans-serif;font-size:28px;font-weight:700;color:var(--wp-ink);line-height:1;margin-bottom:6px;}
-        .lp-badge{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:100px;}
+        .atlas-panel{text-align:left;background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;cursor:pointer;font-family:inherit;box-shadow:var(--shadow-card);transition:box-shadow .2s;display:flex;flex-direction:column;}
+        .atlas-panel:hover{box-shadow:var(--shadow-raised);}
+        .atlas-panel--dominant{grid-column:span 7;grid-row:span 2;padding:40px;justify-content:center;}
+        .atlas-panel--small{padding:22px;justify-content:center;}
+        .atlas-side{grid-column:span 5;grid-row:span 2;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-content:start;}
+        .atlas-gv{grid-column:span 2;}
 
-        /* Anchor invisible para Capstone/Great Venture en el mapa — solo posiciona, el
-           contenido visible (octágono/hexágono) lo dan los helpers renderCapstoneOctagon/
-           renderGreatVenture, reusados también en la vista isla. */
-        .lp-hub-anchor{position:absolute;transform:translate(-50%,-50%);}
+        .atlas-panel-name{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:var(--ink);display:block;}
+        .atlas-panel--dominant .atlas-panel-name{font-size:clamp(40px,5vw,60px);line-height:1;margin-bottom:18px;}
+        .atlas-panel--small .atlas-panel-name{font-size:19px;margin-bottom:10px;}
+        .atlas-panel-name--accent{color:var(--accent);}
 
-        .lp-skeleton-island{position:absolute;transform:translate(-50%,-50%);width:190px;height:190px;clip-path:${WAYUU_DIAMOND_CLIP};background:linear-gradient(90deg,var(--wp-surface-2) 25%,var(--wp-surface) 50%,var(--wp-surface-2) 75%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;}
+        .atlas-panel-score{font-family:"Satoshi",sans-serif;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;display:block;}
+        .atlas-panel--dominant .atlas-panel-score{font-size:38px;}
+        .atlas-panel--small .atlas-panel-score{font-size:23px;}
 
-        .lp-back-btn{display:inline-flex;align-items:center;padding:8px 16px;border:1px solid var(--wp-border);border-radius:999px;background:none;color:var(--wp-ink-2);font-size:13px;cursor:pointer;font-family:"Satoshi",sans-serif;margin-bottom:20px;transition:border-color .2s,color .2s;}
-        .lp-back-btn:hover{border-color:var(--wp-ink-2);color:var(--wp-ink);}
+        .atlas-panel-rule{height:1px;background:var(--line);margin:14px 0;}
+        .atlas-panel--small .atlas-panel-rule{margin:8px 0;}
 
-        /* Contenedor del zigzag — la curva SVG de fondo es position:absolute, pointer-events:none,
-           detrás de todo (z-index:0); cada fila es flexbox normal (z-index:1, position:relative)
-           y NUNCA se superpone con la siguiente porque el alto real lo da el propio contenido,
-           no una coordenada absoluta — ver Sesión 15 (antes el texto del módulo N+1 podía quedar
-           encima del nodo del módulo N porque ambos usaban coordenadas independientes). */
-        .lp-zigzag{position:relative;max-width:560px;margin:0 auto;padding:40px 24px;width:100%;}
-        .lp-node-row{position:relative;z-index:1;display:flex;align-items:center;gap:24px;padding:16px 0;min-height:80px;}
-        /* box-shadow nunca va en .lp-node-circle — tiene clip-path, que recorta cualquier
-           sombra puesta en el MISMO elemento. Vive en este wrapper plano (sin clip-path). */
-        .lp-node-shadow{position:relative;}
-        .lp-node-shadow--done{box-shadow:0 0 0 1px rgba(var(--node-rgb),0.3), 0 0 16px rgba(var(--node-rgb),0.4);}
-        .lp-node-shadow--active{box-shadow:0 0 0 2px rgba(var(--node-rgb),0.4), 0 0 32px rgba(var(--node-rgb),0.5), 0 0 64px rgba(var(--node-rgb),0.2);}
-        .lp-node-border{position:absolute;inset:-2px;z-index:-1;clip-path:${WAYUU_DIAMOND_CLIP};}
-        .lp-node-circle{clip-path:${WAYUU_DIAMOND_CLIP};flex-shrink:0;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;}
-        /* Anillo exterior del nodo completado — segundo rombo, mismo centro, sin relleno. */
-        .lp-node-ring{position:absolute;top:50%;left:50%;width:68px;height:68px;margin-top:-34px;margin-left:-34px;clip-path:${WAYUU_DIAMOND_CLIP};border:1px solid;pointer-events:none;}
-        .lp-node-info{flex:1;min-width:0;}
-        .lp-node-module-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
-        .lp-node-title{font-family:"Satoshi",sans-serif;font-weight:600;font-size:18px;color:var(--wp-ink);margin-top:2px;}
-        .lp-node-xp{font-size:12px;font-weight:700;margin-top:4px;}
-        .lp-node-status{font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-top:4px;font-weight:600;}
-        .lp-node-cta{margin-top:8px;padding:8px 16px;border-radius:100px;border:none;color:var(--wp-bg);font-size:12px;font-weight:600;cursor:pointer;font-family:"Satoshi",sans-serif;}
-        .lp-node-done{margin-top:8px;display:inline-flex;font-size:11px;font-weight:700;color:var(--wp-norte);}
+        .atlas-panel-status{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);display:block;}
+        .atlas-panel-status--strength{color:var(--accent-teal);}
+        .atlas-panel--small .atlas-panel-status{font-size:10px;}
 
-        /* Tooltip "SIGUIENTE" del nodo activo — siempre visible, al lado del nodo. */
-        .lp-node-tooltip{position:absolute;top:50%;transform:translateY(-50%);background:var(--wp-surface);border:1px solid var(--wp-border-glow);border-left-width:2px;box-shadow:0 4px 24px rgba(0,0,0,0.4);border-radius:10px;padding:10px 14px;white-space:nowrap;z-index:4;}
-        .lp-node-tooltip--right{left:calc(100% + 14px);}
-        .lp-node-tooltip--left{right:calc(100% + 14px);}
-        .lp-tooltip-eyebrow{display:block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
-        .lp-tooltip-title{display:block;font-size:14px;font-weight:600;color:var(--wp-ink);margin-top:2px;}
-        .lp-tooltip-arrow{position:absolute;top:50%;width:8px;height:8px;transform:translateY(-50%) rotate(45deg);background:var(--wp-surface);}
-        .lp-tooltip-arrow--right{left:-4px;}
-        .lp-tooltip-arrow--left{right:-4px;}
+        .atlas-panel-desc{font-size:15px;line-height:1.6;color:var(--ink-2);margin-top:14px;max-width:50ch;}
+        .atlas-panel-meta{font-size:12px;color:var(--ink-2);margin-top:8px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 
-        /* Capstone — octágono de 3 capas concéntricas (mismo clip-path, tamaños decrecientes).
-           Excepción deliberada de forma: no es rombo como el resto, y mantiene su identidad
-           roja de marca (#C0392B) en vez de un color de pilar — es el destino de TODO el
-           recorrido, no pertenece a un solo pilar. Capa exterior = CapstoneOctagonBorder
-           (conic-gradient rotando); capa media = "borde" de 6px en var(--wp-bg/--wp-surface)
-           — pura CSS por tema, sin condicional JS; capa interior = glow radial sutil + símbolo. */
-        .lp-capstone-hover{cursor:pointer;transition:filter .2s, transform .2s;}
-        .lp-capstone-hover:hover{filter:brightness(1.15);transform:scale(1.04);}
-        /* En dark el peso lo da el glow del borde conic-gradient + el fondo casi negro;
-           en light eso no se sostiene, así que se añade una sombra real (nunca gris
-           genérica) que mantiene el conic-gradient de marca intacto en ambos modos —
-           lo único cultural-fijo de toda la página es el borde de 5 colores wayuu. */
-        .leadership-path-page[data-theme="light"] .lp-capstone-hover{
-          box-shadow:
-            0 0 0 1px rgba(13,13,13,0.04),
-            0 8px 24px rgba(13,13,13,0.10),
-            0 0 32px rgba(192,57,43,0.10);
-        }
-        .lp-capstone-mid{background:var(--wp-bg);}
-        .leadership-path-page[data-theme="light"] .lp-capstone-mid{background:var(--wp-surface);}
-        .lp-capstone-inner{background:radial-gradient(circle at 35% 30%, rgba(255,255,255,0.06) 0%, transparent 60%);}
-        .leadership-path-page[data-theme="light"] .lp-capstone-inner{background:radial-gradient(circle at 35% 30%, rgba(0,0,0,0.02) 0%, transparent 60%);}
-        .lp-capstone-label{font-size:9px;font-weight:800;letter-spacing:0.15em;color:var(--wp-ink-2);text-transform:uppercase;margin-top:8px;}
-        .lp-capstone-xp{font-size:10px;color:#C0392B;margin-top:4px;}
+        .atlas-skeleton{background:linear-gradient(90deg,var(--bg-2) 25%,var(--card-bg) 50%,var(--bg-2) 75%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;cursor:default;}
 
-        /* Great Venture — hexágono vertical con el color del pilar más fuerte del estudiante;
-           mismo truco de wrapper-borde-4px-más-grande que el resto de formas con clip-path. */
-        .lp-gv-hex{position:relative;cursor:pointer;clip-path:${GV_HEXAGON_CLIP};}
-        .lp-gv-hex-border{position:absolute;inset:-4px;z-index:-1;clip-path:${GV_HEXAGON_CLIP};}
-        .lp-gv-hex-fill{position:absolute;inset:0;clip-path:${GV_HEXAGON_CLIP};display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;}
-        .lp-gv-label{font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-top:6px;text-align:center;}
-        .lp-gv-meta{font-size:9px;color:var(--wp-ink-2);margin-top:3px;text-align:center;max-width:90px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+        .atlas-expand{grid-column:span 12;background:var(--bg-2);border:1px solid var(--card-border);border-radius:16px;padding:8px;}
+        .atlas-expand-row{display:flex;align-items:center;gap:16px;padding:14px 16px;border-radius:10px;cursor:pointer;transition:background .15s;}
+        .atlas-expand-row:hover{background:var(--card-bg);}
+        .atlas-expand-row + .atlas-expand-row{border-top:1px solid var(--line);}
+        .atlas-expand-idx{font-family:"Satoshi",sans-serif;font-size:12px;font-weight:700;color:var(--mute);width:24px;flex-shrink:0;}
+        .atlas-expand-title{flex:1;min-width:0;font-family:"Satoshi",sans-serif;font-weight:600;font-size:15px;color:var(--ink);}
+        .atlas-expand-xp{font-size:12px;color:var(--accent);font-weight:600;flex-shrink:0;}
+        .atlas-expand-status{font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;color:var(--mute);flex-shrink:0;width:90px;text-align:right;}
 
-        /* Header de vista isla — tipografía editorial con luz propia (text-shadow) en dark;
-           en light el peso visual viene del color profundo + el tamaño, no de luz — un
-           glow claro sobre fondo claro no se ve, solo ensucia el texto. */
-        .lp-island-headline{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;font-size:40px;text-shadow:0 0 40px rgba(var(--headline-rgb),0.4);}
-        .leadership-path-page[data-theme="light"] .lp-island-headline{text-shadow:none;}
-        .lp-island-score-row{display:block;font-size:20px;font-weight:400;color:var(--wp-ink-2);margin-top:4px;font-variant-numeric:tabular-nums;}
-        .lp-score-bar-track{width:200px;height:2px;background:var(--wp-border);border-radius:100px;margin-top:10px;overflow:hidden;}
-        .lp-score-bar-fill{height:100%;border-radius:100px;transition:width 1.2s cubic-bezier(0.22,1,0.36,1);}
-
-        /* Confeti al completar todos los módulos de la isla */
-        @keyframes lpConfettiBurst{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(var(--tx),90px) rotate(var(--rot));opacity:0}}
-        .lp-confetti-dot{position:absolute;top:0;left:50%;width:7px;height:7px;border-radius:2px;animation:lpConfettiBurst .9s ease-out forwards;pointer-events:none;}
+        /* Doble borde — misma técnica que .dp-card del diploma real (certificacion/[id]/page.tsx),
+           dos pseudo-elementos en vez de un solo border, para que el anillo interior quede a
+           menor opacity sin perder el grosor del exterior. */
+        .atlas-capstone{position:relative;grid-column:span 12;background:var(--card-bg);border-radius:6px;padding:28px 32px;display:flex;align-items:center;gap:24px;cursor:pointer;min-height:110px;}
+        .atlas-capstone::before{content:"";position:absolute;inset:0;border-radius:6px;border:2px solid var(--accent);pointer-events:none;}
+        .atlas-capstone::after{content:"";position:absolute;inset:8px;border-radius:3px;border:1px solid rgba(192,57,43,0.25);pointer-events:none;}
+        .atlas-capstone-body{flex:1;min-width:0;}
+        .atlas-capstone-title{font-family:"Instrument Serif",serif;font-style:italic;font-size:24px;color:var(--ink);}
+        .atlas-capstone-status{font-size:13px;color:var(--ink-2);margin-top:4px;}
+        .atlas-capstone-cta{font-family:"Satoshi",sans-serif;font-weight:600;font-size:14px;color:var(--accent);white-space:nowrap;flex-shrink:0;}
 
         @media(max-width:768px){
-          .lp-map-container{min-height:auto;overflow:visible;padding-top:24px;}
-          /* En mobile las islas pasan a grid estático — el wrapper de tamaño fijo (pensado
-             para el clúster con coordenadas %) ya no aplica, su altura la da el propio grid. */
-          .wp-cluster{width:100%;height:auto;}
-          .lp-connectors{display:none;}
-          .lp-islands-wrap{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;justify-items:center;}
-          .lp-island-anchor{position:static!important;transform:none!important;width:100px!important;height:100px!important;top:auto!important;left:auto!important;}
-          .lp-hubs-wrap{display:flex;gap:16px;justify-content:center;margin-top:24px;flex-wrap:wrap;}
-          .lp-hub-anchor{position:static!important;transform:none!important;top:auto!important;left:auto!important;}
+          .atlas-grid{grid-template-columns:1fr;}
+          .atlas-panel--dominant{grid-column:span 1;grid-row:auto;padding:28px;}
+          .atlas-side{grid-column:span 1;grid-row:auto;}
+          .atlas-expand{grid-column:span 1;}
+          .atlas-capstone{grid-column:span 1;flex-wrap:wrap;}
         }
       `}</style>
 
-      <AnimatePresence mode="wait">
-        {view === 'map' ? (
-          <m.div
-            key="map"
-            initial={pref ? false : { opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+      <header className="atlas-header">
+        <div>
+          <div className="atlas-eyebrow">{t('atlasEyebrow', { archetype: leaderProfile?.arquetipo ?? '—' })}</div>
+          <h1 className="atlas-title">{t('pageTitle')}</h1>
+          <p className="atlas-subtitle">{t('atlasSubtitle')}</p>
+        </div>
+        <div className="atlas-stats">
+          <strong>{completedCount}</strong>/{totalModules} {t('zone1StatsModules')}
+          <span style={{ margin: '0 8px' }}>·</span>
+          <strong>{totalXP.toLocaleString('es-CO')}</strong> XP
+        </div>
+      </header>
+
+      {loading ? (
+        <div className="atlas-grid">
+          <div className="atlas-panel atlas-panel--dominant atlas-skeleton" />
+          <div className="atlas-side">
+            {[0, 1, 2, 3, 4].map(i => <div key={i} className="atlas-panel atlas-panel--small atlas-skeleton" />)}
+          </div>
+          <div className="atlas-capstone atlas-skeleton" />
+        </div>
+      ) : (
+        <div className="atlas-grid">
+          <m.button
+            className="atlas-panel atlas-panel--dominant"
+            initial={pref ? false : { opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 170, damping: 21 }}
+            whileHover={{ y: -2 }}
+            onClick={() => setExpandedPillar(p => p === dominantPillar ? null : dominantPillar)}
           >
-            <div style={{ marginBottom: 24 }}>
-              <div className="lp-eyebrow">{t('mapEyebrow', { archetype: leaderProfile?.arquetipo ?? '—' })}</div>
-              <h1 className="lp-title">{t('pageTitle')}</h1>
-              <p className="lp-subtitle">{t('mapSubtitle')}</p>
-              <div className="zone1-stats">
-                <span><span className="zone1-stat-num">{completedCount}</span> <span className="zone1-stat-label">/ {totalModules} {t('zone1StatsModules')}</span></span>
-                <span className="zone1-sep">·</span>
-                <span><span className="zone1-stat-num">{totalXP.toLocaleString('es-CO')}</span> <span className="zone1-stat-label">XP</span></span>
-                {renderThemeToggle({ marginLeft: 'auto', alignSelf: 'center' })}
+            <span className={`atlas-panel-name${leaderProfile?.fortalezas.includes(dominantPillar) ? ' atlas-panel-name--accent' : ''}`}>
+              {dominantPillar}
+            </span>
+            <span className="atlas-panel-score"><AnimatedNumber value={pillarScores[dominantPillar]} suffix="%" /></span>
+            <div className="atlas-panel-rule" />
+            {leaderProfile?.fortalezas.includes(dominantPillar) && (
+              <span className="atlas-panel-status atlas-panel-status--strength">{tModules('strengthBadge')}</span>
+            )}
+            {leaderProfile?.areas_crecimiento.includes(dominantPillar) && (
+              <span className="atlas-panel-status">{tModules('growthBadge')}</span>
+            )}
+            <p className="atlas-panel-desc">{t(`pillarDescriptions.${PILLAR_I18N_KEY[dominantPillar]}`)}</p>
+          </m.button>
+
+          <div className="atlas-side">
+            {secondaryPillars.map((pillar, i) => (
+              <m.button
+                key={pillar}
+                className="atlas-panel atlas-panel--small"
+                initial={pref ? false : { opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 170, damping: 21, delay: (i + 1) * 0.05 }}
+                whileHover={{ y: -2 }}
+                onClick={() => setExpandedPillar(p => p === pillar ? null : pillar)}
+              >
+                <span className={`atlas-panel-name${leaderProfile?.fortalezas.includes(pillar) ? ' atlas-panel-name--accent' : ''}`}>{pillar}</span>
+                <span className="atlas-panel-score">{pillarScores[pillar]}%</span>
+                <div className="atlas-panel-rule" />
+                {leaderProfile?.fortalezas.includes(pillar) && (
+                  <span className="atlas-panel-status atlas-panel-status--strength">{tModules('strengthBadge')}</span>
+                )}
+                {leaderProfile?.areas_crecimiento.includes(pillar) && (
+                  <span className="atlas-panel-status">{tModules('growthBadge')}</span>
+                )}
+              </m.button>
+            ))}
+
+            <m.button
+              className="atlas-panel atlas-panel--small atlas-gv"
+              initial={pref ? false : { opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 170, damping: 21, delay: 0.25 }}
+              whileHover={{ y: -2 }}
+              onClick={() => router.push('/dashboard/great-venture')}
+            >
+              <span className="atlas-panel-name">{t('greatVentureTagline')}</span>
+              {leaderProfile?.meta_nucleo && (
+                <p className="atlas-panel-meta">{leaderProfile.meta_nucleo.slice(0, 80)}</p>
+              )}
+            </m.button>
+          </div>
+
+          <AnimatePresence>
+            {expandedPillar && (
+              <m.div
+                className="atlas-expand"
+                initial={pref ? false : { opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+              >
+                {nodes.filter(n => MODULE_PILLAR[n.module.order_index] === expandedPillar).map(node => (
+                  <div key={node.module.id} className="atlas-expand-row" onClick={() => setSelected(node)}>
+                    <span className="atlas-expand-idx">{String(node.module.order_index).padStart(2, '0')}</span>
+                    <span className="atlas-expand-title">{node.module.title}</span>
+                    <span className="atlas-expand-xp">★ {node.module.xp_reward} XP</span>
+                    <span className="atlas-expand-status">{STATUS_LABEL[node.state]}</span>
+                  </div>
+                ))}
+              </m.div>
+            )}
+          </AnimatePresence>
+
+          <m.div
+            className="atlas-capstone"
+            initial={pref ? false : { opacity: 0, y: 14 }}
+            animate={{ opacity: capstoneState === 'bloqueado' ? 0.65 : 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 170, damping: 21, delay: 0.3 }}
+            onClick={handleCapstoneClick}
+          >
+            <CapstoneSeal color={sealColor} label={t('capstoneStrip.sealLabel')} locked={capstoneState === 'bloqueado'} />
+            <div className="atlas-capstone-body">
+              <div className="atlas-capstone-title">{t('capstoneStrip.title')}</div>
+              <div className="atlas-capstone-status">
+                {capstoneState === 'evaluado'
+                  ? (diploma ? t('capstoneStrip.states.evaluadoCertificado') : t('capstoneStrip.states.evaluado'))
+                  : t(`capstoneStrip.states.${capstoneState}`)}
               </div>
             </div>
-
-            {loading ? (
-              <div className="lp-map-container">
-                <div className="wp-cluster">
-                  {PILLARS.map(p => (
-                    <div key={p} className="lp-skeleton-island" style={{ top: `${PILLAR_POSITIONS[p].top}%`, left: `${PILLAR_POSITIONS[p].left}%` }} />
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="lp-map-container">
-                <div className="wp-cluster">
-                  {/* "Mar" — curvas de nivel topográficas sutiles centradas en el Capstone */}
-                  <svg className="lp-sea" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    {[10, 20, 30, 40].map(r => (
-                      <ellipse key={r} className="lp-sea-ring" cx={CAPSTONE_POS.left} cy={CAPSTONE_POS.top} rx={r} ry={r} />
-                    ))}
-                  </svg>
-
-                  <svg className="lp-connectors" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    {PILLARS.map(p => {
-                      const pos = PILLAR_POSITIONS[p]
-                      const d = islandArcPath({ x: pos.left, y: pos.top }, { x: CAPSTONE_POS.left, y: CAPSTONE_POS.top })
-                      return (
-                        <g key={p}>
-                          <path className="lp-connector-halo" d={d} />
-                          <path className="lp-connector-path" d={d} stroke="var(--wp-border-glow)" strokeDasharray="2 4 8 4 2 4" />
-                        </g>
-                      )
-                    })}
-                  </svg>
-
-                  <div className="lp-islands-wrap">
-                    {PILLARS.map((pillar, i) => {
-                      const pos = PILLAR_POSITIONS[pillar]
-                      const score = pillarScores[pillar]
-                      const size = 160 + (score / 100) * 60
-                      const isStrength = leaderProfile?.fortalezas.includes(pillar)
-                      const isGrowth   = leaderProfile?.areas_crecimiento.includes(pillar)
-                      const isActive   = activeIsland === pillar
-                      const rgb        = PILLAR_RGB[pillar]
-                      return (
-                        // El centrado (-50%,-50%) vive en este wrapper plano; el m.button hijo
-                        // anima scale/y sin transform propio — ver nota de Sesión 13 sobre FM.
-                        <div key={pillar} className="lp-island-anchor" style={{ top: `${pos.top}%`, left: `${pos.left}%`, width: size, height: size }}>
-                          <m.button
-                            className="lp-island-btn"
-                            style={{ '--island-rgb': rgb } as React.CSSProperties}
-                            initial={pref ? false : { scale: 0, opacity: 0 }}
-                            animate={{ scale: isActive ? 1.03 : 1, opacity: 1 }}
-                            transition={{ type: 'spring', stiffness: 200, damping: 20, delay: i * 0.1 }}
-                            whileHover={{ scale: 1.06, y: -4 }}
-                            whileTap={{ scale: 0.97 }}
-                            onClick={() => { setActiveIsland(pillar); setView('island') }}
-                          >
-                            <div className="lp-island-border" />
-                            <div className="lp-island-shape">
-                              <span className="lp-island-icon">{PILLAR_ICONS[pillar]}</span>
-                              <span className="lp-island-name" style={{ color: PILLAR_COLORS[pillar].solid }}>{pillar}</span>
-                              <span className="lp-island-score">{score}%</span>
-                              {isStrength && (
-                                <span className="lp-badge" style={{ background: `rgba(${rgb},0.15)`, border: `1px solid rgba(${rgb},0.3)`, color: PILLAR_COLORS[pillar].solid }}>
-                                  {tModules('strengthBadge')}
-                                </span>
-                              )}
-                              {isGrowth && (
-                                <span className="lp-badge" style={{ background: `rgba(${rgb},0.15)`, border: `1px solid rgba(${rgb},0.3)`, color: PILLAR_COLORS[pillar].solid }}>
-                                  {tModules('growthBadge')}
-                                </span>
-                              )}
-                            </div>
-                          </m.button>
-                        </div>
-                      )
-                    })}
-                  </div>
-
-                  <div className="lp-hubs-wrap">
-                    <div className="lp-hub-anchor" style={{ top: `${CAPSTONE_POS.top}%`, left: `${CAPSTONE_POS.left}%`, width: 120, height: 120 }}>
-                      {renderCapstoneOctagon(120, false)}
-                    </div>
-                    <div className="lp-hub-anchor" style={{ top: `${GREAT_VENTURE_POS.top}%`, left: `${GREAT_VENTURE_POS.left}%`, width: 88, height: 104 }}>
-                      {renderGreatVenture(88, 104, false)}
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {capstoneState === 'en_progreso' && <span className="atlas-capstone-cta">{t('capstoneStrip.ctaContinue')}</span>}
+            {capstoneState === 'evaluado' && (
+              <span className="atlas-capstone-cta">{diploma ? t('capstoneStrip.ctaViewDiploma') : t('capstoneStrip.ctaView')}</span>
             )}
           </m.div>
-        ) : (
-          <m.div
-            key="island"
-            initial={pref ? false : { opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <button className="lp-back-btn" onClick={() => { setView('map'); setActiveIsland(null) }}>
-                ← {t('backToMap')}
-              </button>
-              {renderThemeToggle({ marginBottom: 20 })}
-            </div>
-
-            <m.div
-              style={{ position: 'relative', marginBottom: 28 }}
-              initial={pref ? false : { opacity: 0, y: -16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-            >
-              <h2
-                className="lp-island-headline"
-                style={{ color: PILLAR_COLORS[island].solid, '--headline-rgb': PILLAR_RGB[island] } as React.CSSProperties}
-              >
-                {island}
-              </h2>
-              <div className="lp-island-score-row">
-                {scoreReveal ? <AnimatedNumber value={pillarScores[island]} suffix="%" /> : '0%'}
-              </div>
-              <div className="lp-score-bar-track">
-                <div className="lp-score-bar-fill" style={{ width: scoreReveal ? `${pillarScores[island]}%` : '0%', background: PILLAR_COLORS[island].solid, boxShadow: `0 0 8px ${PILLAR_COLORS[island].solid}` }} />
-              </div>
-              <p style={{ fontSize: 13, color: 'var(--wp-mute)', marginTop: 10 }}>{t(`pillarDescriptions.${PILLAR_I18N_KEY[island]}`)}</p>
-
-              {showConfetti && confettiParticles.map((p, pi) => (
-                <div
-                  key={pi}
-                  className="lp-confetti-dot"
-                  style={{ background: p.color, '--tx': p.tx, '--rot': p.rot, animationDelay: `${p.delay}s` } as React.CSSProperties}
-                />
-              ))}
-            </m.div>
-
-            <div className="lp-zigzag" ref={zigzagContainerRef}>
-              {/* Curva decorativa de fondo — únicamente estética, ya no determina la posición
-                  real de los nodos (esa la da el flex layout de abajo, ver Sesión 15: el texto
-                  se superponía con el nodo siguiente porque dependía de esta misma curva). */}
-              {containerWidth > 0 && nodes.length > 0 && (
-                <svg width={containerWidth} height={nodes.length * nodeHeight} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', zIndex: 0 }}>
-                  <defs>
-                    <linearGradient id="wayuu-path-gradient" gradientUnits="userSpaceOnUse" x1={containerWidth / 2} y1={0} x2={containerWidth / 2} y2={nodes.length * nodeHeight}>
-                      <stop offset="0%" stopColor={fillColor} stopOpacity={0.4} />
-                      <stop offset="50%" stopColor={fillColor} stopOpacity={1} />
-                      <stop offset="100%" stopColor={fillColor} stopOpacity={0.6} />
-                    </linearGradient>
-                  </defs>
-                  {organicSegments.map((seg, i) => {
-                    const segmentDone = nodes[i]?.state === 'completed'
-                    if (!segmentDone) {
-                      return <path key={i} d={seg} stroke="var(--wp-border)" strokeWidth={2} strokeDasharray="4 8" strokeLinecap="round" fill="none" />
-                    }
-                    return (
-                      <g key={i}>
-                        <path d={seg} stroke={fillColor} strokeWidth={8} opacity={0.08} style={{ filter: 'blur(4px)' }} strokeLinecap="round" fill="none" />
-                        <path d={seg} stroke="url(#wayuu-path-gradient)" strokeWidth={3} strokeLinecap="round" fill="none" />
-                        <PathShimmer d={seg} reduceMotion={!!pref} />
-                      </g>
-                    )
-                  })}
-                </svg>
-              )}
-
-              {nodes.map((node, idx) => {
-                const modulePillar = MODULE_PILLAR[node.module.order_index]
-                const pillarColor  = PILLAR_COLORS[modulePillar].solid
-                const pillarRgb    = PILLAR_RGB[modulePillar]
-                const statusColor  = node.state === 'completed' ? 'var(--wp-norte)' : node.state === 'active' ? pillarColor : 'var(--wp-mute)'
-                const circleSize   = node.state === 'completed' ? 52 : node.state === 'active' ? 72 : 48
-                const isEven       = idx % 2 === 0
-
-                const circleBlock = (
-                  <div
-                    key="circle"
-                    className={`lp-node-shadow${node.state === 'completed' ? ' lp-node-shadow--done' : node.state === 'active' ? ' lp-node-shadow--active' : ''}`}
-                    style={{ width: circleSize, height: circleSize, flexShrink: 0, '--node-rgb': pillarRgb } as React.CSSProperties}
-                  >
-                    {node.state !== 'completed' && (
-                      <div className="lp-node-border" style={{ background: node.state === 'active' ? pillarColor : 'var(--wp-border)' }} />
-                    )}
-                    <m.div
-                      className="lp-node-circle"
-                      style={{
-                        width: '100%', height: '100%',
-                        background: node.state === 'completed' ? pillarColor : 'var(--wp-surface)',
-                        color: node.state === 'completed' ? 'var(--wp-bg)' : pillarColor,
-                        opacity: node.state === 'locked' ? 0.35 : 1,
-                        filter: node.state === 'locked' ? 'blur(0.8px)' : 'none',
-                      }}
-                      initial={pref ? false : { opacity: 0, x: isEven ? -20 : 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 + idx * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
-                      whileHover={node.state === 'completed' ? { scale: 1.08, y: -2 } : undefined}
-                    >
-                      {node.state === 'completed' && (
-                        <>
-                          <span className="lp-node-ring" style={{ borderColor: `rgba(${pillarRgb},0.25)` }} />
-                          <span style={{ fontSize: 18, fontWeight: 700 }}>✓</span>
-                        </>
-                      )}
-                      {node.state === 'active' && (
-                        <>
-                          <div style={{ width: 20, height: 20, clipPath: WAYUU_DIAMOND_CLIP, background: pillarColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ width: 8, height: 8, clipPath: WAYUU_DIAMOND_CLIP, background: 'var(--wp-surface)' }} />
-                          </div>
-                          <PulseRing1 color={pillarColor} reduceMotion={!!pref} />
-                          <PulseRing2 color={pillarColor} reduceMotion={!!pref} />
-                          {!isNarrow && (
-                            <div className={`lp-node-tooltip lp-node-tooltip--${isEven ? 'right' : 'left'}`} style={{ borderLeftColor: pillarColor }}>
-                              <span className="lp-tooltip-eyebrow" style={{ color: pillarColor }}>{t('nextLabel')}</span>
-                              <span className="lp-tooltip-title">{node.module.title}</span>
-                              <span className={`lp-tooltip-arrow lp-tooltip-arrow--${isEven ? 'right' : 'left'}`} />
-                            </div>
-                          )}
-                        </>
-                      )}
-                      {node.state === 'locked' && (
-                        <>
-                          <span style={{ fontSize: 14, color: 'var(--wp-mute)' }}>🔒</span>
-                          <FogPulse reduceMotion={!!pref} />
-                        </>
-                      )}
-                    </m.div>
-                  </div>
-                )
-
-                const infoBlock = (
-                  <m.div
-                    key="info"
-                    className="lp-node-info"
-                    style={{ maxWidth: 180, textAlign: isEven ? 'left' : 'right' }}
-                    initial={pref ? false : { opacity: 0, x: isEven ? -20 : 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 + idx * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
-                  >
-                    <div className="lp-node-module-label" style={{ color: pillarColor }}>
-                      {String(node.module.order_index).padStart(2, '0')} · {t('moduleLabel')}
-                    </div>
-                    <div className="lp-node-title">{node.module.title}</div>
-                    <div className="lp-node-xp" style={{ color: pillarColor }}>★ {node.module.xp_reward} XP</div>
-                    <div className="lp-node-status" style={{ color: statusColor }}>{STATUS_LABEL[node.state]}</div>
-                    {node.state === 'active' && (
-                      <button
-                        className="lp-node-cta"
-                        style={{ background: pillarColor }}
-                        onClick={e => { e.stopPropagation(); router.push(`/dashboard/modules/${node.module.id}`) }}
-                      >
-                        {t('inlineStartBtn')}
-                      </button>
-                    )}
-                    {node.state === 'completed' && <div className="lp-node-done">{t('completedBadge')}</div>}
-                  </m.div>
-                )
-
-                return (
-                  <div
-                    key={node.module.id}
-                    className="lp-node-row"
-                    style={{ justifyContent: isEven ? 'flex-start' : 'flex-end', cursor: node.state !== 'locked' ? 'pointer' : 'default' }}
-                    onClick={node.state !== 'locked' ? () => setSelected(node) : undefined}
-                  >
-                    {isEven ? <>{circleBlock}{infoBlock}</> : <>{infoBlock}{circleBlock}</>}
-                  </div>
-                )
-              })}
-
-              {/* Hito — Capstone, octágono de 3 capas con borde conic-gradient wayuu */}
-              <div className="lp-node-row" style={{ justifyContent: nodes.length % 2 === 0 ? 'flex-start' : 'flex-end' }}>
-                <m.div
-                  initial={pref ? false : { opacity: 0, x: nodes.length % 2 === 0 ? -20 : 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 + nodes.length * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
-                >
-                  {renderCapstoneOctagon(160, true)}
-                </m.div>
-              </div>
-
-              {/* Hito — Great Venture, hexágono vertical con el color del estudiante */}
-              <div className="lp-node-row" style={{ justifyContent: (nodes.length + 1) % 2 === 0 ? 'flex-start' : 'flex-end' }}>
-                <m.div
-                  initial={pref ? false : { opacity: 0, x: (nodes.length + 1) % 2 === 0 ? -20 : 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 + (nodes.length + 1) * 0.09, type: 'spring', stiffness: 180, damping: 20 }}
-                >
-                  {renderGreatVenture(110, 130, true)}
-                </m.div>
-              </div>
-            </div>
-          </m.div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
 
       {/* ── Panel lateral de detalle — preservado del diseño anterior ── */}
       <AnimatePresence>
@@ -1169,7 +489,7 @@ export default function LeadershipPathPage() {
               </button>
 
               {selPillar && (
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: PILLAR_COLORS[selPillar].solid, marginBottom: 8 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8 }}>
                   {selPillar}
                 </div>
               )}

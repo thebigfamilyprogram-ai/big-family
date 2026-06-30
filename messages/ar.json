@@ -1295,6 +1295,22 @@
       "specialMissionLabel": "مهمة خاصة",
       "nextLabel": "التالي",
       "greatVentureTagline": "مهمة",
+      "atlasEyebrow": "طريقك · {archetype}",
+      "atlasSubtitle": "كل فصل من هذا الأطلس هو إقليم بدأت بالفعل في استكشافه.",
+      "capstoneStrip": {
+        "title": "مشروع كابستون",
+        "sealLabel": "كابستون الخاص بك",
+        "states": {
+          "bloqueado": "أكمل وحداتك لإلغاء القفل",
+          "en_progreso": "مشروعك قيد التنفيذ",
+          "enviado": "قيد المراجعة من قبل منسقك",
+          "evaluado": "تم التقييم — الشهادة متاحة",
+          "evaluadoCertificado": "تم الاعتماد!"
+        },
+        "ctaContinue": "متابعة المشروع ←",
+        "ctaView": "عرض كابستون ←",
+        "ctaViewDiploma": "عرض الشهادة ←"
+      },
       "pillarDescriptions": {
         "yo": "علاقتك بنفسك، الانضباط الذاتي والهدف",
         "norte": "رؤيتك، إبداعك وابتكارك",
