@@ -117,6 +117,16 @@
       "statSchools": "Écoles",
       "statBadges": "Badges"
     },
+    "heroArc": {
+      "eyebrow": "Colegio Albania · La Guajira",
+      "title": "Former des leaders à ",
+      "titleAccent": "portée mondiale",
+      "subtitle": "Un programme continu de leadership depuis 2015. Aujourd'hui, 98 élèves actifs au Colegio Albania.",
+      "cta": "Rejoindre le programme",
+      "studentCount": "876",
+      "studentCountLabel": "élèves formés",
+      "photoBadge": "Campus · Colegio Albania"
+    },
     "mision": {
       "eyebrow": "Mission",
       "title": "Pourquoi nous existons",

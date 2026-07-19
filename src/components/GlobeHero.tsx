@@ -2,78 +2,11 @@
 
 import { memo, useEffect, useRef, useState } from 'react'
 import { Link } from 'next-view-transitions'
-import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { m, AnimatePresence, useReducedMotion, useScroll } from 'framer-motion'
 
-import AnimatedNumber from '@/components/AnimatedNumber'
-import { useRealtimeStats } from '@/hooks/useRealtimeStats'
-
-const Globe3DHero = dynamic(() => import('@/components/Globe3DHero'), { ssr: false })
-
-// ── Country scramble — cycles through connected countries with text scramble ──
-const SCRAMBLE_WORDS = [
-  'COLOMBIA','ESTADOS UNIDOS','MÉXICO','GUATEMALA','NICARAGUA',
-  'COSTA RICA','PARAGUAY','FRANCIA','ALEMANIA','ESPAÑA','EMIRATOS','CANADÁ',
-]
-function CountryScramble() {
-  const t = useTranslations()
-  const [text, setText] = useState(SCRAMBLE_WORDS[0])
-  const idxRef = useRef(0)
-
-  useEffect(() => {
-    let resolveTimer: ReturnType<typeof setTimeout>
-    let scrambleTimer: ReturnType<typeof setInterval>
-
-    function scramble(target: string, progress: number): string {
-      return target.split('').map((ch, i) => {
-        if (ch === ' ') return ' '
-        if (i < progress) return ch
-        return String.fromCharCode(65 + Math.floor(Math.random() * 26))
-      }).join('')
-    }
-
-    function scrambleTo(target: string) {
-      let progress = 0
-      setText(scramble(target, 0))
-      scrambleTimer = setInterval(() => {
-        progress++
-        setText(scramble(target, progress))
-        if (progress >= target.length) {
-          clearInterval(scrambleTimer)
-          resolveTimer = setTimeout(nextWord, 1500)
-        }
-      }, 40)
-    }
-
-    function nextWord() {
-      idxRef.current = (idxRef.current + 1) % SCRAMBLE_WORDS.length
-      scrambleTo(SCRAMBLE_WORDS[idxRef.current])
-    }
-
-    resolveTimer = setTimeout(nextWord, 1500)
-    return () => { clearTimeout(resolveTimer); clearInterval(scrambleTimer) }
-  }, [])
-
-  return (
-    <div style={{
-      fontFamily: 'var(--font-mono,"JetBrains Mono",monospace)',
-      fontSize: 12,
-      letterSpacing: '0.15em',
-      color: 'var(--mute,#6B6B6B)',
-      textTransform: 'uppercase',
-      marginTop: 20,
-      display: 'flex',
-      alignItems: 'center',
-      gap: 8,
-    }}>
-      <span style={{ opacity: 0.5 }}>→ {t('landing.hero.connectingWith')}</span>
-      <span style={{ color: 'var(--accent,#C0392B)', minWidth: '12ch', display: 'inline-block' }}>{text}</span>
-    </div>
-  )
-}
-
+import HeroArc from '@/components/HeroArc'
 
 // ── Static section data ───────────────────────────────────────────────────────
 
@@ -206,7 +139,6 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
   const prefersReduced      = useReducedMotion()
   const pathname            = usePathname()
   const cleanPath           = pathname.replace(/^\/(es|en|fr|pt|ar)/, '') || '/'
-  const [scrollHintVisible, setScrollHintVisible] = useState(true)
   const [navScrolled,       setNavScrolled]       = useState(false)
   const [navMounted,        setNavMounted]        = useState(false)
   const [activeSection,     setActiveSection]     = useState('')
@@ -228,15 +160,7 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('open-diploma-modal', handler)
   }, [])
 
-  const { stats: liveStats, loading: statsLoading } = useRealtimeStats()
-
   const { scrollY } = useScroll()
-
-  useEffect(() => {
-    const onScrollHint = () => setScrollHintVisible(window.scrollY < 100)
-    window.addEventListener('scroll', onScrollHint, { passive: true })
-    return () => window.removeEventListener('scroll', onScrollHint)
-  }, [])
 
   function handleNavLinkClick(e: React.MouseEvent, href: string) {
     if (href === '/#impacto') {
@@ -744,115 +668,7 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
         )}
       </AnimatePresence>
 
-      <section className="hero" id="hero">
-        <div className="meta">
-          <span><span className="dot"></span>{t('landing.hero.metaActive')}</span>
-          <span>N 04°42′ · W 74°04′ · Bogotá</span>
-        </div>
-
-        <div className="left">
-          <m.div
-            className="brand"
-            initial={prefersReduced ? false : { opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0 }}
-          >
-            <div className="brand__logo">
-              <svg viewBox="0 0 24 24" width="88" height="88" aria-label="Big Family" role="img">
-                <circle cx="12" cy="5" r="2.4" fill="#0D0D0D"/>
-                <path d="M12 7.5 L20 22 H4 Z" fill="#0D0D0D"/>
-              </svg>
-            </div>
-            <div className="brand__word">
-              <span>Est.</span>
-              <span className="word">THE BIG FAMILY</span>
-              <span>MMXX</span>
-            </div>
-          </m.div>
-          <m.h1
-            className="headline"
-            initial={prefersReduced ? false : { opacity: 0, y: 32 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.1 }}
-          >
-            {t('landing.hero.title')}<br/><em>{t('landing.hero.titleAccent')}</em><span className="dot-end">.</span>
-          </m.h1>
-          <m.p
-            className="lede"
-            initial={prefersReduced ? false : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.2 }}
-          >
-            {t('landing.hero.subtitle')}
-          </m.p>
-          <CountryScramble />
-
-          <m.div
-            className="cta-row"
-            initial={prefersReduced ? false : { opacity: 0, scale: 0.94 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.3 }}
-          >
-            <Link href="/submit" className="btn btn--solid">{t('landing.hero.cta')} <span aria-hidden="true">→</span></Link>
-            <button className="btn btn--ghost" onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}>{t('landing.hero.ctaSecondary')}</button>
-          </m.div>
-          <m.p
-            style={{ marginTop: 14, fontSize: 13, color: 'var(--mute)', fontFamily: '"Satoshi",sans-serif' }}
-            initial={prefersReduced ? false : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 100, damping: 20, delay: 0.42 }}
-          >
-            {t('landing.hero.coordinatorPrompt')}{' '}
-            <Link href="/register" style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>
-              {t('landing.hero.registerLink')}
-            </Link>
-          </m.p>
-          <m.div
-            className="stats"
-            initial={prefersReduced ? false : { opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 140, damping: 20, delay: 0.36 }}
-          >
-            <div className="stat">
-              <div className="stat__num">
-                <AnimatedNumber value={liveStats.totalStudents} loading={statsLoading} suffix="+" skeletonWidth={48} />
-              </div>
-              <div className="stat__label">{t('landing.hero.statStudents')}</div>
-            </div>
-            <div className="stat">
-              <div className="stat__num">
-                <AnimatedNumber value={liveStats.totalSchools} loading={statsLoading} skeletonWidth={40} />
-              </div>
-              <div className="stat__label">{t('landing.hero.statSchools')}</div>
-            </div>
-            <div className="stat">
-              <div className="stat__num">
-                <AnimatedNumber value={liveStats.totalBadges} loading={statsLoading} skeletonWidth={40} />
-              </div>
-              <div className="stat__label">{t('landing.hero.statBadges')}</div>
-            </div>
-          </m.div>
-        </div>
-
-        <m.div
-          className="right"
-          initial={prefersReduced ? false : { opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: 'spring', stiffness: 80, damping: 18, delay: 0.4 }}
-        >
-          <Globe3DHero />
-        </m.div>
-
-        <div
-          className="scroll-ind"
-          style={{ opacity: scrollHintVisible ? 1 : 0, transition: 'opacity 300ms ease' }}
-        >
-          <span>Scroll</span>
-          <div className="bar"></div>
-        </div>
-      </section>
-
-      <div className="hero-bottom-spacer"></div>
+      <HeroArc />
 
       {/* ══════════════════════════════════════════════════════════════════
           TAB CONTENT — provided by the active (landing) route's page.tsx

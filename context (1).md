@@ -189,8 +189,13 @@
 
 ## Decisiones de Arquitectura
 
-### Por qué OffscreenCanvas + Web Worker para el globo
-Three.js en el hilo principal causaba 31 segundos de trabajo bloqueante que PageSpeed penalizaba duramente (54%). Al mover el render loop a un Web Worker con OffscreenCanvas, el hilo principal queda libre y PageSpeed subió a 98%. El fallback en GlobeFallback.ts cubre Safari < 16.4 que no soporta OffscreenCanvas.
+### Por qué se eliminó el globo 3D (Sesión 18)
+El sistema Globe3D (Three.js + OffscreenCanvas + Web Worker: `Globe3DHero.tsx`, `Globe/Globe3DCanvas.tsx`, `Globe/Globe3DWorker.ts`, `Globe/Globe3DFallback.tsx`) fue eliminado completamente. Razones: (1) bug de océanos negros nunca resuelto, (2) arquitectura compleja para un problema cosmético, (3) redundancia conceptual — el mapa mundial ya existe en `WorldMapPublic.tsx` más abajo en la misma landing. Reemplazado por `HeroArc.tsx`, que usa solo SVG + Framer Motion.
+
+**Nota:** `Globe/GlobeCanvas.tsx`, `Globe/GlobeWorker.ts`, `Globe/GlobeFallback.ts` (sin prefijo Globe3D) se conservan — los usa `WorldMapPublic.tsx`.
+
+### Por qué OffscreenCanvas + Web Worker para el mapa mundial (histórico)
+Three.js en el hilo principal causaba 31 segundos de trabajo bloqueante que PageSpeed penalizaba duramente (54%). Al mover el render loop a un Web Worker con OffscreenCanvas, el hilo principal queda libre y PageSpeed subió a 98%. El fallback en GlobeFallback.ts cubre Safari < 16.4 que no soporta OffscreenCanvas. Esto aplica hoy solo a `WorldMapPublic.tsx`.
 
 ### Por qué proxy.ts en vez de middleware.ts
 El proyecto fue configurado con un middleware personalizado llamado `proxy.ts` que exporta `proxy`. Next.js detecta ambos y falla el build si existen simultáneamente. Siempre usar `proxy.ts`.
@@ -233,7 +238,8 @@ Si el overlay es `position:fixed`, cubre toda la página. Como el overlay wrappe
 | Archivo | Descripción |
 |---|---|
 | `src/lib/mockData.ts` | `MOCK_MODE` flag + todos los datos mock (estudiantes, colegios, proyectos, módulos, feed, metas, eventos, anuncios) |
-| `src/components/GlobeHero.tsx` | Landing page completa — Hero, Misión, Visión, Historia, Impacto, Metodología, Valores, Equipo, navbar pill |
+| `src/components/GlobeHero.tsx` | Landing page shell — nav pill, Misión, Visión, Historia, Impacto, Metodología, Valores, Equipo, footer |
+| `src/components/HeroArc.tsx` | Hero de la landing — composición editorial: eyebrow pill, H1 con italic accent, arco SVG doble, foto circular Colegio Albania, CTA pill con inner arrow, micro-stat. Reemplazó el Globe3D. |
 | `src/components/SchoolTicker.tsx` | Ticker horizontal colegios — logos desde Supabase Storage `school-logos` |
 | `src/components/HeroCollage.tsx` | Collage países hero derecho — parallax mouse con Framer Motion |
 | `src/components/WorldMapPublic.tsx` | Mapa mundial landing — 6 layers SVG, cards flotantes España/EEUU/Canadá, modal para 7 países red |

@@ -117,6 +117,16 @@
       "statSchools": "المدارس",
       "statBadges": "الشارات"
     },
+    "heroArc": {
+      "eyebrow": "Colegio Albania · La Guajira",
+      "title": "تكوين قادة ذوي ",
+      "titleAccent": "رؤية عالمية",
+      "subtitle": "برنامج مستمر لتطوير القيادة منذ عام 2015. اليوم، 98 طالباً نشطاً في Colegio Albania.",
+      "cta": "انضم إلى البرنامج",
+      "studentCount": "876",
+      "studentCountLabel": "طالب مدرَّب",
+      "photoBadge": "الحرم · Colegio Albania"
+    },
     "mision": {
       "eyebrow": "الرسالة",
       "title": "لماذا نحن هنا",
