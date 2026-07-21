@@ -5,6 +5,7 @@ import { Link } from 'next-view-transitions'
 import { usePathname } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { m, AnimatePresence, useReducedMotion, useScroll } from 'framer-motion'
+import { useTheme } from '@/contexts/ThemeContext'
 
 import HeroArc from '@/components/HeroArc'
 
@@ -106,6 +107,79 @@ const LanguageSelector = memo(function LanguageSelector() {
         )}
       </AnimatePresence>
     </div>
+  )
+})
+
+const ThemeToggleBtn = memo(function ThemeToggleBtn() {
+  const { theme, setTheme } = useTheme()
+  const isDark = theme === 'dark'
+  function toggle() { setTheme(isDark ? 'light' : 'dark') }
+  return (
+    <button
+      className="pill-nav__theme-btn"
+      onClick={toggle}
+      aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        {isDark ? (
+          <m.svg key="sun" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"
+            initial={{ opacity: 0, scale: 0.5, rotate: -30 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, scale: 0.5, rotate: 30 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+          >
+            <circle cx="8" cy="8" r="3.2" fill="currentColor"/>
+            <path d="M8 1.5V2.8M8 13.2V14.5M1.5 8H2.8M13.2 8H14.5M3.5 3.5L4.4 4.4M11.6 11.6L12.5 12.5M12.5 3.5L11.6 4.4M4.4 11.6L3.5 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </m.svg>
+        ) : (
+          <m.svg key="moon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"
+            initial={{ opacity: 0, scale: 0.5, rotate: 30 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, scale: 0.5, rotate: -30 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+          >
+            <path d="M13.5 10.2A6 6 0 1 1 5.8 2.5 4.5 4.5 0 0 0 13.5 10.2Z" fill="currentColor"/>
+          </m.svg>
+        )}
+      </AnimatePresence>
+    </button>
+  )
+})
+
+const ThemeDrawerRow = memo(function ThemeDrawerRow() {
+  const { theme, setTheme } = useTheme()
+  const isDark = theme === 'dark'
+  function toggle() { setTheme(isDark ? 'light' : 'dark') }
+  return (
+    <button
+      className="pill-nav-drawer__theme-row"
+      onClick={toggle}
+      aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        {isDark ? (
+          <m.svg key="sun" width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true"
+            initial={{ opacity: 0, scale: 0.5, rotate: -30 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, scale: 0.5, rotate: 30 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+          >
+            <circle cx="8" cy="8" r="3.2" fill="currentColor"/>
+            <path d="M8 1.5V2.8M8 13.2V14.5M1.5 8H2.8M13.2 8H14.5M3.5 3.5L4.4 4.4M11.6 11.6L12.5 12.5M12.5 3.5L11.6 4.4M4.4 11.6L3.5 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </m.svg>
+        ) : (
+          <m.svg key="moon" width="20" height="20" viewBox="0 0 16 16" fill="none" aria-hidden="true"
+            initial={{ opacity: 0, scale: 0.5, rotate: 30 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            exit={{ opacity: 0, scale: 0.5, rotate: -30 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+          >
+            <path d="M13.5 10.2A6 6 0 1 1 5.8 2.5 4.5 4.5 0 0 0 13.5 10.2Z" fill="currentColor"/>
+          </m.svg>
+        )}
+      </AnimatePresence>
+      <span>{isDark ? 'Modo claro' : 'Modo oscuro'}</span>
+    </button>
   )
 })
 
@@ -229,6 +303,19 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
         .lang-sel__opt--active{color:var(--accent,#C0392B);font-weight:600;}
         .lang-sel__opt[dir="rtl"]{text-align:right;}
         @media(max-width:760px){.lang-sel{display:none;}}
+        /* ── Theme toggle ── */
+        .pill-nav__theme-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:none;border:1px solid var(--line);color:var(--ink-2);cursor:pointer;margin:0 4px;flex-shrink:0;overflow:hidden;transition:background 0.2s cubic-bezier(0.22,1,0.36,1),color 0.2s,border-color 0.2s;}
+        .pill-nav__theme-btn:hover{background:rgba(13,13,13,0.06);color:var(--ink);}
+        .pill-nav__theme-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+        .pill-nav-drawer__theme-row{display:flex;align-items:center;gap:12px;width:100%;background:none;border:none;border-top:1px solid rgba(13,13,13,0.06);cursor:pointer;padding:14px 0;font-family:"Satoshi",sans-serif;font-size:16px;font-weight:500;color:var(--ink);text-align:left;margin-top:4px;}
+        .pill-nav-drawer__theme-row:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px;}
+        /* ── Dark mode overrides ── */
+        html.dark .pill-nav{background:rgba(13,13,13,0.88);border-color:rgba(255,255,255,0.08);}
+        html.dark .pill-nav--scrolled{background:rgba(17,17,17,0.96);box-shadow:0 8px 32px rgba(0,0,0,0.4),0 2px 8px rgba(0,0,0,0.2);}
+        html.dark .pill-nav__theme-btn:hover{background:rgba(255,255,255,0.08);color:var(--ink);}
+        html.dark .pill-nav-drawer{background:var(--bg);}
+        html.dark .pill-nav-drawer__theme-row{border-color:rgba(255,255,255,0.06);}
+        html.dark body::before{mix-blend-mode:screen;opacity:0.18;}
         .btn{font-family:"Satoshi",sans-serif;font-size:13px;font-weight:500;padding:10px 16px;border-radius:999px;border:1px solid transparent;cursor:pointer;transition:all .25s ease;}
         .btn--ghost{background:transparent;color:var(--ink);border-color:var(--line);}
         .btn--ghost:hover{border-color:var(--ink-2);background:rgba(13,13,13,.04);}
@@ -392,7 +479,7 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
         .equipo__avatar--lg{width:144px;height:144px;font-size:44px;margin-bottom:36px;}
         .equipo__card-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:20px;color:var(--ink,#0D0D0D);letter-spacing:-0.01em;margin-bottom:6px;}
         .equipo__card-role{font-family:"Satoshi",sans-serif;font-size:14px;color:#C0392B;margin-bottom:0;}
-        .equipo__card-bio{font-family:"Satoshi",sans-serif;font-size:14px;color:#6B6B6B;line-height:1.6;flex:1;}
+        .equipo__card-bio{font-family:"Satoshi",sans-serif;font-size:14px;color:var(--mute,#6B6B6B);line-height:1.6;flex:1;}
         .equipo__card-divider{border-top:1px solid var(--line);margin:12px 0;}
         .equipo__tags{display:flex;flex-wrap:wrap;gap:8px;}
         .equipo__tag{font-family:"Satoshi",sans-serif;font-size:11px;color:#C0392B;background:rgba(192,57,43,.08);border-radius:999px;padding:4px 12px;}
@@ -597,6 +684,7 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
                 ))}
               </div>
               <LanguageSelector />
+              <ThemeToggleBtn />
               <Link href="/login" className="pill-nav__cta">
                 {t('nav.ingresar')} <span className="pill-nav__cta-arrow" aria-hidden="true">→</span>
               </Link>
@@ -663,6 +751,7 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
                 </Link>
               ))}
               <Link href="/login" className="pill-nav-drawer__cta">{t('nav.ingresar')} →</Link>
+              <ThemeDrawerRow />
             </m.div>
           </>
         )}
