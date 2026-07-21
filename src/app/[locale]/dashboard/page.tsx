@@ -682,28 +682,27 @@ export default function DashboardPage() {
         @media(max-width:768px){.mods-grid{grid-template-columns:repeat(2,1fr);}}
 
         /* ── Zona 1 — Header personal ── */
-        .zone1-header{display:grid;grid-template-columns:60fr 40fr;gap:28px;align-items:start;}
+        .zone1-header{display:grid;grid-template-columns:58fr 42fr;gap:28px;align-items:start;}
         .zone1-left{min-width:0;display:flex;flex-direction:column;}
-        .zone1-greeting{font-family:"Satoshi",sans-serif;font-weight:600;font-size:28px;letter-spacing:-0.01em;color:var(--ink);line-height:1.2;}
-        .zone1-archetype-row{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
+        .zone1-greeting{font-family:"Satoshi",sans-serif;font-weight:700;font-size:clamp(32px,5vw,52px);letter-spacing:-0.03em;color:var(--ink);line-height:1.1;}
+        .zone1-archetype-row{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;}
         .identity-archetype{font-family:"Instrument Serif",serif;font-style:italic;font-size:18px;color:#C0392B;line-height:1.2;}
         .zone1-stats{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:14px;}
         .zone1-stat-num{font-family:"Satoshi",sans-serif;font-weight:600;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums;}
         .zone1-stat-label{font-size:11px;color:var(--mute);}
         .zone1-sep{color:var(--mute);}
-        /* Right column: pentagon + pills, centered */
-        .zone1-right{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
-        .zone1-pentagon-mobile{display:none;}
-        /* Profile pills under SVG */
-        .identity-pent-pills{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;}
-        .identity-pent-pill{padding:2px 8px;border-radius:999px;font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;}
-        .identity-pent-pill.strength{background:rgba(15,123,108,.1);color:var(--accent-teal,#0F7B6C);border:1px solid rgba(15,123,108,.2);}
-        .identity-pent-pill.growth{background:rgba(192,57,43,.08);color:#C0392B;border:1px solid rgba(192,57,43,.2);}
+        .zone1-badge{display:inline-flex;align-items:center;gap:6px;margin-top:14px;font-family:"Satoshi",sans-serif;font-size:12px;font-weight:600;color:var(--mute);text-decoration:none;transition:color .15s;width:fit-content;}
+        .zone1-badge:hover{color:#C0392B;}
+        .zone1-right{flex-shrink:0;display:flex;flex-direction:column;}
+        .zone1-next{background:var(--card-bg);border:1px solid var(--card-border);border-left:3px solid #C0392B;border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow-card);}
+        .zone1-next__eyebrow{font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#C0392B;}
+        .zone1-next__title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:15px;color:var(--ink);line-height:1.3;}
+        .zone1-next__xp{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;background:rgba(192,57,43,.08);color:#C0392B;border-radius:999px;font-size:11px;font-weight:700;width:fit-content;}
+        .zone1-next__cta{padding:10px 18px;background:#C0392B;border:none;border-radius:9px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:13px;color:#fff;cursor:pointer;transition:background .2s;text-align:center;text-decoration:none;display:inline-block;line-height:1;}
+        .zone1-next__cta:hover{background:#a93226;}
         @media(max-width:768px){
           .zone1-header{grid-template-columns:1fr;}
-          .zone1-right{margin-top:8px;}
-          .zone1-pentagon-desktop{display:none;}
-          .zone1-pentagon-mobile{display:block;}
+          .zone1-right{margin-top:4px;}
         }
 
         /* ── Zona 2 — Acción principal ── */
@@ -846,26 +845,58 @@ export default function DashboardPage() {
                     <span className="zone1-sep">·</span>
                     <span className="zone1-stat-num">{rankPos === 0 || rankPos === null ? '—' : `#${rankPos}`}</span>
                   </div>
+                  {leaderProfile && (
+                    <a href="/dashboard/leadership-path" className="zone1-badge">
+                      <span style={{ fontFamily: '"Instrument Serif",serif', fontStyle: 'italic', color: '#C0392B', fontSize: 13 }}>{leaderProfile.arquetipo}</span>
+                      <span style={{ opacity: 0.4 }}>·</span>
+                      <span>{leaderProfile.fortalezas.map((p: string) => `${p}↑`).join(' ')}</span>
+                      <span style={{ color: '#C0392B', marginLeft: 2 }}>→</span>
+                    </a>
+                  )}
                 </>
               )}
             </div>
 
-            {/* Right: pentagon (140px desktop / 100px mobile) + pills de fortaleza */}
-            {!loading && (leaderProfile ?? (MOCK_MODE ? MOCK_LEADER_PROFILE : null)) && (
-              <div className="zone1-right">
-                <div className="zone1-pentagon-desktop">
-                  <CompactPentagon profile={(leaderProfile ?? MOCK_LEADER_PROFILE)!} size={140} />
+            {/* Right: "Qué sigue" card */}
+            <div className="zone1-right">
+              {loading ? (
+                <div className="zone1-next">
+                  <Sk w="60%" h={11} r={4} />
+                  <Sk w="80%" h={18} r={5} />
+                  <Sk w="40%" h={12} r={5} />
+                  <Sk w="100%" h={38} r={9} />
                 </div>
-                <div className="zone1-pentagon-mobile">
-                  <CompactPentagon profile={(leaderProfile ?? MOCK_LEADER_PROFILE)!} size={100} />
+              ) : nextModule ? (
+                <div className="zone1-next">
+                  <div className="zone1-next__eyebrow">QUÉ SIGUE</div>
+                  <div className="zone1-next__title">{nextModule.title}</div>
+                  <span className="zone1-next__xp">⚡ {nextModule.xp_reward} XP</span>
+                  <button className="zone1-next__cta" onClick={() => router.push(`/dashboard/modules/${nextModule!.id}`)}>
+                    Empezar →
+                  </button>
                 </div>
-                <div className="identity-pent-pills">
-                  {(leaderProfile ?? MOCK_LEADER_PROFILE)!.fortalezas.map(p => (
-                    <span key={p} className="identity-pent-pill strength">{p} ↑</span>
-                  ))}
+              ) : allModulesDone ? (
+                <div className="zone1-next">
+                  <div className="zone1-next__eyebrow">QUÉ SIGUE</div>
+                  <div className="zone1-next__title">
+                    {capstoneState === 'evaluado' ? '¡Diplomado!' :
+                     capstoneState === 'enviado'  ? 'Capstone en revisión' :
+                                                    'Presenta tu Capstone'}
+                  </div>
+                  {capstoneState === 'en_progreso' && (
+                    <a href="/dashboard/projects/new" className="zone1-next__cta">Continuar →</a>
+                  )}
+                  {capstoneState === 'enviado' && (
+                    <a href="/dashboard/projects" className="zone1-next__cta">Ver estado →</a>
+                  )}
+                  {capstoneState === 'evaluado' && (
+                    <a href={diploma ? `/certificacion/${diploma.projectId}` : '/dashboard/projects'} className="zone1-next__cta">
+                      Ver certificado →
+                    </a>
+                  )}
                 </div>
-              </div>
-            )}
+              ) : null}
+            </div>
           </m.div>
 
           {/* ── Entre Zona 1 y Zona 2: próximo evento + link de portafolio ── */}
