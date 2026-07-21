@@ -57,11 +57,17 @@ export async function proxy(request: NextRequest) {
       .eq('id', user.id)
       .maybeSingle()
 
+    // Session exists but no profile row — registration never completed
+    if (!profile && isProtected) {
+      return NextResponse.redirect(new URL(`${localePref}/login?error=no_profile`, request.url))
+    }
+
     const role = profile?.role ?? 'student'
     const onboardingCompleted = profile?.onboarding_completed === true
 
-    // Authenticated → redirect away from auth pages to their home
+    // Authenticated → redirect away from auth pages to their home (only when profile exists)
     if (isAuthPage) {
+      if (!profile) return i18nResponse
       const dest = role === 'admin' ? '/admin' : role === 'coordinator' ? '/coordinator' : role === 'expositor' ? '/expositor' : '/dashboard'
       return NextResponse.redirect(new URL(`${localePref}${dest}`, request.url))
     }

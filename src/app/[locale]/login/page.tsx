@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
@@ -20,6 +20,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError]       = useState('')
   const [loading, setLoading]   = useState(false)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('error') === 'no_profile') {
+      setError('No encontramos tu registro. Usa el código de tu colegio para registrarte.')
+    }
+  }, [])
 
   async function handleGoogle() {
     setError('')
@@ -47,9 +54,16 @@ export default function LoginPage() {
       .maybeSingle()
 
     setLoading(false)
+
+    if (!profile) {
+      await supabase.auth.signOut()
+      setError('No encontramos tu registro. Usa el código de tu colegio para registrarte.')
+      return
+    }
+
     router.push(
-      profile?.role === 'coordinator' ? '/coordinator' :
-      profile?.role === 'expositor'   ? '/expositor'   :
+      profile.role === 'coordinator' ? '/coordinator' :
+      profile.role === 'expositor'   ? '/expositor'   :
       '/dashboard'
     )
   }

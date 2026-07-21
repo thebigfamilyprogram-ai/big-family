@@ -51,6 +51,11 @@ export async function GET(request: NextRequest) {
     .maybeSingle()
 
   if (!existing) {
+    // No role param means this is a login attempt (not registration) — block orphan profile creation
+    if (!role) {
+      return NextResponse.redirect(`${origin}/login?error=no_profile`)
+    }
+
     // New registration — create profile
     const { error: insertError } = await admin.from('profiles').insert({
       id:           user.id,
