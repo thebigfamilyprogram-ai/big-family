@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m, useReducedMotion } from 'framer-motion'
+import PublicNavbar from '@/components/PublicNavbar'
 
 interface NewsItem {
   id:           string
@@ -40,7 +41,6 @@ function PlaceholderImg({ size = 40 }: { size?: number }) {
 export default function NewsListPage() {
   const pref = useReducedMotion()
   const t    = useTranslations('news')
-  const tn   = useTranslations('nav')
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const [articles,  setArticles]  = useState<NewsItem[]>([])
   const [loading,   setLoading]   = useState(true)
@@ -91,13 +91,8 @@ export default function NewsListPage() {
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);font-family:"Satoshi",sans-serif;color:#0D0D0D;}
 
-        /* ── Nav ── */
-        .nl-nav{position:sticky;top:0;z-index:30;background:rgba(245,243,239,.88);backdrop-filter:saturate(150%) blur(16px);border-bottom:1px solid rgba(13,13,13,.08);height:60px;display:flex;align-items:center;padding:0 40px;gap:24px;}
-        .nl-brand{display:flex;align-items:center;gap:8px;font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;text-decoration:none;color:#0D0D0D;}
-        .nl-nav-links{display:flex;gap:28px;flex:1;justify-content:center;}
-        .nl-nav-links a{font-size:13.5px;color:#6B6B6B;text-decoration:none;transition:color .15s;}
-        .nl-nav-links a:hover{color:#0D0D0D;}
-        .nl-nav-links a.active{color:#C0392B;font-weight:600;}
+        /* ── Nav spacer for fixed pill ── */
+        .nl-nav-spacer{height:80px;}
 
         /* ── Main ── */
         .nl-main{max-width:1100px;margin:0 auto;padding:60px 40px 100px;}
@@ -156,32 +151,11 @@ export default function NewsListPage() {
         }
         @media(max-width:640px){
           .nl-grid{grid-template-columns:1fr;}
-          .nl-nav-links{display:none;}
-          .nl-nav{padding:0 20px;}
         }
       `}</style>
 
-      {/* Nav */}
-      <nav className="nl-nav">
-        <a href="/" className="nl-brand">
-          <svg width="20" height="20" viewBox="0 0 52 52" fill="none">
-            <circle cx="26" cy="10" r="6" fill="#0D0D0D"/>
-            <path d="M26 16 L44 48 H8 Z" fill="#0D0D0D"/>
-            <circle cx="9" cy="18" r="4" fill="#6B6B6B"/>
-            <circle cx="43" cy="18" r="4" fill="#6B6B6B"/>
-          </svg>
-          Big Family
-        </a>
-        <div className="nl-nav-links">
-          <a href="/#mision">{tn('comoFunciona')}</a>
-          <a href="/#about">{tn('paises')}</a>
-          <a href="/#equipo">{tn('equipo')}</a>
-          <a href="/news" className="active">{tn('noticias')}</a>
-        </div>
-        <a href="/login" style={{ padding:'8px 18px', borderRadius:999, background:'#0D0D0D', color:'#fff', fontSize:13, fontFamily:'Satoshi,sans-serif', fontWeight:700, textDecoration:'none', whiteSpace:'nowrap' }}>
-          {tn('ingresar')}
-        </a>
-      </nav>
+      <PublicNavbar />
+      <div className="nl-nav-spacer" />
 
       <main className="nl-main">
         {/* Hero */}

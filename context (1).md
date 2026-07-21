@@ -90,7 +90,7 @@
 - **Sección Impacto en Números** — fondo `var(--ink)`, 4 stats: 876 estudiantes / 22 colegios / 10 países / meta 3300, counters `ImpactoNum` con duración y delay por stat, líneas separadoras `scaleY`
 - **Sección Metodología** — bento asimétrico 4 componentes: Big Leader, Leader's Game, Great Venture, Kashi — `id="metodologia"`
 - **Sección Valores** — 6 tiles 3×2 con blur-reveal stagger (`filter: blur(8px→0)`), hover CSS nativo, `id="valores"`
-- **Navbar pill flotante** — fixed top-4, backdrop-blur, smooth scroll a todas las secciones, mobile drawer, 5 links: Historia · Impacto · Nuestra Red · Equipo · Noticias
+- **Navbar pill flotante** — Extraído a `src/components/PublicNavbar.tsx` como componente único reutilizable. fixed top-4, backdrop-blur, smooth scroll a `#impacto` en landing (no-op en otras rutas), mobile drawer, 6 links: Historia · Impacto · Metodología · Nuestra Red · Equipo · Noticias. Toggle dark/light incluido. Usado en: GlobeHero (landing), /news, /news/[slug], /timeline, /success-stories, /success-stories/[id]. Excluidos por diseño: /dia-de-liderazgo (nav temática oscura del evento), /verify/[certId] (standalone sin nav), /p/[username] (sidebar propio).
 - **Contenido real del PDF integrado** — misión, visión, historia, Luis Barrios (M.S. University at Buffalo, MIT, Javeriana), reconocimientos internacionales
 
 **Dashboards:**

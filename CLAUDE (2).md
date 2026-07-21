@@ -201,7 +201,8 @@ Expositor code: `EXPO-BF-2026`
 ## Key Files
 | File | Purpose |
 |------|---------|
-| `src/components/GlobeHero.tsx` | Shell de la landing — navbar pill, Hero, Impacto (siempre visibles), `{children}`, CTA, Footer, modal diploma. Ver `src/app/[locale]/(landing)/` para el contenido de cada ruta |
+| `src/components/PublicNavbar.tsx` | Navbar pill flotante unificado para TODAS las rutas públicas — fixed, backdrop-blur, toggle dark/light, LanguageSelector, mobile drawer. Reutilizado por GlobeHero, /news, /timeline, /success-stories |
+| `src/components/GlobeHero.tsx` | Shell de la landing — usa `<PublicNavbar />`, Hero, Impacto (siempre visibles), `{children}`, CTA, Footer, modal diploma. Ver `src/app/[locale]/(landing)/` para el contenido de cada ruta |
 | `src/lib/landingData.ts` | Constantes compartidas de la landing (IMPACTO_STATS, VALORES, VALIDACIONES, FOUNDERS_STATIC, PROGRAM_COMPONENTS, misionStats) |
 | `src/components/Globe/GlobeCanvas.tsx` | Globe React wrapper + flag overlays |
 | `src/components/Globe/GlobeWorker.ts` | Three.js in Web Worker (OffscreenCanvas) |

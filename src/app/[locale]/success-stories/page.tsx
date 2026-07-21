@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase'
 import { m, useReducedMotion } from 'framer-motion'
 import { springNatural } from '@/lib/animations'
+import PublicNavbar from '@/components/PublicNavbar'
 
 interface Story {
   id: string
@@ -67,11 +68,6 @@ export default function SuccessStoriesPage() {
         
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{background:var(--bg);color:var(--ink);}
-        .nav{height:62px;border-bottom:1px solid var(--card-border);display:flex;align-items:center;padding:0 40px;background:var(--card-bg);position:sticky;top:0;z-index:20;}
-        .nav__brand{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:8px;}
-        .nav__right{margin-left:auto;display:flex;gap:12px;}
-        .btn-sm{padding:7px 14px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;cursor:pointer;background:none;color:var(--ink);transition:all .2s;}
-        .btn-sm:hover{border-color:var(--ink);}
         .page{max-width:1100px;margin:0 auto;padding:60px 40px 80px;}
         .hero{text-align:center;margin-bottom:48px;}
         .hero__eyebrow{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#C0392B;margin-bottom:12px;}
@@ -89,15 +85,7 @@ export default function SuccessStoriesPage() {
         @media(max-width:600px){.hero__h1{font-size:32px;}.masonry{columns:1;}.page{padding:40px 20px 60px;}}
       `}</style>
 
-      <nav className="nav">
-        <a className="nav__brand" href="/">
-          <svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="5" r="2.4" fill="#C0392B"/><path d="M12 7.5 L20 22 H4 Z" fill="var(--ink)"/></svg>
-          Big Family
-        </a>
-        <div className="nav__right">
-          <button className="btn-sm" onClick={() => router.push('/dashboard')}>{t('myDashboard')}</button>
-        </div>
-      </nav>
+      <PublicNavbar />
 
       <div className="page">
         <div className="hero">
