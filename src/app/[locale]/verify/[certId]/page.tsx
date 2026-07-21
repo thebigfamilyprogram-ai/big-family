@@ -201,6 +201,12 @@ export default function VerifyPage() {
         .vfy-cta:hover{text-decoration:underline;}
         .vfy-legal{font-family:"Satoshi",sans-serif;font-size:11px;color:var(--mute,rgba(13,13,13,.3));line-height:1.6;max-width:480px;margin:0 auto;}
         @media(max-width:480px){.vfy-card{padding:28px 20px;}.vfy-stats{flex-direction:column;gap:12px;}.vfy-stat:not(:last-child){border-right:none;border-bottom:1px solid var(--line,rgba(13,13,13,.08));padding-bottom:12px;}}
+        /* Verify page is always light — override dark-mode tokens within this page */
+        html.dark .vfy-page{
+          --bg:#FAF8F4;--bg-2:#EFECE6;--card-bg:#FFFFFF;--card-border:rgba(13,13,13,0.08);
+          --ink:#0D0D0D;--ink-2:#2D2D2D;--mute:#6B6B6B;
+          --line:rgba(13,13,13,0.10);--line-soft:rgba(13,13,13,0.06);
+        }
       `}</style>
 
       <div className="vfy-page">

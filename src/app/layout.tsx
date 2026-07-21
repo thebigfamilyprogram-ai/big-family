@@ -44,6 +44,8 @@ const CSS_VARS = `
     --surface-1: #F9F8F5;
     --surface-2: #F5F3EF;
     --surface-3: #EFECE6;
+    --surface-inverse: #0D0D0D;
+    --text-on-inverse: #F5F3EF;
     --content-max-width: 1280px;
     --dashboard-padding: 32px;
   }

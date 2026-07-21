@@ -509,7 +509,7 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
         .sec-historia__pill{font-family:"Satoshi",sans-serif;font-size:12px;padding:5px 14px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2);}
         @media(max-width:960px){.sec-historia{padding:80px 24px;}.sec-historia__inner{grid-template-columns:1fr;gap:48px;}.sec-historia__badge{top:16px;right:16px;}.sec-historia__watermark-yr{font-size:80px;}}
         /* ── SEC-IMPACTO (Números — oscuro) ──────────────────────────────── */
-        .sec-impacto{background:var(--ink);padding:120px 40px;}
+        .sec-impacto{background:var(--surface-inverse,#0D0D0D);padding:120px 40px;}
         .sec-impacto__inner{max-width:1100px;margin:0 auto;text-align:center;}
         .sec-impacto__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:16px;}
         .sec-impacto__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(34px,5vw,60px);color:#fff;letter-spacing:-0.04em;line-height:1.08;margin-bottom:80px;}
@@ -522,7 +522,7 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
         .sec-impacto__sub{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.28);margin-top:6px;}
         @media(max-width:960px){.sec-impacto{padding:80px 24px;}.sec-impacto__grid{grid-template-columns:1fr 1fr;}.sec-impacto__sep{display:none;}}
         /* ── SEC-VALID (Validaciones internacionales — oscuro) ──────────────── */
-        .sec-valid{background:var(--ink);padding:120px 40px;}
+        .sec-valid{background:var(--surface-inverse,#0D0D0D);padding:120px 40px;}
         .sec-valid__inner{max-width:1200px;margin:0 auto;}
         .sec-valid__head{max-width:640px;margin:0 auto 64px;text-align:center;}
         .sec-valid__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:16px;}

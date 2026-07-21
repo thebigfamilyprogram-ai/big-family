@@ -272,11 +272,9 @@ export default function CertificacionPage() {
 
   if (loading) {
     return (
-      <div style={{
-        minHeight: '100dvh', background: 'var(--bg,#FAF8F4)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <style>{`@keyframes shimmer{0%{background-position:100% 50%}100%{background-position:0% 50%}}`}</style>
+      <div className="dp-page" style={{ justifyContent: 'center' }}>
+        <style>{`@keyframes shimmer{0%{background-position:100% 50%}100%{background-position:0% 50%}}
+        html.dark .dp-page{--bg:#FAF8F4;--bg-2:#EFECE6;--card-bg:#FFFFFF;--card-border:rgba(13,13,13,0.08);--ink:#0D0D0D;--ink-2:#2D2D2D;--mute:#6B6B6B;--line:rgba(13,13,13,0.10);}`}</style>
         <div style={{
           width: '100%', maxWidth: 720, margin: '0 24px',
           background: 'var(--card-bg,#fff)', borderRadius: 4,
@@ -364,6 +362,12 @@ export default function CertificacionPage() {
           html,body{background:#FAF8F4!important;}
           .dp-page{background:#FAF8F4!important;padding:0!important;min-height:auto!important;}
           .dp-card{box-shadow:none!important;max-width:100%!important;}
+        }
+        /* Diploma is always light — override dark-mode tokens within this page */
+        html.dark .dp-page{
+          --bg:#FAF8F4;--bg-2:#EFECE6;--card-bg:#FFFFFF;--card-border:rgba(13,13,13,0.08);
+          --ink:#0D0D0D;--ink-2:#2D2D2D;--mute:#6B6B6B;
+          --line:rgba(13,13,13,0.10);--line-soft:rgba(13,13,13,0.06);
         }
       `}</style>
 
