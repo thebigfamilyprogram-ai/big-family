@@ -218,6 +218,22 @@ El orden de renderizado en SVG determina el z-index (sin propiedad z-index en SV
 ### Por qué el modal del mapa usa overlay como wrapper (no position:fixed)
 Si el overlay es `position:fixed`, cubre toda la página. Como el overlay wrappea al modal con `position:absolute inset:0` dentro de `.wmp-map-wrap` (`position:relative`), el overlay queda contenido exactamente en el mapa. El modal se centra con flexbox del overlay. `e.stopPropagation()` en el modal evita que clicks en el modal cierren el overlay.
 
+### Contacto de acudiente para estudiantes junior (Sesión 20)
+
+`guardian_email` en `profiles` es prerequisito del flujo de consentimiento para el test de perfil de liderazgo (onboarding BFI-44). Sin este dato, el test se generaba sin consentimiento de ningún adulto responsable para niños de grado 2°-7°.
+
+**Definición confirmada por el fundador**: Junior = grados 2°-7°. Senior = grados 8°-11°.
+
+**Cambio de UI**: el flujo de registro ya tenía tarjetas "Junior Leader / Senior Leader" de auto-reporte. Esas tarjetas se reemplazaron por una grilla de grados 2°-11° agrupados en dos filas (Junior / Senior). El nivel se deriva automáticamente del grado — el estudiante no elige el track, elige su grado real.
+
+**Guardado**: columnas `grade SMALLINT` y `guardian_email TEXT` en `profiles` (migration 20260722000000). Ambas nullable para no romper registros existentes. Validación obligatoria solo a nivel de aplicación para registros nuevos.
+
+**Flujos cubiertos**: `/register` (email/password + Google OAuth) y `/submit/register` (Día de Liderazgo). Para Google OAuth, `guardian_email` se captura antes del redirect y viaja como query param al callback; el botón de Google queda deshabilitado mientras el campo esté vacío para juniors.
+
+**Retroactividad**: los estudiantes junior ya registrados no quedan bloqueados — no hay validación en proxy ni dashboard. Pedirlo retroactivamente es decisión de producto separada, no implementada.
+
+**Próximo paso**: usar `guardian_email` como gate en el onboarding del test — mostrar pantalla de consentimiento antes del BFI-44, con notificación al acudiente si el campo está disponible.
+
 ### Por qué el dashboard se dividió en /dashboard (Hoy) y /dashboard/progreso (Sesión 19)
 
 El dashboard crecía en scroll infinito porque cada bloque fue construido en sesiones separadas sin visión del conjunto: la Zone 1 (identity card) se diseñó sin saber que Zone 3B repetiría los módulos; el accordion de progreso se añadió sin saber que Zone 1 ya mostraba stats de XP/racha. La duplicación era estructural, no superficial.
