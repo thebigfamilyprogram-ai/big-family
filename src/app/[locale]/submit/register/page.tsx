@@ -13,7 +13,13 @@ const springSnappy  = { type: 'spring' as const, stiffness: 200, damping: 22 }
 const springNatural = { type: 'spring' as const, stiffness: 140, damping: 20 }
 
 type Step  = 'code' | 'info'
-type Track = 'junior' | 'senior'
+
+const GRADES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const
+type Grade = typeof GRADES[number]
+
+function isJuniorGrade(grade: Grade | null): boolean {
+  return grade !== null && grade >= 2 && grade <= 7
+}
 
 function Logo({ pref }: { pref: boolean | null }) {
   return (
@@ -86,8 +92,9 @@ export default function SubmitRegisterPage() {
   const [fullName,       setFullName]       = useState('')
   const [email,          setEmail]          = useState('')
   const [password,       setPassword]       = useState('')
-  const [track,          setTrack]          = useState<Track | null>(null)
+  const [selectedGrade,  setSelectedGrade]  = useState<Grade | null>(null)
   const [guardianEmail,  setGuardianEmail]  = useState('')
+  const junior = isJuniorGrade(selectedGrade)
   const [termsAccepted,  setTermsAccepted]  = useState(false)
   const [formError,      setFormError]      = useState('')
   const [formLoading,    setFormLoading]    = useState(false)
@@ -121,8 +128,8 @@ export default function SubmitRegisterPage() {
   async function handleInfoSubmit(e: React.FormEvent) {
     e.preventDefault()
     setFormError('')
-    if (!track) { setFormError(tR('errorNoTrack')); return }
-    if (track === 'junior' && !guardianEmail.trim()) { setFormError(tR('errorNoGuardian')); return }
+    if (selectedGrade === null) { setFormError(tR('errorNoGrade')); return }
+    if (junior && !guardianEmail.trim()) { setFormError(tR('errorNoGuardian')); return }
     if (!termsAccepted) { setFormError(tR('errorNoTerms')); return }
     if (password.length < 8) { setFormError(tR('errorWeakPassword')); return }
     setFormLoading(true)
@@ -132,7 +139,7 @@ export default function SubmitRegisterPage() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: fullName, guardian_email: guardianEmail || null } },
+      options: { data: { display_name: fullName } },
     })
 
     if (signUpError || !data.user) {
@@ -144,12 +151,14 @@ export default function SubmitRegisterPage() {
     const uid = data.user.id
 
     await supabase.from('profiles').insert({
-      id:           uid,
-      display_name:    fullName,
+      id:             uid,
+      display_name:   fullName,
       email,
-      school_id:    schoolId,
-      role:         'student',
-      school_level: track,
+      school_id:      schoolId,
+      role:           'student',
+      school_level:   junior ? 'junior' : 'senior',
+      grade:          selectedGrade,
+      guardian_email: junior ? guardianEmail.trim() : null,
     })
 
     setEmailSent(true)
@@ -178,12 +187,12 @@ export default function SubmitRegisterPage() {
         .sr-btn.shimmer{background:linear-gradient(90deg,#a93226 0%,#e84040 40%,#a93226 100%);background-size:200% 100%;animation:btnShimmer 1.2s ease infinite;}
         .sr-link{text-align:center;font-size:13px;color:#6B6B6B;margin-top:20px;}
         .sr-link a{color:#C0392B;text-decoration:none;font-weight:600;}
-        .sr-tracks{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;}
-        .sr-track{padding:14px 12px;border:2px solid #E0DDD8;border-radius:12px;cursor:pointer;transition:all .18s;text-align:center;background:#fff;}
-        .sr-track:hover{border-color:#C0392B;}
-        .sr-track.selected{border-color:#C0392B;background:rgba(192,57,43,.05);}
-        .sr-track-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:15px;color:#0D0D0D;margin-bottom:3px;}
-        .sr-track-sub{font-size:11.5px;color:#6B6B6B;line-height:1.4;}
+        .sr-grade-section-label{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#6B6B6B;margin-bottom:5px;}
+        .sr-grade-grid{display:grid;gap:7px;margin-bottom:6px;}
+        .sr-grade-pill{padding:11px 4px;border:1.5px solid #E0DDD8;border-radius:10px;background:#fff;cursor:pointer;text-align:center;font-family:"Satoshi",sans-serif;font-weight:600;font-size:14px;color:#0D0D0D;transition:all .15s;}
+        .sr-grade-pill:hover{border-color:#C0392B;}
+        .sr-grade-pill.selected{border-color:#C0392B;background:rgba(192,57,43,.06);color:#C0392B;}
+        .sr-guardian-hint{font-size:12px;color:#555;line-height:1.5;padding:9px 12px;background:rgba(192,57,43,0.05);border-left:3px solid #C0392B;border-radius:0 8px 8px 0;margin-top:-4px;margin-bottom:14px;}
         .sr-back{background:none;border:none;cursor:pointer;color:#6B6B6B;font-size:13px;font-family:inherit;padding:0;margin-bottom:20px;display:flex;align-items:center;gap:5px;transition:color .15s;}
         .sr-back:hover{color:#0D0D0D;}
         .sr-terms{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--bg-2,#EFECE6);border-radius:10px;margin-bottom:16px;cursor:pointer;}
@@ -305,27 +314,42 @@ export default function SubmitRegisterPage() {
                 ))}
 
                 <m.div
-                  className="sr-field"
                   initial={pref ? false : { opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.18, ease: expoOut, delay: 0.22 }}
                 >
-                  <label className="sr-label">{tR('trackLabel')}</label>
-                  <div className="sr-tracks">
-                    <div className={`sr-track${track === 'junior' ? ' selected' : ''}`} onClick={() => setTrack('junior')}>
-                      <div className="sr-track-name">{tR('juniorLabel')}</div>
-                      <div className="sr-track-sub">{tR('juniorSub')}</div>
-                    </div>
-                    <div className={`sr-track${track === 'senior' ? ' selected' : ''}`} onClick={() => setTrack('senior')}>
-                      <div className="sr-track-name">{tR('seniorLabel')}</div>
-                      <div className="sr-track-sub">{tR('seniorSub')}</div>
-                    </div>
+                  <label className="sr-label" style={{ display: 'block', marginBottom: 8 }}>{tR('gradeLabel')}</label>
+                  <p className="sr-grade-section-label">Junior · 2° – 7°</p>
+                  <div className="sr-grade-grid" style={{ gridTemplateColumns: 'repeat(6,1fr)' }}>
+                    {([2, 3, 4, 5, 6, 7] as Grade[]).map(g => (
+                      <button
+                        key={g}
+                        type="button"
+                        className={`sr-grade-pill${selectedGrade === g ? ' selected' : ''}`}
+                        onClick={() => setSelectedGrade(g)}
+                      >
+                        {g}°
+                      </button>
+                    ))}
+                  </div>
+                  <p className="sr-grade-section-label" style={{ marginTop: 10 }}>Senior · 8° – 11°</p>
+                  <div className="sr-grade-grid" style={{ gridTemplateColumns: 'repeat(4,1fr)', marginBottom: 16 }}>
+                    {([8, 9, 10, 11] as Grade[]).map(g => (
+                      <button
+                        key={g}
+                        type="button"
+                        className={`sr-grade-pill${selectedGrade === g ? ' selected' : ''}`}
+                        onClick={() => setSelectedGrade(g)}
+                      >
+                        {g}°
+                      </button>
+                    ))}
                   </div>
                 </m.div>
 
-                {/* Guardian email — animated reveal for junior track */}
+                {/* Guardian email — animated reveal for junior grades (2°–7°) */}
                 <AnimatePresence>
-                  {track === 'junior' && (
+                  {junior && (
                     <m.div
                       key="guardian"
                       initial={{ height: 0, opacity: 0 }}
@@ -334,7 +358,7 @@ export default function SubmitRegisterPage() {
                       style={{ overflow: 'hidden' }}
                       transition={springNatural}
                     >
-                      <div className="sr-field" style={{ marginTop: 4 }}>
+                      <div className="sr-field" style={{ marginBottom: 6 }}>
                         <label className="sr-label">{tR('guardianLabel')}</label>
                         <input
                           className="sr-input"
@@ -342,9 +366,10 @@ export default function SubmitRegisterPage() {
                           value={guardianEmail}
                           onChange={e => setGuardianEmail(e.target.value)}
                           placeholder={tR('guardianPlaceholder')}
-                          required={track === 'junior'}
+                          required={junior}
                         />
                       </div>
+                      <div className="sr-guardian-hint">{tR('guardianHint')}</div>
                     </m.div>
                   )}
                 </AnimatePresence>
@@ -385,7 +410,7 @@ export default function SubmitRegisterPage() {
                 <button
                   className={`sr-btn${formLoading ? ' shimmer' : ''}`}
                   type="submit"
-                  disabled={formLoading || !fullName || !email || !password || !track || !termsAccepted}
+                  disabled={formLoading || !fullName || !email || !password || selectedGrade === null || !termsAccepted}
                 >
                   {formLoading ? tR('creatingAccount') : tR('createAccountBtn')}
                 </button>

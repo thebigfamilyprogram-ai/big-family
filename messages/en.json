@@ -699,7 +699,16 @@
       "roleStudent": "Student",
       "confirmPassLabel": "Confirm password",
       "creatingAccount": "Creating account…",
-      "schoolFallback": "School"
+      "schoolFallback": "School",
+      "gradeStepTitle": "What grade are you in?",
+      "gradeStepSubtitle": "The program adapts content to your school level",
+      "gradeLabel": "School grade",
+      "gradeSelectPlaceholder": "Select your grade",
+      "guardianLabel": "Guardian email",
+      "guardianPlaceholder": "guardian@example.com",
+      "guardianHint": "For students in grades 2–7, we need an email for a parent, guardian, or responsible adult.",
+      "errorNoGuardian": "Guardian email is required for students in grades 2–7.",
+      "changeGrade": "Change grade"
     },
     "forgotPassword": {
       "title": "Reset password",
@@ -1731,8 +1740,29 @@
     },
     "calendar": {
       "title": "Event Calendar",
-      "days": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-      "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      "days": [
+        "Sun",
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat"
+      ],
+      "months": [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+      ],
       "formTitleLabel": "Title *",
       "eventNamePlaceholder": "Event name",
       "startDateLabel": "Start date *",
@@ -2559,7 +2589,11 @@
       "errorNoGuardian": "Guardian email is required for Junior students.",
       "errorNoTerms": "You must accept the terms and conditions to continue.",
       "errorWeakPassword": "Password must be at least 8 characters.",
-      "errorCreateAccount": "Error creating account."
+      "errorCreateAccount": "Error creating account.",
+      "gradeLabel": "School grade",
+      "gradeSelectPlaceholder": "Select your grade",
+      "guardianHint": "For students in grades 2–7, we need a guardian email.",
+      "errorNoGrade": "Please select your school grade."
     },
     "project": {
       "pageTitle": "Your leadership project",

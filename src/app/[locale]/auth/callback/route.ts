@@ -6,12 +6,17 @@ import { createSupabaseAdminClient } from '@/lib/supabase-server'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
-  const code        = searchParams.get('code')
-  const schoolId    = searchParams.get('school_id')
-  const role        = searchParams.get('role') as 'student' | 'coordinator' | 'expositor' | null
-  const coordCodeId = searchParams.get('coord_code_id')
-  const expoCodeId  = searchParams.get('expo_code_id')
-  const level       = searchParams.get('level')
+  const code           = searchParams.get('code')
+  const schoolId       = searchParams.get('school_id')
+  const role           = searchParams.get('role') as 'student' | 'coordinator' | 'expositor' | null
+  const coordCodeId    = searchParams.get('coord_code_id')
+  const expoCodeId     = searchParams.get('expo_code_id')
+  const gradeParam     = searchParams.get('grade')
+  const guardianParam  = searchParams.get('guardian_email')
+
+  const grade          = gradeParam ? parseInt(gradeParam, 10) : null
+  const isJunior       = grade !== null && grade >= 2 && grade <= 7
+  const level          = grade !== null ? (isJunior ? 'junior' : 'senior') : null
 
   if (!code) {
     return NextResponse.redirect(`${origin}/login?error=missing_code`)
@@ -58,12 +63,14 @@ export async function GET(request: NextRequest) {
 
     // New registration — create profile
     const { error: insertError } = await admin.from('profiles').insert({
-      id:           user.id,
-      display_name:    user.user_metadata?.display_name ?? user.email,
-      email:        user.email,
-      school_id:    schoolId || null,
-      role:         role ?? 'student',
-      school_level: role === 'student' ? (level || 'senior') : null,
+      id:             user.id,
+      display_name:   user.user_metadata?.display_name ?? user.email,
+      email:          user.email,
+      school_id:      schoolId || null,
+      role:           role ?? 'student',
+      school_level:   role === 'student' ? (level || 'senior') : null,
+      grade:          role === 'student' && grade !== null ? grade : null,
+      guardian_email: isJunior ? (guardianParam || null) : null,
     })
     if (insertError) console.error('Profile insert error:', insertError)
 

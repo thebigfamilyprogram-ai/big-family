@@ -1,15 +1,15 @@
-﻿'use client'
+'use client'
 
 export const dynamic = 'force-dynamic'
 
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 
-type Step     = 1 | 'level' | 2
+type Step     = 1 | 'grade' | 2
 type UserType = 'student' | 'coordinator' | 'expositor'
-type Level    = 'junior' | 'senior'
 
 interface ResolvedCode {
   schoolId:     string
@@ -17,6 +17,17 @@ interface ResolvedCode {
   userType:     UserType
   coordCodeId?: string
   expoCodeId?:  string
+}
+
+const GRADES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const
+type Grade = typeof GRADES[number]
+
+function isJuniorGrade(grade: Grade | null): boolean {
+  return grade !== null && grade >= 2 && grade <= 7
+}
+
+function deriveLevel(grade: Grade | null): 'junior' | 'senior' {
+  return isJuniorGrade(grade) ? 'junior' : 'senior'
 }
 
 const GOOGLE_SVG = (
@@ -28,21 +39,12 @@ const GOOGLE_SVG = (
   </svg>
 )
 
+const expoOut = [0.22, 1, 0.36, 1] as const
+const springNatural = { type: 'spring' as const, stiffness: 140, damping: 20 }
+
 export default function RegisterPage() {
   const t           = useTranslations('auth.register')
-
-  const TRACKS: { id: Level; emoji: string; iconBg: string; title: string; sub: string; desc: string }[] = [
-    {
-      id: 'junior', emoji: '🌱', iconBg: '#FEF3C7',
-      title: 'Junior Leader', sub: t('juniorSub'),
-      desc: t('juniorDesc'),
-    },
-    {
-      id: 'senior', emoji: '⚡', iconBg: 'rgba(192,57,43,0.1)',
-      title: 'Senior Leader', sub: t('seniorSub'),
-      desc: t('seniorDesc'),
-    },
-  ]
+  const pref        = useReducedMotion()
   const router      = useRouter()
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
 
@@ -51,14 +53,17 @@ export default function RegisterPage() {
   const [resolved,      setResolved]      = useState<ResolvedCode | null>(null)
   const [codeError,     setCodeError]     = useState('')
   const [codeLoading,   setCodeLoading]   = useState(false)
-  const [selectedLevel, setSelectedLevel] = useState<Level | null>(null)
+  const [selectedGrade, setSelectedGrade] = useState<Grade | null>(null)
 
-  const [fullName,    setFullName]    = useState('')
-  const [email,       setEmail]       = useState('')
-  const [password,    setPassword]    = useState('')
-  const [confirmPass, setConfirmPass] = useState('')
-  const [formError,   setFormError]   = useState('')
-  const [formLoading, setFormLoading] = useState(false)
+  const [fullName,       setFullName]       = useState('')
+  const [email,          setEmail]          = useState('')
+  const [password,       setPassword]       = useState('')
+  const [confirmPass,    setConfirmPass]    = useState('')
+  const [guardianEmail,  setGuardianEmail]  = useState('')
+  const [formError,      setFormError]      = useState('')
+  const [formLoading,    setFormLoading]    = useState(false)
+
+  const junior = isJuniorGrade(selectedGrade)
 
   async function verifyCode(e: React.FormEvent) {
     e.preventDefault()
@@ -77,7 +82,7 @@ export default function RegisterPage() {
     if (school) {
       setResolved({ schoolId: school.id, schoolName: school.name, userType: 'student' })
       setCodeLoading(false)
-      setStep('level')
+      setStep('grade')
       return
     }
 
@@ -134,13 +139,18 @@ export default function RegisterPage() {
 
   async function handleGoogle() {
     setFormError('')
+    if (junior && !guardianEmail.trim()) {
+      setFormError(t('errorNoGuardian'))
+      return
+    }
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
     const { schoolId, userType, coordCodeId, expoCodeId } = resolved!
     const extra: Record<string, string> = { school_id: schoolId, role: userType }
-    if (coordCodeId) extra.coord_code_id = coordCodeId
-    if (expoCodeId)  extra.expo_code_id  = expoCodeId
-    if (selectedLevel) extra.level = selectedLevel
+    if (coordCodeId)  extra.coord_code_id  = coordCodeId
+    if (expoCodeId)   extra.expo_code_id   = expoCodeId
+    if (selectedGrade !== null) extra.grade = String(selectedGrade)
+    if (junior && guardianEmail.trim()) extra.guardian_email = guardianEmail.trim()
 
     await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -153,6 +163,7 @@ export default function RegisterPage() {
     setFormError('')
     if (password.length < 8) { setFormError(t('error.weakPassword')); return }
     if (password !== confirmPass) { setFormError(t('error.passwordsNoMatch')); return }
+    if (junior && !guardianEmail.trim()) { setFormError(t('errorNoGuardian')); return }
     setFormLoading(true)
     if (!supabaseRef.current) supabaseRef.current = createClient()
     const supabase = supabaseRef.current
@@ -174,12 +185,14 @@ export default function RegisterPage() {
     const uid = data.user.id
 
     await supabase.from('profiles').insert({
-      id:           uid,
-      display_name:    fullName,
+      id:             uid,
+      display_name:   fullName,
       email,
-      school_id:    schoolId || null,
-      role:         userType,
-      school_level: userType === 'student' ? (selectedLevel ?? 'senior') : null,
+      school_id:      schoolId || null,
+      role:           userType,
+      school_level:   userType === 'student' ? deriveLevel(selectedGrade) : null,
+      grade:          userType === 'student' && selectedGrade !== null ? selectedGrade : null,
+      guardian_email: junior ? guardianEmail.trim() : null,
     })
 
     if (userType === 'coordinator' && coordCodeId) {
@@ -231,15 +244,18 @@ export default function RegisterPage() {
         .badge.expositor{background:#EDE9FE;border:1px solid #C4B5FD;color:#4C1D95;}
         .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
         .field label{font-size:12.5px;font-weight:500;color:var(--ink-2,#2D2D2D);letter-spacing:.02em;}
-        .field input{padding:12px 16px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;background:var(--bg-2,#EFECE6);color:var(--ink,#0D0D0D);outline:none;transition:border-color .2s;}
-        .field input:focus{border-color:var(--ink);}
+        .field input,.field select{padding:12px 16px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;background:var(--bg-2,#EFECE6);color:var(--ink,#0D0D0D);outline:none;transition:border-color .2s;width:100%;appearance:none;}
+        .field input:focus,.field select:focus{border-color:var(--ink);}
         .field input::placeholder{color:var(--mute);}
+        .field select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6B6B' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;}
         .hint{font-size:11.5px;color:var(--mute);}
+        .guardian-hint{font-size:12px;color:var(--mute,#6B6B6B);line-height:1.5;padding:10px 12px;background:rgba(192,57,43,0.05);border-left:3px solid #C0392B;border-radius:0 8px 8px 0;margin-top:-2px;margin-bottom:14px;}
         .btn-main{width:100%;padding:13px;background:var(--ink,#0D0D0D);color:var(--bg,#fff);border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:"Satoshi",sans-serif;cursor:pointer;transition:all .25s ease;margin-top:4px;}
         .btn-main:hover:not(:disabled){background:#C0392B;}
         .btn-main:disabled{opacity:0.6;cursor:not-allowed;}
         .btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 16px;background:var(--card-bg,#fff);border:1px solid var(--card-border,rgba(13,13,13,.12));border-radius:10px;font-size:14px;font-weight:500;color:var(--ink,#0D0D0D);cursor:pointer;transition:all .2s ease;}
-        .btn-google:hover{border-color:var(--ink);transform:translateY(-1px);}
+        .btn-google:hover:not(:disabled){border-color:var(--ink);transform:translateY(-1px);}
+        .btn-google:disabled{opacity:0.5;cursor:not-allowed;}
         .divider{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--mute);font-size:12px;letter-spacing:.08em;}
         .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line);}
         .err{background:rgba(192,57,43,0.08);border:1px solid rgba(192,57,43,0.2);border-radius:8px;padding:10px 14px;font-size:13px;color:#C0392B;margin-bottom:14px;}
@@ -248,15 +264,11 @@ export default function RegisterPage() {
         .footer-links a:hover{color:#C0392B;}
         .back-btn{background:none;border:none;color:var(--mute,#6B6B6B);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:4px;margin-bottom:20px;padding:0;}
         .back-btn:hover{color:var(--ink);}
-        .level-card{width:100%;display:flex;align-items:center;gap:14px;padding:20px;border:1px solid var(--card-border,rgba(13,13,13,.08));border-radius:14px;background:var(--card-bg,#fff);cursor:pointer;text-align:left;position:relative;transition:border-color .15s,background .15s;}
-        .level-card--selected{border-color:#C0392B !important;background:rgba(192,57,43,0.04);}
-        .level-card:hover:not(.level-card--selected){border-color:var(--ink);}
-        .level-icon{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
-        .level-body{flex:1;min-width:0;}
-        .level-title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:17px;color:var(--ink,#0D0D0D);margin-bottom:2px;}
-        .level-sub{font-size:13px;color:var(--mute,#6B6B6B);margin-bottom:2px;}
-        .level-desc{font-size:12px;color:var(--mute);}
-        .level-check{position:absolute;top:12px;right:12px;color:#C0392B;}
+        .grade-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:20px;}
+        .grade-pill{padding:12px 4px;border:1.5px solid var(--line);border-radius:10px;background:var(--card-bg,#fff);cursor:pointer;text-align:center;font-family:"Satoshi",sans-serif;font-weight:600;font-size:14px;color:var(--ink,#0D0D0D);transition:all .15s;}
+        .grade-pill:hover{border-color:var(--ink);}
+        .grade-pill.selected{border-color:#C0392B;background:rgba(192,57,43,0.06);color:#C0392B;}
+        .grade-row-label{font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--mute,#6B6B6B);text-align:center;margin-bottom:4px;text-transform:uppercase;}
         .btn-continue{width:100%;padding:13px;background:#C0392B;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:"Satoshi",sans-serif;transition:background .2s;margin-top:4px;}
         .btn-continue:not(:disabled){cursor:pointer;}
         .btn-continue:disabled{opacity:0.4;cursor:not-allowed;}
@@ -317,8 +329,8 @@ export default function RegisterPage() {
             </>
           )}
 
-          {/* ── Step 1.5: Level selection (students only) ── */}
-          {step === 'level' && resolved && (
+          {/* ── Step 1.5: Grade selection (students only) ── */}
+          {step === 'grade' && resolved && (
             <>
               <button
                 className="back-btn"
@@ -328,40 +340,41 @@ export default function RegisterPage() {
                 ← {t('changeCode')}
               </button>
 
-              <h1 className="card-title">{t('trackTitle')}</h1>
-              <p className="card-sub">{t('trackSubtitle')}</p>
+              <h1 className="card-title">{t('gradeStepTitle')}</h1>
+              <p className="card-sub">{t('gradeStepSubtitle')}</p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
-                {TRACKS.map(lv => (
+              <p className="grade-row-label">Junior · 2° – 7°</p>
+              <div className="grade-grid" style={{ marginBottom: 8 }}>
+                {([2, 3, 4, 5, 6, 7] as Grade[]).map(g => (
                   <button
-                    key={lv.id}
-                    className={`level-card${selectedLevel === lv.id ? ' level-card--selected' : ''}`}
-                    onClick={() => setSelectedLevel(lv.id)}
+                    key={g}
                     type="button"
+                    className={`grade-pill${selectedGrade === g ? ' selected' : ''}`}
+                    onClick={() => setSelectedGrade(g)}
                   >
-                    <div className="level-icon" style={{ background: lv.iconBg }}>
-                      {lv.emoji}
-                    </div>
-                    <div className="level-body">
-                      <div className="level-title">{lv.title}</div>
-                      <div className="level-sub">{lv.sub}</div>
-                      <div className="level-desc">{lv.desc}</div>
-                    </div>
-                    {selectedLevel === lv.id && (
-                      <div className="level-check">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                          <path d="M3 8l4 4 6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </div>
-                    )}
+                    {g}°
+                  </button>
+                ))}
+              </div>
+
+              <p className="grade-row-label" style={{ marginTop: 12 }}>Senior · 8° – 11°</p>
+              <div className="grade-grid" style={{ gridTemplateColumns: 'repeat(4,1fr)', marginBottom: 24 }}>
+                {([8, 9, 10, 11] as Grade[]).map(g => (
+                  <button
+                    key={g}
+                    type="button"
+                    className={`grade-pill${selectedGrade === g ? ' selected' : ''}`}
+                    onClick={() => setSelectedGrade(g)}
+                  >
+                    {g}°
                   </button>
                 ))}
               </div>
 
               <button
                 className="btn-continue"
-                disabled={!selectedLevel}
-                onClick={() => { if (selectedLevel) setStep(2) }}
+                disabled={selectedGrade === null}
+                onClick={() => { if (selectedGrade !== null) setStep(2) }}
                 type="button"
               >
                 {t('continueBtn')}
@@ -376,7 +389,7 @@ export default function RegisterPage() {
                 className="back-btn"
                 onClick={() => {
                   if (resolved.userType === 'student') {
-                    setStep('level')
+                    setStep('grade')
                   } else {
                     setStep(1)
                     setResolved(null)
@@ -385,7 +398,7 @@ export default function RegisterPage() {
                 }}
                 type="button"
               >
-                ← {resolved.userType === 'student' ? t('changeLevel') : t('changeCode')}
+                ← {resolved.userType === 'student' ? t('changeGrade') : t('changeCode')}
               </button>
 
               <h1 className="card-title">{t('title')}</h1>
@@ -396,10 +409,44 @@ export default function RegisterPage() {
                   <circle cx="8" cy="8" r="7" fill="currentColor" opacity=".18"/>
                   <path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                {isCoord ? t('roleCoordinator') : isExpo ? t('roleExpositor') : t('roleStudent')} · {resolved.schoolName}
+                {isCoord ? t('roleCoordinator') : isExpo ? t('roleExpositor') : t('roleStudent')}
+                {resolved.userType === 'student' && selectedGrade !== null && ` · ${selectedGrade}° · ${junior ? 'Junior' : 'Senior'}`}
+                {' · '}{resolved.schoolName}
               </div>
 
-              <button className="btn-google" onClick={handleGoogle} type="button">
+              {/* Guardian email — shown before Google button for junior students */}
+              <AnimatePresence>
+                {junior && (
+                  <m.div
+                    key="guardian-top"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    style={{ overflow: 'hidden' }}
+                    transition={springNatural}
+                  >
+                    <div className="field" style={{ marginBottom: 6 }}>
+                      <label htmlFor="guardian-email">{t('guardianLabel')}</label>
+                      <input
+                        id="guardian-email"
+                        type="email"
+                        placeholder={t('guardianPlaceholder')}
+                        value={guardianEmail}
+                        onChange={e => setGuardianEmail(e.target.value)}
+                        required={junior}
+                      />
+                    </div>
+                    <div className="guardian-hint">{t('guardianHint')}</div>
+                  </m.div>
+                )}
+              </AnimatePresence>
+
+              <button
+                className="btn-google"
+                onClick={handleGoogle}
+                type="button"
+                disabled={junior && !guardianEmail.trim()}
+              >
                 {GOOGLE_SVG}
                 {t('googleBtn')}
               </button>
@@ -411,7 +458,6 @@ export default function RegisterPage() {
               <form onSubmit={handleEmail}>
                 <div className="field">
                   <label htmlFor="name">{t('displayNameLabel')}</label>
-                  {/* TODO: i18n placeholder */}
                   <input
                     id="name" type="text" placeholder={t('namePlaceholder')}
                     value={fullName} onChange={e => setFullName(e.target.value)} required

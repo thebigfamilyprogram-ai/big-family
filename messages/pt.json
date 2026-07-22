@@ -699,7 +699,16 @@
       "roleStudent": "Estudante",
       "confirmPassLabel": "Confirmar senha",
       "creatingAccount": "Criando conta…",
-      "schoolFallback": "Escola"
+      "schoolFallback": "Escola",
+      "gradeStepTitle": "Em que série você está?",
+      "gradeStepSubtitle": "O programa adapta o conteúdo ao seu nível escolar",
+      "gradeLabel": "Série escolar",
+      "gradeSelectPlaceholder": "Selecione a sua série",
+      "guardianLabel": "E-mail do responsável",
+      "guardianPlaceholder": "responsavel@exemplo.com",
+      "guardianHint": "Para estudantes do 2° ao 7° ano, precisamos do e-mail de um pai, mãe ou responsável.",
+      "errorNoGuardian": "O e-mail do responsável é obrigatório para estudantes do 2° ao 7° ano.",
+      "changeGrade": "Mudar série"
     },
     "forgotPassword": {
       "title": "Recuperar senha",
@@ -1731,8 +1740,29 @@
     },
     "calendar": {
       "title": "Calendário de Eventos",
-      "days": ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
-      "months": ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+      "days": [
+        "Dom",
+        "Seg",
+        "Ter",
+        "Qua",
+        "Qui",
+        "Sex",
+        "Sáb"
+      ],
+      "months": [
+        "Janeiro",
+        "Fevereiro",
+        "Março",
+        "Abril",
+        "Maio",
+        "Junho",
+        "Julho",
+        "Agosto",
+        "Setembro",
+        "Outubro",
+        "Novembro",
+        "Dezembro"
+      ],
       "formTitleLabel": "Título *",
       "eventNamePlaceholder": "Nome do evento",
       "startDateLabel": "Data de início *",
@@ -2559,7 +2589,11 @@
       "errorNoGuardian": "O e-mail do responsável é obrigatório para estudantes Junior.",
       "errorNoTerms": "Você deve aceitar os termos e condições para continuar.",
       "errorWeakPassword": "A senha deve ter pelo menos 8 caracteres.",
-      "errorCreateAccount": "Erro ao criar a conta."
+      "errorCreateAccount": "Erro ao criar a conta.",
+      "gradeLabel": "Série escolar",
+      "gradeSelectPlaceholder": "Selecione a sua série",
+      "guardianHint": "Para estudantes do 2° ao 7° ano, precisamos de um e-mail de responsável.",
+      "errorNoGrade": "Selecione a sua série escolar."
     },
     "project": {
       "pageTitle": "Seu projeto de liderança",

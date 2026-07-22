@@ -699,7 +699,16 @@
       "roleStudent": "Estudiante",
       "confirmPassLabel": "Confirmar contraseña",
       "creatingAccount": "Creando cuenta…",
-      "schoolFallback": "Colegio"
+      "schoolFallback": "Colegio",
+      "gradeStepTitle": "¿En qué grado estás?",
+      "gradeStepSubtitle": "El programa adapta el contenido a tu nivel escolar",
+      "gradeLabel": "Grado escolar",
+      "gradeSelectPlaceholder": "Selecciona tu grado",
+      "guardianLabel": "Correo del acudiente",
+      "guardianPlaceholder": "correo@acudiente.com",
+      "guardianHint": "Para estudiantes de 2° a 7°, necesitamos el correo de un padre, madre o acudiente responsable.",
+      "errorNoGuardian": "El correo del acudiente es obligatorio para estudiantes de grados 2° a 7°.",
+      "changeGrade": "Cambiar grado"
     },
     "forgotPassword": {
       "title": "Recuperar contraseña",
@@ -2017,8 +2026,29 @@
     },
     "calendar": {
       "title": "Calendario de Eventos",
-      "days": ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
-      "months": ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+      "days": [
+        "Dom",
+        "Lun",
+        "Mar",
+        "Mié",
+        "Jue",
+        "Vie",
+        "Sáb"
+      ],
+      "months": [
+        "Enero",
+        "Febrero",
+        "Marzo",
+        "Abril",
+        "Mayo",
+        "Junio",
+        "Julio",
+        "Agosto",
+        "Septiembre",
+        "Octubre",
+        "Noviembre",
+        "Diciembre"
+      ],
       "formTitleLabel": "Título *",
       "eventNamePlaceholder": "Nombre del evento",
       "startDateLabel": "Fecha inicio *",
@@ -2845,7 +2875,11 @@
       "errorNoGuardian": "El correo del acudiente es requerido para estudiantes Junior.",
       "errorNoTerms": "Debes aceptar los términos y condiciones para continuar.",
       "errorWeakPassword": "La contraseña debe tener al menos 8 caracteres.",
-      "errorCreateAccount": "Error al crear la cuenta."
+      "errorCreateAccount": "Error al crear la cuenta.",
+      "gradeLabel": "Grado escolar",
+      "gradeSelectPlaceholder": "Selecciona tu grado",
+      "guardianHint": "Para estudiantes de 2° a 7°, necesitamos el correo de un padre, madre o acudiente responsable.",
+      "errorNoGrade": "Selecciona tu grado escolar."
     },
     "project": {
       "pageTitle": "Tu proyecto de liderazgo",

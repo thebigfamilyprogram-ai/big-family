@@ -699,7 +699,16 @@
       "roleStudent": "Élève",
       "confirmPassLabel": "Confirmer le mot de passe",
       "creatingAccount": "Création du compte…",
-      "schoolFallback": "École"
+      "schoolFallback": "École",
+      "gradeStepTitle": "En quelle année scolaire es-tu ?",
+      "gradeStepSubtitle": "Le programme adapte le contenu à ton niveau scolaire",
+      "gradeLabel": "Niveau scolaire",
+      "gradeSelectPlaceholder": "Sélectionne ton niveau",
+      "guardianLabel": "Email du responsable légal",
+      "guardianPlaceholder": "responsable@exemple.com",
+      "guardianHint": "Pour les élèves de la 2e à la 7e année, nous avons besoin de l'email d'un parent ou responsable légal.",
+      "errorNoGuardian": "L'email du responsable légal est obligatoire pour les élèves de la 2e à la 7e année.",
+      "changeGrade": "Changer de niveau"
     },
     "forgotPassword": {
       "title": "Réinitialiser le mot de passe",
@@ -1731,8 +1740,29 @@
     },
     "calendar": {
       "title": "Calendrier des événements",
-      "days": ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
-      "months": ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
+      "days": [
+        "Dim",
+        "Lun",
+        "Mar",
+        "Mer",
+        "Jeu",
+        "Ven",
+        "Sam"
+      ],
+      "months": [
+        "Janvier",
+        "Février",
+        "Mars",
+        "Avril",
+        "Mai",
+        "Juin",
+        "Juillet",
+        "Août",
+        "Septembre",
+        "Octobre",
+        "Novembre",
+        "Décembre"
+      ],
       "formTitleLabel": "Titre *",
       "eventNamePlaceholder": "Nom de l'événement",
       "startDateLabel": "Date de début *",
@@ -2559,7 +2589,11 @@
       "errorNoGuardian": "L'e-mail du tuteur est requis pour les étudiants Junior.",
       "errorNoTerms": "Tu dois accepter les conditions d'utilisation pour continuer.",
       "errorWeakPassword": "Le mot de passe doit comporter au moins 8 caractères.",
-      "errorCreateAccount": "Erreur lors de la création du compte."
+      "errorCreateAccount": "Erreur lors de la création du compte.",
+      "gradeLabel": "Niveau scolaire",
+      "gradeSelectPlaceholder": "Sélectionne ton niveau",
+      "guardianHint": "Pour les élèves de la 2e à la 7e année, un email de responsable est requis.",
+      "errorNoGrade": "Sélectionne ton niveau scolaire."
     },
     "project": {
       "pageTitle": "Ton projet de leadership",
