@@ -651,11 +651,11 @@ export default function DashboardPage() {
         .zone3a-row{display:grid;grid-template-columns:58fr 42fr;gap:16px;}
 
         /* ── Diploma unlocked banner ── */
-        .cert-unlocked{display:flex;align-items:center;gap:20px;background:var(--ink,#0D0D0D);border:1px solid rgba(192,57,43,.35);border-radius:16px;padding:20px 24px;cursor:pointer;transition:border-color .2s cubic-bezier(0.22,1,0.36,1);text-decoration:none;margin-bottom:20px;width:100%;}
+        .cert-unlocked{display:flex;align-items:center;gap:20px;background:var(--surface-inverse);border:1px solid rgba(192,57,43,.35);border-radius:16px;padding:20px 24px;cursor:pointer;transition:border-color .2s cubic-bezier(0.22,1,0.36,1);text-decoration:none;width:100%;}
         .cert-unlocked:hover{border-color:var(--accent,#C0392B);}
         .cert-unlocked__seal{width:48px;height:48px;border-radius:50%;background:rgba(192,57,43,.15);border:1.5px solid rgba(192,57,43,.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
         .cert-unlocked__body{flex:1;min-width:0;}
-        .cert-unlocked__eyebrow{font-family:"Satoshi",sans-serif;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;}
+        .cert-unlocked__eyebrow{font-family:"Satoshi",sans-serif;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:4px;}
         .cert-unlocked__title{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:#fff;margin-bottom:2px;}
         .cert-unlocked__sub{font-family:"Satoshi",sans-serif;font-size:13px;color:var(--accent,#C0392B);}
         .cert-unlocked__arrow{color:rgba(255,255,255,.35);font-size:22px;flex-shrink:0;line-height:1;}
@@ -869,8 +869,9 @@ export default function DashboardPage() {
               ) : nextModule ? (
                 <div className="zone1-next">
                   <div className="zone1-next__eyebrow">QUÉ SIGUE</div>
-                  <div className="zone1-next__title">{nextModule.title}</div>
-                  <span className="zone1-next__xp">⚡ {nextModule.xp_reward} XP</span>
+                  <div style={{ fontSize: 13, color: 'var(--ink-2)', fontFamily: '"Satoshi",sans-serif', fontWeight: 600 }}>
+                    Módulo {String(nextModule.order_index).padStart(2, '0')} · {nextModule.xp_reward} XP
+                  </div>
                   <button className="zone1-next__cta" onClick={() => router.push(`/dashboard/modules/${nextModule!.id}`)}>
                     Empezar →
                   </button>
@@ -1073,9 +1074,14 @@ export default function DashboardPage() {
               </div>
 
               {capstoneState === 'bloqueado' && (
-                <button className="btn-upload" disabled>
-                  {t('capstoneCard.uploadProject')}
-                </button>
+                <>
+                  <div className="cert-text" style={{ marginBottom: 12 }}>
+                    {t('capstoneCard.lockedHint', { total: totalModules })}
+                  </div>
+                  <button className="btn-upload" disabled>
+                    {t('capstoneCard.uploadProject')}
+                  </button>
+                </>
               )}
               {capstoneState === 'en_progreso' && (
                 <m.button
@@ -1134,385 +1140,52 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ══════════════════════════════════════════════════════════════
-              ZONA 3B — Mis módulos
-          ══════════════════════════════════════════════════════════════ */}
-          <div>
-            <div className="mods-header">
-              <span className="mods-title zone3b-title">{t('zone3.modulesTitle')}</span>
-              {!loading && (
-                <span className="mods-count">{totalModules} {totalModules !== 1 ? t('modulesAvailable.modulePlural') : t('modulesAvailable.moduleSingular')}</span>
-              )}
-            </div>
-
-            {loading ? (
-              <>
-                {/* Grid skeleton */}
-                <div className="mods-grid">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="mod-card" style={{ gap: 12 }}>
-                      <Sk w="40%" h={10} r={5} />
-                      <Sk w="70%" h={14} r={6} />
-                      <Sk w="100%" h={10} r={5} />
-                      <Sk w="60px" h={20} r={999} />
-                      <Sk w="100%" h={4} r={999} />
-                      <Sk w="100%" h={34} r={9} />
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : totalModules === 0 ? (
-              <div className="mods-empty">
-                {t('modulesAvailable.empty')}
-              </div>
-            ) : (
-              <>
-                {/* ── Diploma unlocked card — shown above modules when certified ── */}
-                {diploma && (
-                  <m.button
-                    className="cert-unlocked"
-                    onClick={() => router.push(`/certificacion/${userId}`)}
-                    initial={pref ? false : { opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                    whileHover={pref ? undefined : { scale: 1.01, transition: { type: 'spring', stiffness: 300, damping: 25 } }}
-                    style={{ border: 'none' }}
-                  >
-                    <div className="cert-unlocked__seal" aria-hidden="true">
-                      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                        <path d="M11 1L13.5 8H21L15 12.5L17.5 20L11 15.5L4.5 20L7 12.5L1 8H8.5L11 1Z" fill="#C0392B"/>
-                      </svg>
-                    </div>
-                    <div className="cert-unlocked__body">
-                      <div className="cert-unlocked__eyebrow">{t('modulesAvailable.diplomaUnlocked.eyebrow')}</div>
-                      <div className="cert-unlocked__title">{t('modulesAvailable.diplomaUnlocked.title')}</div>
-                      <div className="cert-unlocked__sub">{t('modulesAvailable.diplomaUnlocked.subtitle')}</div>
-                    </div>
-                    <div className="cert-unlocked__arrow" aria-hidden="true">›</div>
-                  </m.button>
-                )}
-
-                {/* La tarjeta destacada de "próximo módulo" ahora vive en la
-                    Zona 2 (arriba) — aquí solo queda el grid estándar, que
-                    ya excluye nextModule del listado para no duplicarlo. */}
-
-                {/* ── Standard grid: all other modules ── */}
-                {sortedModules.filter(m => m.id !== nextModule?.id).length > 0 && (
-                  <m.div
-                    className="mods-grid"
-                    initial={pref ? false : 'hidden'}
-                    whileInView="visible"
-                    viewport={{ once: true, margin: '-80px' }}
-                    variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
-                  >
-                    {sortedModules
-                      .filter(mod => mod.id !== nextModule?.id)
-                      .map((mod) => {
-                        const isDone   = completedIds.has(mod.id)
-                        const isLocked = lockedIds.has(mod.id)
-                        return (
-                          <m.div
-                            key={mod.id}
-                            variants={fadeUp}
-                            className={`mod-card ${isDone ? 'done' : ''} ${isLocked ? 'locked' : ''}`}
-                            onClick={!isLocked && !isDone ? () => router.push(`/dashboard/modules/${mod.id}`) : undefined}
-                            style={!isLocked && !isDone ? { cursor: 'pointer' } : undefined}
-                          >
-                            <div className="mod-num" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                              {String(mod.order_index).padStart(2, '0')}
-                              {isLocked && (
-                                <svg width="11" height="11" viewBox="0 0 14 14" fill="none" style={{ opacity: .4 }}>
-                                  <rect x="2" y="6" width="10" height="7" rx="2" stroke="currentColor" strokeWidth="1.4"/>
-                                  <path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-                                </svg>
-                              )}
-                              {leaderProfile && (() => {
-                                const pillar = MODULE_PILLAR[mod.order_index]
-                                if (!pillar) return null
-                                if (leaderProfile.fortalezas.includes(pillar))
-                                  return <span className="mod-profile-badge strength">{tModules('strengthBadge')}</span>
-                                if (leaderProfile.areas_crecimiento.includes(pillar))
-                                  return <span className="mod-profile-badge growth">{tModules('growthBadge')}</span>
-                                return null
-                              })()}
-                            </div>
-                            <div className="mod-name">{mod.title}</div>
-                            <div className="mod-desc">{mod.description}</div>
-                            <div className="mod-xp">
-                              <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
-                                <path d="M5 0L6.2 3.8H10L6.9 6.1L8.1 10L5 7.6L1.9 10L3.1 6.1L0 3.8H3.8L5 0Z"/>
-                              </svg>
-                              {mod.xp_reward ?? 100} XP
-                            </div>
-                            <div className="mod-prog-track">
-                              <div
-                                className={`mod-prog-bar ${isDone ? 'green' : ''}`}
-                                style={{ width: isDone ? '100%' : '0%' }}
-                              />
-                            </div>
-                            {isDone ? (
-                              <div className="done-badge">
-                                <svg className="done-check-svg" width="13" height="13" viewBox="0 0 13 13" fill="none">
-                                  <path
-                                    className="done-check-path"
-                                    d="M2 7l3 3 6-6"
-                                    stroke="#16a34a"
-                                    strokeWidth="1.8"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                  />
-                                </svg>
-                                {tModules('completed')}
-                              </div>
-                            ) : isLocked ? (
-                              <div className="lock-badge">
-                                <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                                  <rect x="2" y="6" width="10" height="7" rx="2" stroke="currentColor" strokeWidth="1.4"/>
-                                  <path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-                                </svg>
-                                {tModules('locked')}
-                              </div>
-                            ) : (
-                              <m.button
-                                className="btn-start"
-                                onClick={e => { e.stopPropagation(); router.push(`/dashboard/modules/${mod.id}`) }}
-                                whileHover={pref ? undefined : { scale: 1.02 }}
-                                whileTap={pref ? undefined : { scale: 0.97 }}
-                                transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                              >
-                                {t('modulesAvailable.startBtn')}
-                              </m.button>
-                            )}
-                          </m.div>
-                        )
-                      })}
-                  </m.div>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* ══════════════════════════════════════════════════════════════
-              ZONA 3C — Mi progreso completo (colapsable)
-          ══════════════════════════════════════════════════════════════ */}
-          <div>
+          {/* ── Diploma unlocked — reubicado junto al Capstone ── */}
+          {!loading && diploma && (
             <m.button
-              className="zone3c-toggle"
-              onClick={toggleProgress}
-              whileHover={pref ? undefined : { scale: 1.02 }}
-              whileTap={pref ? undefined : { scale: 0.97 }}
+              className="cert-unlocked"
+              onClick={() => router.push(`/certificacion/${userId}`)}
+              initial={pref ? false : { opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+              whileHover={pref ? undefined : { scale: 1.01, transition: { type: 'spring', stiffness: 300, damping: 25 } }}
+              style={{ border: 'none' }}
             >
-              {t('zone3.toggleLabel')}
-              <svg
-                width="11" height="11" viewBox="0 0 18 18" fill="none"
-                style={{ transform: progressOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s cubic-bezier(0.22,1,0.36,1)' }}
-              >
-                <path d="M4 6.5L9 11.5L14 6.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              <div className="cert-unlocked__seal" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                  <path d="M11 1L13.5 8H21L15 12.5L17.5 20L11 15.5L4.5 20L7 12.5L1 8H8.5L11 1Z" fill="#C0392B"/>
+                </svg>
+              </div>
+              <div className="cert-unlocked__body">
+                <div className="cert-unlocked__eyebrow">{t('modulesAvailable.diplomaUnlocked.eyebrow')}</div>
+                <div className="cert-unlocked__title">{t('modulesAvailable.diplomaUnlocked.title')}</div>
+                <div className="cert-unlocked__sub">{t('modulesAvailable.diplomaUnlocked.subtitle')}</div>
+              </div>
+              <div className="cert-unlocked__arrow" aria-hidden="true">›</div>
             </m.button>
+          )}
 
-            <AnimatePresence>
-              {progressOpen && (
-                <m.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                  style={{ overflow: 'hidden' }}
-                >
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 20 }}>
+          {/* REMOVED: zona 3B grid de módulos → /dashboard/progreso */}
+          {/* REMOVED: zona 3C acordeón de progreso → /dashboard/progreso */}
 
-                    {/* KPI Bento */}
-                    <m.div
-                      className="kpi-bento"
-                      initial={pref ? false : 'hidden'}
-                      animate="visible"
-                      variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
-                    >
-                      {([
-                        { label: t('stats.xpTotal'),        val: loading ? null : (user?.total_xp ?? 0), color: 'var(--accent-amber,#D4821A)', border: 'var(--accent-amber,#D4821A)', isRank: false },
-                        { label: t('kpiLabels.modules'),    val: loading ? null : completedCount,         color: 'var(--accent-teal,#0F7B6C)',  border: 'var(--accent-teal,#0F7B6C)',  isRank: false },
-                        { label: t('kpiLabels.streakDays'), val: loading ? null : streak,                 color: 'var(--ink)',                  border: 'var(--line-strong)',            isRank: false },
-                        { label: t('kpiLabels.schoolRanking'), val: loading ? null : (rankPos ?? 0),      color: 'var(--accent,#C0392B)',       border: 'var(--accent,#C0392B)',        isRank: true  },
-                      ]).map(({ label, val, color, border, isRank }) => (
-                        <m.div
-                          key={label}
-                          className="kpi-card"
-                          style={{ borderLeft: `3px solid ${border}` }}
-                          variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 200, damping: 22 } } }}
-                        >
-                          {val === null
-                            ? <><Sk w="50%" h={32} r={6} /><div style={{ marginTop: 9 }}><Sk w="70%" h={10} r={4} /></div></>
-                            : <>
-                                <div className="kpi-num" style={{ color }}>
-                                  {isRank
-                                    ? (val === 0 ? '—' : `#${val}`)
-                                    : <AnimatedKPI value={val} />}
-                                </div>
-                                <div className="kpi-label">{label}</div>
-                              </>
-                          }
-                        </m.div>
-                      ))}
-                    </m.div>
-
-                    {/* Pillar pills */}
-                    <div className="pillar-pills">
-                      {PILLAR_ORDER.map(pillar => {
-                        const modsInPillar = PILLAR_MODS[pillar]
-                        const completedInPillar = loading ? 0 : modules.filter(m => modsInPillar.includes(m.order_index) && completedIds.has(m.id)).length
-                        const pct = modsInPillar.length > 0 ? Math.round(completedInPillar / modsInPillar.length * 100) : 0
-                        const isStrength = leaderProfile?.fortalezas.includes(pillar)
-                        const isGrowth   = leaderProfile?.areas_crecimiento.includes(pillar)
-                        const color = isStrength
-                          ? 'var(--accent-teal,#0F7B6C)'
-                          : isGrowth
-                            ? '#C0392B'
-                            : 'var(--mute)'
-                        return (
-                          <div key={pillar} className="pillar-pill">
-                            {loading ? (
-                              <><Sk w="60%" h={10} r={4} /><Sk w="100%" h={3} r={999} /></>
-                            ) : (
-                              <>
-                                <div className="pillar-pill__header">
-                                  <span className="pillar-pill__name" style={{ color }}>{pillar}</span>
-                                  <span className="pillar-pill__pct" style={{ color }}>{pct}%</span>
-                                </div>
-                                <div className="pillar-pill__track">
-                                  <div className="pillar-pill__bar" style={{ width: `${pct}%`, background: color }} />
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-
-                    {/* Charts bento */}
-                    <div className="charts-row">
-                      {/* XP Line Chart */}
-                      <div className="card" style={{ padding: '22px 20px 16px' }}>
-                        <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 16 }}>
-                          {t('charts.xpProgress')}
-                        </div>
-                        {loading || weeklyXP.length === 0 ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            {[80, 60, 100, 70].map((w, i) => <Sk key={i} w={`${w}%`} h={10} r={4} />)}
-                          </div>
-                        ) : (
-                          <m.div
-                            initial={pref ? false : { opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ type: 'spring', stiffness: 180, damping: 26 }}
-                          >
-                            <ResponsiveContainer width="100%" height={140}>
-                              <LineChart data={weeklyXP} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" strokeOpacity={0.5} vertical={false} />
-                                <XAxis dataKey="week" tick={{ fontSize: 11, fill: 'var(--mute)', fontFamily: 'Satoshi,sans-serif' }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fontSize: 10, fill: 'var(--mute)' }} axisLine={false} tickLine={false} />
-                                <Tooltip
-                                  content={({ active, payload }) => {
-                                    if (!active || !payload?.[0]) return null
-                                    return (
-                                      <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 10, padding: '8px 12px', fontSize: 12, boxShadow: 'var(--shadow-raised)', fontFamily: '"Satoshi",sans-serif' }}>
-                                        <span style={{ fontWeight: 700, color: 'var(--accent-amber,#D4821A)' }}>{payload[0].value?.toLocaleString('es-CO')} XP</span>
-                                      </div>
-                                    )
-                                  }}
-                                />
-                                <Line type="monotone" dataKey="xp" stroke="var(--accent-amber,#D4821A)" strokeWidth={2} dot={{ r: 3, fill: 'var(--accent-amber,#D4821A)', strokeWidth: 0 }} activeDot={{ r: 5, fill: 'var(--accent-amber,#D4821A)' }} />
-                              </LineChart>
-                            </ResponsiveContainer>
-                          </m.div>
-                        )}
-                      </div>
-
-                      {/* Leadership RadialBarChart */}
-                      <div className="card" style={{ padding: '22px 20px 16px' }}>
-                        <div style={{ fontFamily: '"Satoshi",sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 16 }}>
-                          {t('charts.leadershipPath')}
-                        </div>
-                        {loading ? (
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 140 }}><Sk w={120} h={120} r={999} /></div>
-                        ) : (() => {
-                          const pillars = [
-                            { name: t('charts.pillarVision'),    fill: '#C0392B', value: visionPct },
-                            { name: t('charts.pillarModules'),   fill: '#D4821A', value: totalModules > 0 ? Math.round(completedCount / totalModules * 100) : 0 },
-                            { name: t('charts.pillarImpact'),    fill: '#0F7B6C', value: diploma ? 100 : 0 },
-                            { name: t('charts.pillarCommunity'), fill: '#8C7B6E', value: 0 },
-                            { name: t('charts.pillarProjects'),  fill: '#6B6B6B', value: 0 },
-                          ]
-                          const hasProgress = pillars.some(p => p.value > 0)
-
-                          if (!hasProgress) {
-                            return (
-                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 140, gap: 10, padding: '0 12px' }}>
-                                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style={{ opacity: 0.3 }}>
-                                  <circle cx="16" cy="16" r="13" stroke="var(--mute)" strokeWidth="2"/>
-                                  <circle cx="16" cy="16" r="8" stroke="var(--mute)" strokeWidth="1.5" strokeDasharray="4 3"/>
-                                  <circle cx="16" cy="16" r="2.5" fill="var(--mute)"/>
-                                </svg>
-                                <div style={{ fontSize: 12.5, color: 'var(--mute)', textAlign: 'center', lineHeight: 1.5, fontFamily: '"Satoshi",sans-serif' }}>
-                                  {t('charts.emptyState')}
-                                </div>
-                              </div>
-                            )
-                          }
-
-                          return (
-                            <m.div
-                              initial={pref ? false : { opacity: 0, y: 8 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ type: 'spring', stiffness: 180, damping: 26, delay: 0.1 }}
-                            >
-                              <ResponsiveContainer width="100%" height={140}>
-                                <RadialBarChart cx="50%" cy="50%" innerRadius={20} outerRadius={68} data={pillars} startAngle={90} endAngle={-270}>
-                                  <RadialBar dataKey="value" cornerRadius={4} background={{ fill: 'var(--line)' }} />
-                                  <Tooltip
-                                    content={({ active, payload }) => {
-                                      if (!active || !payload?.[0]) return null
-                                      const d = payload[0].payload
-                                      return (
-                                        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 10, padding: '8px 12px', fontSize: 12, boxShadow: 'var(--shadow-raised)', fontFamily: '"Satoshi",sans-serif' }}>
-                                          <span style={{ fontWeight: 700, color: 'var(--ink)' }}>{d.name}: </span>
-                                          <span style={{ color: d.fill }}>{d.value}%</span>
-                                        </div>
-                                      )
-                                    }}
-                                  />
-                                </RadialBarChart>
-                              </ResponsiveContainer>
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px', marginTop: 4 }}>
-                                {pillars.map(p => (
-                                  <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                                    <div style={{ width: 7, height: 7, borderRadius: 2, background: p.fill, flexShrink: 0 }} />
-                                    <span style={{ fontSize: 11, color: 'var(--mute)', fontFamily: '"Satoshi",sans-serif' }}>{p.name} {p.value}%</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </m.div>
-                          )
-                        })()}
-                      </div>
-                    </div>
-
-                    {/* Link al programa completo — único resto útil de la antigua Leadership Progress Card */}
-                    <m.button
-                      className="btn-ghost"
-                      style={{ alignSelf: 'flex-start' }}
-                      onClick={() => router.push('/dashboard/leadership-path')}
-                      whileHover={pref ? undefined : { scale: 1.02 }}
-                      whileTap={pref ? undefined : { scale: 0.97 }}
-                      transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                    >{t('leadershipProgress.viewFullProgram')}</m.button>
-
-                  </div>
-                </m.div>
-              )}
-            </AnimatePresence>
+          {/* ── Ver mi progreso completo ── */}
+          <div>
+            <a
+              href="/dashboard/progreso"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                background: 'var(--bg-2)', border: '1px solid var(--card-border)',
+                borderRadius: 100, padding: '10px 20px', fontFamily: '"Satoshi",sans-serif',
+                fontSize: 13, fontWeight: 600, color: 'var(--ink)', textDecoration: 'none',
+                transition: 'border-color .2s, color .2s',
+              }}
+              onMouseEnter={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.borderColor = '#C0392B'; el.style.color = '#C0392B' }}
+              onMouseLeave={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.borderColor = 'var(--card-border)'; el.style.color = 'var(--ink)' }}
+            >
+              {t('zone3.toggleLabel')} →
+            </a>
           </div>
+
 
         </m.main>
 
@@ -1523,76 +1196,5 @@ export default function DashboardPage() {
         userId={userId}
       />
     </>
-  )
-}
-
-// ── Compact pentagon SVG for identity card ────────────────────────────────────
-// Layout: Yo=top, Norte=top-right, Acción=bottom-right, Legado=bottom-left, Vínculo=top-left
-const PENT = [
-  { key: 'Yo',      angle: -90,  getDim: (b: LeaderProfile['big_five']) => b.C  },
-  { key: 'Norte',   angle: -18,  getDim: (b: LeaderProfile['big_five']) => b.O  },
-  { key: 'Acción',  angle:  54,  getDim: (b: LeaderProfile['big_five']) => b.E  },
-  { key: 'Legado',  angle:  126, getDim: (b: LeaderProfile['big_five']) => b.ES },
-  { key: 'Vínculo', angle:  198, getDim: (b: LeaderProfile['big_five']) => b.A  },
-]
-
-function CompactPentagon({ profile, size = 160 }: { profile: LeaderProfile; size?: number }) {
-  const CX = 100, CY = 100, R = 62
-  const toRad = (d: number) => (d * Math.PI) / 180
-  const pt = (angle: number, r: number) => ({
-    x: CX + r * Math.cos(toRad(angle)),
-    y: CY + r * Math.sin(toRad(angle)),
-  })
-
-  const refPoints = PENT.map(p => { const v = pt(p.angle, R); return `${v.x},${v.y}` }).join(' ')
-  const profPoints = PENT.map(p => {
-    const score = p.getDim(profile.big_five)
-    const v = pt(p.angle, (score / 100) * R)
-    return `${v.x},${v.y}`
-  }).join(' ')
-
-  return (
-    <svg viewBox="0 0 200 200" width={size} height={size} aria-hidden="true">
-      {/* Grid lines */}
-      {PENT.map(p => {
-        const v = pt(p.angle, R)
-        return <line key={p.key} x1={CX} y1={CY} x2={v.x} y2={v.y} stroke="var(--line)" strokeWidth={0.8} />
-      })}
-      {/* 50% ring */}
-      <polygon
-        points={PENT.map(p => { const v = pt(p.angle, R * 0.5); return `${v.x},${v.y}` }).join(' ')}
-        fill="none" stroke="var(--line)" strokeWidth={0.8} strokeDasharray="2 3"
-      />
-      {/* Reference polygon */}
-      <polygon points={refPoints} fill="none" stroke="var(--bg-2)" strokeWidth={1} />
-      {/* Profile polygon */}
-      <polygon points={profPoints} fill="rgba(192,57,43,0.10)" stroke="#C0392B" strokeWidth={1.5} />
-      {/* Vertex dots */}
-      {PENT.map(p => {
-        const score = p.getDim(profile.big_five)
-        const v = pt(p.angle, (score / 100) * R)
-        const isStrength = profile.fortalezas.includes(p.key)
-        const isGrowth   = profile.areas_crecimiento.includes(p.key)
-        return (
-          <circle
-            key={p.key} cx={v.x} cy={v.y} r={4}
-            fill={isStrength ? 'var(--accent-teal,#0F7B6C)' : isGrowth ? '#C0392B' : 'var(--bg-2)'}
-          />
-        )
-      })}
-      {/* Labels */}
-      {PENT.map(p => {
-        const lv = pt(p.angle, R + 22)
-        return (
-          <text
-            key={p.key} x={lv.x} y={lv.y}
-            textAnchor="middle" dominantBaseline="middle"
-            style={{ fontFamily: 'Satoshi,sans-serif', fontSize: 10, fill: 'var(--mute)', letterSpacing: '0.04em' }}
-          >
-            {p.key}
-          </text>
-        )
-      })}
-    </svg>
   )
 }

@@ -218,6 +218,24 @@ El orden de renderizado en SVG determina el z-index (sin propiedad z-index en SV
 ### Por qué el modal del mapa usa overlay como wrapper (no position:fixed)
 Si el overlay es `position:fixed`, cubre toda la página. Como el overlay wrappea al modal con `position:absolute inset:0` dentro de `.wmp-map-wrap` (`position:relative`), el overlay queda contenido exactamente en el mapa. El modal se centra con flexbox del overlay. `e.stopPropagation()` en el modal evita que clicks en el modal cierren el overlay.
 
+### Por qué el dashboard se dividió en /dashboard (Hoy) y /dashboard/progreso (Sesión 19)
+
+El dashboard crecía en scroll infinito porque cada bloque fue construido en sesiones separadas sin visión del conjunto: la Zone 1 (identity card) se diseñó sin saber que Zone 3B repetiría los módulos; el accordion de progreso se añadió sin saber que Zone 1 ya mostraba stats de XP/racha. La duplicación era estructural, no superficial.
+
+La solución elegida fue una ruta nueva `/dashboard/progreso` en lugar de tabs porque:
+- Encaja en el patrón App Router ya establecido (`/dashboard/*` → hereda sidebar de `layout.tsx` automáticamente, proxy protege todo el subtree sin cambios).
+- El volumen de contenido de "Mi Progreso" (4 KPIs, 5 barras de pilares, chart XP, donut, grilla completa) justifica su propia página — no es un panel ancilario.
+- No hay estado compartido entre las dos vistas que justifique mantenerlas en el mismo componente.
+- El enlace "Ver mi progreso →" es un `<a>` simple, no requiere estado de tabs ni AnimatePresence entre rutas.
+
+**Qué quedó en /dashboard (Hoy):** anuncios, saludo + "Qué sigue" (Zone 1), portfolio link, módulo actual (Zone 2), Capstone con explicación clara de bloqueo, frase del día, cert banner, link a progreso.
+
+**Qué quedó en /dashboard/progreso:** 4 KPI bento (XP / módulos / racha / ranking), "Tu perfil de líder" (5 barras de pilares), "Tu avance en el programa" (line chart XP + donut RadialBar), "Mis módulos" (grilla completa), "Ver programa completo" → `/dashboard/leadership-path`.
+
+**Bugs corregidos en el proceso:**
+- `cert-unlocked` tenía `background:var(--ink,#0D0D0D)` — en dark mode `--ink` es `#F5F3EF` (claro) con texto blanco = invisible. Fix: `background:var(--surface-inverse)` que siempre es `#0D0D0D` (declarado solo en `:root`, nunca en dark).
+- Zone 1 "Qué sigue" mostraba el título del módulo, duplicando Zone 2 debajo. Fix: simplificado a `Módulo XX · YY XP` sin título.
+
 ---
 
 ## Tablas en Base de Datos

@@ -331,6 +331,7 @@ Expositor code: `EXPO-BF-2026`
 /dashboard/great-venture → Wizard 5 pasos Hoshin Kanri
 /dashboard/great-venture/mapa → Mapa SVG Editorial Luxury
 /dashboard/kashi → Kashi iframe (red educativa)
+/dashboard/progreso → Vista "Mi Progreso" — KPI bento, barras de pilares, XP chart, donut, grilla completa de módulos
 /coordinator/* → Coordinator area
 /coordinator/datos → Centro de datos coordinador
 /admin/* → Admin area (Luis Barrios only)
