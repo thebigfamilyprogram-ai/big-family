@@ -98,7 +98,7 @@ Los certificados emitidos por la Plataforma acreditan la participación y finali
 
 ## 6. PORTAFOLIO PÚBLICO
 
-La Plataforma ofrece un portafolio personal de acceso público en la URL `/p/[username]`. **El portafolio es público por defecto al momento del registro.** El usuario puede configurar su visibilidad desde el panel de configuración (Ajustes → Portafolio). Big Family no garantiza que el contenido del portafolio sea indexado o no indexado por motores de búsqueda.
+La Plataforma ofrece un portafolio personal de acceso público en la URL `/p/[username]`. **Para estudiantes de nivel Senior (grados 8°-11°), el portafolio es público por defecto al momento del registro. Para estudiantes de nivel Junior (grados 2°-7°), el portafolio es privado por defecto.** En ambos casos, el usuario puede configurar su visibilidad desde el panel de configuración (Ajustes → Portafolio) en cualquier momento. Big Family no garantiza que el contenido del portafolio sea indexado o no indexado por motores de búsqueda.
 
 El diploma (página `/certificacion/[id]`) y la página de verificación pública (`/verify/[certId]`) son públicos por diseño y no pueden configurarse como privados, ya que su función es precisamente permitir la verificación de autenticidad por terceros.
 

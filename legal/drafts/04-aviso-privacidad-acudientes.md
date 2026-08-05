@@ -97,7 +97,7 @@ Anthropic procesa esos datos únicamente para generar el perfil. No los usa para
 - **El propio estudiante:** ve su arquetipo y descripción en su dashboard personal.
 - **El coordinador del colegio:** puede ver el perfil de los estudiantes de su institución con fines pedagógicos.
 - **El equipo de Big Family:** puede acceder a los datos de todos los estudiantes para gestionar el programa.
-- **Personas externas:** el perfil de liderazgo **puede ser visible en el portafolio público** del estudiante si ese portafolio está configurado como público (lo cual ocurre por defecto). Usted puede configurar la privacidad del portafolio desde los ajustes de la cuenta.
+- **Personas externas:** el perfil de liderazgo **puede ser visible en el portafolio público** del estudiante si ese portafolio está configurado como público. Para estudiantes de 2° a 7° (Junior) el portafolio **nace privado** — solo se vuelve público si el propio estudiante lo cambia activamente desde su configuración, sin necesidad de su aprobación como acudiente. Usted puede pedirle al estudiante que le muestre esa configuración en cualquier momento.
 
 ---
 

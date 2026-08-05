@@ -71,6 +71,7 @@ export async function GET(request: NextRequest) {
       school_level:   role === 'student' ? (level || 'senior') : null,
       grade:          role === 'student' && grade !== null ? grade : null,
       guardian_email: isJunior ? (guardianParam || null) : null,
+      portfolio_public: !isJunior,
     })
     if (insertError) console.error('Profile insert error:', insertError)
 

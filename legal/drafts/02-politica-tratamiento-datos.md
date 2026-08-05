@@ -148,11 +148,13 @@ A la fecha de elaboración de este borrador, el flujo técnico del test BFI-44 *
 
 | Ruta pública | Datos visibles | Configurable por el usuario |
 |---|---|---|
-| `/p/[username]` (portafolio) | Nombre, avatar, arquetipo de liderazgo, perfil Big Five, estadísticas, capstone, Great Venture, universidades de interés | Sí — la visibilidad general del portafolio y de secciones específicas se controla en Configuración. **El portafolio es público por defecto al momento del registro.** |
+| `/p/[username]` (portafolio) | Nombre, avatar, arquetipo de liderazgo, perfil Big Five, estadísticas, capstone, Great Venture, universidades de interés | Sí — la visibilidad general del portafolio y de secciones específicas se controla en Configuración. **Estudiantes Senior (grados 8°-11°): público por defecto al registrarse. Estudiantes Junior (grados 2°-7°): privado por defecto al registrarse** (corregido en Sesión 21 — ver nota abajo). En ambos casos el estudiante puede cambiar la visibilidad manualmente en cualquier momento. |
 | `/certificacion/[id]` | Nombre, arquetipo, número de certificado, fecha | **No** — el diploma es público por diseño para permitir su verificación |
 | `/verify/[certId]` | Nombre, colegio, fecha de certificación | **No** — la verificación pública es parte del propósito del certificado |
 
-> **Nota para acudientes de menores:** si el estudiante Junior tiene el portafolio en configuración pública, su nombre y perfil de liderazgo son visibles para cualquier persona en internet sin autenticación. El diploma y la verificación son siempre públicos. Informe al acudiente de esta condición.
+> **Nota para acudientes de menores:** el portafolio de un estudiante Junior nace privado. Si el estudiante decide activamente cambiarlo a público desde su configuración, su nombre y perfil de liderazgo pasan a ser visibles para cualquier persona en internet sin autenticación — esa decisión queda en manos del propio estudiante, sin aprobación previa del acudiente. El diploma y la verificación son siempre públicos, independientemente del nivel.
+>
+> **Corrección retroactiva:** los estudiantes Junior registrados antes de esta corrección tenían el portafolio público por defecto (mismo comportamiento que Senior). Se ejecutó una migración (`20260805000000_junior_portfolio_private_default.sql`) para ponerlos en privado, salvo que ya estuvieran en privado. [PENDIENTE: confirmar fecha exacta en que esta migración se aplicó a producción — a la fecha de este borrador solo existe como archivo SQL, aún no ejecutada contra la base de datos real].
 
 **Finalidades:** permitir que el estudiante comparta su trayectoria y certificación con terceros (universidades, empleadores). La verificación pública garantiza la autenticidad del certificado ante quienes lo reciban.
 
@@ -312,7 +314,7 @@ Big Family puede actualizar esta Política cuando sea necesario. Cualquier cambi
 4. ❓ **Registro en el RNBD de la SIC** — verificar con abogado si aplica según la naturaleza jurídica y tamaño de la organización.
 5. ❓ **Región de alojamiento de Supabase, Resend y Sentry** — Confirmar en los dashboards de cada proveedor para completar la tabla de encargados.
 6. ❓ **Transferencia internacional a Anthropic (Art. 26 Ley 1581)** — Verificar con abogado si se requiere cláusula contractual adicional.
-7. ❓ **Portfolio público por defecto para menores** — Evaluar si el comportamiento "público por defecto" es adecuado para menores de edad o si debe invertirse a "privado por defecto".
+7. ⚠️ **Portfolio público por defecto para menores** — RESUELTO A NIVEL DE CÓDIGO (Sesión 21): Junior nace privado, Senior nace público, toggle manual disponible para ambos sin restricción. Migración retroactiva escrita para los Junior ya registrados. **No confirmado en producción** — bloqueado porque la migración previa que añade la columna `grade` (`20260722000000_guardian_email.sql`) tampoco se ha ejecutado contra la base de datos real todavía. No marcar como resuelto ante el usuario final hasta confirmar que ambas migraciones corrieron en el SQL Editor de Supabase.
 8. ❓ **Plazos de conservación de datos** — Todos los campos [COMPLETAR] deben ser definidos por la organización.
 
 ---

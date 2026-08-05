@@ -234,6 +234,20 @@ Si el overlay es `position:fixed`, cubre toda la página. Como el overlay wrappe
 
 **Próximo paso**: usar `guardian_email` como gate en el onboarding del test — mostrar pantalla de consentimiento antes del BFI-44, con notificación al acudiente si el campo está disponible.
 
+### Portafolio privado por defecto para estudiantes junior (Sesión 21)
+
+Hallazgo del audit legal (`legal/drafts/02-politica-tratamiento-datos.md`, gap del portafolio público): `portfolio_public` tenía `DEFAULT TRUE` a nivel de columna (migration `20260602300000_portfolio.sql`), sin distinguir edad — un estudiante de grado 3° quedaba con su perfil de liderazgo público exactamente igual que uno de grado 11°, sin que nadie lo hubiera decidido activamente.
+
+**Regla confirmada por el fundador**: Junior (grados 2°-7°) = portafolio **privado por defecto**. Senior (grados 8°-11°) = portafolio **público por defecto** (sin cambios). El corte reutiliza la misma lógica junior/senior de la Sesión 20 (`grade >= 2 && grade <= 7`), no una línea nueva.
+
+**Implementación**: `portfolio_public: !junior` (o `!isJunior` en el callback route) añadido en los 3 puntos donde se crea el profile — `register/page.tsx`, `submit/register/page.tsx`, `auth/callback/route.ts`. No hay trigger ni función de Supabase que cree profiles; los 3 insert están en código de aplicación.
+
+**El toggle manual en Ajustes → Portafolio sigue funcional para todos los niveles sin distinción** — un junior puede poner su portafolio en público desde su propia configuración, sin aprobación del acudiente. Decisión de producto explícita: el default protege, no restringe la agencia del estudiante.
+
+**Migración retroactiva**: `supabase/migrations/20260805000000_junior_portfolio_private_default.sql` — pone `portfolio_public = false` para todos los profiles con `grade` 2-7 que no estuvieran ya en `false`. Se aplica sin excepción porque `profiles` no tiene `updated_at` ni ningún log de cambios de configuración — no hay forma de distinguir "nunca tocó el toggle" de "lo puso en público a propósito", y proteger datos de menores por defecto pesa más que preservar un estado que pudo haber sido accidental desde el origen.
+
+**⚠️ Bloqueado — verificar antes de dar por resuelto**: al intentar ejecutar la migración retroactiva contra la base real (vía service role key), Supabase devolvió `column profiles.grade does not exist`. Esto significa que la migración anterior de la Sesión 20 (`20260722000000_guardian_email.sql`, que añade `grade` y `guardian_email`) **nunca se aplicó a la base de datos de producción** — solo existe como archivo en el repo. Las migraciones de este proyecto no corren automáticamente (no hay `DATABASE_URL` ni Supabase CLI configurado); alguien debe pegarlas manualmente en el SQL Editor de Supabase. **Pendiente**: correr en orden en el SQL Editor: (1) `20260722000000_guardian_email.sql`, (2) `20260805000000_junior_portfolio_private_default.sql`. Hasta entonces, el gate de nivel funciona en el código pero `grade`/`guardian_email`/la corrección retroactiva de `portfolio_public` no existen en producción.
+
 ### Por qué el dashboard se dividió en /dashboard (Hoy) y /dashboard/progreso (Sesión 19)
 
 El dashboard crecía en scroll infinito porque cada bloque fue construido en sesiones separadas sin visión del conjunto: la Zone 1 (identity card) se diseñó sin saber que Zone 3B repetiría los módulos; el accordion de progreso se añadió sin saber que Zone 1 ya mostraba stats de XP/racha. La duplicación era estructural, no superficial.

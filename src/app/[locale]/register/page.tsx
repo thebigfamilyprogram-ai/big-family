@@ -193,6 +193,7 @@ export default function RegisterPage() {
       school_level:   userType === 'student' ? deriveLevel(selectedGrade) : null,
       grade:          userType === 'student' && selectedGrade !== null ? selectedGrade : null,
       guardian_email: junior ? guardianEmail.trim() : null,
+      portfolio_public: !junior,
     })
 
     if (userType === 'coordinator' && coordCodeId) {

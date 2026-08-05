@@ -159,6 +159,7 @@ export default function SubmitRegisterPage() {
       school_level:   junior ? 'junior' : 'senior',
       grade:          selectedGrade,
       guardian_email: junior ? guardianEmail.trim() : null,
+      portfolio_public: !junior,
     })
 
     setEmailSent(true)
