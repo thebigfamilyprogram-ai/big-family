@@ -361,6 +361,17 @@ export default function DashboardPage() {
         supabase.from('projects').select('id, status').eq('user_id', authUser.id),
       ])
       if (modsRes.error || xpRes.error) { setLoadError(true); setLoading(false); return }
+
+      // Session valid but no profile row behind it (deleted after login, or never existed) —
+      // never render a dashboard on placeholder/mock data. Same outcome as the OAuth
+      // no-profile case in proxy.ts: kick to login. Sign out client-side too so the
+      // stale session doesn't keep re-triggering this on every reload.
+      if (!profileRes.data) {
+        await supabase.auth.signOut()
+        router.replace('/login?error=no_profile')
+        return
+      }
+
       const profile      = profileRes.data
       const xpRows       = xpRes.data
       const mods         = modsRes.data

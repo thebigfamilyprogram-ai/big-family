@@ -122,6 +122,12 @@ export default function ProgresoPage() {
         supabase.from('projects').select('id, status').eq('user_id', authUser.id),
       ])
 
+      if (!profileRes.data) {
+        await supabase.auth.signOut()
+        router.replace('/login?error=no_profile')
+        return
+      }
+
       const profile  = profileRes.data
       const xpRows   = xpRes.data ?? []
       const mods     = modsRes.data ?? []

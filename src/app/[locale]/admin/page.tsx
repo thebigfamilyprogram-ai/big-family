@@ -195,7 +195,12 @@ export default function AdminPage() {
       const { data: profile } = await supabase
         .from('profiles').select('display_name, role').eq('id', user.id).maybeSingle()
 
-      if (profile?.role !== 'admin') { router.replace('/dashboard'); return }
+      if (!profile) {
+        await supabase.auth.signOut()
+        router.replace('/login?error=no_profile')
+        return
+      }
+      if (profile.role !== 'admin') { router.replace('/dashboard'); return }
 
       setAdminName(profile?.display_name ?? 'Admin')
       try {
