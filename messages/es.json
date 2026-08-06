@@ -708,7 +708,8 @@
       "guardianPlaceholder": "correo@acudiente.com",
       "guardianHint": "Para estudiantes de 2° a 7°, necesitamos el correo de un padre, madre o acudiente responsable.",
       "errorNoGuardian": "El correo del acudiente es obligatorio para estudiantes de grados 2° a 7°.",
-      "changeGrade": "Cambiar grado"
+      "changeGrade": "Cambiar grado",
+      "errorProfileCreation": "No pudimos completar tu registro. Por favor intenta de nuevo o contáctanos si el problema persiste."
     },
     "forgotPassword": {
       "title": "Recuperar contraseña",
@@ -2879,7 +2880,8 @@
       "gradeLabel": "Grado escolar",
       "gradeSelectPlaceholder": "Selecciona tu grado",
       "guardianHint": "Para estudiantes de 2° a 7°, necesitamos el correo de un padre, madre o acudiente responsable.",
-      "errorNoGrade": "Selecciona tu grado escolar."
+      "errorNoGrade": "Selecciona tu grado escolar.",
+      "errorProfileCreation": "No pudimos completar tu registro. Por favor intenta de nuevo o contáctanos si el problema persiste."
     },
     "project": {
       "pageTitle": "Tu proyecto de liderazgo",

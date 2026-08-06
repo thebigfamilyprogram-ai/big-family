@@ -184,7 +184,7 @@ export default function RegisterPage() {
 
     const uid = data.user.id
 
-    await supabase.from('profiles').insert({
+    const { error: profileError } = await supabase.from('profiles').insert({
       id:             uid,
       display_name:   fullName,
       email,
@@ -195,6 +195,13 @@ export default function RegisterPage() {
       guardian_email: junior ? guardianEmail.trim() : null,
       portfolio_public: !junior,
     })
+
+    if (profileError) {
+      await supabase.auth.signOut()
+      setFormLoading(false)
+      setFormError(t('errorProfileCreation'))
+      return
+    }
 
     if (userType === 'coordinator' && coordCodeId) {
       await supabase

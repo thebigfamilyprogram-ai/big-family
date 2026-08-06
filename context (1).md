@@ -7,7 +7,7 @@
 ## Features Completas
 
 ### Core Platform
-- **Auth completo** — Google OAuth + email/password, forgot password, confirmación de email (desactivada temporalmente), roles por código de acceso (3 pasos: código → nivel → OAuth)
+- **Auth completo** — Google OAuth + email/password, forgot password, confirmación de email desactivada intencionalmente (ver Sesión 23 — el registro por código de colegio es el gate real de pertenencia), roles por código de acceso
 - **Dashboard estudiante** — XP, módulos, capstone, progreso de liderazgo, frase del día
 - **Módulos (7 oficiales)** — Video, quiz con 2 intentos, badges, progreso, XP rewards
 - **Sistema de quiz** — Anti-tab-switch detection, intentos guardados, solicitud de reintento al coordinador
@@ -261,6 +261,31 @@ Hallazgo del audit legal (`legal/drafts/02-politica-tratamiento-datos.md`, gap d
 **Hallazgo adicional, más urgente que el bug original**: al auditar la base real antes de considerar apagar `MOCK_MODE`, se encontró que **`profiles` tiene 0 filas** mientras `auth.users` tiene 11 cuentas reales (Luis Barrios, coordinadores, `samuelgomezm1509@gmail.com`, etc.). Ninguna cuenta real tiene profile. Apagar `MOCK_MODE` en este estado bloquearía a los 11 usuarios reales del acceso a la plataforma vía el mismo gate de `proxy.ts`/`dashboard/page.tsx` que se acaba de reforzar. **Decisión del fundador (Sesión 22): MOCK_MODE se mantiene en `true` por ahora** — no se apaga hasta resolver el backfill de `profiles` para las 11 cuentas reales, que es un problema independiente y más urgente (probablemente relacionado con que `20260722000000_guardian_email.sql` tampoco corrió — ver nota de la Sesión 21 arriba; hay que confirmar si ninguna migración de columnas en `profiles` se ha aplicado nunca contra la base real, o si el problema es más profundo, e.g. el trigger/flujo que debía crear esas filas nunca se ejecutó para estas 11 cuentas).
 
 **Estado de `MOCK_MODE` tras este fix**: sigue en `true`. El fix de expulsión a login queda listo en el código para el momento en que se apague, pero no se pudo verificar en vivo (usuario de prueba + Playwright) porque hacerlo requería MOCK_MODE=false, y esta sesión decidió no tocar ese flag dado el hallazgo de `profiles` vacía. Verificar en vivo cuando se resuelva el backfill.
+
+### Causa raíz y fix: registro por email no creaba profile (Sesión 23)
+
+Investigación de por qué `profiles` estaba en 0 filas con 11 cuentas reales en `auth.users`. Descartada la hipótesis de un trigger de Supabase nunca aplicado: no existe ningún `CREATE TRIGGER`/`handle_new_user` en el repo — la arquitectura nunca dependió de un trigger, cada punto de registro hace un `INSERT` manual a `profiles` desde el código de aplicación. Tampoco hay un `CREATE TABLE profiles` en las migraciones versionadas: la tabla y sus políticas RLS se crearon a mano en el dashboard de Supabase, antes de que empezara el flujo de migraciones de este repo (la más antigua es del 22 de mayo).
+
+**Causa raíz confirmada por reproducción en vivo (cuenta desechable, creada y borrada por la propia sesión de diagnóstico)**: dos problemas independientes, ambos necesarios para que el registro por email funcionara:
+
+1. **"Confirm email" activo en el proyecto de Supabase** — contradice la nota anterior de este documento que decía "desactivada temporalmente" (nota desactualizada, corregida aquí). Sin confirmación, `supabase.auth.signUp()` no devolvía sesión activa de inmediato, así que el `INSERT` a `profiles` que sigue corría como `anon` sin autenticar. **Corregido**: el fundador desactivó "Confirm email" manualmente en el dashboard de Supabase (Ruta B de las dos evaluadas — se prefirió sobre construir un flujo de confirmación post-signup porque el código de colegio ya es el gate real de pertenencia, y coincidía con lo que el proyecto ya asumía como comportamiento intencional).
+2. **`profiles` no tenía ninguna política RLS de `INSERT` funcional para el rol `authenticated`** — un problema totalmente independiente del anterior. Incluso con sesión activa y `auth.uid()` coincidiendo con el `id` insertado, el insert seguía siendo rechazado con `42501`. Corregido con `supabase/migrations/20260806000000_profiles_insert_policy.sql`, que agrega `CREATE POLICY "profiles_insert_own" ON profiles FOR INSERT TO authenticated WITH CHECK (auth.uid() = id)` — política aditiva y permisiva, no requiere conocer ni tocar las políticas ya existentes en la tabla.
+
+Ninguno de los dos archivos de registro (`register/page.tsx`, `submit/register/page.tsx`) revisaba el `{error}` del insert — el fallo era 100% silencioso: el usuario veía "registro exitoso" y quedaba con una cuenta fantasma en `auth.users` sin fila en `profiles`. **Fix de Parte 1 (independiente de la causa raíz, ya aplicado)**: ambos archivos ahora capturan `{error: profileError}`, y si falla, cierran la sesión (`signOut()`) y muestran `errorProfileCreation` (nueva key i18n en los 5 locales, bajo `auth.register` y `submit.register`) en vez de dejar avanzar al usuario. Esto por sí solo ya frena la aparición de cuentas fantasma nuevas, incluso si la causa raíz de RLS/confirmación volviera a romperse en el futuro por cualquier otro motivo.
+
+**Verificado en vivo, de punta a punta, tras ambos fixes**: `signUp()` devuelve sesión inmediata, el insert a `profiles` corre sin error, y una lectura independiente vía service role confirma la fila físicamente en la tabla. Verificación adicional con Playwright contra el formulario real (no vía API directa) en `/register`, clic por clic, para un caso senior (grado 10°) y uno junior (grado 5°): ambos crean su `profiles` row correctamente, incluyendo el campo `guardian_email` para el caso junior y `portfolio_public: false` derivado automáticamente. Cuentas de prueba desechables, borradas al terminar.
+
+El flujo de Google OAuth (`auth/callback/route.ts`) nunca tuvo este problema — usa `createSupabaseAdminClient()` (service role), que ignora RLS por completo, así que no dependía de ninguno de los dos fixes.
+
+### Backfill de las 11 cuentas huérfanas: se optó por reset completo en vez de backfill (Sesión 24)
+
+Al presentar el mapeo correo→rol/colegio/nombre pedido para las 11 cuentas identificadas en la Sesión 22, se descubrió que el `full_name` en el `user_metadata` de 7 de ellas (Grupo A) no correspondía a la persona dueña del correo — venía con la clave `full_name` (no `display_name`), lo que apunta a que se crearon probando el formulario con una versión de código anterior al rename `full_name`→`display_name` documentado como bug histórico arriba. Antes de borrarlas se encontró que 4 de esas 7 sí tenían un `project` real asociado (uno con reflexión IDEMR completa y detallada, `APRENDER JUGANDO`; otro marcado como enviado formalmente con `submitted_at`) — se verificó con el fundador cuenta por cuenta antes de tocar nada, ya que el metadata sospechoso no era prueba suficiente de que el trabajo detrás fuera falso.
+
+**Decisión final del fundador**: borrar las 11 cuentas por completo (incluida `luis.barrios@colegioalbania.edu.co` y los proyectos reales confirmados) y empezar de cero, en vez de backfillear. Motivo: con el registro ya arreglado (Sesión 23), es más simple que cada persona real se registre de nuevo por el flujo normal que reconstruir manualmente 11 perfiles con datos de un día de pruebas.
+
+**Ejecutado**: borradas las 11 filas de `auth.users` y toda la data de prueba que las referenciaba — 4 `projects`, 1 `news` (borrador vacío nunca publicado), 2 `modules` + 1 `questions` (borradores vacíos de un expositor de prueba), reseteado `expositor_codes` (`EXPO-BF-2026`: `used: false, used_by: null`) para que quede disponible para un expositor real. Verificado: `auth.users` y `profiles` en 0 filas, plataforma en blanco limpio.
+
+**Esto remueve el bloqueo que mantenía `MOCK_MODE = true`** (Sesión 22: "no se apaga hasta resolver el backfill de las 11 cuentas reales") — ya no hay cuentas huérfanas que se romperían al apagarlo. Sigue en `true` por ahora; apagarlo es una decisión aparte, no tomada en esta sesión.
 
 ### Por qué el dashboard se dividió en /dashboard (Hoy) y /dashboard/progreso (Sesión 19)
 

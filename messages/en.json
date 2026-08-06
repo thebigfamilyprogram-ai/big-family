@@ -708,7 +708,8 @@
       "guardianPlaceholder": "guardian@example.com",
       "guardianHint": "For students in grades 2–7, we need an email for a parent, guardian, or responsible adult.",
       "errorNoGuardian": "Guardian email is required for students in grades 2–7.",
-      "changeGrade": "Change grade"
+      "changeGrade": "Change grade",
+      "errorProfileCreation": "We couldn't complete your registration. Please try again or contact us if the problem persists."
     },
     "forgotPassword": {
       "title": "Reset password",
@@ -2593,7 +2594,8 @@
       "gradeLabel": "School grade",
       "gradeSelectPlaceholder": "Select your grade",
       "guardianHint": "For students in grades 2–7, we need a guardian email.",
-      "errorNoGrade": "Please select your school grade."
+      "errorNoGrade": "Please select your school grade.",
+      "errorProfileCreation": "We couldn't complete your registration. Please try again or contact us if the problem persists."
     },
     "project": {
       "pageTitle": "Your leadership project",

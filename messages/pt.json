@@ -708,7 +708,8 @@
       "guardianPlaceholder": "responsavel@exemplo.com",
       "guardianHint": "Para estudantes do 2° ao 7° ano, precisamos do e-mail de um pai, mãe ou responsável.",
       "errorNoGuardian": "O e-mail do responsável é obrigatório para estudantes do 2° ao 7° ano.",
-      "changeGrade": "Mudar série"
+      "changeGrade": "Mudar série",
+      "errorProfileCreation": "Não conseguimos concluir seu registro. Tente novamente ou entre em contato se o problema persistir."
     },
     "forgotPassword": {
       "title": "Recuperar senha",
@@ -2593,7 +2594,8 @@
       "gradeLabel": "Série escolar",
       "gradeSelectPlaceholder": "Selecione a sua série",
       "guardianHint": "Para estudantes do 2° ao 7° ano, precisamos de um e-mail de responsável.",
-      "errorNoGrade": "Selecione a sua série escolar."
+      "errorNoGrade": "Selecione a sua série escolar.",
+      "errorProfileCreation": "Não conseguimos concluir seu registro. Tente novamente ou entre em contato se o problema persistir."
     },
     "project": {
       "pageTitle": "Seu projeto de liderança",

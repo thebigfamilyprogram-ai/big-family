@@ -708,7 +708,8 @@
       "guardianPlaceholder": "responsable@exemple.com",
       "guardianHint": "Pour les élèves de la 2e à la 7e année, nous avons besoin de l'email d'un parent ou responsable légal.",
       "errorNoGuardian": "L'email du responsable légal est obligatoire pour les élèves de la 2e à la 7e année.",
-      "changeGrade": "Changer de niveau"
+      "changeGrade": "Changer de niveau",
+      "errorProfileCreation": "Nous n'avons pas pu finaliser votre inscription. Veuillez réessayer ou nous contacter si le problème persiste."
     },
     "forgotPassword": {
       "title": "Réinitialiser le mot de passe",
@@ -2593,7 +2594,8 @@
       "gradeLabel": "Niveau scolaire",
       "gradeSelectPlaceholder": "Sélectionne ton niveau",
       "guardianHint": "Pour les élèves de la 2e à la 7e année, un email de responsable est requis.",
-      "errorNoGrade": "Sélectionne ton niveau scolaire."
+      "errorNoGrade": "Sélectionne ton niveau scolaire.",
+      "errorProfileCreation": "Nous n'avons pas pu finaliser votre inscription. Veuillez réessayer ou nous contacter si le problème persiste."
     },
     "project": {
       "pageTitle": "Ton projet de leadership",

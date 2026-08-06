@@ -150,7 +150,7 @@ export default function SubmitRegisterPage() {
 
     const uid = data.user.id
 
-    await supabase.from('profiles').insert({
+    const { error: profileError } = await supabase.from('profiles').insert({
       id:             uid,
       display_name:   fullName,
       email,
@@ -162,6 +162,14 @@ export default function SubmitRegisterPage() {
       portfolio_public: !junior,
     })
 
+    if (profileError) {
+      await supabase.auth.signOut()
+      setFormLoading(false)
+      setFormError(tR('errorProfileCreation'))
+      return
+    }
+
+    setFormLoading(false)
     setEmailSent(true)
   }
 
