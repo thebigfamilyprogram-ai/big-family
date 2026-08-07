@@ -141,6 +141,15 @@ El orden de render SVG determina z-index (elementos posteriores = encima).
 --surface-2: var(--bg)
 --surface-3: var(--bg-2)
 /* [data-theme="dark"]: --surface-1: #1C1B19; --surface-2: #141412 */
+
+/* Siempre #0D0D0D — declarado solo en :root, NUNCA redefinido en html.dark.
+   Úsalo para secciones "editorial dark" deliberadamente negras en ambos temas
+   (Misión, Visión, Historia, About/Founder, CTA final, Testimonios, Impacto,
+   Validación Internacional, footer de la landing en GlobeHero.tsx). Nunca
+   escribir #0D0D0D/#080808/#070707/#060606 literal en un background de
+   sección — siempre var(--surface-inverse, HEX_ORIGINAL) como fallback. */
+--surface-inverse: #0D0D0D
+--text-on-inverse: #F5F3EF
 ```
 
 ---

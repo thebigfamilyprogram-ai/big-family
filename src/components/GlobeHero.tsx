@@ -94,7 +94,7 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
         }
         @media(max-width:960px){.hero{grid-template-columns:1fr;padding:80px 24px 100px;}.right{order:-1;height:280px;}.left{order:1;}.meta{left:20px;right:20px;}}
         /* ── MISIÓN ──────────────────────────────────────────────────────────── */
-        .mision{background:#080808;padding:136px 40px;}
+        .mision{background:var(--surface-inverse,#080808);padding:136px 40px;}
         .mision__inner{max-width:900px;margin:0 auto;text-align:center;}
         .mision__eyebrow-pill{display:inline-flex;align-items:center;border:1px solid rgba(192,57,43,0.3);background:rgba(192,57,43,0.08);color:#C0392B;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;border-radius:999px;padding:6px 16px;margin-bottom:40px;}
         .mision__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(52px,7vw,96px);line-height:1.0;letter-spacing:-0.04em;margin-top:0;}
@@ -108,7 +108,7 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
         .mision__stat-num em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:#C0392B;font-size:48px;}
         .mision__stat-label{font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-top:8px;}
         /* ── VISIÓN ──────────────────────────────────────────────────────────── */
-        .vision{background:#0D0D0D;border-top:1px solid rgba(255,255,255,.06);padding:96px 40px;position:relative;overflow:hidden;}
+        .vision{background:var(--surface-inverse,#0D0D0D);border-top:1px solid rgba(255,255,255,.06);padding:96px 40px;position:relative;overflow:hidden;}
         .vision__watermark{position:absolute;bottom:-20px;right:-10px;font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(120px,15vw,220px);color:rgba(255,255,255,.05);line-height:1;letter-spacing:-.06em;pointer-events:none;user-select:none;z-index:0;}
         .vision__inner{max-width:1200px;margin:0 auto;position:relative;z-index:1;display:flex;flex-direction:column;gap:52px;}
         .vision__row1{display:flex;flex-direction:column;gap:14px;}
@@ -149,7 +149,7 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
           .sc-dp{}
         }
         /* ── NUESTRA HISTORIA ───────────────────────────────────────────────── */
-        .historia{position:relative;background:#070707;padding:112px 40px;overflow:hidden;}
+        .historia{position:relative;background:var(--surface-inverse,#070707);padding:112px 40px;overflow:hidden;}
         .historia__grain{position:absolute;inset:0;pointer-events:none;z-index:0;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");opacity:0.35;mix-blend-mode:overlay;}
         .historia__radial{position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 90% 60% at 50% -10%,rgba(192,57,43,0.14),transparent 70%);}
         .historia__particle{position:absolute;border-radius:50%;background:rgba(192,57,43,0.4);pointer-events:none;z-index:0;animation:particleFloat linear infinite;}
@@ -173,7 +173,7 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
         .bento__desc{font-family:"Satoshi",sans-serif;font-size:14px;color:rgba(255,255,255,0.45);line-height:1.65;}
         .bento__tag{display:inline-block;margin-top:20px;border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.35);font-size:11px;letter-spacing:0.15em;border-radius:999px;padding:4px 12px;}
         /* ── ABOUT DARK ─────────────────────────────────────────────────────── */
-        .about-dark{background:#080808;padding:80px 40px;border-top:1px solid rgba(255,255,255,0.06);}
+        .about-dark{background:var(--surface-inverse,#080808);padding:80px 40px;border-top:1px solid rgba(255,255,255,0.06);}
         .about-dark__inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:center;}
         .about-dark__photo-wrap{position:relative;}
         .about-dark__photo-perspective{perspective:1200px;}
@@ -325,7 +325,7 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
         }
         @media(prefers-reduced-motion:reduce){.sec-valores__tile,.sec-valores__tile:hover{transform:none;}}
         /* ── TESTIMONIOS ── */
-        .sec-test{background:#080808;padding:112px 40px;border-top:1px solid rgba(255,255,255,.06);}
+        .sec-test{background:var(--surface-inverse,#080808);padding:112px 40px;border-top:1px solid rgba(255,255,255,.06);}
         .sec-test__inner{max-width:1200px;margin:0 auto;}
         .sec-test__header{text-align:center;margin-bottom:64px;}
         .sec-test__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:16px;}
@@ -356,7 +356,7 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
         .sec-faq__a{font-size:15px;color:var(--mute);line-height:1.7;padding:0 0 22px;}
         @media(max-width:960px){.sec-faq{padding:80px 24px;}}
         /* ── CTA FINAL ── */
-        .sec-cta{background:#080808;padding:120px 40px;text-align:center;border-top:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden;}
+        .sec-cta{background:var(--surface-inverse,#080808);padding:120px 40px;text-align:center;border-top:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden;}
         .sec-cta::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 110%,rgba(192,57,43,.18),transparent 70%);pointer-events:none;}
         .sec-cta__inner{max-width:800px;margin:0 auto;position:relative;z-index:1;}
         .sec-cta__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:20px;}
@@ -371,7 +371,7 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
         .sec-cta__btn-g:hover{border-color:rgba(255,255,255,.5);color:#fff;}
         @media(max-width:600px){.sec-cta{padding:80px 24px;}.sec-cta__btns{flex-direction:column;align-items:center;}}
         /* ── FOOTER ── */
-        .bf-footer{background:#060606;padding:60px 40px 40px;border-top:1px solid rgba(255,255,255,.05);}
+        .bf-footer{background:var(--surface-inverse,#060606);padding:60px 40px 40px;border-top:1px solid rgba(255,255,255,.05);}
         .bf-footer__inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:60px;margin-bottom:48px;}
         .bf-footer__brand-name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:16px;color:#fff;margin:14px 0 10px;}
         .bf-footer__brand-desc{font-family:"Satoshi",sans-serif;font-size:13px;color:rgba(255,255,255,.38);line-height:1.6;max-width:280px;}

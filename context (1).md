@@ -287,6 +287,18 @@ Al presentar el mapeo correo→rol/colegio/nombre pedido para las 11 cuentas ide
 
 **Esto remueve el bloqueo que mantenía `MOCK_MODE = true`** (Sesión 22: "no se apaga hasta resolver el backfill de las 11 cuentas reales") — ya no hay cuentas huérfanas que se romperían al apagarlo. Sigue en `true` por ahora; apagarlo es una decisión aparte, no tomada en esta sesión.
 
+### Fix dark mode audit — secciones "editorial dark" con negro hardcodeado en GlobeHero.tsx (Sesión 25)
+
+Reporte: en modo claro, varias secciones de la landing se veían negras (mismo negro que en modo oscuro) mientras el resto de la página sí respondía al tema. Diagnóstico: NO era un bug del toggle/tema global — son secciones "editorial dark" (fondo negro deliberado con texto blanco, contraste tipo revista de lujo) donde algunas usaban el token correcto y otras tenían el color pegado directo.
+
+**Ya existía el token correcto**: `--surface-inverse: #0D0D0D` (declarado en `src/app/layout.tsx:47`, solo en el bloque `:root`/light, nunca redefinido en `html.dark` — por eso su valor es el mismo en ambos temas). Se creó en una sesión anterior para el banner `cert-unlocked` del dashboard, y ya lo usaban correctamente `.sec-impacto` (Impacto en Números) y `.sec-valid` (Validación Internacional) en `GlobeHero.tsx`.
+
+**Hardcodeado sin pasar por el token** (mismo resultado visual, pero violando la convención de CLAUDE.md de nunca hardcodear colores): `.mision` (`#080808`), `.vision` (`#0D0D0D`), `.sec-cta` (`#080808` — es la sección que el reporte llamaba "Hero" por error; en realidad es el CTA final "Tu liderazgo empieza aquí."), `.bf-footer` (`#060606`) — las 4 activas en la landing hoy — más `.historia`, `.about-dark`, `.sec-test` (`#070707`/`#080808`/`#080808`), que resultaron ser **CSS huérfano**: ninguna ruta actual de `(landing)/` las renderiza, quedaron de un rediseño anterior. Las 7 se corrigieron igual, por consistencia y porque si se reactivan en el futuro ya quedan bien.
+
+**Fix**: las 7 reglas ahora usan `var(--surface-inverse, HEX_ORIGINAL)` en vez del literal — el fallback preserva el valor exacto por si el token alguna vez no está disponible, pero en la práctica todas convergen al mismo `#0D0D0D` ya que el token siempre está definido. Documentado `--surface-inverse`/`--text-on-inverse` en `CLAUDE.md` bajo CSS Variables (no estaban listados ahí pese a estar en uso desde antes).
+
+**Verificado con Playwright** (`localStorage.setItem('bf-theme', ...)` + screenshot por sección, luz y oscuro): Impacto, Misión, Visión, CTA y Footer confirmados negros e idénticos en ambos temas — cero diferencia visual entre el antes (hardcode) y el después (token), como se esperaba dado que el token resuelve al mismo valor. Confirmado que `Equipo` (sección que sí debe seguir el tema) se mantiene clara en modo claro — el fix no afectó nada fuera de las 7 reglas tocadas. Barrido completo de `(landing)/`, `PublicNavbar.tsx`, `WorldMapPublic.tsx` y demás componentes de la landing: sin más fondos hardcodeados fuera de `GlobeHero.tsx`.
+
 ### Por qué el dashboard se dividió en /dashboard (Hoy) y /dashboard/progreso (Sesión 19)
 
 El dashboard crecía en scroll infinito porque cada bloque fue construido en sesiones separadas sin visión del conjunto: la Zone 1 (identity card) se diseñó sin saber que Zone 3B repetiría los módulos; el accordion de progreso se añadió sin saber que Zone 1 ya mostraba stats de XP/racha. La duplicación era estructural, no superficial.
