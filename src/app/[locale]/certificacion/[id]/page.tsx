@@ -99,24 +99,50 @@ function MiniPentagon({ profile }: { profile: LeaderProfile }) {
 
 // ── Seal SVG ─────────────────────────────────────────────────────────────────
 
+// Beaded ring — small dots evenly spaced on a circle, classic wax-seal detail
+function BeadRing({ r, count, size }: { r: number; count: number; size: number }) {
+  const dots = Array.from({ length: count }, (_, i) => {
+    const a = (i / count) * Math.PI * 2
+    return { cx: 50 + r * Math.cos(a), cy: 50 + r * Math.sin(a) }
+  })
+  return (
+    <>
+      {dots.map((d, i) => (
+        <circle key={i} cx={d.cx} cy={d.cy} r={size} fill="#C0392B" opacity={0.55} />
+      ))}
+    </>
+  )
+}
+
 function Seal() {
   return (
     <svg
       viewBox="0 0 100 100"
-      width="84"
-      height="84"
+      width="94"
+      height="94"
       aria-hidden="true"
       focusable="false"
     >
       <defs>
         {/* Counter-clockwise from (8,50) through top to (92,50) — text reads L→R at top */}
         <path id="cert-seal-arc" d="M 8 50 A 42 42 0 0 0 92 50" />
+        <radialGradient id="cert-seal-glow" cx="50%" cy="42%" r="60%">
+          <stop offset="0%"  stopColor="#C0392B" stopOpacity="0.10" />
+          <stop offset="100%" stopColor="#C0392B" stopOpacity="0" />
+        </radialGradient>
       </defs>
+
+      {/* Wax-like radial tint behind everything */}
+      <circle cx="50" cy="50" r="46" fill="url(#cert-seal-glow)" />
 
       {/* Outer ring */}
       <circle cx="50" cy="50" r="47" fill="none" stroke="#C0392B" strokeWidth="1.5" />
+      {/* Beaded detail ring — sits between outer and inner rings */}
+      <BeadRing r={43.5} count={40} size={0.55} />
       {/* Inner ring */}
       <circle cx="50" cy="50" r="40" fill="none" stroke="#C0392B" strokeWidth="0.6" />
+      {/* Innermost hairline — third ring, tight around the star */}
+      <circle cx="50" cy="50" r="24" fill="none" stroke="#C0392B" strokeWidth="0.5" opacity="0.4" />
 
       {/* Arc text */}
       <text
@@ -323,42 +349,42 @@ export default function CertificacionPage() {
         }
         .dp-card{
           background:var(--card-bg,#FFFFFF);border-radius:4px;
-          padding:48px 72px;
+          padding:60px 76px;
           position:relative;width:100%;max-width:900px;
           box-shadow:0 20px 60px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);
         }
         /* Outer ornamental border */
         .dp-card::before{
           content:"";position:absolute;inset:0;border-radius:4px;
-          border:2px solid #C0392B;pointer-events:none;
+          border:3px solid #C0392B;pointer-events:none;
         }
-        /* Inner ornamental border — 6px gap from outer (outer is 2px, inset 8 = 6px gap) */
+        /* Inner ornamental border — wider gap from outer for a real double-bezel read */
         .dp-card::after{
-          content:"";position:absolute;inset:8px;border-radius:2px;
-          border:1px solid rgba(192,57,43,.25);pointer-events:none;
+          content:"";position:absolute;inset:14px;border-radius:2px;
+          border:1px solid rgba(192,57,43,.28);pointer-events:none;
         }
         .dp-sep{height:1px;background:rgba(192,57,43,.22);}
         .dp-sig-line{height:1px;background:var(--line,rgba(13,13,13,.14));margin-bottom:9px;width:200px;}
         .dp-val-logo{height:48px;object-fit:contain;}
         /* Stats+val row collapses to column on mobile */
-        .dp-stats-row{display:flex;justify-content:center;align-items:center;margin:22px 0;flex-wrap:wrap;gap:0;}
-        .dp-stats-cell{text-align:center;padding:10px 28px;}
+        .dp-stats-row{display:flex;justify-content:center;align-items:center;margin:30px 0;flex-wrap:wrap;gap:0;}
+        .dp-stats-cell{text-align:center;padding:10px 24px;}
         .dp-stats-vsep{width:1px;height:40px;background:rgba(13,13,13,.12);flex-shrink:0;}
         @media(max-width:640px){
-          .dp-card{padding:40px 28px;max-width:100%;}
-          .dp-card::after{inset:6px;}
+          .dp-card{padding:44px 28px;max-width:100%;}
+          .dp-card::after{inset:9px;}
           .dp-stats-row{flex-direction:column;gap:18px;}
           .dp-stats-vsep{display:none;}
           .dp-val-logo{height:36px;}
         }
         @media(max-width:480px){
-          .dp-card{padding:32px 20px;}
-          .dp-card::after{inset:5px;}
+          .dp-card{padding:36px 20px;}
+          .dp-card::after{inset:7px;}
           .dp-sig-line{width:100%;}
           .dp-firma-row{flex-direction:column;gap:20px;align-items:center;}
         }
         @media print{
-          .no-print{display:none!important;}
+          .no-print,.dp-confetti{display:none!important;}
           html,body{background:#FAF8F4!important;}
           .dp-page{background:#FAF8F4!important;padding:0!important;min-height:auto!important;}
           .dp-card{box-shadow:none!important;max-width:100%!important;}
@@ -375,6 +401,7 @@ export default function CertificacionPage() {
       {confettiActive && PARTICLES.map(p => (
         <div
           key={p.id}
+          className="dp-confetti"
           style={{
             position: 'fixed', top: 0, left: `${p.left}%`,
             width: p.size, height: p.circle ? p.size : Math.round(p.size * 1.6),
@@ -443,7 +470,7 @@ export default function CertificacionPage() {
             {/* 3 — "Este certificado se otorga a" */}
             <m.p
               style={{
-                textAlign: 'center', marginTop: 28, marginBottom: 14,
+                textAlign: 'center', marginTop: 36, marginBottom: 18,
                 fontFamily: '"Satoshi",sans-serif', fontSize: 13.5,
                 color: 'var(--mute,#6B6B6B)', fontStyle: 'italic',
               }}
@@ -457,10 +484,10 @@ export default function CertificacionPage() {
             {/* 4 — Nombre del estudiante — Instrument Serif italic */}
             <m.h1
               style={{
-                textAlign: 'center', marginBottom: data.leaderProfile ? 4 : 20,
+                textAlign: 'center', marginBottom: data.leaderProfile ? 6 : 24,
                 fontFamily: '"Instrument Serif",serif', fontStyle: 'italic', fontWeight: 400,
-                fontSize: 'clamp(2.2rem,5vw,3.6rem)',
-                lineHeight: 1.1, color: 'var(--ink,#0D0D0D)', letterSpacing: '-0.02em',
+                fontSize: 'clamp(2.5rem,6vw,4.4rem)',
+                lineHeight: 1.08, color: 'var(--ink,#0D0D0D)', letterSpacing: '-0.02em',
               }}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -489,7 +516,7 @@ export default function CertificacionPage() {
             {/* 5 — "por haber completado exitosamente..." */}
             <m.p
               style={{
-                textAlign: 'center', marginBottom: 10,
+                textAlign: 'center', marginBottom: 16,
                 fontFamily: '"Satoshi",sans-serif', fontSize: 14,
                 color: 'var(--mute,#6B6B6B)',
               }}
@@ -500,20 +527,26 @@ export default function CertificacionPage() {
               por haber completado exitosamente el programa de liderazgo
             </m.p>
 
-            {/* 6 — THE BIG LEADER */}
-            <m.p
+            {/* 6 — THE BIG LEADER — el logro central, flanqueado por líneas ornamentales */}
+            <m.div
               style={{
-                textAlign: 'center', marginBottom: isMencion ? 8 : 22,
-                fontFamily: '"Satoshi",sans-serif', fontWeight: 700,
-                fontSize: 15, letterSpacing: '0.22em', textTransform: 'uppercase',
-                color: '#C0392B',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14,
+                marginBottom: isMencion ? 10 : 26,
               }}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={sp(1.05)}
             >
-              The Big Leader
-            </m.p>
+              <span style={{ width: 28, height: 1, background: 'rgba(192,57,43,.35)', flexShrink: 0 }} />
+              <p style={{
+                fontFamily: '"Satoshi",sans-serif', fontWeight: 700,
+                fontSize: 16, letterSpacing: '0.26em', textTransform: 'uppercase',
+                color: '#C0392B', whiteSpace: 'nowrap',
+              }}>
+                The Big Leader
+              </p>
+              <span style={{ width: 28, height: 1, background: 'rgba(192,57,43,.35)', flexShrink: 0 }} />
+            </m.div>
 
             {/* Mención de Honor badge — amber, solo si aplica */}
             {isMencion && (
@@ -539,7 +572,7 @@ export default function CertificacionPage() {
             {/* 7 — Colegio */}
             <m.p
               style={{
-                textAlign: 'center', marginBottom: 6,
+                textAlign: 'center', marginBottom: 8,
                 fontFamily: '"Satoshi",sans-serif', fontSize: 13,
                 color: 'var(--mute,#6B6B6B)',
               }}
@@ -553,7 +586,7 @@ export default function CertificacionPage() {
             {/* 8 — Fecha */}
             <m.p
               style={{
-                textAlign: 'center', marginBottom: 28,
+                textAlign: 'center', marginBottom: 34,
                 fontFamily: '"Satoshi",sans-serif', fontSize: 13,
                 color: 'var(--mute,#6B6B6B)',
               }}
@@ -584,15 +617,15 @@ export default function CertificacionPage() {
               {/* XP */}
               <div className="dp-stats-cell">
                 <div style={{
-                  fontFamily: '"Satoshi",sans-serif', fontWeight: 900, fontSize: 28,
-                  color: '#C0392B', letterSpacing: '-0.02em',
+                  fontFamily: '"Satoshi",sans-serif', fontWeight: 900, fontSize: 38,
+                  color: '#C0392B', letterSpacing: '-0.02em', lineHeight: 1,
                 }}>
                   {data.totalXP.toLocaleString('es-CO')}
                 </div>
                 <div style={{
                   fontFamily: '"Satoshi",sans-serif', fontSize: 10,
                   letterSpacing: '0.18em', textTransform: 'uppercase',
-                  color: 'var(--mute,#6B6B6B)', marginTop: 4,
+                  color: 'var(--mute,#6B6B6B)', marginTop: 7,
                 }}>
                   Puntos de Impacto
                 </div>
@@ -603,15 +636,15 @@ export default function CertificacionPage() {
               {/* Módulos */}
               <div className="dp-stats-cell">
                 <div style={{
-                  fontFamily: '"Satoshi",sans-serif', fontWeight: 900, fontSize: 28,
-                  color: '#C0392B', letterSpacing: '-0.02em',
+                  fontFamily: '"Satoshi",sans-serif', fontWeight: 900, fontSize: 38,
+                  color: '#C0392B', letterSpacing: '-0.02em', lineHeight: 1,
                 }}>
                   {data.modulesCompleted}
                 </div>
                 <div style={{
                   fontFamily: '"Satoshi",sans-serif', fontSize: 10,
                   letterSpacing: '0.18em', textTransform: 'uppercase',
-                  color: 'var(--mute,#6B6B6B)', marginTop: 4,
+                  color: 'var(--mute,#6B6B6B)', marginTop: 7,
                 }}>
                   Módulos Completados
                 </div>
@@ -651,7 +684,7 @@ export default function CertificacionPage() {
               className="dp-firma-row"
               style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
-                marginTop: 22,
+                marginTop: 32,
               }}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
