@@ -299,6 +299,19 @@ Reporte: en modo claro, varias secciones de la landing se veían negras (mismo n
 
 **Verificado con Playwright** (`localStorage.setItem('bf-theme', ...)` + screenshot por sección, luz y oscuro, dos rondas — antes y después de la corrección): las 6 secciones activas hoy en la landing (CTA, Impacto, Misión, Visión, Validación, Footer) confirmadas claras con texto oscuro en modo claro, y negras con texto claro en modo oscuro — igual que el resto del sitio. `Validación Internacional` incluso mejoró en dark mode: las cards ahora usan `var(--card-bg)` (gris oscuro sólido) en vez del `rgba(255,255,255,.04)` casi invisible de antes. `Equipo` confirmada sin cambios. Barrido completo de `(landing)/`, `PublicNavbar.tsx`, `WorldMapPublic.tsx` y demás componentes: sin más fondos hardcodeados fuera de `GlobeHero.tsx`.
 
+### Legibilidad de los pentágonos de arquetipo en AprendizajeSection.tsx (Sesión 26)
+
+Reporte confirmado con el fundador: los 5 pentágonos/radar de arquetipos (`/metodologia`, componente `AprendizajeSection.tsx`) eran ilegibles en su estado cerrado — cada pico del pentágono representa un pilar del Big Leader Model (Yo/Norte/Vínculo/Acción/Legado) y el tamaño del radar rojo la fuerza relativa del arquetipo en ese pilar, pero sin abrir el panel no había forma de saber qué pico era cuál.
+
+**Fix en `ArchPentagon`** (componente compartido por la card cerrada y el panel expandido):
+- Pentágono de la card: `size` 120px → 150px (radio del radar en unidades de viewBox 52 → 48, pero el tamaño físico neto sigue creciendo porque escala con `size`: ~39px → ~45px de radio real).
+- 5 labels de pilar añadidas junto a cada vértice, ancladas por ángulo (mismo patrón radial ya usado en el mapa Hoshin Kanri para posicionar elementos alrededor de un centro): `textAnchor` `start`/`end`/`middle` según el signo del coseno del ángulo, offset vertical (`dy`) según el signo del seno. `<svg style={{overflow:'visible'}}>` para que las labels puedan extenderse más allá del viewBox nominal sin recortarse.
+- Los 2 pilares "fuertes" de cada arquetipo (los mismos que ya se mostraban como pills debajo) se distinguen visualmente sin leer texto: label en `var(--accent-teal)` en vez de `var(--mute)`, y su punto en el radar más grande (`r=5` vs `r=3` en los otros 3).
+- `showLabels` es un prop opcional (default `true`) — se activó tanto en la card cerrada como en el panel expandido (200px) para que el radar grande también quede autoexplicativo, no solo la card.
+- Los pills de texto "Norte"/"Acción" debajo de cada card se mantuvieron intactos como refuerzo redundante, tal como se pidió — no se reemplazaron por las labels del SVG.
+
+**Verificado**: `npx tsc --noEmit` limpio. Grid 3+2 sigue sin romperse con el pentágono más grande (probado 1280px, 700px tablet, 390px mobile — 1 columna en mobile, 2 en tablet, 3+2 en desktop, sin overlap ni recorte de labels en ningún breakpoint). Panel expandible al clic sigue funcionando igual, sin cambios en esa lógica. Confirmado en claro y oscuro.
+
 ### Por qué el dashboard se dividió en /dashboard (Hoy) y /dashboard/progreso (Sesión 19)
 
 El dashboard crecía en scroll infinito porque cada bloque fue construido en sesiones separadas sin visión del conjunto: la Zone 1 (identity card) se diseñó sin saber que Zone 3B repetiría los módulos; el accordion de progreso se añadió sin saber que Zone 1 ya mostraba stats de XP/racha. La duplicación era estructural, no superficial.

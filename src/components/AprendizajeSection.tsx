@@ -38,15 +38,18 @@ const VERTS = [
   { key: 'Vínculo', angle:  198 },
 ]
 
+const LABEL_GAP = 14
+
 function ArchPentagon({
-  scores, fortalezas, crec, size = 120,
+  scores, fortalezas, crec, size = 120, showLabels = true,
 }: {
   scores: Record<string, number>
   fortalezas: readonly string[]
   crec: readonly string[]
   size?: number
+  showLabels?: boolean
 }) {
-  const CX = 80, CY = 80, R = 52
+  const CX = 80, CY = 80, R = 48
   const rad = (d: number) => (d * Math.PI) / 180
   const pt  = (angle: number, r: number) =>
     [CX + r * Math.cos(rad(angle)), CY + r * Math.sin(rad(angle))] as const
@@ -58,7 +61,7 @@ function ArchPentagon({
   }).join(' ')
 
   return (
-    <svg viewBox="0 0 160 160" width={size} height={size} aria-hidden="true">
+    <svg viewBox="0 0 160 160" width={size} height={size} aria-hidden="true" style={{ overflow: 'visible' }}>
       {VERTS.map(v => {
         const [x2, y2] = pt(v.angle, R)
         return <line key={v.key} x1={CX} y1={CY} x2={x2} y2={y2} stroke="var(--line)" strokeWidth={0.8} />
@@ -67,13 +70,40 @@ function ArchPentagon({
       <polygon points={profPts} fill="rgba(192,57,43,0.12)" stroke="#C0392B" strokeWidth={1.5} />
       {VERTS.map(v => {
         const [cx, cy] = pt(v.angle, ((scores[v.key] ?? 50) / 100) * R)
+        const isStrong = fortalezas.includes(v.key)
         return (
-          <circle key={v.key} cx={cx} cy={cy} r={3.5}
+          <circle key={v.key} cx={cx} cy={cy} r={isStrong ? 5 : 3}
             fill={
-              fortalezas.includes(v.key) ? 'var(--accent-teal,#0F7B6C)' :
+              isStrong                   ? 'var(--accent-teal,#0F7B6C)' :
               crec.includes(v.key)       ? '#C0392B' : 'var(--bg-2)'
             }
           />
+        )
+      })}
+      {showLabels && VERTS.map(v => {
+        const [lx, ly] = pt(v.angle, R + LABEL_GAP)
+        const cosA = Math.cos(rad(v.angle))
+        const sinA = Math.sin(rad(v.angle))
+        const anchor = cosA > 0.3 ? 'start' : cosA < -0.3 ? 'end' : 'middle'
+        const dy = sinA < -0.4 ? -2 : sinA > 0.4 ? 9 : 3.5
+        const isStrong = fortalezas.includes(v.key)
+        return (
+          <text
+            key={v.key}
+            x={lx} y={ly} dy={dy}
+            textAnchor={anchor}
+            style={{
+              fontFamily: 'Satoshi,sans-serif',
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              fill: isStrong ? 'var(--accent-teal,#0F7B6C)' : 'var(--mute)',
+              pointerEvents: 'none',
+            }}
+          >
+            {v.key}
+          </text>
         )
       })}
     </svg>
@@ -136,7 +166,7 @@ function AprendizajeSection() {
         .sp-card:nth-child(4){grid-column:2 / span 2;}
         .sp-card:nth-child(5){grid-column:4 / span 2;}
         .sp-card--active{border-color:rgba(192,57,43,.35)!important;background:rgba(192,57,43,.02)!important;}
-        .sp-card__pent{display:flex;justify-content:center;margin-bottom:18px;}
+        .sp-card__pent{display:flex;justify-content:center;margin-bottom:24px;}
         .sp-card__name{font-family:"Instrument Serif",serif;font-style:italic;font-size:22px;color:var(--ink);line-height:1.2;margin-bottom:6px;}
         .sp-card__tagline{font-family:"Satoshi",sans-serif;font-size:14px;color:var(--mute);line-height:1.5;margin-bottom:14px;}
         .sp-card__pills{display:flex;gap:6px;flex-wrap:wrap;}
@@ -258,7 +288,7 @@ function AprendizajeSection() {
                     scores={a.scores as Record<string, number>}
                     fortalezas={a.fortalezas}
                     crec={a.crec}
-                    size={120}
+                    size={150}
                   />
                 </div>
                 <div className="sp-card__name">{a.name}</div>
