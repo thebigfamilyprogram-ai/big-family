@@ -354,6 +354,14 @@
           ],
           "example": "Você é a referência de integridade na sua escola — coordenadores e colegas confiam no seu julgamento."
         }
+      },
+      "pillarsSubtitle": "Seu perfil de liderança é medido em 5 pilares: quem você é, para onde vai, com quem constrói, como age e o que deixa.",
+      "pillarTooltips": {
+        "yo": "Sua disciplina e ordem interna — como você se organiza para cumprir o que se propõe.",
+        "norte": "Sua curiosidade e abertura a novas ideias — para onde sua visão te leva.",
+        "vinculo": "Sua forma de se conectar com os outros — empatia e trabalho em equipe.",
+        "accion": "Sua energia para agir e liderar — iniciativa diante do mundo.",
+        "legado": "Sua estabilidade emocional — a marca que você deixa quando as coisas se complicam."
       }
     },
     "valores": {

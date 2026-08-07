@@ -354,6 +354,14 @@
           ],
           "example": "You are the integrity reference at your school — coordinators and peers trust your judgment."
         }
+      },
+      "pillarsSubtitle": "Your leadership profile is measured across 5 pillars: who you are, where you're headed, who you build with, how you act, and what you leave behind.",
+      "pillarTooltips": {
+        "yo": "Your discipline and inner order — how you organize yourself to follow through on what you set out to do.",
+        "norte": "Your curiosity and openness to new ideas — where your vision takes you.",
+        "vinculo": "Your way of connecting with others — empathy and teamwork.",
+        "accion": "Your energy to move and lead — initiative in the face of the world.",
+        "legado": "Your emotional stability — the mark you leave when things get complicated."
       }
     },
     "valores": {

@@ -354,6 +354,14 @@
           ],
           "example": "Vous êtes la référence en intégrité dans votre école — les coordinateurs et les pairs font confiance à votre jugement."
         }
+      },
+      "pillarsSubtitle": "Ton profil de leadership se mesure sur 5 piliers : qui tu es, où tu vas, avec qui tu construis, comment tu agis, et ce que tu laisses derrière toi.",
+      "pillarTooltips": {
+        "yo": "Ta discipline et ton ordre intérieur — comment tu t'organises pour accomplir ce que tu entreprends.",
+        "norte": "Ta curiosité et ton ouverture aux idées nouvelles — où ta vision te mène.",
+        "vinculo": "Ta façon de te connecter aux autres — empathie et travail d'équipe.",
+        "accion": "Ton énergie pour agir et diriger — initiative face au monde.",
+        "legado": "Ta stabilité émotionnelle — l'empreinte que tu laisses quand les choses se compliquent."
       }
     },
     "valores": {

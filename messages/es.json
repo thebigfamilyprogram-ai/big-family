@@ -354,6 +354,14 @@
           ],
           "example": "Eres el referente de integridad en tu colegio — los coordinadores y compañeros confían en tu criterio."
         }
+      },
+      "pillarsSubtitle": "Tu perfil de liderazgo se mide en 5 pilares: quién eres, hacia dónde vas, con quién construyes, cómo actúas, y qué dejas.",
+      "pillarTooltips": {
+        "yo": "Tu disciplina y orden interno — cómo te organizas para cumplir lo que te propones.",
+        "norte": "Tu curiosidad y apertura a ideas nuevas — hacia dónde te lleva tu visión.",
+        "vinculo": "Tu forma de conectar con otros — empatía y trabajo en equipo.",
+        "accion": "Tu energía para moverte y liderar — iniciativa frente al mundo.",
+        "legado": "Tu estabilidad emocional — la huella que dejas cuando las cosas se complican."
       }
     },
     "valores": {

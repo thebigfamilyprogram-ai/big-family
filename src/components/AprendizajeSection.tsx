@@ -1,6 +1,6 @@
 'use client'
 
-import React, { memo, useState } from 'react'
+import React, { memo, useEffect, useRef, useState } from 'react'
 import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 
@@ -41,18 +41,30 @@ const VERTS = [
 const LABEL_GAP = 14
 
 function ArchPentagon({
-  scores, fortalezas, crec, size = 120, showLabels = true,
+  scores, fortalezas, crec, size = 120, showLabels = true, tooltips,
 }: {
   scores: Record<string, number>
   fortalezas: readonly string[]
   crec: readonly string[]
   size?: number
   showLabels?: boolean
+  tooltips?: Record<string, string>
 }) {
   const CX = 80, CY = 80, R = 48
   const rad = (d: number) => (d * Math.PI) / 180
   const pt  = (angle: number, r: number) =>
     [CX + r * Math.cos(rad(angle)), CY + r * Math.sin(rad(angle))] as const
+
+  const [hoverKey, setHoverKey] = useState<string | null>(null)
+
+  // Auto-dismiss for touch devices: a tap has no mouseleave to clear it, so
+  // give it a few seconds before hiding on its own. Desktop hover already
+  // clears via onMouseLeave well before this fires.
+  useEffect(() => {
+    if (!hoverKey) return
+    const timer = setTimeout(() => setHoverKey(null), 3000)
+    return () => clearTimeout(timer)
+  }, [hoverKey])
 
   const refPts  = VERTS.map(v => pt(v.angle, R).join(',')).join(' ')
   const profPts = VERTS.map(v => {
@@ -60,53 +72,105 @@ function ArchPentagon({
     return `${x},${y}`
   }).join(' ')
 
+  const hoveredVert = VERTS.find(v => v.key === hoverKey) ?? null
+
   return (
-    <svg viewBox="0 0 160 160" width={size} height={size} aria-hidden="true" style={{ overflow: 'visible' }}>
-      {VERTS.map(v => {
-        const [x2, y2] = pt(v.angle, R)
-        return <line key={v.key} x1={CX} y1={CY} x2={x2} y2={y2} stroke="var(--line)" strokeWidth={0.8} />
-      })}
-      <polygon points={refPts} fill="none" stroke="var(--bg-2)" strokeWidth={1.5} />
-      <polygon points={profPts} fill="rgba(192,57,43,0.12)" stroke="#C0392B" strokeWidth={1.5} />
-      {VERTS.map(v => {
-        const [cx, cy] = pt(v.angle, ((scores[v.key] ?? 50) / 100) * R)
-        const isStrong = fortalezas.includes(v.key)
-        return (
-          <circle key={v.key} cx={cx} cy={cy} r={isStrong ? 5 : 3}
-            fill={
-              isStrong                   ? 'var(--accent-teal,#0F7B6C)' :
-              crec.includes(v.key)       ? '#C0392B' : 'var(--bg-2)'
-            }
-          />
-        )
-      })}
-      {showLabels && VERTS.map(v => {
-        const [lx, ly] = pt(v.angle, R + LABEL_GAP)
-        const cosA = Math.cos(rad(v.angle))
-        const sinA = Math.sin(rad(v.angle))
-        const anchor = cosA > 0.3 ? 'start' : cosA < -0.3 ? 'end' : 'middle'
-        const dy = sinA < -0.4 ? -2 : sinA > 0.4 ? 9 : 3.5
-        const isStrong = fortalezas.includes(v.key)
-        return (
-          <text
-            key={v.key}
-            x={lx} y={ly} dy={dy}
-            textAnchor={anchor}
-            style={{
-              fontFamily: 'Satoshi,sans-serif',
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              fill: isStrong ? 'var(--accent-teal,#0F7B6C)' : 'var(--mute)',
-              pointerEvents: 'none',
-            }}
-          >
-            {v.key}
-          </text>
-        )
-      })}
-    </svg>
+    <div style={{ position: 'relative', width: size, height: size }}>
+      <svg viewBox="0 0 160 160" width={size} height={size} aria-hidden="true" style={{ overflow: 'visible' }}>
+        {VERTS.map(v => {
+          const [x2, y2] = pt(v.angle, R)
+          return <line key={v.key} x1={CX} y1={CY} x2={x2} y2={y2} stroke="var(--line)" strokeWidth={0.8} />
+        })}
+        <polygon points={refPts} fill="none" stroke="var(--bg-2)" strokeWidth={1.5} />
+        <polygon points={profPts} fill="rgba(192,57,43,0.12)" stroke="#C0392B" strokeWidth={1.5} />
+        {VERTS.map(v => {
+          const [cx, cy] = pt(v.angle, ((scores[v.key] ?? 50) / 100) * R)
+          const isStrong = fortalezas.includes(v.key)
+          return (
+            <circle key={v.key} cx={cx} cy={cy} r={isStrong ? 5 : 3}
+              fill={
+                isStrong                   ? 'var(--accent-teal,#0F7B6C)' :
+                crec.includes(v.key)       ? '#C0392B' : 'var(--bg-2)'
+              }
+            />
+          )
+        })}
+        {showLabels && VERTS.map(v => {
+          const [lx, ly] = pt(v.angle, R + LABEL_GAP)
+          const cosA = Math.cos(rad(v.angle))
+          const sinA = Math.sin(rad(v.angle))
+          const anchor = cosA > 0.3 ? 'start' : cosA < -0.3 ? 'end' : 'middle'
+          const dy = sinA < -0.4 ? -2 : sinA > 0.4 ? 9 : 3.5
+          const isStrong = fortalezas.includes(v.key)
+          return (
+            <g key={v.key}>
+              {tooltips && (
+                <circle
+                  cx={lx} cy={ly} r={13}
+                  fill="transparent"
+                  style={{ cursor: 'pointer', pointerEvents: 'all' }}
+                  onMouseEnter={() => setHoverKey(v.key)}
+                  onMouseLeave={() => setHoverKey(null)}
+                  onClick={e => { e.stopPropagation(); setHoverKey(v.key) }}
+                />
+              )}
+              <text
+                x={lx} y={ly} dy={dy}
+                textAnchor={anchor}
+                style={{
+                  fontFamily: 'Satoshi,sans-serif',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  fill: isStrong ? 'var(--accent-teal,#0F7B6C)' : 'var(--mute)',
+                  pointerEvents: 'none',
+                }}
+              >
+                {v.key}
+              </text>
+            </g>
+          )
+        })}
+      </svg>
+
+      <AnimatePresence>
+        {tooltips && hoveredVert && (() => {
+          const [lx, ly] = pt(hoveredVert.angle, R + LABEL_GAP)
+          const leftPct = (lx / 160) * 100
+          const topPct  = (ly / 160) * 100
+          const cosA = Math.cos(rad(hoveredVert.angle))
+          const sinA = Math.sin(rad(hoveredVert.angle))
+          // Narrow viewports (mobile, 1-col cards near full width): left/right placement
+          // can push the tooltip past the screen edge. Force centered above/below instead,
+          // which only needs vertical room and stays safely centered on the anchor.
+          const isNarrow = typeof window !== 'undefined' && window.innerWidth < 480
+          const horiz = isNarrow ? 'center' : cosA > 0.3 ? 'right' : cosA < -0.3 ? 'left' : 'center'
+          const vert  = sinA < -0.4 ? 'top' : sinA > 0.4 ? 'bottom' : 'middle'
+          const transform =
+            horiz === 'right'  ? (vert === 'top' ? 'translate(0%, -108%)' : vert === 'bottom' ? 'translate(0%, 4%)' : 'translate(10px, -50%)') :
+            horiz === 'left'   ? (vert === 'top' ? 'translate(-100%, -108%)' : vert === 'bottom' ? 'translate(-100%, 4%)' : 'translate(calc(-100% - 10px), -50%)') :
+            vert === 'bottom'  ? 'translate(-50%, 10px)' :
+            'translate(-50%, calc(-100% - 10px))'
+          // NOTE: no x/y/scale/rotate in initial|animate|exit — framer-motion composes those
+          // into the `transform` CSS property itself and would silently overwrite the manual
+          // anchor-alignment `transform` string above. Opacity-only animation leaves it alone.
+          return (
+            <m.div
+              key={hoveredVert.key}
+              className="arch-tooltip"
+              style={{ left: `${leftPct}%`, top: `${topPct}%`, transform }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+            >
+              {tooltips[hoveredVert.key]}
+            </m.div>
+          )
+        })()}
+      </AnimatePresence>
+    </div>
   )
 }
 
@@ -115,13 +179,43 @@ function AprendizajeSection() {
   const t    = useTranslations()
   const pref = useReducedMotion()
   const [sel, setSel] = useState<string | null>(null)
+  const savedScrollY = useRef<number | null>(null)
+  const panelWrapRef = useRef<HTMLDivElement | null>(null)
 
   const steps = [
     { num: '01', title: t('landing.aprendizaje.stepDiagnosisTitle'), desc: t('landing.aprendizaje.stepDiagnosisDesc') },
     { num: '02', title: t('landing.aprendizaje.stepArchetypeTitle'), desc: t('landing.aprendizaje.stepArchetypeDesc') },
     { num: '03', title: t('landing.aprendizaje.stepRouteTitle'),     desc: t('landing.aprendizaje.stepRouteDesc')     },
   ]
-  const toggle = (id: string) => setSel(p => (p === id ? null : id))
+
+  const pillarTooltips: Record<string, string> = {
+    Yo:      t('landing.aprendizaje.pillarTooltips.yo'),
+    Norte:   t('landing.aprendizaje.pillarTooltips.norte'),
+    Acción:  t('landing.aprendizaje.pillarTooltips.accion'),
+    Legado:  t('landing.aprendizaje.pillarTooltips.legado'),
+    Vínculo: t('landing.aprendizaje.pillarTooltips.vinculo'),
+  }
+
+  function toggle(id: string) {
+    setSel(prev => {
+      if (prev === id) return null
+      if (prev === null) savedScrollY.current = window.scrollY
+      return id
+    })
+  }
+
+  useEffect(() => {
+    if (sel) {
+      const raf = requestAnimationFrame(() => {
+        panelWrapRef.current?.scrollIntoView({ behavior: pref ? 'auto' : 'smooth', block: 'start' })
+      })
+      return () => cancelAnimationFrame(raf)
+    }
+    if (savedScrollY.current !== null) {
+      window.scrollTo({ top: savedScrollY.current, behavior: pref ? 'auto' : 'smooth' })
+      savedScrollY.current = null
+    }
+  }, [sel, pref])
 
   const arquetipos: Arquetipo[] = ARCHETYPE_VISUAL.map(a => ({
     ...a,
@@ -158,7 +252,11 @@ function AprendizajeSection() {
         .sp-step__desc{font-family:"Satoshi",sans-serif;font-size:13px;color:var(--mute);line-height:1.5;}
 
         /* ── Arch label ── */
-        .sp-arch-label{font-family:"Instrument Serif",serif;font-style:italic;font-size:24px;color:var(--ink-2,#2D2D2D);text-align:center;margin-top:80px;margin-bottom:40px;}
+        .sp-arch-label{font-family:"Instrument Serif",serif;font-style:italic;font-size:24px;color:var(--ink-2,#2D2D2D);text-align:center;margin-top:80px;margin-bottom:12px;}
+        .sp-pillars-sub{font-family:"Satoshi",sans-serif;font-size:15px;color:var(--mute);text-align:center;line-height:1.6;max-width:52ch;margin:0 auto 40px;}
+
+        /* ── Pillar tooltip ── */
+        .arch-tooltip{position:absolute;z-index:40;background:var(--ink);color:var(--bg);font-family:"Satoshi",sans-serif;font-size:12.5px;font-weight:500;line-height:1.5;padding:10px 12px;border-radius:10px;width:190px;box-shadow:var(--shadow-raised,0 8px 24px rgba(13,13,13,.18));pointer-events:none;}
 
         /* ── Grid 3+2 centered — cards FIXED size ── */
         .sp-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:20px;}
@@ -256,6 +354,7 @@ function AprendizajeSection() {
 
         {/* ── Archetype cards — FIXED SIZE ── */}
         <p className="sp-arch-label">{t('landing.aprendizaje.discoverCta')}</p>
+        <p className="sp-pillars-sub">{t('landing.aprendizaje.pillarsSubtitle')}</p>
 
         <m.div
           className="sp-grid"
@@ -289,6 +388,7 @@ function AprendizajeSection() {
                     fortalezas={a.fortalezas}
                     crec={a.crec}
                     size={150}
+                    tooltips={pillarTooltips}
                   />
                 </div>
                 <div className="sp-card__name">{a.name}</div>
@@ -303,7 +403,8 @@ function AprendizajeSection() {
           })}
         </m.div>
 
-        {/* ── Panel below grid ── */}
+        {/* ── Panel below grid — stable ref wrapper so scroll targeting survives AnimatePresence remounts ── */}
+        <div ref={panelWrapRef}>
         <AnimatePresence mode="wait">
           {selected && (
             <m.div
@@ -334,6 +435,7 @@ function AprendizajeSection() {
                       fortalezas={selected.fortalezas}
                       crec={selected.crec}
                       size={200}
+                      tooltips={pillarTooltips}
                     />
                     <div className="sp-panel__name">{selected.name}</div>
                     <div className="sp-panel__tagline">{selected.tagline}</div>
@@ -383,6 +485,7 @@ function AprendizajeSection() {
             </m.div>
           )}
         </AnimatePresence>
+        </div>
 
       </div>
     </section>
