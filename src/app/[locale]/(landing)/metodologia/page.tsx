@@ -260,9 +260,6 @@ export default function MetodologiaPage() {
                   transition={{ type: 'spring', stiffness: 120, damping: 20, delay: i * 0.07 }}
                   whileHover={{ y: -4, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
                 >
-                  <div className="sec-valores__watermark" aria-hidden="true">
-                    {String(i + 1).padStart(2, '0')}
-                  </div>
                   <div className="sec-valores__content">
                     <div className="sec-valores__num" aria-hidden="true">
                       {String(i + 1).padStart(2, '0')}
