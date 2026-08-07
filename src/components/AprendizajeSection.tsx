@@ -275,7 +275,7 @@ function AprendizajeSection() {
         /* Offsets scrollIntoView's "start" so the panel top doesn't land under the floating nav pill */
         .sp-panel-scroll-target{scroll-margin-top:96px;}
         .sp-panel{background:var(--card-bg);border:1px solid var(--card-border);border-radius:20px;padding:44px;position:relative;}
-        .sp-panel__inner{display:grid;grid-template-columns:46% 54%;gap:48px;align-items:start;}
+        .sp-panel__inner{display:grid;grid-template-columns:46fr 54fr;gap:48px;align-items:start;}
         .sp-panel__close{position:absolute;top:20px;right:20px;width:40px;height:40px;background:var(--bg-2);border:none;border-radius:50%;cursor:pointer;color:var(--mute);font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s;}
         .sp-panel__close:hover{color:var(--ink);background:var(--line);}
         /* Left column */
@@ -291,6 +291,13 @@ function AprendizajeSection() {
         .sp-panel__pill-crec{padding:3px 10px;border-radius:999px;font-family:"Satoshi",sans-serif;font-size:11px;font-weight:700;background:rgba(192,57,43,.08);color:#C0392B;border:1px solid rgba(192,57,43,.2);}
         /* Right column */
         .sp-panel__right{display:flex;flex-direction:column;gap:20px;}
+        /* Reserves the close button's footprint (top:20+height:40+gap) so the first lines of
+           .sp-panel__desc can never render underneath it, regardless of paragraph length. Only
+           needed in the two-column desktop layout — below 960px the columns stack and the right
+           column already starts well past the button. */
+        @media(min-width:961px){
+          .sp-panel__right{padding-top:24px;}
+        }
         .sp-panel__desc{font-family:"Satoshi",sans-serif;font-size:16px;color:var(--ink-2,#2D2D2D);line-height:1.75;}
         .sp-panel__route-lbl{font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-bottom:10px;}
         .sp-panel__mods{display:flex;flex-direction:column;gap:8px;}
