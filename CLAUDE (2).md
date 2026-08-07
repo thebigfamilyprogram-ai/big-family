@@ -143,11 +143,13 @@ El orden de render SVG determina z-index (elementos posteriores = encima).
 /* [data-theme="dark"]: --surface-1: #1C1B19; --surface-2: #141412 */
 
 /* Siempre #0D0D0D — declarado solo en :root, NUNCA redefinido en html.dark.
-   Úsalo para secciones "editorial dark" deliberadamente negras en ambos temas
-   (Misión, Visión, Historia, About/Founder, CTA final, Testimonios, Impacto,
-   Validación Internacional, footer de la landing en GlobeHero.tsx). Nunca
-   escribir #0D0D0D/#080808/#070707/#060606 literal en un background de
-   sección — siempre var(--surface-inverse, HEX_ORIGINAL) como fallback. */
+   NO usar para secciones completas de página (Misión, Visión, Impacto, CTA,
+   Validación, footer de la landing en GlobeHero.tsx — todas siguen var(--bg)/
+   var(--ink)/var(--mute)/var(--line) normales, ver Sesión 25 en context.md:
+   "editorial dark siempre negro" fue un error, deben responder al tema como
+   el resto del sitio). Uso legítimo restante: elementos puntuales que deben
+   quedar oscuros con intención sobre CUALQUIER fondo, sin importar el tema —
+   ej. `cert-unlocked` en dashboard/page.tsx. */
 --surface-inverse: #0D0D0D
 --text-on-inverse: #F5F3EF
 ```
