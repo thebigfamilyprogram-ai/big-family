@@ -272,14 +272,17 @@ function AprendizajeSection() {
 
         /* ── Panel below grid ── */
         .sp-panel-wrap{overflow:hidden;margin-top:20px;}
-        .sp-panel{background:var(--card-bg);border:1px solid var(--card-border);border-radius:20px;padding:40px;position:relative;}
-        .sp-panel__inner{display:grid;grid-template-columns:40% 60%;gap:48px;align-items:start;}
-        .sp-panel__close{position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;color:var(--mute);font-size:20px;line-height:1;padding:6px;display:flex;align-items:center;justify-content:center;transition:color .15s;}
-        .sp-panel__close:hover{color:var(--ink);}
+        /* Offsets scrollIntoView's "start" so the panel top doesn't land under the floating nav pill */
+        .sp-panel-scroll-target{scroll-margin-top:96px;}
+        .sp-panel{background:var(--card-bg);border:1px solid var(--card-border);border-radius:20px;padding:44px;position:relative;}
+        .sp-panel__inner{display:grid;grid-template-columns:46% 54%;gap:48px;align-items:start;}
+        .sp-panel__close{position:absolute;top:20px;right:20px;width:40px;height:40px;background:var(--bg-2);border:none;border-radius:50%;cursor:pointer;color:var(--mute);font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s;}
+        .sp-panel__close:hover{color:var(--ink);background:var(--line);}
         /* Left column */
         .sp-panel__left{display:flex;flex-direction:column;gap:16px;}
         .sp-panel__name{font-family:"Instrument Serif",serif;font-style:italic;font-size:2rem;color:var(--ink);line-height:1.15;margin-bottom:2px;}
         .sp-panel__tagline{font-family:"Satoshi",sans-serif;font-size:14px;color:var(--mute);margin-bottom:4px;}
+        .sp-panel__pent{display:flex;justify-content:center;padding:8px 0 4px;}
         .sp-panel__pills-row{display:flex;gap:20px;flex-wrap:wrap;}
         .sp-panel__pill-group{display:flex;flex-direction:column;gap:7px;}
         .sp-panel__pill-lbl{font-family:"Satoshi",sans-serif;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);}
@@ -404,7 +407,7 @@ function AprendizajeSection() {
         </m.div>
 
         {/* ── Panel below grid — stable ref wrapper so scroll targeting survives AnimatePresence remounts ── */}
-        <div ref={panelWrapRef}>
+        <div ref={panelWrapRef} className="sp-panel-scroll-target">
         <AnimatePresence mode="wait">
           {selected && (
             <m.div
@@ -428,17 +431,19 @@ function AprendizajeSection() {
                 </m.button>
 
                 <div className="sp-panel__inner">
-                  {/* ── Left 40% ── */}
+                  {/* ── Left 46% ── */}
                   <div className="sp-panel__left">
-                    <ArchPentagon
-                      scores={selected.scores as Record<string, number>}
-                      fortalezas={selected.fortalezas}
-                      crec={selected.crec}
-                      size={200}
-                      tooltips={pillarTooltips}
-                    />
                     <div className="sp-panel__name">{selected.name}</div>
                     <div className="sp-panel__tagline">{selected.tagline}</div>
+                    <div className="sp-panel__pent">
+                      <ArchPentagon
+                        scores={selected.scores as Record<string, number>}
+                        fortalezas={selected.fortalezas}
+                        crec={selected.crec}
+                        size={200}
+                        tooltips={pillarTooltips}
+                      />
+                    </div>
                     <div className="sp-panel__pills-row">
                       <div className="sp-panel__pill-group">
                         <div className="sp-panel__pill-lbl">{t('landing.aprendizaje.strengthsLabel')}</div>
@@ -459,7 +464,7 @@ function AprendizajeSection() {
                     </div>
                   </div>
 
-                  {/* ── Right 60% ── */}
+                  {/* ── Right 54% ── */}
                   <div className="sp-panel__right">
                     <p className="sp-panel__desc">{selected.desc}</p>
 
