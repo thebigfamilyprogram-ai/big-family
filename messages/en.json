@@ -369,11 +369,13 @@
       "title": "What guides us",
       "etica": {
         "title": "Ethics",
-        "body": "We act with integrity in every decision, building trust from within."
+        "body": "We act with integrity in every decision, building trust from within.",
+        "quote": "Integrity isn't negotiable when no one's watching."
       },
       "compromiso": {
         "title": "Commitment",
-        "body": "We keep our promises and give our best in every action."
+        "body": "We keep our promises and give our best in every action.",
+        "quote": "Commitment is measured on the hard days, not the easy ones."
       },
       "trascendencia": {
         "title": "Transcendence",

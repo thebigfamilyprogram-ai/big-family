@@ -247,28 +247,35 @@ export default function MetodologiaPage() {
           </m.div>
 
           <div className="sec-valores__grid">
-            {VALORES.map((v, i) => (
-              <m.div
-                key={v.name}
-                className={`sec-valores__tile${i === 0 ? ' sec-valores__tile--featured' : ''}`}
-                initial={prefersReduced ? false : { opacity: 0, filter: 'blur(8px)' }}
-                whileInView={{ opacity: 1, filter: 'blur(0px)' }}
-                viewport={{ once: true, margin: '-40px' }}
-                transition={{ type: 'spring', stiffness: 120, damping: 20, delay: i * 0.07 }}
-                whileHover={{ y: -4, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
-              >
-                <div className="sec-valores__num" aria-hidden="true">
-                  {String(i + 1).padStart(2, '0')}
-                </div>
-                <div
-                  className="sec-valores__img-ph"
-                  data-value={v.slug}
-                  aria-hidden="true"
-                />
-                <div className="sec-valores__name">{t('landing.valores.' + valorKeyMap[v.slug] + '.title')}</div>
-                <div className="sec-valores__desc">{t('landing.valores.' + valorKeyMap[v.slug] + '.body')}</div>
-              </m.div>
-            ))}
+            {VALORES.map((v, i) => {
+              const isFeatured = i < 2
+              const key = valorKeyMap[v.slug]
+              return (
+                <m.div
+                  key={v.name}
+                  className={`sec-valores__tile${isFeatured ? ' sec-valores__tile--featured' : ''}`}
+                  initial={prefersReduced ? false : { opacity: 0, filter: 'blur(8px)' }}
+                  whileInView={{ opacity: 1, filter: 'blur(0px)' }}
+                  viewport={{ once: true, margin: '-40px' }}
+                  transition={{ type: 'spring', stiffness: 120, damping: 20, delay: i * 0.07 }}
+                  whileHover={{ y: -4, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
+                >
+                  <div className="sec-valores__watermark" aria-hidden="true">
+                    {String(i + 1).padStart(2, '0')}
+                  </div>
+                  <div className="sec-valores__content">
+                    <div className="sec-valores__num" aria-hidden="true">
+                      {String(i + 1).padStart(2, '0')}
+                    </div>
+                    <div className="sec-valores__name">{t('landing.valores.' + key + '.title')}</div>
+                    <div className="sec-valores__desc">{t('landing.valores.' + key + '.body')}</div>
+                    {isFeatured && (
+                      <p className="sec-valores__quote">{t('landing.valores.' + key + '.quote')}</p>
+                    )}
+                  </div>
+                </m.div>
+              )
+            })}
           </div>
         </div>
       </section>

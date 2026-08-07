@@ -369,11 +369,13 @@
       "title": "Lo que nos guía",
       "etica": {
         "title": "Ética",
-        "body": "Actuamos con integridad en cada decisión, construyendo confianza desde adentro."
+        "body": "Actuamos con integridad en cada decisión, construyendo confianza desde adentro.",
+        "quote": "La integridad no se negocia cuando nadie está mirando."
       },
       "compromiso": {
         "title": "Compromiso",
-        "body": "Cumplimos lo que prometemos y damos lo mejor de nosotros en cada acción."
+        "body": "Cumplimos lo que prometemos y damos lo mejor de nosotros en cada acción.",
+        "quote": "El compromiso se mide en los días difíciles, no en los fáciles."
       },
       "trascendencia": {
         "title": "Trascendencia",

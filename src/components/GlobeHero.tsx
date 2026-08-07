@@ -305,15 +305,20 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
         .sec-valores__eyebrow{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--mute);margin-bottom:16px;}
         .sec-valores__title{font-family:"Satoshi",sans-serif;font-weight:900;font-size:clamp(38px,5vw,60px);color:var(--ink);letter-spacing:-0.04em;line-height:1.08;}
         .sec-valores__title em{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:var(--accent);}
-        .sec-valores__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
-        .sec-valores__tile{background:var(--card-bg,#fff);border:1px solid var(--line);border-radius:20px;padding:32px 28px;display:flex;flex-direction:column;gap:12px;box-shadow:0 2px 12px rgba(13,13,13,.05),0 1px 3px rgba(13,13,13,.03);transition:box-shadow .3s cubic-bezier(0.22,1,0.36,1),transform .3s cubic-bezier(0.22,1,0.36,1),border-color .3s cubic-bezier(0.22,1,0.36,1);}
+        .sec-valores__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+        .sec-valores__tile{background:var(--card-bg,#fff);border:1px solid var(--line);border-radius:20px;padding:32px 28px;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(13,13,13,.05),0 1px 3px rgba(13,13,13,.03);transition:box-shadow .3s cubic-bezier(0.22,1,0.36,1),transform .3s cubic-bezier(0.22,1,0.36,1),border-color .3s cubic-bezier(0.22,1,0.36,1);}
         .sec-valores__tile--featured{grid-column:span 2;}
         .sec-valores__tile:hover{box-shadow:0 12px 32px -6px rgba(13,13,13,.12);border-color:rgba(192,57,43,.2);}
+        /* Giant numeral behind the title — same "editorial watermark" language as .sec-historia__watermark-yr,
+           but sized/positioned per tile so it reads as texture, not as a competing headline. */
+        .sec-valores__watermark{position:absolute;top:-16px;right:4px;font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;font-size:104px;color:var(--ink);opacity:.07;line-height:1;letter-spacing:-0.02em;pointer-events:none;user-select:none;z-index:0;}
+        .sec-valores__tile--featured .sec-valores__watermark{font-size:168px;top:-26px;right:8px;}
+        .sec-valores__content{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;}
         .sec-valores__num{font-family:"Satoshi",sans-serif;font-size:11px;letter-spacing:.18em;color:var(--accent);opacity:.6;font-weight:700;}
-        .sec-valores__img-ph{width:64px;height:64px;background:var(--bg-2);border-radius:12px;flex-shrink:0;}
         .sec-valores__name{font-family:"Satoshi",sans-serif;font-weight:700;font-size:17px;color:var(--ink);transition:color .2s;}
         .sec-valores__tile:hover .sec-valores__name{color:var(--accent);}
         .sec-valores__desc{font-size:14px;color:var(--mute);line-height:1.6;}
+        .sec-valores__quote{font-family:"Instrument Serif",serif;font-style:italic;font-size:16px;color:var(--ink-2,#2D2D2D);line-height:1.55;margin-top:2px;padding-top:14px;border-top:1px solid var(--line);}
         @media(max-width:960px){
           .sec-valores{padding:80px 24px;}
           .sec-valores__grid{grid-template-columns:1fr 1fr;}
@@ -322,6 +327,8 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
         @media(max-width:600px){
           .sec-valores__grid{grid-template-columns:1fr;}
           .sec-valores__tile--featured{grid-column:span 1;}
+          .sec-valores__watermark{font-size:84px;top:-10px;right:0;}
+          .sec-valores__tile--featured .sec-valores__watermark{font-size:110px;top:-16px;right:4px;}
         }
         @media(prefers-reduced-motion:reduce){.sec-valores__tile,.sec-valores__tile:hover{transform:none;}}
         /* ── TESTIMONIOS ── */

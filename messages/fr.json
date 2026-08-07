@@ -369,11 +369,13 @@
       "title": "Ce qui nous guide",
       "etica": {
         "title": "Éthique",
-        "body": "Nous agissons avec intégrité dans chaque décision, en construisant la confiance de l'intérieur."
+        "body": "Nous agissons avec intégrité dans chaque décision, en construisant la confiance de l'intérieur.",
+        "quote": "L'intégrité ne se négocie pas quand personne ne regarde."
       },
       "compromiso": {
         "title": "Engagement",
-        "body": "Nous tenons nos promesses et donnons le meilleur de nous-mêmes à chaque action."
+        "body": "Nous tenons nos promesses et donnons le meilleur de nous-mêmes à chaque action.",
+        "quote": "L'engagement se mesure dans les jours difficiles, pas dans les faciles."
       },
       "trascendencia": {
         "title": "Transcendance",
