@@ -7,6 +7,9 @@ import { m, AnimatePresence, useReducedMotion } from 'framer-motion'
 
 import HeroArc from '@/components/HeroArc'
 import PublicNavbar from '@/components/PublicNavbar'
+import DiplomaCard from '@/components/DiplomaCard'
+import { MOCK } from '@/lib/mockData'
+import { certNumber } from '@/lib/diploma'
 
 const FAQ_ITEMS = [
   { q: '¿El programa es gratuito?', a: 'Sí, Big Family es completamente gratuito para los estudiantes. El programa es financiado por alianzas institucionales y el compromiso de sus fundadores con la educación equitativa en La Guajira.' },
@@ -15,6 +18,16 @@ const FAQ_ITEMS = [
   { q: '¿Cuánto tiempo dura el programa?', a: 'El programa tiene una duración de un año académico, con 7 módulos progresivos, mentoría continua y el proyecto Capstone al final del ciclo. Los módulos están diseñados para completarse a tu propio ritmo.' },
   { q: '¿Cómo se registra un coordinador de colegio?', a: 'Los coordinadores reciben un código de acceso institucional de parte del equipo de Big Family. Con ese código pueden registrarse en /register y acceder al panel de gestión de su colegio.' },
 ]
+
+// Datos de muestra para la vista previa del diploma en la landing — mismo shape
+// que DiplomaData, para que <DiplomaCard> se reutilice sin cambios.
+const DIPLOMA_PREVIEW_DATA = {
+  ...MOCK.mockDiploma,
+  leaderProfile: {
+    arquetipo: 'Líder Visionaria',
+    big_five:  { O: 85, C: 42, E: 78, A: 38, N: 35, ES: 65 },
+  },
+}
 
 const TESTIMONIOS = [
   { quote: 'Big Family cambió mi manera de ver el mundo. Aprendí a liderar con propósito y a trabajar por mi comunidad con impacto real.', name: 'María González', role: 'Estudiante · Cohorte 2026', school: 'IE Técnica María Inmaculada', init: 'MG' },
@@ -129,12 +142,12 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
         .sec-cert__cta:hover{background:#a93226;}
         /* ── Diploma modal ─────────────────────────────────────────────────── */
         .dm-overlay{position:fixed;inset:0;background:rgba(13,13,13,.75);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
-        .dm-panel{position:relative;width:100%;max-width:660px;max-height:90dvh;overflow-y:auto;background:var(--card-bg,#fff);border-radius:4px;padding:36px 44px;}
-        .dm-panel::before{content:"";position:absolute;inset:0;border-radius:4px;border:2px solid #C0392B;pointer-events:none;}
-        .dm-panel::after{content:"";position:absolute;inset:8px;border-radius:2px;border:1px solid rgba(192,57,43,.25);pointer-events:none;}
+        /* Modal chrome only — the diploma's own card look (border, padding, background)
+           comes from <DiplomaCard compact>, shared with /certificacion/[id] so the two
+           never drift apart again. */
+        .dm-panel{position:relative;width:100%;max-width:660px;max-height:90dvh;overflow-y:auto;border-radius:4px;}
         .dm-close{position:absolute;top:14px;right:14px;background:rgba(13,13,13,.07);border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;transition:background .15s;}
         .dm-close:hover{background:rgba(13,13,13,.14);}
-        .dm-sep{height:1px;background:rgba(192,57,43,.22);margin:14px 0;}
         .sec-cert__bullets{margin-top:24px;display:flex;flex-direction:column;gap:10px;}
         .sec-cert__bullet{display:flex;align-items:center;gap:10px;font-family:"Satoshi",sans-serif;font-size:13px;color:var(--mute);}
         .sec-cert__check{width:18px;height:18px;border-radius:50%;background:rgba(192,57,43,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -516,74 +529,12 @@ export default function GlobeHero({ children }: { children: React.ReactNode }) {
                 </svg>
               </button>
 
-              {/* Membrete */}
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:10, marginBottom:16 }}>
-                <img src="/Logo_ColegioAlbania.png" alt="" aria-hidden="true" style={{ height:28, objectFit:'contain' }} />
-                <div style={{ width:1, height:20, background:'rgba(13,13,13,.15)', flexShrink:0 }} />
-                <span style={{ fontFamily:'"Satoshi",sans-serif', fontWeight:700, fontSize:9, letterSpacing:'0.3em', textTransform:'uppercase', color:'#0D0D0D' }}>The Big Family Program</span>
-              </div>
-
-              <div className="dm-sep" />
-
-              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontSize:12, color:'#6B6B6B', fontStyle:'italic', marginTop:14, marginBottom:10 }}>
-                Este certificado se otorga a
-              </p>
-              <p style={{ textAlign:'center', fontFamily:'"Instrument Serif",serif', fontStyle:'italic', fontWeight:400, fontSize:'clamp(1.8rem,4vw,2.8rem)', color:'#0D0D0D', letterSpacing:'-0.02em', lineHeight:1.1, marginBottom:14 }}>
-                Valentina Torres Ospino
-              </p>
-              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontSize:13, color:'#6B6B6B', marginBottom:8 }}>
-                por haber completado exitosamente el programa de liderazgo
-              </p>
-              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontWeight:700, fontSize:12, letterSpacing:'0.22em', textTransform:'uppercase', color:'#C0392B', marginBottom:14 }}>
-                The Big Leader
-              </p>
-              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontSize:12, color:'#6B6B6B', marginBottom:3 }}>IE Técnica María Inmaculada</p>
-              <p style={{ textAlign:'center', fontFamily:'"Satoshi",sans-serif', fontSize:12, color:'#6B6B6B', marginBottom:16 }}>15 de mayo de 2026</p>
-
-              <div className="dm-sep" />
-
-              {/* Stats + Logos */}
-              <div style={{ display:'flex', justifyContent:'center', alignItems:'center', flexWrap:'wrap', margin:'4px 0 4px' }}>
-                <div style={{ textAlign:'center', padding:'8px 20px' }}>
-                  <div style={{ fontFamily:'"Satoshi",sans-serif', fontWeight:900, fontSize:20, color:'#C0392B' }}>1.840</div>
-                  <div style={{ fontFamily:'"Satoshi",sans-serif', fontSize:8, letterSpacing:'0.15em', textTransform:'uppercase', color:'#6B6B6B', marginTop:3 }}>Puntos de Impacto</div>
-                </div>
-                <div style={{ width:1, height:34, background:'rgba(13,13,13,.12)', flexShrink:0 }} />
-                <div style={{ textAlign:'center', padding:'8px 20px' }}>
-                  <div style={{ fontFamily:'"Satoshi",sans-serif', fontWeight:900, fontSize:20, color:'#C0392B' }}>6</div>
-                  <div style={{ fontFamily:'"Satoshi",sans-serif', fontSize:8, letterSpacing:'0.15em', textTransform:'uppercase', color:'#6B6B6B', marginTop:3 }}>Módulos Completados</div>
-                </div>
-                <div style={{ width:1, height:34, background:'rgba(13,13,13,.12)', flexShrink:0 }} />
-                <div style={{ textAlign:'center', padding:'8px 20px' }}>
-                  <p style={{ fontFamily:'"Satoshi",sans-serif', fontSize:8, letterSpacing:'0.2em', textTransform:'uppercase', color:'#6B6B6B', marginBottom:7 }}>RECONOCIDO POR</p>
-                  <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:10 }}>
-                    <img src="/cognia.png"                               alt="Cognia" style={{ height:24, objectFit:'contain' }} />
-                    <img src="/International_Baccalaureate_Logo.svg.png" alt="IB"     style={{ height:24, objectFit:'contain' }} />
-                    <img src="/tri.png"                                  alt="Tri"    style={{ height:24, objectFit:'contain' }} />
-                  </div>
-                </div>
-              </div>
-
-              <div className="dm-sep" />
-
-              {/* Firma + Cert + Sello */}
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginTop:10 }}>
-                <div>
-                  <div style={{ height:1, background:'rgba(13,13,13,.14)', marginBottom:6, width:148 }} />
-                  <p style={{ fontFamily:'"Satoshi",sans-serif', fontWeight:700, fontSize:12, color:'#0D0D0D' }}>Luis Hernando Barrios</p>
-                  <p style={{ fontFamily:'"Satoshi",sans-serif', fontSize:10.5, color:'#6B6B6B', marginTop:2 }}>Fundador, The Big Family Program</p>
-                </div>
-                <p style={{ fontFamily:'"Satoshi",sans-serif', fontSize:9.5, letterSpacing:'0.2em', color:'#6B6B6B', alignSelf:'flex-end', paddingBottom:1 }}>CERT-2026-1001</p>
-                <svg viewBox="0 0 100 100" width="52" height="52" aria-hidden="true">
-                  <defs><path id="dm-arc" d="M 8 50 A 42 42 0 0 0 92 50"/></defs>
-                  <circle cx="50" cy="50" r="47" fill="none" stroke="#C0392B" strokeWidth="1.5"/>
-                  <circle cx="50" cy="50" r="40" fill="none" stroke="#C0392B" strokeWidth="0.6"/>
-                  <text fill="#C0392B" fontSize="6.8" fontFamily="Satoshi,sans-serif" fontWeight="700" letterSpacing="1.5">
-                    <textPath href="#dm-arc" startOffset="50%" textAnchor="middle">BIG FAMILY · CERTIFIED</textPath>
-                  </text>
-                  <path d="M50 36 L53.5 45.1 L63.3 45.7 L55.7 51.8 L58.2 61.3 L50 56 L41.8 61.3 L44.3 51.8 L36.7 45.7 L46.5 45.1Z" fill="#C0392B"/>
-                </svg>
-              </div>
+              <DiplomaCard
+                data={DIPLOMA_PREVIEW_DATA}
+                certNumberText={certNumber('preview', DIPLOMA_PREVIEW_DATA.certDate)}
+                compact
+                animated={false}
+              />
             </m.div>
           </m.div>
         )}
